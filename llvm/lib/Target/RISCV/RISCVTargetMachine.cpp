@@ -137,6 +137,11 @@ static StringRef computeDataLayout(const Triple &TT,
     if (ABIName == "lp64e")
       return "e-m:e-p:64:64-i64:64-i128:128-n32:64-S64";
 
+    // FIXME: Here only handles ABI set from option. What to do with ABI set
+    // from module flags?
+    if (ABIName == "ilp32")
+      return "e-m:e-p:32:32-i64:64-n32:64-S128";
+
     return "e-m:e-p:64:64-i64:64-i128:128-n32:64-S128";
   }
   assert(TT.isArch32Bit() && "only RV32 and RV64 are currently supported");
