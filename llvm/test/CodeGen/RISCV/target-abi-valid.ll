@@ -14,6 +14,8 @@
 ; RUN:   | FileCheck -check-prefix=CHECK-IMP %s
 ; RUN: llc -mtriple=riscv64 -target-abi lp64e < %s \
 ; RUN:   | FileCheck -check-prefix=CHECK-IMP %s
+; RUN: llc -mtriple=riscv32 -target-abi ilp32 < %s \
+; RUN:   | FileCheck -check-prefix=CHECK-IMP %s
 ; RUN: llc -mtriple=riscv64 -mattr=+f -target-abi lp64 < %s \
 ; RUN:   | FileCheck -check-prefix=CHECK-IMP %s
 ; RUN: llc -mtriple=riscv64 -mattr=+d -target-abi lp64 < %s \

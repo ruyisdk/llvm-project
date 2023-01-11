@@ -6,8 +6,6 @@
 ; RV32I-FOO: 'foo' is not a recognized ABI for this target (ignoring target-abi)
 ; RV32IF-ILP32FOOF: 'ilp32foof' is not a recognized ABI for this target (ignoring target-abi)
 
-; RUN: llc -mtriple=riscv64 -target-abi ilp32 < %s 2>&1 \
-; RUN:   | FileCheck -check-prefix=RV64I-ILP32 %s
 ; RUN: llc -mtriple=riscv64 -mattr=+f -target-abi ilp32f < %s 2>&1 \
 ; RUN:   | FileCheck -check-prefix=RV64IF-ILP32F %s
 ; RUN: llc -mtriple=riscv64 -mattr=+d -target-abi ilp32d < %s 2>&1 \
@@ -15,7 +13,6 @@
 ; RUN: llc -mtriple=riscv64 -target-abi ilp32e < %s 2>&1 \
 ; RUN:   | FileCheck -check-prefix=RV64I-ILP32E %s
 
-; RV64I-ILP32: 32-bit ABIs are not supported for 64-bit targets (ignoring target-abi)
 ; RV64IF-ILP32F: 32-bit ABIs are not supported for 64-bit targets (ignoring target-abi)
 ; RV64IFD-ILP32D: 32-bit ABIs are not supported for 64-bit targets (ignoring target-abi)
 ; RV64I-ILP32E: 32-bit ABIs are not supported for 64-bit targets (ignoring target-abi)
