@@ -33,6 +33,11 @@ public:
                   const MCTargetOptions &Options)
       : MCAsmBackend(llvm::endianness::little, RISCV::fixup_riscv_relax),
         STI(STI), OSABI(OSABI), Is64Bit(Is64Bit), TargetOptions(Options) {
+    // Use ELF32 format for RV64 ILP32.
+    // FIXME: Here only handles ABI set from options. What to do with the ABI
+    // set from LLVM module flags ?
+    if (Options.getABIName() == "ilp32" && Is64Bit)
+      this->Is64Bit = false;
     RISCVFeatures::validate(STI.getTargetTriple(), STI.getFeatureBits());
   }
   ~RISCVAsmBackend() override = default;
