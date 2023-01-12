@@ -3,6 +3,8 @@
 ; RUN:   | FileCheck -check-prefix=RV32I %s
 ; RUN: llc -mtriple=riscv64 -verify-machineinstrs < %s \
 ; RUN:   | FileCheck -check-prefix=RV64I %s
+; RUN: llc -mtriple=riscv64 -target-abi=ilp32 -verify-machineinstrs < %s \
+; RUN:   | FileCheck -check-prefix=RV64I-ILP32 %s
 
 declare void @notdead(ptr)
 declare ptr @llvm.frameaddress(i32)
@@ -32,6 +34,18 @@ define ptr @test_frameaddress_0() nounwind {
 ; RV64I-NEXT:    ld s0, 0(sp) # 8-byte Folded Reload
 ; RV64I-NEXT:    addi sp, sp, 16
 ; RV64I-NEXT:    ret
+;
+; RV64I-ILP32-LABEL: test_frameaddress_0:
+; RV64I-ILP32:       # %bb.0:
+; RV64I-ILP32-NEXT:    addi sp, sp, -16
+; RV64I-ILP32-NEXT:    sd ra, 8(sp) # 8-byte Folded Spill
+; RV64I-ILP32-NEXT:    sd s0, 0(sp) # 8-byte Folded Spill
+; RV64I-ILP32-NEXT:    addi s0, sp, 16
+; RV64I-ILP32-NEXT:    mv a0, s0
+; RV64I-ILP32-NEXT:    ld ra, 8(sp) # 8-byte Folded Reload
+; RV64I-ILP32-NEXT:    ld s0, 0(sp) # 8-byte Folded Reload
+; RV64I-ILP32-NEXT:    addi sp, sp, 16
+; RV64I-ILP32-NEXT:    ret
   %1 = call ptr @llvm.frameaddress(i32 0)
   ret ptr %1
 }
@@ -62,6 +76,19 @@ define ptr @test_frameaddress_2() nounwind {
 ; RV64I-NEXT:    ld s0, 0(sp) # 8-byte Folded Reload
 ; RV64I-NEXT:    addi sp, sp, 16
 ; RV64I-NEXT:    ret
+;
+; RV64I-ILP32-LABEL: test_frameaddress_2:
+; RV64I-ILP32:       # %bb.0:
+; RV64I-ILP32-NEXT:    addi sp, sp, -16
+; RV64I-ILP32-NEXT:    sd ra, 8(sp) # 8-byte Folded Spill
+; RV64I-ILP32-NEXT:    sd s0, 0(sp) # 8-byte Folded Spill
+; RV64I-ILP32-NEXT:    addi s0, sp, 16
+; RV64I-ILP32-NEXT:    ld a0, -16(s0)
+; RV64I-ILP32-NEXT:    ld a0, -16(a0)
+; RV64I-ILP32-NEXT:    ld ra, 8(sp) # 8-byte Folded Reload
+; RV64I-ILP32-NEXT:    ld s0, 0(sp) # 8-byte Folded Reload
+; RV64I-ILP32-NEXT:    addi sp, sp, 16
+; RV64I-ILP32-NEXT:    ret
   %1 = call ptr @llvm.frameaddress(i32 2)
   ret ptr %1
 }
@@ -98,6 +125,22 @@ define ptr @test_frameaddress_3_alloca() nounwind {
 ; RV64I-NEXT:    ld s0, 112(sp) # 8-byte Folded Reload
 ; RV64I-NEXT:    addi sp, sp, 128
 ; RV64I-NEXT:    ret
+;
+; RV64I-ILP32-LABEL: test_frameaddress_3_alloca:
+; RV64I-ILP32:       # %bb.0:
+; RV64I-ILP32-NEXT:    addi sp, sp, -128
+; RV64I-ILP32-NEXT:    sd ra, 120(sp) # 8-byte Folded Spill
+; RV64I-ILP32-NEXT:    sd s0, 112(sp) # 8-byte Folded Spill
+; RV64I-ILP32-NEXT:    addi s0, sp, 128
+; RV64I-ILP32-NEXT:    addi a0, s0, -116
+; RV64I-ILP32-NEXT:    call notdead
+; RV64I-ILP32-NEXT:    ld a0, -16(s0)
+; RV64I-ILP32-NEXT:    ld a0, -16(a0)
+; RV64I-ILP32-NEXT:    ld a0, -16(a0)
+; RV64I-ILP32-NEXT:    ld ra, 120(sp) # 8-byte Folded Reload
+; RV64I-ILP32-NEXT:    ld s0, 112(sp) # 8-byte Folded Reload
+; RV64I-ILP32-NEXT:    addi sp, sp, 128
+; RV64I-ILP32-NEXT:    ret
   %1 = alloca [100 x i8]
   call void @notdead(ptr %1)
   %2 = call ptr @llvm.frameaddress(i32 3)
@@ -114,6 +157,11 @@ define ptr @test_returnaddress_0() nounwind {
 ; RV64I:       # %bb.0:
 ; RV64I-NEXT:    mv a0, ra
 ; RV64I-NEXT:    ret
+;
+; RV64I-ILP32-LABEL: test_returnaddress_0:
+; RV64I-ILP32:       # %bb.0:
+; RV64I-ILP32-NEXT:    mv a0, ra
+; RV64I-ILP32-NEXT:    ret
   %1 = call ptr @llvm.returnaddress(i32 0)
   ret ptr %1
 }
@@ -146,6 +194,20 @@ define ptr @test_returnaddress_2() nounwind {
 ; RV64I-NEXT:    ld s0, 0(sp) # 8-byte Folded Reload
 ; RV64I-NEXT:    addi sp, sp, 16
 ; RV64I-NEXT:    ret
+;
+; RV64I-ILP32-LABEL: test_returnaddress_2:
+; RV64I-ILP32:       # %bb.0:
+; RV64I-ILP32-NEXT:    addi sp, sp, -16
+; RV64I-ILP32-NEXT:    sd ra, 8(sp) # 8-byte Folded Spill
+; RV64I-ILP32-NEXT:    sd s0, 0(sp) # 8-byte Folded Spill
+; RV64I-ILP32-NEXT:    addi s0, sp, 16
+; RV64I-ILP32-NEXT:    ld a0, -16(s0)
+; RV64I-ILP32-NEXT:    ld a0, -16(a0)
+; RV64I-ILP32-NEXT:    ld a0, -8(a0)
+; RV64I-ILP32-NEXT:    ld ra, 8(sp) # 8-byte Folded Reload
+; RV64I-ILP32-NEXT:    ld s0, 0(sp) # 8-byte Folded Reload
+; RV64I-ILP32-NEXT:    addi sp, sp, 16
+; RV64I-ILP32-NEXT:    ret
   %1 = call ptr @llvm.returnaddress(i32 2)
   ret ptr %1
 }
