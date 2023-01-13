@@ -7,6 +7,8 @@
 ; RUN:     | FileCheck -check-prefix=RV64-STATIC %s
 ; RUN: llc -mtriple=riscv64 -relocation-model=pic < %s \
 ; RUN:     | FileCheck -check-prefix=RV64-PIC %s
+; RUN: llc -mtriple=riscv64 -relocation-model=pic -target-abi=ilp32 < %s \
+; RUN:     | FileCheck -check-prefix=RV64-ILP32-PIC %s
 
 ; Check basic lowering of PIC addressing.
 ; TODO: Check other relocation models?
@@ -43,6 +45,13 @@ define ptr @f1() nounwind {
 ; RV64-PIC-NEXT:    auipc a0, %got_pcrel_hi(external_var)
 ; RV64-PIC-NEXT:    ld a0, %pcrel_lo(.Lpcrel_hi0)(a0)
 ; RV64-PIC-NEXT:    ret
+;
+; RV64-ILP32-PIC-LABEL: f1:
+; RV64-ILP32-PIC:       # %bb.0: # %entry
+; RV64-ILP32-PIC-NEXT:  .Lpcrel_hi0:
+; RV64-ILP32-PIC-NEXT:    auipc a0, %got_pcrel_hi(external_var)
+; RV64-ILP32-PIC-NEXT:    lwu a0, %pcrel_lo(.Lpcrel_hi0)(a0)
+; RV64-ILP32-PIC-NEXT:    ret
 entry:
   ret ptr @external_var
 }
@@ -76,6 +85,13 @@ define ptr @f2() nounwind {
 ; RV64-PIC-NEXT:    auipc a0, %pcrel_hi(internal_var)
 ; RV64-PIC-NEXT:    addi a0, a0, %pcrel_lo(.Lpcrel_hi1)
 ; RV64-PIC-NEXT:    ret
+;
+; RV64-ILP32-PIC-LABEL: f2:
+; RV64-ILP32-PIC:       # %bb.0: # %entry
+; RV64-ILP32-PIC-NEXT:  .Lpcrel_hi1:
+; RV64-ILP32-PIC-NEXT:    auipc a0, %pcrel_hi(internal_var)
+; RV64-ILP32-PIC-NEXT:    addi a0, a0, %pcrel_lo(.Lpcrel_hi1)
+; RV64-ILP32-PIC-NEXT:    ret
 entry:
   ret ptr @internal_var
 }

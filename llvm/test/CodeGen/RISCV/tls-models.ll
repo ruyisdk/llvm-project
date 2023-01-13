@@ -11,6 +11,7 @@
 ; RUN: llc -mtriple=riscv32 < %s -enable-tlsdesc | FileCheck -check-prefix=RV32-NOPIC-TLSDESC %s
 ; RUN: llc -mtriple=riscv64 < %s | FileCheck -check-prefix=RV64-NOPIC %s
 ; RUN: llc -mtriple=riscv64 < %s -enable-tlsdesc | FileCheck -check-prefix=RV64-NOPIC-TLSDESC %s
+; RUN: llc -mtriple=riscv64 -target-abi=ilp32 < %s | FileCheck -check-prefix=RV64-ILP32 %s
 
 ; Check that TLS symbols are lowered correctly based on the specified
 ; model. Make sure they're external to avoid them all being optimised to Local
@@ -100,6 +101,14 @@ define ptr @f1() nounwind {
 ; RV64-NOPIC-TLSDESC-NEXT:    ld a0, %pcrel_lo(.Lpcrel_hi0)(a0)
 ; RV64-NOPIC-TLSDESC-NEXT:    add a0, a0, tp
 ; RV64-NOPIC-TLSDESC-NEXT:    ret
+;
+; RV64-ILP32-LABEL: f1:
+; RV64-ILP32:       # %bb.0: # %entry
+; RV64-ILP32-NEXT:  .Lpcrel_hi0:
+; RV64-ILP32-NEXT:    auipc a0, %tls_ie_pcrel_hi(unspecified)
+; RV64-ILP32-NEXT:    lwu a0, %pcrel_lo(.Lpcrel_hi0)(a0)
+; RV64-ILP32-NEXT:    add a0, a0, tp
+; RV64-ILP32-NEXT:    ret
 entry:
   ret ptr @unspecified
 }
@@ -147,6 +156,14 @@ define ptr @f2() nounwind {
 ; RV64-NOPIC-NEXT:    ld a0, %pcrel_lo(.Lpcrel_hi1)(a0)
 ; RV64-NOPIC-NEXT:    add a0, a0, tp
 ; RV64-NOPIC-NEXT:    ret
+;
+; RV64-ILP32-LABEL: f2:
+; RV64-ILP32:       # %bb.0: # %entry
+; RV64-ILP32-NEXT:  .Lpcrel_hi1:
+; RV64-ILP32-NEXT:    auipc a0, %tls_ie_pcrel_hi(ld)
+; RV64-ILP32-NEXT:    lwu a0, %pcrel_lo(.Lpcrel_hi1)(a0)
+; RV64-ILP32-NEXT:    add a0, a0, tp
+; RV64-ILP32-NEXT:    ret
 entry:
   ret ptr @ld
 }
@@ -218,6 +235,14 @@ define ptr @f3() nounwind {
 ; RV64-NOPIC-TLSDESC-NEXT:    ld a0, %pcrel_lo(.Lpcrel_hi2)(a0)
 ; RV64-NOPIC-TLSDESC-NEXT:    add a0, a0, tp
 ; RV64-NOPIC-TLSDESC-NEXT:    ret
+;
+; RV64-ILP32-LABEL: f3:
+; RV64-ILP32:       # %bb.0: # %entry
+; RV64-ILP32-NEXT:  .Lpcrel_hi2:
+; RV64-ILP32-NEXT:    auipc a0, %tls_ie_pcrel_hi(ie)
+; RV64-ILP32-NEXT:    lwu a0, %pcrel_lo(.Lpcrel_hi2)(a0)
+; RV64-ILP32-NEXT:    add a0, a0, tp
+; RV64-ILP32-NEXT:    ret
 entry:
   ret ptr @ie
 }
@@ -281,6 +306,13 @@ define ptr @f4() nounwind {
 ; RV64-NOPIC-TLSDESC-NEXT:    add a0, a0, tp, %tprel_add(le)
 ; RV64-NOPIC-TLSDESC-NEXT:    addi a0, a0, %tprel_lo(le)
 ; RV64-NOPIC-TLSDESC-NEXT:    ret
+;
+; RV64-ILP32-LABEL: f4:
+; RV64-ILP32:       # %bb.0: # %entry
+; RV64-ILP32-NEXT:    lui a0, %tprel_hi(le)
+; RV64-ILP32-NEXT:    add a0, a0, tp, %tprel_add(le)
+; RV64-ILP32-NEXT:    addi a0, a0, %tprel_lo(le)
+; RV64-ILP32-NEXT:    ret
 entry:
   ret ptr @le
 }
