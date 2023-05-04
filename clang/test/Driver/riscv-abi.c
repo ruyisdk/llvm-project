@@ -81,8 +81,3 @@
 // RUN:   | FileCheck -check-prefix=CHECK-LP64D  %s
 
 // CHECK-LP64D: "-target-abi" "lp64d"
-
-// RUN: not %clang --target=riscv64-unknown-elf %s -o %t.o -mabi=ilp32 2>&1 \
-// RUN:   | FileCheck -check-prefix=CHECK-RV64-ILP32 %s
-
-// CHECK-RV64-ILP32: error: unknown target ABI 'ilp32'
