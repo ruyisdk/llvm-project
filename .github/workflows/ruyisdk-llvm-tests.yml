@@ -1,0 +1,38 @@
+name: RuyiSDK LLVM Tests
+
+on:
+  workflow_dispatch:
+  push:
+    ignore-forks: true
+    branches:
+      - 'rvv0.7.1'
+    paths:
+      - 'llvm/**'
+      - 'clang/**'
+      - '.github/workflows/ruyisdk-llvm-tests.yml'
+      - '.github/workflows/llvm-project-tests.yml'
+  pull_request:
+    ignore-forks: true
+    branches:
+      - 'rvv0.7.1'
+    paths:
+      - 'llvm/**'
+      - 'clang/**'
+      - '.github/workflows/ruyisdk-llvm-tests.yml'
+      - '.github/workflows/llvm-project-tests.yml'
+
+concurrency:
+  # Skip intermediate builds: always.
+  # Cancel intermediate builds: only if it is a pull request build.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
+jobs:
+  check_all:
+    if: github.repository_owner == 'ruyisdk'
+    name: Test llvm,clang
+    uses: ./.github/workflows/llvm-project-tests.yml
+    with:
+      build_target: check-all
+      projects: clang
+
