@@ -4042,10 +4042,11 @@ void PragmaRISCVHandler::HandlePragma(Preprocessor &PP,
 
   PP.Lex(Tok);
   II = Tok.getIdentifierInfo();
-  if (!II || !(II->isStr("vector") || II->isStr("sifive_vector"))) {
+  if (!II || !(II->isStr("vector") || II->isStr("sifive_vector") ||
+               II->isStr("vector0p7"))) {
     PP.Diag(Tok.getLocation(), diag::warn_pragma_invalid_argument)
         << PP.getSpelling(Tok) << "riscv" << /*Expected=*/true
-        << "'vector' or 'sifive_vector'";
+        << "'vector', 'sifive_vector' or 'vector0p7'";
     return;
   }
 
@@ -4060,4 +4061,6 @@ void PragmaRISCVHandler::HandlePragma(Preprocessor &PP,
     Actions.DeclareRISCVVBuiltins = true;
   else if (II->isStr("sifive_vector"))
     Actions.DeclareRISCVSiFiveVectorBuiltins = true;
+  else if (II->isStr("vector0p7"))
+    Actions.DeclareRISCVV0p7Builtins = true;
 }

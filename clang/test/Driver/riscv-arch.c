@@ -416,6 +416,10 @@
 // RUN:   FileCheck -check-prefix=RV32-V-GOODVERS %s
 // RV32-V-GOODVERS: "-target-feature" "+v"
 
+// RUN: %clang --target=riscv32-unknown-elf -march=rv32iv0p7 -### %s -c 2>&1 | \
+// RUN:   FileCheck -check-prefix=RV32-V0P7-GOODVERS %s
+// RV32-V0P7-GOODVERS: "-target-feature" "+v0p7"
+
 // RUN: %clang --target=riscv32-unknown-elf -march=rv32iv1p0_zvl32b0p1 -### %s -c 2>&1 | \
 // RUN:   FileCheck -check-prefix=RV32-ZVL-BADVERS %s
 // RV32-ZVL-BADVERS: error: invalid arch name 'rv32iv1p0_zvl32b0p1'

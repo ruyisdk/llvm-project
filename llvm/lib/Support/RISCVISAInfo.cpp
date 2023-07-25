@@ -64,6 +64,7 @@ static const RISCVSupportedExtension SupportedExtensions[] = {
     {"svpbmt", RISCVExtensionVersion{1, 0}},
 
     {"v", RISCVExtensionVersion{1, 0}},
+    {"v", RISCVExtensionVersion{0, 7}},
 
     // vendor-defined ('X') extensions
     {"xcvbitmanip", RISCVExtensionVersion{1, 0}},
@@ -258,6 +259,18 @@ findDefaultVersion(StringRef ExtName) {
   return std::nullopt;
 }
 
+static const RISCVSupportedExtension *
+findExtensionIn(llvm::ArrayRef<RISCVSupportedExtension> ExtensionInfos,
+                StringRef Ext, unsigned MajorVersion, unsigned MinorVersion) {
+  auto Range = std::equal_range(ExtensionInfos.begin(), ExtensionInfos.end(),
+                                Ext, LessExtName());
+  for (auto I = Range.first, E = Range.second; I != E; ++I)
+    if (I->Version.Major == MajorVersion && I->Version.Minor == MinorVersion) {
+      return I;
+    }
+  return ExtensionInfos.end();
+}
+
 void RISCVISAInfo::addExtension(StringRef ExtName, unsigned MajorVersion,
                                 unsigned MinorVersion) {
   RISCVExtensionInfo Ext;
@@ -324,11 +337,8 @@ bool RISCVISAInfo::isSupportedExtension(StringRef Ext, unsigned MajorVersion,
                                         unsigned MinorVersion) {
   for (auto ExtInfo : {ArrayRef(SupportedExtensions),
                        ArrayRef(SupportedExperimentalExtensions)}) {
-    auto Range =
-        std::equal_range(ExtInfo.begin(), ExtInfo.end(), Ext, LessExtName());
-    for (auto I = Range.first, E = Range.second; I != E; ++I)
-      if (I->Version.Major == MajorVersion && I->Version.Minor == MinorVersion)
-        return true;
+    return findExtensionIn(ExtInfo, Ext, MajorVersion, MinorVersion) !=
+           ExtInfo.end();
   }
 
   return false;
@@ -428,7 +438,18 @@ void RISCVISAInfo::toFeatures(
     if (isExperimentalExtension(ExtName)) {
       Features.push_back(StrAlloc("+experimental-" + ExtName));
     } else {
-      Features.push_back(StrAlloc("+" + ExtName));
+      auto Major = Ext.second.MajorVersion;
+      auto Minor = Ext.second.MinorVersion;
+      if (ExtName == "v" && Major == 0 && Minor == 7) {
+        // Append the version number only when 0.7.1 is specified.
+        // Otherwise, do not change anything, for the following reasons:
+        // - Better compatibility with upstream LLVM.
+        // - Most of the RISC-V code assumes the default version of V is 1.0.
+        // NOTE: keep this in sync with RISCVISAInfo::parseFeatures
+        Features.push_back(
+            StrAlloc("+" + ExtName + utostr(Major) + "p" + utostr(Minor)));
+      } else
+        Features.push_back(StrAlloc("+" + ExtName));
     }
   }
   if (AddAllExtensions) {
@@ -570,8 +591,23 @@ RISCVISAInfo::parseFeatures(unsigned XLen,
     auto ExtensionInfos = Experimental
                               ? ArrayRef(SupportedExperimentalExtensions)
                               : ArrayRef(SupportedExtensions);
-    auto ExtensionInfoIterator =
-        llvm::lower_bound(ExtensionInfos, ExtName, LessExtName());
+    auto ExtensionInfoIterator = ExtensionInfos.end();
+
+    if (ExtName.startswith("v")) {
+      auto Major = 1u;
+      auto Minor = 0u;
+      auto Versions = ExtName.drop_front(1);
+      if (Versions.size() == 3) {
+        Major = Versions[0] - '0';
+        Minor = Versions[2] - '0';
+        ExtName = "v"; // stripping the trailing version
+      }
+
+      ExtensionInfoIterator =
+          findExtensionIn(ExtensionInfos, ExtName, Major, Minor);
+    } else
+      ExtensionInfoIterator =
+          llvm::lower_bound(ExtensionInfos, ExtName, LessExtName());
 
     // Not all features is related to ISA extension, like `relax` or
     // `save-restore`, skip those feature.
@@ -1214,10 +1250,17 @@ std::vector<std::string> RISCVISAInfo::toFeatureVector() const {
       continue;
     if (!isSupportedExtension(ExtName))
       continue;
-    std::string Feature = isExperimentalExtension(ExtName)
-                              ? "+experimental-" + ExtName
-                              : "+" + ExtName;
-    FeatureVector.push_back(Feature);
+    auto Major = Ext.second.MajorVersion;
+    auto Minor = Ext.second.MinorVersion;
+    if (ExtName == "v" && Major == 0 && Minor == 7) {
+      std::string Feature = "+" + ExtName + utostr(Major) + "p" + utostr(Minor);
+      FeatureVector.push_back(Feature);
+    } else {
+      std::string Feature = isExperimentalExtension(ExtName)
+                                ? "+experimental-" + ExtName
+                                : "+" + ExtName;
+      FeatureVector.push_back(Feature);
+    }
   }
   return FeatureVector;
 }
