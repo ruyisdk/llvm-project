@@ -223,6 +223,15 @@
 // CHECK-V-EXT: __riscv_vector 1
 
 // RUN: %clang -target riscv32-unknown-linux-gnu \
+// RUN: -march=rv32iv0p7 -x c -E -dM %s \
+// RUN: -o - | FileCheck --check-prefix=CHECK-V0P7-EXT %s
+// RUN: %clang -target riscv64-unknown-linux-gnu \
+// RUN: -march=rv64iv0p7 -x c -E -dM %s \
+// RUN: -o - | FileCheck --check-prefix=CHECK-V0P7-EXT %s
+// CHECK-V0P7-EXT: __riscv_v 7000{{$}}
+// CHECK-V0P7-EXT: __riscv_vector 1
+
+// RUN: %clang -target riscv32-unknown-linux-gnu \
 // RUN: -march=rv32izfhmin1p0 -x c -E -dM %s \
 // RUN: -o - | FileCheck --check-prefix=CHECK-ZFHMIN-EXT %s
 // RUN: %clang -target riscv64-unknown-linux-gnu \
