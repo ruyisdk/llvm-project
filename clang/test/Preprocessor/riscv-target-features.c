@@ -882,6 +882,15 @@
 // RUN:   -o - | FileCheck --check-prefix=CHECK-ZCE-EXT %s
 // CHECK-ZCE-EXT: __riscv_zce 1000000{{$}}
 
+// RUN: %clang -target riscv32-unknown-linux-gnu \
+// RUN: -march=rv32iv0p7 -x c -E -dM %s \
+// RUN: -o - | FileCheck --check-prefix=CHECK-V0P7-EXT %s
+// RUN: %clang -target riscv64-unknown-linux-gnu \
+// RUN: -march=rv64iv0p7 -x c -E -dM %s \
+// RUN: -o - | FileCheck --check-prefix=CHECK-V0P7-EXT %s
+// CHECK-V0P7-EXT: __riscv_v 7000{{$}}
+// CHECK-V0P7-EXT: __riscv_vector 1
+
 // RUN: %clang --target=riscv32-unknown-linux-gnu \
 // RUN:   -march=rv32izcf1p0 -E -dM %s \
 // RUN:   -o - | FileCheck --check-prefix=CHECK-ZCF-EXT %s
