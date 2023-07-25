@@ -259,6 +259,18 @@ findDefaultVersion(StringRef ExtName) {
   return std::nullopt;
 }
 
+static const RISCVSupportedExtension *
+findExtensionIn(llvm::ArrayRef<RISCVSupportedExtension> ExtensionInfos,
+                StringRef Ext, unsigned MajorVersion, unsigned MinorVersion) {
+  auto Range = std::equal_range(ExtensionInfos.begin(), ExtensionInfos.end(),
+                                Ext, LessExtName());
+  for (auto I = Range.first, E = Range.second; I != E; ++I)
+    if (I->Version.Major == MajorVersion && I->Version.Minor == MinorVersion) {
+      return I;
+    }
+  return ExtensionInfos.end();
+}
+
 void RISCVISAInfo::addExtension(StringRef ExtName, unsigned MajorVersion,
                                 unsigned MinorVersion) {
   RISCVExtensionInfo Ext;
@@ -325,11 +337,8 @@ bool RISCVISAInfo::isSupportedExtension(StringRef Ext, unsigned MajorVersion,
                                         unsigned MinorVersion) {
   for (auto ExtInfo : {ArrayRef(SupportedExtensions),
                        ArrayRef(SupportedExperimentalExtensions)}) {
-    auto Range =
-        std::equal_range(ExtInfo.begin(), ExtInfo.end(), Ext, LessExtName());
-    for (auto I = Range.first, E = Range.second; I != E; ++I)
-      if (I->Version.Major == MajorVersion && I->Version.Minor == MinorVersion)
-        return true;
+    return findExtensionIn(ExtInfo, Ext, MajorVersion, MinorVersion) !=
+           ExtInfo.end();
   }
 
   return false;
@@ -437,8 +446,8 @@ void RISCVISAInfo::toFeatures(
         // - Better compatibility with upstream LLVM.
         // - Most of the RISC-V code assumes the default version of V is 1.0.
         // NOTE: keep this in sync with RISCVISAInfo::parseFeatures
-        Features.push_back(StrAlloc("+" + ExtName +
-                                    utostr(Major) + "p" + utostr(Minor)));
+        Features.push_back(
+            StrAlloc("+" + ExtName + utostr(Major) + "p" + utostr(Minor)));
       } else
         Features.push_back(StrAlloc("+" + ExtName));
     }
@@ -594,16 +603,11 @@ RISCVISAInfo::parseFeatures(unsigned XLen,
         ExtName = "v"; // stripping the trailing version
       }
 
-      auto Range =
-          std::equal_range(ExtensionInfos.begin(), ExtensionInfos.end(), ExtName, LessExtName());
-      for (auto I = Range.first, E = Range.second; I != E; ++I)
-        if (I->Version.Major == Major && I->Version.Minor == Minor) {
-          ExtensionInfoIterator = I;
-          break;
-        }
+      ExtensionInfoIterator =
+          findExtensionIn(ExtensionInfos, ExtName, Major, Minor);
     } else
       ExtensionInfoIterator =
-        llvm::lower_bound(ExtensionInfos, ExtName, LessExtName());
+          llvm::lower_bound(ExtensionInfos, ExtName, LessExtName());
 
     // Not all features is related to ISA extension, like `relax` or
     // `save-restore`, skip those feature.
