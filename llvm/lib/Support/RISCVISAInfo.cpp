@@ -64,7 +64,6 @@ static const RISCVSupportedExtension SupportedExtensions[] = {
     {"svpbmt", RISCVExtensionVersion{1, 0}},
 
     {"v", RISCVExtensionVersion{1, 0}},
-    {"v", RISCVExtensionVersion{0, 7}},
 
     // vendor-defined ('X') extensions
     {"xcvbitmanip", RISCVExtensionVersion{1, 0}},
@@ -81,7 +80,15 @@ static const RISCVSupportedExtension SupportedExtensions[] = {
     {"xtheadmemidx", RISCVExtensionVersion{1, 0}},
     {"xtheadmempair", RISCVExtensionVersion{1, 0}},
     {"xtheadsync", RISCVExtensionVersion{1, 0}},
+    // T-Head vector extension (namely Vector extension 0.7.1) series.
+    {"xtheadv", RISCVExtensionVersion{0, 7}},
+    // T-Head vector extension series: Zvamo
+    {"xtheadvamo", RISCVExtensionVersion{0, 7}},
     {"xtheadvdot", RISCVExtensionVersion{1, 0}},
+    // T-Head vector extension series: Zvediv
+    {"xtheadvediv", RISCVExtensionVersion{0, 7}},
+    // T-Head vector extension series: Zvlsseg
+    {"xtheadvlsseg", RISCVExtensionVersion{0, 7}},
     {"xventanacondops", RISCVExtensionVersion{1, 0}},
 
     {"zawrs", RISCVExtensionVersion{1, 0}},
@@ -438,18 +445,7 @@ void RISCVISAInfo::toFeatures(
     if (isExperimentalExtension(ExtName)) {
       Features.push_back(StrAlloc("+experimental-" + ExtName));
     } else {
-      auto Major = Ext.second.MajorVersion;
-      auto Minor = Ext.second.MinorVersion;
-      if (ExtName == "v" && Major == 0 && Minor == 7) {
-        // Append the version number only when 0.7.1 is specified.
-        // Otherwise, do not change anything, for the following reasons:
-        // - Better compatibility with upstream LLVM.
-        // - Most of the RISC-V code assumes the default version of V is 1.0.
-        // NOTE: keep this in sync with RISCVISAInfo::parseFeatures
-        Features.push_back(
-            StrAlloc("+" + ExtName + utostr(Major) + "p" + utostr(Minor)));
-      } else
-        Features.push_back(StrAlloc("+" + ExtName));
+      Features.push_back(StrAlloc("+" + ExtName));
     }
   }
   if (AddAllExtensions) {
@@ -591,23 +587,8 @@ RISCVISAInfo::parseFeatures(unsigned XLen,
     auto ExtensionInfos = Experimental
                               ? ArrayRef(SupportedExperimentalExtensions)
                               : ArrayRef(SupportedExtensions);
-    auto ExtensionInfoIterator = ExtensionInfos.end();
-
-    if (ExtName.startswith("v")) {
-      auto Major = 1u;
-      auto Minor = 0u;
-      auto Versions = ExtName.drop_front(1);
-      if (Versions.size() == 3) {
-        Major = Versions[0] - '0';
-        Minor = Versions[2] - '0';
-        ExtName = "v"; // stripping the trailing version
-      }
-
-      ExtensionInfoIterator =
-          findExtensionIn(ExtensionInfos, ExtName, Major, Minor);
-    } else
-      ExtensionInfoIterator =
-          llvm::lower_bound(ExtensionInfos, ExtName, LessExtName());
+    auto ExtensionInfoIterator =
+        llvm::lower_bound(ExtensionInfos, ExtName, LessExtName());
 
     // Not all features is related to ISA extension, like `relax` or
     // `save-restore`, skip those feature.
@@ -979,6 +960,11 @@ Error RISCVISAInfo::checkDependency() {
     return createStringError(errc::invalid_argument,
                              "'zcf' is only supported for 'rv32'");
 
+  if (Exts.count("xtheadvamo") && !Exts.count("a"))
+    return createStringError(
+        errc::invalid_argument,
+        "'xtheadvamo' requires 'a' extension to also be specified");
+
   // Additional dependency checks.
   // TODO: The 'q' extension requires rv64.
   // TODO: It is illegal to specify 'e' extensions with 'f' and 'd'.
@@ -989,6 +975,7 @@ Error RISCVISAInfo::checkDependency() {
 static const char *ImpliedExtsD[] = {"f"};
 static const char *ImpliedExtsF[] = {"zicsr"};
 static const char *ImpliedExtsV[] = {"zvl128b", "zve64d"};
+static const char *ImpliedExtsXTHeadVamo[] = {"a"};
 static const char *ImpliedExtsXTHeadVdot[] = {"v"};
 static const char *ImpliedExtsXsfvcp[] = {"zve32x"};
 static const char *ImpliedExtsZacas[] = {"a"};
@@ -1056,6 +1043,7 @@ static constexpr ImpliedExtsEntry ImpliedExts[] = {
     {{"f"}, {ImpliedExtsF}},
     {{"v"}, {ImpliedExtsV}},
     {{"xsfvcp"}, {ImpliedExtsXsfvcp}},
+    {{"xtheadvamo"}, {ImpliedExtsXTHeadVamo}},
     {{"xtheadvdot"}, {ImpliedExtsXTHeadVdot}},
     {{"zacas"}, {ImpliedExtsZacas}},
     {{"zcb"}, {ImpliedExtsZcb}},
@@ -1250,17 +1238,10 @@ std::vector<std::string> RISCVISAInfo::toFeatureVector() const {
       continue;
     if (!isSupportedExtension(ExtName))
       continue;
-    auto Major = Ext.second.MajorVersion;
-    auto Minor = Ext.second.MinorVersion;
-    if (ExtName == "v" && Major == 0 && Minor == 7) {
-      std::string Feature = "+" + ExtName + utostr(Major) + "p" + utostr(Minor);
-      FeatureVector.push_back(Feature);
-    } else {
-      std::string Feature = isExperimentalExtension(ExtName)
-                                ? "+experimental-" + ExtName
-                                : "+" + ExtName;
-      FeatureVector.push_back(Feature);
-    }
+    std::string Feature = isExperimentalExtension(ExtName)
+                              ? "+experimental-" + ExtName
+                              : "+" + ExtName;
+    FeatureVector.push_back(Feature);
   }
   return FeatureVector;
 }
