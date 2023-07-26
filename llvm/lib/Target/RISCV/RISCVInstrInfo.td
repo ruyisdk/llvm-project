@@ -1968,5 +1968,6 @@ include "RISCVInstrInfoZc.td"
 
 include "RISCVInstrInfoXVentana.td"
 include "RISCVInstrInfoXTHead.td"
+include "RISCVInstrInfoXTHeadV.td"
 include "RISCVInstrInfoXSf.td"
 include "RISCVInstrInfoXCV.td"
