@@ -437,8 +437,8 @@ let Constraints = "@earlyclobber $vd",
     Uses = [FRM],
     mayRaiseFPException = true in {
 let RVVConstraint = WidenV in {
-defm XVFWADD_V : VWALU_FV_V_F<"vfwadd", 0b110000>;
-defm XVFWSUB_V : VWALU_FV_V_F<"vfwsub", 0b110010>;
+defm XVFWADD_V : VWALU_FV_V_F<"vfwadd", 0b110000, "v">;
+defm XVFWSUB_V : VWALU_FV_V_F<"vfwsub", 0b110010, "v">;
 } // RVVConstraint = WidenV
 // Set earlyclobber for following instructions for second and mask operands.
 // This has the downside that the earlyclobber constraint is too coarse and
@@ -454,7 +454,7 @@ defm XVFWSUB_W : VWALU_FV_V_F<"vfwsub", 0b110110, "w">;
 let Uses = [FRM], mayRaiseFPException = true in {
 defm XVFMUL_V : VMUL_FV_V_F<"vfmul", 0b100100>;
 defm XVFDIV_V : VDIV_FV_V_F<"vfdiv", 0b100000>;
-defm XVFRDIV_V : VRDIV_FV_F<"vfrdiv", 0b100001>;
+defm XVFRDIV_V : VDIV_FV_F<"vfrdiv", 0b100001>;
 }
 
 // Vector Widening Floating-Point Multiply
@@ -675,15 +675,15 @@ let vm = 1, RVVConstraint = NoConstraint in {
 def XVEXT_X_V : RVInstVX<0b001100, OPMVV, (outs GPR:$vd),
                          (ins VR:$vs2, GPR:$rs1),
                          "vext.x.v", "$vd, $vs2, $rs1">,
-                Sched<[WriteVIMovVX_WorstCase, ReadVIMovVX_WorstCase,
-                       ReadVIMovXX_WorstCase]>;
+                Sched<[WriteVIMovVX, ReadVIMovVX,
+                       ReadVIMovXX]>;
 
 // Integer Scalar Move Instruction
 let Constraints = "$vd = $vd_wb" in
 def XVMV_S_X : RVInstV2<0b001101, 0b00000, OPMVX, (outs VR:$vd_wb),
                        (ins VR:$vd, GPR:$rs1), "vmv.s.x", "$vd, $rs1">,
-               Sched<[WriteVIMovXV_WorstCase, ReadVIMovXV_WorstCase,
-                      ReadVIMovXX_WorstCase]>;
+               Sched<[WriteVIMovXV, ReadVIMovXV,
+                      ReadVIMovXX]>;
 }
 } // hasSideEffects = 0, mayLoad = 0, mayStore = 0
 } // Predicates = [HasVendorXTHeadV]
@@ -694,12 +694,12 @@ let hasSideEffects = 0, mayLoad = 0, mayStore = 0, vm = 1,
 // Floating-Point Scalar Move Instructions
 def XVFMV_F_S : RVInstV<0b001100, 0b00000, OPFVV, (outs FPR32:$vd),
                         (ins VR:$vs2), "vfmv.f.s", "$vd, $vs2">,
-                Sched<[WriteVFMovVF_WorstCase, ReadVFMovVF_WorstCase]>;
+                Sched<[WriteVFMovVF, ReadVFMovVF]>;
 let Constraints = "$vd = $vd_wb" in
 def XVFMV_S_F : RVInstV2<0b001101, 0b00000, OPFVF, (outs VR:$vd_wb),
                          (ins VR:$vd, FPR32:$rs1), "vfmv.s.f", "$vd, $rs1">,
-                Sched<[WriteVFMovFV_WorstCase, ReadVFMovFV_WorstCase,
-                       ReadVFMovFX_WorstCase]>;
+                Sched<[WriteVFMovFV, ReadVFMovFV,
+                       ReadVFMovFX]>;
 
 } // hasSideEffects = 0, mayLoad = 0, mayStore = 0, vm = 1
 } // Predicates = [HasVendorXTHeadV, HasStdExtF]
