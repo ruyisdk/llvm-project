@@ -120,6 +120,21 @@ unsigned getSEWLMULRatio(unsigned SEW, RISCVII::VLMUL VLMul);
 
 std::optional<RISCVII::VLMUL>
 getSameRatioLMUL(unsigned SEW, RISCVII::VLMUL VLMUL, unsigned EEW);
+
+unsigned encodeXTHeadVTYPE(unsigned SEW, unsigned LMUL, unsigned EDIV);
+
+void printXTHeadVType(unsigned VType, raw_ostream &OS);
+
+// Is this a EDIV value that can be encoded into the VTYPE format.
+inline static bool isValidEDIV(unsigned EDIV) {
+  return isPowerOf2_32(EDIV) && EDIV <= 8;
+}
+
+inline static unsigned encodeEDIV(unsigned EDIV) {
+  assert(isValidEDIV(EDIV) && "Unexpected EDIV value");
+  return Log2_32(EDIV);
+}
+
 } // namespace RISCVVType
 
 } // namespace llvm

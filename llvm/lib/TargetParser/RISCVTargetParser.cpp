@@ -234,6 +234,35 @@ getSameRatioLMUL(unsigned SEW, RISCVII::VLMUL VLMUL, unsigned EEW) {
   return RISCVVType::encodeLMUL(EMUL, Fractional);
 }
 
+
+// Encode VTYPE into the binary format used by the the VSETVLI instruction in
+// version 0.71.
+//
+// Bits | Name       | Description
+// -----+------------+------------------------------------------------
+// 6:5  | vediv[1:0] | Used by EDIV extension
+// 4:2  | vsew[2:0]  | Standard element width (SEW) setting
+// 1:0  | vlmul[1:0] | Vector register group multiplier (LMUL) setting
+unsigned RISCVVType::encodeXTHeadVTYPE(unsigned SEW, unsigned LMUL,
+                                       unsigned EDIV) {
+  unsigned VSEWBits = encodeSEW(SEW);
+  unsigned VLMULBits = encodeLMUL(LMUL, false);
+  unsigned VEDIVBits = encodeEDIV(EDIV);
+  unsigned VTypeI = (VEDIVBits << 5) | (VSEWBits << 2) | (VLMULBits & 0x3);
+
+  return VTypeI;
+}
+
+void RISCVVType::printXTHeadVType(unsigned VType, raw_ostream &OS) {
+  unsigned VEDIV = (VType >> 5) & 0x3;
+  unsigned VSEW = (VType >> 2) & 0x7;
+  unsigned VLMUL = VType & 0x3;
+
+  OS << "e" << RISCVVType::decodeVSEW(VSEW);
+  OS << ", m" << (1U << VLMUL);
+  OS << ", d" << (1U << VEDIV);
+}
+
 } // namespace RISCVVType
 
 } // namespace llvm
