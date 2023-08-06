@@ -272,10 +272,10 @@ defm XVRSUB_V : VALU_IV_X_I<"vrsub", 0b000011>;
 // if masked), otherwise an illegal instruction exception is raised.
 let Constraints = "@earlyclobber $vd" in {
 let RVVConstraint = WidenV in {
-defm XVWADDU_V : VALU_MV_V_X<"vwaddu", 0b110000>;
-defm XVWSUBU_V : VALU_MV_V_X<"vwsubu", 0b110010>;
-defm XVWADD_V : VALU_MV_V_X<"vwadd", 0b110001>;
-defm XVWSUB_V : VALU_MV_V_X<"vwsub", 0b110011>;
+defm XVWADDU_V : VALU_MV_V_X<"vwaddu", 0b110000, "v">;
+defm XVWSUBU_V : VALU_MV_V_X<"vwsubu", 0b110010, "v">;
+defm XVWADD_V : VALU_MV_V_X<"vwadd", 0b110001, "v">;
+defm XVWSUB_V : VALU_MV_V_X<"vwsub", 0b110011, "v">;
 } // RVVConstraint = WidenV
 // Set earlyclobber for following instructions for second and mask operands.
 // This has the downside that the earlyclobber constraint is too coarse and
@@ -307,9 +307,9 @@ defm XVOR_V : VALU_IV_V_X_I<"vor", 0b001010>;
 defm XVXOR_V : VALU_IV_V_X_I<"vxor", 0b001011>;
 
 // Vector Single-Width Bit Shift Instructions
-defm XVSLL_V : VSHT_IV_V_X_I<"vsll", 0b100101, uimm5>;
-defm XVSRL_V : VSHT_IV_V_X_I<"vsrl", 0b101000, uimm5>;
-defm XVSRA_V : VSHT_IV_V_X_I<"vsra", 0b101001, uimm5>;
+defm XVSLL_V : VSHT_IV_V_X_I<"vsll", 0b100101>;
+defm XVSRL_V : VSHT_IV_V_X_I<"vsrl", 0b101000>;
+defm XVSRA_V : VSHT_IV_V_X_I<"vsra", 0b101001>;
 
 // Vector Narrowing Integer Right Shift Instructions
 // Refer to 11.3. Narrowing Vector Arithmetic Instructions
@@ -317,8 +317,8 @@ defm XVSRA_V : VSHT_IV_V_X_I<"vsra", 0b101001, uimm5>;
 // vector register group (specified by vs2). The destination vector register
 // group cannot overlap the mask register if used, unless LMUL=1.
 let Constraints = "@earlyclobber $vd" in {
-defm XVNSRL_W : VNSHT_IV_V_X_I<"vnsrl", 0b101100, uimm5>;
-defm XVNSRA_W : VNSHT_IV_V_X_I<"vnsra", 0b101101, uimm5>;
+defm XVNSRL_W : VNSHT_IV_V_X_I<"vnsrl", 0b101100>;
+defm XVNSRA_W : VNSHT_IV_V_X_I<"vnsra", 0b101101>;
 } // Constraints = "@earlyclobber $vd"
 
 // Vector Integer Comparison Instructions
@@ -414,13 +414,13 @@ defm XVWSMACCUS_V : VWSMAC_X<"vwsmaccus", 0b111111>;
 } // Constraints = "@earlyclobber $vd", RVVConstraint = WidenV
 
 // Vector Single-Width Scaling Shift Instructions
-defm XVSSRL_V : VSSHF_IV_V_X_I<"vssrl", 0b101010, uimm5>;
-defm XVSSRA_V : VSSHF_IV_V_X_I<"vssra", 0b101011, uimm5>;
+defm XVSSRL_V : VSSHF_IV_V_X_I<"vssrl", 0b101010>;
+defm XVSSRA_V : VSSHF_IV_V_X_I<"vssra", 0b101011>;
 
 // Vector Narrowing Fixed-Point Clip Instructions
 let Constraints = "@earlyclobber $vd" in {
-defm XVNCLIPU_W : VNCLP_IV_V_X_I<"vnclipu", 0b101110, uimm5>;
-defm XVNCLIP_W : VNCLP_IV_V_X_I<"vnclip", 0b101111, uimm5>;
+defm XVNCLIPU_W : VNCLP_IV_V_X_I<"vnclipu", 0b101110>;
+defm XVNCLIP_W : VNCLP_IV_V_X_I<"vnclip", 0b101111>;
 } // Constraints = "@earlyclobber $vd"
 } // Predicates = [HasVendorXTHeadV]
 
@@ -707,15 +707,15 @@ def XVFMV_S_F : RVInstV2<0b001101, 0b00000, OPFVF, (outs VR:$vd_wb),
 let Predicates = [HasVendorXTHeadV] in  {
 // Vector Slide Instructions
 let Constraints = "@earlyclobber $vd", RVVConstraint = SlideUp in {
-defm XVSLIDEUP_V : VSLD_IV_X_I<"vslideup", 0b001110, uimm5>;
+defm XVSLIDEUP_V : VSLD_IV_X_I<"vslideup", 0b001110>;
 defm XVSLIDE1UP_V : VSLD1_MV_X<"vslide1up", 0b001110>;
 } // Constraints = "@earlyclobber $vd", RVVConstraint = SlideUp
-defm XVSLIDEDOWN_V : VSLD_IV_X_I<"vslidedown", 0b001111, uimm5>;
+defm XVSLIDEDOWN_V : VSLD_IV_X_I<"vslidedown", 0b001111>;
 defm XVSLIDE1DOWN_V : VSLD1_MV_X<"vslide1down", 0b001111>;
 
 // Vector Register Gather Instruction
 let Constraints = "@earlyclobber $vd", RVVConstraint = Vrgather in {
-defm XVRGATHER_V : VGTR_IV_V_X_I<"vrgather", 0b001100, uimm5>;
+defm XVRGATHER_V : VGTR_IV_V_X_I<"vrgather", 0b001100>;
 } // Constraints = "@earlyclobber $vd", RVVConstraint = Vrgather
 
 // Vector Compress Instruction
