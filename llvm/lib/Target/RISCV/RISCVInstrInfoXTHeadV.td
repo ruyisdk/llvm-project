@@ -15,18 +15,18 @@
 // Operand and SDNode transformation definitions.
 //===----------------------------------------------------------------------===//
 
-def XVTYPEIAsmOperand : AsmOperandClass {
-  let Name = "XVTYPEI";
-  let ParserMethod = "parseXVTYPEI";
-  let DiagnosticType = "InvalidXVTYPEI";
+def XTHeadVTypeIAsmOperand : AsmOperandClass {
+  let Name = "XTHeadVTypeI";
+  let ParserMethod = "parseXTHeadVTypeI";
+  let DiagnosticType = "InvalidXTHeadVTypeI";
   let RenderMethod = "addVTypeIOperands";
 }
 
-def XVTYPEI : Operand<XLenVT> {
-  let ParserMatchClass = XVTYPEIAsmOperand;
-  let PrintMethod = "printXVTYPEI";
+def XTHeadVTypeI : Operand<XLenVT> {
+  let ParserMatchClass = XTHeadVTypeIAsmOperand;
+  let PrintMethod = "printXTHeadVTypeI";
   let DecoderMethod = "decodeUImmOperand<11>";
-  let OperandType = "OPERAND_XVTYPEI";
+  let OperandType = "OPERAND_XTHEADVTYPEI";
   let OperandNamespace = "RISCVOp";
   let MCOperandPredicate = [{
     int64_t Imm;
@@ -40,7 +40,8 @@ def XVTYPEI : Operand<XLenVT> {
 // Instruction class templates
 //===----------------------------------------------------------------------===//
 
-class XVLoadStore<bits<3> nf, bits<3> mop, bits<3> width, dag outs, dag ins,
+class XVLoadStore<bits<3> nf, RISCVOpcode opcode,
+                  bits<3> mop, bits<3> width, dag outs, dag ins,
                   string opcodestr, string argstr>
     : RVInst<outs, ins, opcodestr, argstr, [], InstFormatR> {
   bits<5> rs2;
@@ -55,89 +56,88 @@ class XVLoadStore<bits<3> nf, bits<3> mop, bits<3> width, dag outs, dag ins,
   let Inst{19-15} = rs1;
   let Inst{14-12} = width;
   let Inst{11-7} = rd;
+  let Inst{6-0} = opcode.Value;
 
   let Uses = [VTYPE, VL];
 }
 
-let hasSideEffects = 0, mayLoad = 1, mayStore = 0, RVVConstraint = VMConstraint,
-    Opcode = OPC_LOAD_FP.Value in {
+let hasSideEffects = 0, mayLoad = 1, mayStore = 0, RVVConstraint = VMConstraint in {
   class XVLxU<bits<3> nf, bits<3> width, string opcodestr>
-      : XVLoadStore<nf, 0b000, width, (outs VR:$rd),
+      : XVLoadStore<nf, OPC_LOAD_FP, 0b000, width, (outs VR:$rd),
                     (ins GPRMem:$rs1, VMaskOp:$vm),
                     opcodestr, "$rd, (${rs1})$vm"> {
     let rs2 = 0b00000;
   }
   class XVLx<bits<3> nf, bits<3> width, string opcodestr>
-      : XVLoadStore<nf, 0b100, width, (outs VR:$rd),
+      : XVLoadStore<nf, OPC_LOAD_FP, 0b100, width, (outs VR:$rd),
                     (ins GPRMem:$rs1, VMaskOp:$vm),
                     opcodestr, "$rd, (${rs1})$vm"> {
     let rs2 = 0b00000;
   }
   class XVLxUFF<bits<3> nf, bits<3> width, string opcodestr>
-      : XVLoadStore<nf, 0b000, width, (outs VR:$rd),
+      : XVLoadStore<nf, OPC_LOAD_FP, 0b000, width, (outs VR:$rd),
                     (ins GPRMem:$rs1, VMaskOp:$vm),
                     opcodestr, "$rd, (${rs1})$vm"> {
     let rs2 = 0b10000;
   }
   class XVLxFF<bits<3> nf, bits<3> width, string opcodestr>
-      : XVLoadStore<nf, 0b100, width, (outs VR:$rd),
+      : XVLoadStore<nf, OPC_LOAD_FP, 0b100, width, (outs VR:$rd),
                     (ins GPRMem:$rs1, VMaskOp:$vm),
                     opcodestr, "$rd, (${rs1})$vm"> {
     let rs2 = 0b10000;
   }
   class XVLSxU<bits<3> nf, bits<3> width, string opcodestr>
-      : XVLoadStore<nf, 0b010, width, (outs VR:$rd),
+      : XVLoadStore<nf, OPC_LOAD_FP, 0b010, width, (outs VR:$rd),
                     (ins GPRMem:$rs1, GPR:$rs2, VMaskOp:$vm),
                     opcodestr, "$rd, (${rs1}), $rs2$vm">;
   class XVLSx<bits<3> nf, bits<3> width, string opcodestr>
-      : XVLoadStore<nf, 0b110, width, (outs VR:$rd),
+      : XVLoadStore<nf, OPC_LOAD_FP, 0b110, width, (outs VR:$rd),
                     (ins GPRMem:$rs1, GPR:$rs2, VMaskOp:$vm),
                     opcodestr, "$rd, (${rs1}), $rs2$vm">;
   class XVLXxU<bits<3> nf, bits<3> width, string opcodestr>
-      : XVLoadStore<nf, 0b011, width, (outs VR:$rd),
+      : XVLoadStore<nf, OPC_LOAD_FP, 0b011, width, (outs VR:$rd),
                     (ins GPRMem:$rs1, VR:$rs2, VMaskOp:$vm),
                     opcodestr, "$rd, (${rs1}), $rs2$vm">;
   class XVLXx<bits<3> nf, bits<3> width, string opcodestr>
-      : XVLoadStore<nf, 0b111, width, (outs VR:$rd),
+      : XVLoadStore<nf, OPC_LOAD_FP, 0b111, width, (outs VR:$rd),
                     (ins GPRMem:$rs1, VR:$rs2, VMaskOp:$vm),
                     opcodestr, "$rd, (${rs1}), $rs2$vm">;
 }
 
-let hasSideEffects = 0, mayLoad = 0, mayStore = 1,
-    Opcode = OPC_STORE_FP.Value in {
+let hasSideEffects = 0, mayLoad = 0, mayStore = 1 in {
   class XVSx<bits<3> nf, bits<3> width, string opcodestr>
-      : XVLoadStore<nf, 0b000, width, (outs),
+      : XVLoadStore<nf, OPC_STORE_FP, 0b000, width, (outs),
                     (ins VR:$rd, GPRMem:$rs1, VMaskOp:$vm),
                     opcodestr, "$rd, (${rs1})$vm"> {
     let rs2 = 0b00000;
   }
   class XVSSx<bits<3> nf, bits<3> width, string opcodestr>
-      : XVLoadStore<nf, 0b010, width, (outs),
+      : XVLoadStore<nf, OPC_STORE_FP, 0b010, width, (outs),
                     (ins VR:$rd, GPRMem:$rs1, GPR:$rs2, VMaskOp:$vm),
                     opcodestr, "$rd, (${rs1}), $rs2$vm">;
   class XVSXx<bits<3> nf, bits<3> width, string opcodestr>
-      : XVLoadStore<nf, 0b011, width, (outs),
+      : XVLoadStore<nf, OPC_STORE_FP, 0b011, width, (outs),
                     (ins VR:$rd, GPRMem:$rs1, VR:$rs2, VMaskOp:$vm),
                     opcodestr, "$rd, (${rs1}), $rs2$vm">;
   class XVSUXx<bits<3> nf, bits<3> width, string opcodestr>
-      : XVLoadStore<nf, 0b111, width, (outs),
+      : XVLoadStore<nf, OPC_STORE_FP, 0b111, width, (outs),
                     (ins VR:$rd, GPRMem:$rs1, VR:$rs2, VMaskOp:$vm),
                     opcodestr, "$rd, (${rs1}), $rs2$vm">;
 }
 
 multiclass VWSMAC_V_X<string opcodestr, bits<6> funct6> {
   def V : VALUrVV<funct6, OPIVV, opcodestr # ".vv">,
-          Sched<[WriteVIWMulAddV_UpperBound, ReadVIWMulAddV_UpperBound,
-                 ReadVIWMulAddV_UpperBound, ReadVMask]>;
+          Sched<[WriteVIWMulAddV_WorstCase, ReadVIWMulAddV_WorstCase,
+                 ReadVIWMulAddV_WorstCase, ReadVMask]>;
   def X : VALUrVX<funct6, OPIVX, opcodestr # ".vx">,
-          Sched<[WriteVIWMulAddX_UpperBound, ReadVIWMulAddV_UpperBound,
-                 ReadVIWMulAddX_UpperBound, ReadVMask]>;
+          Sched<[WriteVIWMulAddX_WorstCase, ReadVIWMulAddV_WorstCase,
+                 ReadVIWMulAddX_WorstCase, ReadVMask]>;
 }
 
 multiclass VWSMAC_X<string opcodestr, bits<6> funct6> {
   def X : VALUrVX<funct6, OPIVX, opcodestr # ".vx">,
-          Sched<[WriteVIWMulAddX_UpperBound, ReadVIWMulAddV_UpperBound,
-                 ReadVIWMulAddX_UpperBound, ReadVMask]>;
+          Sched<[WriteVIWMulAddX_WorstCase, ReadVIWMulAddV_WorstCase,
+                 ReadVIWMulAddX_WorstCase, ReadVMask]>;
 }
 
 //===----------------------------------------------------------------------===//
@@ -145,10 +145,10 @@ multiclass VWSMAC_X<string opcodestr, bits<6> funct6> {
 //===----------------------------------------------------------------------===//
 
 let AsmVariantName = "RVV0p71", DecoderNamespace = "RVV0p71" in {
-let Predicates = [HasRVV0p71] in {
+let Predicates = [HasVendorXTHeadV] in {
 // Configuration-Setting Instructions
 let hasSideEffects = 1, mayLoad = 0, mayStore = 0 in {
-def XVSETVLI : RVInstSetVLi<(outs GPR:$rd), (ins GPR:$rs1, XVTYPEI:$vtypei),
+def XVSETVLI : RVInstSetVLi<(outs GPR:$rd), (ins GPR:$rs1, XTHeadVTypeI:$vtypei),
                             "vsetvli", "$rd, $rs1, $vtypei">,
                             Sched<[WriteVSETVLI, ReadVSETVLI]>;
 def XVSETVL : RVInstSetVL<(outs GPR:$rd), (ins GPR:$rs1, GPR:$rs2),
@@ -207,9 +207,9 @@ def XVLBUFF_V : XVLxUFF<0b000, 0b000, "vlbuff.v">;
 def XVLHUFF_V : XVLxUFF<0b000, 0b101, "vlhuff.v">;
 def XVLWUFF_V : XVLxUFF<0b000, 0b110, "vlwuff.v">;
 def XVLEFF_V : XVLxUFF<0b000, 0b111, "vleff.v">;
-} // Predicates = [HasRVV0p71]
+} // Predicates = [HasVendorXTHeadV]
 
-let Predicates = [HasRVV0p71, HasXvlsseg] in {
+let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVlsseg] in {
 foreach nf=2-8 in {
   // Vector Unit-Stride Segment Loads and Stores
   def XVLSEG#nf#B_V : XVLx<!add(nf, -1), 0b000, "vlseg"#nf#"b.v">;
@@ -257,9 +257,9 @@ foreach nf=2-8 in {
   def XVSXSEG#nf#W_V : XVSXx<!add(nf, -1), 0b110, "vsxseg"#nf#"w.v">;
   def XVSXSEG#nf#E_V : XVSXx<!add(nf, -1), 0b111, "vsxseg"#nf#"e.v">;
 }
-} // Predicates = [HasRVV0p71, HasXvlsseg]
+} // Predicates = [HasVendorXTHeadV, HasVendorXTHeadVlsseg]
 
-let Predicates = [HasRVV0p71] in {
+let Predicates = [HasVendorXTHeadV] in {
 // Vector Single-Width Integer Add and Subtract
 defm XVADD_V : VALU_IV_V_X_I<"vadd", 0b000000>;
 defm XVSUB_V : VALU_IV_V_X<"vsub", 0b000010>;
@@ -381,15 +381,15 @@ let hasSideEffects = 0, mayLoad = 0, mayStore = 0, vs2 = 0, vm = 1,
 // op vd, vs1
 def XVMV_V_V : RVInstVV<0b010111, OPIVV, (outs VR:$vd),
                        (ins VR:$vs1), "vmv.v.v", "$vd, $vs1">,
-              Sched<[WriteVIMovV_UpperBound, ReadVIMovV_UpperBound]>;
+              Sched<[WriteVIMovV_WorstCase, ReadVIMovV_WorstCase]>;
 // op vd, rs1
 def XVMV_V_X : RVInstVX<0b010111, OPIVX, (outs VR:$vd),
                        (ins GPR:$rs1), "vmv.v.x", "$vd, $rs1">,
-              Sched<[WriteVIMovX_UpperBound, ReadVIMovX_UpperBound]>;
+              Sched<[WriteVIMovX_WorstCase, ReadVIMovX_WorstCase]>;
 // op vd, imm
 def XVMV_V_I : RVInstIVI<0b010111, (outs VR:$vd),
                        (ins simm5:$imm), "vmv.v.i", "$vd, $imm">,
-              Sched<[WriteVIMovI_UpperBound]>;
+              Sched<[WriteVIMovI_WorstCase]>;
 } // hasSideEffects = 0, mayLoad = 0, mayStore = 0
 
 // Vector Fixed-Point Arithmetic Instructions
@@ -422,9 +422,9 @@ let Constraints = "@earlyclobber $vd" in {
 defm XVNCLIPU_W : VNCLP_IV_V_X_I<"vnclipu", 0b101110, uimm5>;
 defm XVNCLIP_W : VNCLP_IV_V_X_I<"vnclip", 0b101111, uimm5>;
 } // Constraints = "@earlyclobber $vd"
-} // Predicates = [HasRVV0p71]
+} // Predicates = [HasVendorXTHeadV]
 
-let Predicates = [HasRVV0p71, HasStdExtF] in {
+let Predicates = [HasVendorXTHeadV, HasStdExtF] in {
 // Vector Single-Width Floating-Point Add/Subtract Instructions
 let Uses = [FRM], mayRaiseFPException = true in {
 defm XVFADD_V : VALU_FV_V_F<"vfadd", 0b000000>;
@@ -521,15 +521,15 @@ let vm = 0 in
 def XVFMERGE_VFM : RVInstVX<0b010111, OPFVF, (outs VR:$vd),
                            (ins VR:$vs2, FPR32:$rs1, VMV0:$v0),
                            "vfmerge.vfm", "$vd, $vs2, $rs1, v0">,
-                  Sched<[WriteVFMergeV_UpperBound, ReadVFMergeV_UpperBound,
-                         ReadVFMergeF_UpperBound, ReadVMask]>;
+                  Sched<[WriteVFMergeV_WorstCase, ReadVFMergeV_WorstCase,
+                         ReadVFMergeF_WorstCase, ReadVMask]>;
 
 // Vector Floating-Point Move Instruction
 let RVVConstraint = NoConstraint in
 let vm = 1, vs2 = 0 in
 def XVFMV_V_F : RVInstVX<0b010111, OPFVF, (outs VR:$vd),
                        (ins FPR32:$rs1), "vfmv.v.f", "$vd, $rs1">,
-               Sched<[WriteVFMovV_UpperBound, ReadVFMovF_UpperBound]>;
+               Sched<[WriteVFMovV_WorstCase, ReadVFMovF_WorstCase]>;
 
 } // hasSideEffects = 0, mayLoad = 0, mayStore = 0
 
@@ -565,9 +565,9 @@ defm XVFNCVT_F_X_W : VNCVTF_IV_VS2<"vfncvt.f.x.v", 0b100010, 0b10011>;
 defm XVFNCVT_F_F_W : VNCVTF_FV_VS2<"vfncvt.f.f.v", 0b100010, 0b10100>;
 }
 } // Constraints = "@earlyclobber $vd", mayRaiseFPException = true
-} // Predicates = [HasRVV0p71, HasStdExtF]
+} // Predicates = [HasVendorXTHeadV, HasStdExtF]
 
-let Predicates = [HasRVV0p71] in {
+let Predicates = [HasVendorXTHeadV] in {
 // Vector Single-Width Integer Reduction Instructions
 let RVVConstraint = NoConstraint in {
 defm XVREDSUM : VRED_MV_V<"vredsum", 0b000000>;
@@ -590,9 +590,9 @@ defm XVWREDSUMU : VWRED_IV_V<"vwredsumu", 0b110000>;
 defm XVWREDSUM : VWRED_IV_V<"vwredsum", 0b110001>;
 } // Constraints = "@earlyclobber $vd", RVVConstraint = NoConstraint
 
-} // Predicates = [HasRVV0p71]
+} // Predicates = [HasVendorXTHeadV]
 
-let Predicates = [HasRVV0p71, HasStdExtF] in {
+let Predicates = [HasVendorXTHeadV, HasStdExtF] in {
 // Vector Single-Width Floating-Point Reduction Instructions
 let RVVConstraint = NoConstraint in {
 let Uses = [FRM], mayRaiseFPException = true in {
@@ -616,9 +616,9 @@ defm XVFWREDOSUM : VWREDO_FV_V<"vfwredosum", 0b110011>;
 defm XVFWREDUSUM : VWRED_FV_V<"vfwredsum", 0b110001>;
 }
 } // Constraints = "@earlyclobber $vd", RVVConstraint = NoConstraint
-} // Predicates = [HasRVV0p71, HasStdExtF]
+} // Predicates = [HasVendorXTHeadV, HasStdExtF]
 
-let Predicates = [HasRVV0p71] in {
+let Predicates = [HasVendorXTHeadV] in {
 // Vector Mask-Register Logical Instructions
 let RVVConstraint = NoConstraint in {
 defm XVMAND_M : VMALU_MV_Mask<"vmand", 0b011001, "m">;
@@ -638,14 +638,14 @@ let hasSideEffects = 0, mayLoad = 0, mayStore = 0,
 def XVMPOPC_M : RVInstV<0b010100, 0b00000, OPMVV, (outs GPR:$vd),
                       (ins VR:$vs2, VMaskOp:$vm),
                       "vmpopc.m", "$vd, $vs2$vm">,
-              Sched<[WriteVMPopV_UpperBound, ReadVMPopV_UpperBound,
+              Sched<[WriteVMPopV_WorstCase, ReadVMPopV_WorstCase,
                      ReadVMask]>;
 
 // vmfirst find-first-set mask bit
 def XVMFIRST_M : RVInstV<0b010101, 0b00000, OPMVV, (outs GPR:$vd),
                        (ins VR:$vs2, VMaskOp:$vm),
                        "vmfirst.m", "$vd, $vs2$vm">,
-              Sched<[WriteVMFFSV_UpperBound, ReadVMFFSV_UpperBound,
+              Sched<[WriteVMFFSV_WorstCase, ReadVMFFSV_WorstCase,
                      ReadVMask]>;
 
 } // hasSideEffects = 0, mayLoad = 0, mayStore = 0
@@ -668,43 +668,43 @@ let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in {
 let vs2 = 0 in
 def XVID_V : RVInstV<0b010110, 0b10001, OPMVV, (outs VR:$vd),
                     (ins VMaskOp:$vm), "vid.v", "$vd$vm">,
-            Sched<[WriteVMIdxV_UpperBound, ReadVMask]>;
+            Sched<[WriteVMIdxV_WorstCase, ReadVMask]>;
 
 let vm = 1, RVVConstraint = NoConstraint in {
 // Integer Extract Instruction
 def XVEXT_X_V : RVInstVX<0b001100, OPMVV, (outs GPR:$vd),
                          (ins VR:$vs2, GPR:$rs1),
                          "vext.x.v", "$vd, $vs2, $rs1">,
-                Sched<[WriteVIMovVX_UpperBound, ReadVIMovVX_UpperBound,
-                       ReadVIMovXX_UpperBound]>;
+                Sched<[WriteVIMovVX_WorstCase, ReadVIMovVX_WorstCase,
+                       ReadVIMovXX_WorstCase]>;
 
 // Integer Scalar Move Instruction
 let Constraints = "$vd = $vd_wb" in
 def XVMV_S_X : RVInstV2<0b001101, 0b00000, OPMVX, (outs VR:$vd_wb),
                        (ins VR:$vd, GPR:$rs1), "vmv.s.x", "$vd, $rs1">,
-               Sched<[WriteVIMovXV_UpperBound, ReadVIMovXV_UpperBound,
-                      ReadVIMovXX_UpperBound]>;
+               Sched<[WriteVIMovXV_WorstCase, ReadVIMovXV_WorstCase,
+                      ReadVIMovXX_WorstCase]>;
 }
 } // hasSideEffects = 0, mayLoad = 0, mayStore = 0
-} // Predicates = [HasRVV0p71]
+} // Predicates = [HasVendorXTHeadV]
 
-let Predicates = [HasRVV0p71, HasStdExtF] in {
+let Predicates = [HasVendorXTHeadV, HasStdExtF] in {
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0, vm = 1,
     RVVConstraint = NoConstraint  in {
 // Floating-Point Scalar Move Instructions
 def XVFMV_F_S : RVInstV<0b001100, 0b00000, OPFVV, (outs FPR32:$vd),
                         (ins VR:$vs2), "vfmv.f.s", "$vd, $vs2">,
-                Sched<[WriteVFMovVF_UpperBound, ReadVFMovVF_UpperBound]>;
+                Sched<[WriteVFMovVF_WorstCase, ReadVFMovVF_WorstCase]>;
 let Constraints = "$vd = $vd_wb" in
 def XVFMV_S_F : RVInstV2<0b001101, 0b00000, OPFVF, (outs VR:$vd_wb),
                          (ins VR:$vd, FPR32:$rs1), "vfmv.s.f", "$vd, $rs1">,
-                Sched<[WriteVFMovFV_UpperBound, ReadVFMovFV_UpperBound,
-                       ReadVFMovFX_UpperBound]>;
+                Sched<[WriteVFMovFV_WorstCase, ReadVFMovFV_WorstCase,
+                       ReadVFMovFX_WorstCase]>;
 
 } // hasSideEffects = 0, mayLoad = 0, mayStore = 0, vm = 1
-} // Predicates = [HasRVV0p71, HasStdExtF]
+} // Predicates = [HasVendorXTHeadV, HasStdExtF]
 
-let Predicates = [HasRVV0p71] in  {
+let Predicates = [HasVendorXTHeadV] in  {
 // Vector Slide Instructions
 let Constraints = "@earlyclobber $vd", RVVConstraint = SlideUp in {
 defm XVSLIDEUP_V : VSLD_IV_X_I<"vslideup", 0b001110, uimm5>;
@@ -722,5 +722,5 @@ defm XVRGATHER_V : VGTR_IV_V_X_I<"vrgather", 0b001100, uimm5>;
 let Constraints = "@earlyclobber $vd", RVVConstraint = Vcompress in {
 defm XVCOMPRESS_V : VCPR_MV_Mask<"vcompress", 0b010111>;
 } // Constraints = "@earlyclobber $vd", RVVConstraint = Vcompress
-} // Predicates = [HasRVV0p71]
+} // Predicates = [HasVendorXTHeadV]
 } // AsmVariantName = "RVV0p71", DecoderNamespace = "RVV0p71"
