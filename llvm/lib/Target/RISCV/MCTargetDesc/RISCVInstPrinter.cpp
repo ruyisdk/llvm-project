@@ -219,6 +219,21 @@ void RISCVInstPrinter::printVTypeI(const MCInst *MI, unsigned OpNo,
   RISCVVType::printVType(Imm, O);
 }
 
+void RISCVInstPrinter::printXTHeadVTypeI(const MCInst *MI, unsigned OpNo,
+                                         const MCSubtargetInfo &STI,
+                                         raw_ostream &O) {
+  unsigned Imm = MI->getOperand(OpNo).getImm();
+  unsigned VSEW = (Imm >> 2) & 0x7;
+  // Print the raw immediate for reserved values: vsew[2:0]=0b1xx,
+  // or non-zero in bits 7 and above.
+  if ((VSEW & 0x4) || (Imm >> 7) != 0) {
+    O << Imm;
+    return;
+  }
+  // Print the text form.
+  RISCVVType::printXTHeadVType(Imm, O);
+}
+
 // Print a Zcmp RList. If we are printing architectural register names rather
 // than ABI register names, we need to print "{x1, x8-x9, x18-x27}" for all
 // registers. Otherwise, we print "{ra, s0-s11}".
