@@ -64,65 +64,65 @@ class XVLoadStore<bits<3> nf, RISCVOpcode opcode,
 let hasSideEffects = 0, mayLoad = 1, mayStore = 0, RVVConstraint = VMConstraint in {
   class XVLxU<bits<3> nf, bits<3> width, string opcodestr>
       : XVLoadStore<nf, OPC_LOAD_FP, 0b000, width, (outs VR:$rd),
-                    (ins GPRMem:$rs1, VMaskOp:$vm),
-                    opcodestr, "$rd, (${rs1})$vm"> {
+                    (ins GPRMemZeroOffset:$rs1, VMaskOp:$vm),
+                    opcodestr, "$rd, ${rs1}$vm"> {
     let rs2 = 0b00000;
   }
   class XVLx<bits<3> nf, bits<3> width, string opcodestr>
       : XVLoadStore<nf, OPC_LOAD_FP, 0b100, width, (outs VR:$rd),
-                    (ins GPRMem:$rs1, VMaskOp:$vm),
-                    opcodestr, "$rd, (${rs1})$vm"> {
+                    (ins GPRMemZeroOffset:$rs1, VMaskOp:$vm),
+                    opcodestr, "$rd, ${rs1}$vm"> {
     let rs2 = 0b00000;
   }
   class XVLxUFF<bits<3> nf, bits<3> width, string opcodestr>
       : XVLoadStore<nf, OPC_LOAD_FP, 0b000, width, (outs VR:$rd),
-                    (ins GPRMem:$rs1, VMaskOp:$vm),
-                    opcodestr, "$rd, (${rs1})$vm"> {
+                    (ins GPRMemZeroOffset:$rs1, VMaskOp:$vm),
+                    opcodestr, "$rd, ${rs1}$vm"> {
     let rs2 = 0b10000;
   }
   class XVLxFF<bits<3> nf, bits<3> width, string opcodestr>
       : XVLoadStore<nf, OPC_LOAD_FP, 0b100, width, (outs VR:$rd),
-                    (ins GPRMem:$rs1, VMaskOp:$vm),
-                    opcodestr, "$rd, (${rs1})$vm"> {
+                    (ins GPRMemZeroOffset:$rs1, VMaskOp:$vm),
+                    opcodestr, "$rd, ${rs1}$vm"> {
     let rs2 = 0b10000;
   }
   class XVLSxU<bits<3> nf, bits<3> width, string opcodestr>
       : XVLoadStore<nf, OPC_LOAD_FP, 0b010, width, (outs VR:$rd),
-                    (ins GPRMem:$rs1, GPR:$rs2, VMaskOp:$vm),
-                    opcodestr, "$rd, (${rs1}), $rs2$vm">;
+                    (ins GPRMemZeroOffset:$rs1, GPR:$rs2, VMaskOp:$vm),
+                    opcodestr, "$rd, $rs1, $rs2$vm">;
   class XVLSx<bits<3> nf, bits<3> width, string opcodestr>
       : XVLoadStore<nf, OPC_LOAD_FP, 0b110, width, (outs VR:$rd),
-                    (ins GPRMem:$rs1, GPR:$rs2, VMaskOp:$vm),
-                    opcodestr, "$rd, (${rs1}), $rs2$vm">;
+                    (ins GPRMemZeroOffset:$rs1, GPR:$rs2, VMaskOp:$vm),
+                    opcodestr, "$rd, $rs1, $rs2$vm">;
   class XVLXxU<bits<3> nf, bits<3> width, string opcodestr>
       : XVLoadStore<nf, OPC_LOAD_FP, 0b011, width, (outs VR:$rd),
-                    (ins GPRMem:$rs1, VR:$rs2, VMaskOp:$vm),
-                    opcodestr, "$rd, (${rs1}), $rs2$vm">;
+                    (ins GPRMemZeroOffset:$rs1, VR:$rs2, VMaskOp:$vm),
+                    opcodestr, "$rd, $rs1, $rs2$vm">;
   class XVLXx<bits<3> nf, bits<3> width, string opcodestr>
       : XVLoadStore<nf, OPC_LOAD_FP, 0b111, width, (outs VR:$rd),
-                    (ins GPRMem:$rs1, VR:$rs2, VMaskOp:$vm),
-                    opcodestr, "$rd, (${rs1}), $rs2$vm">;
+                    (ins GPRMemZeroOffset:$rs1, VR:$rs2, VMaskOp:$vm),
+                    opcodestr, "$rd, $rs1, $rs2$vm">;
 }
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 1 in {
   class XVSx<bits<3> nf, bits<3> width, string opcodestr>
       : XVLoadStore<nf, OPC_STORE_FP, 0b000, width, (outs),
-                    (ins VR:$rd, GPRMem:$rs1, VMaskOp:$vm),
-                    opcodestr, "$rd, (${rs1})$vm"> {
+                    (ins VR:$rd, GPRMemZeroOffset:$rs1, VMaskOp:$vm),
+                    opcodestr, "$rd, ${rs1}$vm"> {
     let rs2 = 0b00000;
   }
   class XVSSx<bits<3> nf, bits<3> width, string opcodestr>
       : XVLoadStore<nf, OPC_STORE_FP, 0b010, width, (outs),
-                    (ins VR:$rd, GPRMem:$rs1, GPR:$rs2, VMaskOp:$vm),
-                    opcodestr, "$rd, (${rs1}), $rs2$vm">;
+                    (ins VR:$rd, GPRMemZeroOffset:$rs1, GPR:$rs2, VMaskOp:$vm),
+                    opcodestr, "$rd, $rs1, $rs2$vm">;
   class XVSXx<bits<3> nf, bits<3> width, string opcodestr>
       : XVLoadStore<nf, OPC_STORE_FP, 0b011, width, (outs),
-                    (ins VR:$rd, GPRMem:$rs1, VR:$rs2, VMaskOp:$vm),
-                    opcodestr, "$rd, (${rs1}), $rs2$vm">;
+                    (ins VR:$rd, GPRMemZeroOffset:$rs1, VR:$rs2, VMaskOp:$vm),
+                    opcodestr, "$rd, $rs1, $rs2$vm">;
   class XVSUXx<bits<3> nf, bits<3> width, string opcodestr>
       : XVLoadStore<nf, OPC_STORE_FP, 0b111, width, (outs),
-                    (ins VR:$rd, GPRMem:$rs1, VR:$rs2, VMaskOp:$vm),
-                    opcodestr, "$rd, (${rs1}), $rs2$vm">;
+                    (ins VR:$rd, GPRMemZeroOffset:$rs1, VR:$rs2, VMaskOp:$vm),
+                    opcodestr, "$rd, $rs1, $rs2$vm">;
 }
 
 multiclass VWSMAC_V_X<string opcodestr, bits<6> funct6> {
