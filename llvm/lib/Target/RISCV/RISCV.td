@@ -69,8 +69,8 @@ def RVV0p71AsmParserVariant : AsmParserVariant {
 def RISCV : Target {
   let InstructionSet = RISCVInstrInfo;
   let AssemblyParsers = [RISCVAsmParser];
-  list<AsmParserVariant> AssemblyParserVariants = [DefaultAsmParserVariant,
-                                                   RVV0p71AsmParserVariant];
+  //let AssemblyParserVariants = [DefaultAsmParserVariant,
+  //                              RVV0p71AsmParserVariant];
   let AssemblyWriters = [RISCVAsmWriter];
   let AllowRegisterRenaming = 1;
 }
