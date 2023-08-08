@@ -152,6 +152,18 @@ multiclass XVNCLP_IV_V_X_I<string opcodestr, bits<6> funct6> {
                   ReadVMask]>;
 }
 
+multiclass XVNSHT_IV_V_X_I<string opcodestr, bits<6> funct6> {
+  def V  : VALUVV<funct6, OPIVV, opcodestr # ".vv">,
+           Sched<[WriteVNShiftV_WorstCase, ReadVNShiftV_WorstCase,
+                  ReadVNShiftV_WorstCase, ReadVMask]>;
+  def X  : VALUVX<funct6, OPIVX, opcodestr # ".vx">,
+           Sched<[WriteVNShiftX_WorstCase, ReadVNShiftV_WorstCase,
+                  ReadVNShiftX_WorstCase, ReadVMask]>;
+  def I  : VALUVI<funct6, opcodestr # ".vi", uimm5>,
+           Sched<[WriteVNShiftI_WorstCase, ReadVNShiftV_WorstCase,
+                  ReadVMask]>;
+}
+
 //===----------------------------------------------------------------------===//
 // Instructions
 //===----------------------------------------------------------------------===//
@@ -329,8 +341,8 @@ defm XVSRA_V : VSHT_IV_V_X_I<"vsra", 0b101001>;
 // vector register group (specified by vs2). The destination vector register
 // group cannot overlap the mask register if used, unless LMUL=1.
 let Constraints = "@earlyclobber $vd" in {
-defm XVNSRL_W : VNSHT_IV_V_X_I<"vnsrl", 0b101100>;
-defm XVNSRA_W : VNSHT_IV_V_X_I<"vnsra", 0b101101>;
+defm XVNSRL_W : XVNSHT_IV_V_X_I<"vnsrl", 0b101100>;
+defm XVNSRA_W : XVNSHT_IV_V_X_I<"vnsra", 0b101101>;
 } // Constraints = "@earlyclobber $vd"
 
 // Vector Integer Comparison Instructions
