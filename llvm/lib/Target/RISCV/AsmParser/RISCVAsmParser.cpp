@@ -2361,7 +2361,7 @@ ParseStatus RISCVAsmParser::parseXTHeadVTypeI(OperandVector &Operands) {
     unsigned VTypeI =
         RISCVVType::encodeXTHeadVTYPE(VTypeEle[0], VTypeEle[1], VTypeEle[2]);
     Operands.push_back(RISCVOperand::createXTHeadVType(VTypeI, S));
-    return ParseStatus::NoMatch;
+    return ParseStatus::Success;
   }
 
   return MatchFail();
