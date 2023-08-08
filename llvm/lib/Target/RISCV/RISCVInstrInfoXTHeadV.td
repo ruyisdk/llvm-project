@@ -140,6 +140,18 @@ multiclass VWSMAC_X<string opcodestr, bits<6> funct6> {
                  ReadVIWMulAddX_WorstCase, ReadVMask]>;
 }
 
+multiclass XVNCLP_IV_V_X_I<string opcodestr, bits<6> funct6> {
+  def V  : VALUVV<funct6, OPIVV, opcodestr # ".vv">,
+           Sched<[WriteVNClipV_WorstCase, ReadVNClipV_WorstCase,
+                  ReadVNClipV_WorstCase, ReadVMask]>;
+  def X  : VALUVX<funct6, OPIVX, opcodestr # ".vx">,
+           Sched<[WriteVNClipX_WorstCase, ReadVNClipV_WorstCase,
+                  ReadVNClipX_WorstCase, ReadVMask]>;
+  def I  : VALUVI<funct6, opcodestr # ".vi", uimm5>,
+           Sched<[WriteVNClipI_WorstCase, ReadVNClipV_WorstCase,
+                  ReadVMask]>;
+}
+
 //===----------------------------------------------------------------------===//
 // Instructions
 //===----------------------------------------------------------------------===//
@@ -419,8 +431,8 @@ defm XVSSRA_V : VSSHF_IV_V_X_I<"vssra", 0b101011>;
 
 // Vector Narrowing Fixed-Point Clip Instructions
 let Constraints = "@earlyclobber $vd" in {
-defm XVNCLIPU_W : VNCLP_IV_V_X_I<"vnclipu", 0b101110>;
-defm XVNCLIP_W : VNCLP_IV_V_X_I<"vnclip", 0b101111>;
+defm XVNCLIPU_W : XVNCLP_IV_V_X_I<"vnclipu", 0b101110>;
+defm XVNCLIP_W : XVNCLP_IV_V_X_I<"vnclip", 0b101111>;
 } // Constraints = "@earlyclobber $vd"
 } // Predicates = [HasVendorXTHeadV]
 
