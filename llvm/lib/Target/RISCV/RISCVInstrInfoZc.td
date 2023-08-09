@@ -191,7 +191,7 @@ def CM_MVSA01 : RVInst16CA<0b101011, 0b01, 0b10, (outs SR07:$rs1, SR07:$rs2),
 let DecoderNamespace = "RVZcmp", Predicates = [HasStdExtZcmp] in {
 let hasSideEffects = 0, mayLoad = 0, mayStore = 1 in 
 def CM_PUSH : RVInstZcCPPP<(outs), (ins rlist:$rlist, spimm:$spimm), 
-    "cm.push", "{$rlist}, $spimm"> {
+    "cm.push", "$rlist, $spimm"> {
   bits<4> rlist;
   bits<16> spimm;
 
@@ -202,7 +202,7 @@ def CM_PUSH : RVInstZcCPPP<(outs), (ins rlist:$rlist, spimm:$spimm),
 
 let hasSideEffects = 0, mayLoad = 1, mayStore = 0 in 
 def CM_POPRET : RVInstZcCPPP<(outs), (ins rlist:$rlist, spimm:$spimm), 
-    "cm.popret", "{$rlist}, $spimm"> {
+    "cm.popret", "$rlist, $spimm"> {
   bits<4> rlist;
   bits<16> spimm;
 
@@ -213,7 +213,7 @@ def CM_POPRET : RVInstZcCPPP<(outs), (ins rlist:$rlist, spimm:$spimm),
 
 let hasSideEffects = 0, mayLoad = 1, mayStore = 0 in 
 def CM_POPRETZ : RVInstZcCPPP<(outs), (ins rlist:$rlist, spimm:$spimm), 
-    "cm.popretz", "{$rlist}, $spimm"> {
+    "cm.popretz", "$rlist, $spimm"> {
   bits<4> rlist;
   bits<16> spimm;
 
@@ -223,8 +223,8 @@ def CM_POPRETZ : RVInstZcCPPP<(outs), (ins rlist:$rlist, spimm:$spimm),
 }
 
 let hasSideEffects = 0, mayLoad = 1, mayStore = 0 in 
-def CM_POP : RVInstZcCPPP<(outs), (ins rlist:$rlist, spimm:$spimm), 
-    "cm.pop", "{$rlist}, $spimm"> {
+def CM_POP : RVInstZcCPPP<(outs), (ins rlist:$rlist, spimm:$spimm),
+    "cm.pop", "$rlist, $spimm"> {
   bits<4> rlist;
   bits<16> spimm;
 
