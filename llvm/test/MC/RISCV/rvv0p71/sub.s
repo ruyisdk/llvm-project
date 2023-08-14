@@ -154,60 +154,48 @@ vwsub.wx v8, v4, a0
 
 vsbc.vvm v8, v4, v20, v0
 # CHECK-INST: vsbc.vvm v8, v4, v20, v0
-# CHECK-ENCODING: [0x57,0x04,0x4a,0x48]
+# CHECK-ENCODING: [0x57,0x04,0x4a,0x4a]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
-# CHECK-UNKNOWN: 57 04 4a 48 <unknown>
+# CHECK-UNKNOWN: 57 04 4a 4a <unknown>
 
 vsbc.vvm v4, v4, v20, v0
 # CHECK-INST: vsbc.vvm v4, v4, v20, v0
-# CHECK-ENCODING: [0x57,0x02,0x4a,0x48]
+# CHECK-ENCODING: [0x57,0x02,0x4a,0x4a]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
-# CHECK-UNKNOWN: 57 02 4a 48 <unknown>
+# CHECK-UNKNOWN: 57 02 4a 4a <unknown>
 
 vsbc.vvm v8, v4, v8, v0
 # CHECK-INST: vsbc.vvm v8, v4, v8, v0
-# CHECK-ENCODING: [0x57,0x04,0x44,0x48]
+# CHECK-ENCODING: [0x57,0x04,0x44,0x4a]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
-# CHECK-UNKNOWN: 57 04 44 48 <unknown>
+# CHECK-UNKNOWN: 57 04 44 4a <unknown>
 
 vsbc.vxm v8, v4, a0, v0
 # CHECK-INST: vsbc.vxm v8, v4, a0, v0
-# CHECK-ENCODING: [0x57,0x44,0x45,0x48]
+# CHECK-ENCODING: [0x57,0x44,0x45,0x4a]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
-# CHECK-UNKNOWN: 57 44 45 48 <unknown>
+# CHECK-UNKNOWN: 57 44 45 4a <unknown>
 
 vmsbc.vvm v8, v4, v20, v0
 # CHECK-INST: vmsbc.vvm v8, v4, v20, v0
-# CHECK-ENCODING: [0x57,0x04,0x4a,0x4c]
-# CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
-# CHECK-UNKNOWN: 57 04 4a 4c <unknown>
-
-vmsbc.vvm v4, v4, v20, v0
-# CHECK-INST: vmsbc.vvm v4, v4, v20, v0
-# CHECK-ENCODING: [0x57,0x02,0x4a,0x4c]
-# CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
-# CHECK-UNKNOWN: 57 02 4a 4c <unknown>
-
-vmsbc.vvm v8, v4, v8, v0
-# CHECK-INST: vmsbc.vvm v8, v4, v8, v0
-# CHECK-ENCODING: [0x57,0x04,0x44,0x4c]
-# CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
-# CHECK-UNKNOWN: 57 04 44 4c <unknown>
-
-vmsbc.vxm v8, v4, a0, v0
-# CHECK-INST: vmsbc.vxm v8, v4, a0, v0
-# CHECK-ENCODING: [0x57,0x44,0x45,0x4c]
-# CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
-# CHECK-UNKNOWN: 57 44 45 4c <unknown>
-
-vmsbc.vv v8, v4, v20
-# CHECK-INST: vmsbc.vv v8, v4, v20
 # CHECK-ENCODING: [0x57,0x04,0x4a,0x4e]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 04 4a 4e <unknown>
 
-vmsbc.vx v8, v4, a0
-# CHECK-INST: vmsbc.vx v8, v4, a0
+vmsbc.vvm v4, v4, v20, v0
+# CHECK-INST: vmsbc.vvm v4, v4, v20, v0
+# CHECK-ENCODING: [0x57,0x02,0x4a,0x4e]
+# CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
+# CHECK-UNKNOWN: 57 02 4a 4e <unknown>
+
+vmsbc.vvm v8, v4, v8, v0
+# CHECK-INST: vmsbc.vvm v8, v4, v8, v0
+# CHECK-ENCODING: [0x57,0x04,0x44,0x4e]
+# CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
+# CHECK-UNKNOWN: 57 04 44 4e <unknown>
+
+vmsbc.vxm v8, v4, a0, v0
+# CHECK-INST: vmsbc.vxm v8, v4, a0, v0
 # CHECK-ENCODING: [0x57,0x44,0x45,0x4e]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 44 45 4e <unknown>
