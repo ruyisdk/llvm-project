@@ -432,8 +432,8 @@ defm XVNMSUB_V : VMAC_MV_V_X<"vnmsub", 0b101011>;
 let Constraints = "@earlyclobber $vd", RVVConstraint = WidenV in {
 defm XVWMACCU_V : VWMAC_MV_V_X<"vwmaccu", 0b111100>;
 defm XVWMACC_V : VWMAC_MV_V_X<"vwmacc", 0b111101>;
-defm XVWMACCSU_V : VWMAC_MV_V_X<"vwmaccsu", 0b111111>;
-defm XVWMACCUS_V : VWMAC_MV_X<"vwmaccus", 0b111110>;
+defm XVWMACCSU_V : VWMAC_MV_V_X<"vwmaccsu", 0b111110>;
+defm XVWMACCUS_V : VWMAC_MV_X<"vwmaccus", 0b111111>;
 } // Constraints = "@earlyclobber $vd", RVVConstraint = WidenV
 
 // Vector Integer Merge Instructions
