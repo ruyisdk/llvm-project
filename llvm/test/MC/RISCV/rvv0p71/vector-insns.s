@@ -5408,7 +5408,7 @@ vwmaccsu.vv v4, v12, v8
 # CHECK-ENCODING: [0x57,0x22,0x86,0xfa]
 
 vwmaccsu.vx v4, a1, v8
-# CHECK-INST: vwmaccus.vx	v4, a1, v8
+# CHECK-INST: vwmaccsu.vx	v4, a1, v8
 # CHECK-ENCODING: [0x57,0xe2,0x85,0xfa]
 
 vwmaccsu.vv v4, v12, v8, v0.t
@@ -5416,15 +5416,15 @@ vwmaccsu.vv v4, v12, v8, v0.t
 # CHECK-ENCODING: [0x57,0x22,0x86,0xf8]
 
 vwmaccsu.vx v4, a1, v8, v0.t
-# CHECK-INST: vwmaccus.vx	v4, a1, v8, v0.t
+# CHECK-INST: vwmaccsu.vx	v4, a1, v8, v0.t
 # CHECK-ENCODING: [0x57,0xe2,0x85,0xf8]
 
 vwmaccus.vx v4, a1, v8
-# CHECK-INST: vwmaccsu.vx	v4, a1, v8
+# CHECK-INST: vwmaccus.vx	v4, a1, v8
 # CHECK-ENCODING: [0x57,0xe2,0x85,0xfe]
 
 vwmaccus.vx v4, a1, v8, v0.t
-# CHECK-INST: vwmaccsu.vx	v4, a1, v8, v0.t
+# CHECK-INST: vwmaccus.vx	v4, a1, v8, v0.t
 # CHECK-ENCODING: [0x57,0xe2,0x85,0xfc]
 
 vdivu.vv v4, v8, v12
