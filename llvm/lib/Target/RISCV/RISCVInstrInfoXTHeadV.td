@@ -683,7 +683,7 @@ defm XVMSIF_M : VMSFS_MV_V<"vmsif.m", 0b010110, 0b00011>;
 // vmsof.m set-only-first mask bit
 defm XVMSOF_M : VMSFS_MV_V<"vmsof.m", 0b010110, 0b00010>;
 // Vector Iota Instruction
-defm XVIOTA_M : VMIOT_MV_V<"viota.m", 0b010110, 0b10000>;
+defm XVIOTA_M : VIOTA_MV_V<"viota.m", 0b010110, 0b10000>;
 
 } // Constraints = "@earlyclobber $vd", RVVConstraint = Iota
 
@@ -692,22 +692,20 @@ let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in {
 let vs2 = 0 in
 def XVID_V : RVInstV<0b010110, 0b10001, OPMVV, (outs VR:$vd),
                     (ins VMaskOp:$vm), "vid.v", "$vd$vm">,
-            Sched<[WriteVMIdxV_WorstCase, ReadVMask]>;
+            SchedNullaryMC<"WriteVIdxV">;
 
 let vm = 1, RVVConstraint = NoConstraint in {
 // Integer Extract Instruction
 def XVEXT_X_V : RVInstVX<0b001100, OPMVV, (outs GPR:$vd),
                          (ins VR:$vs2, GPR:$rs1),
                          "vext.x.v", "$vd, $vs2, $rs1">,
-                Sched<[WriteVIMovVX, ReadVIMovVX,
-                       ReadVIMovXX]>;
+                Sched<[WriteVMovXS, ReadVMovXS, ReadVMovSX_X]>;
 
 // Integer Scalar Move Instruction
 let Constraints = "$vd = $vd_wb" in
 def XVMV_S_X : RVInstV2<0b001101, 0b00000, OPMVX, (outs VR:$vd_wb),
                        (ins VR:$vd, GPR:$rs1), "vmv.s.x", "$vd, $rs1">,
-               Sched<[WriteVIMovXV, ReadVIMovXV,
-                      ReadVIMovXX]>;
+               Sched<[WriteVMovSX, ReadVMovSX_V, ReadVMovSX_X]>;
 }
 } // hasSideEffects = 0, mayLoad = 0, mayStore = 0
 } // Predicates = [HasVendorXTHeadV]
@@ -718,12 +716,11 @@ let hasSideEffects = 0, mayLoad = 0, mayStore = 0, vm = 1,
 // Floating-Point Scalar Move Instructions
 def XVFMV_F_S : RVInstV<0b001100, 0b00000, OPFVV, (outs FPR32:$vd),
                         (ins VR:$vs2), "vfmv.f.s", "$vd, $vs2">,
-                Sched<[WriteVFMovVF, ReadVFMovVF]>;
+                Sched<[WriteVMovFS, ReadVMovFS]>;
 let Constraints = "$vd = $vd_wb" in
 def XVFMV_S_F : RVInstV2<0b001101, 0b00000, OPFVF, (outs VR:$vd_wb),
                          (ins VR:$vd, FPR32:$rs1), "vfmv.s.f", "$vd, $rs1">,
-                Sched<[WriteVFMovFV, ReadVFMovFV,
-                       ReadVFMovFX]>;
+                Sched<[WriteVMovSF, ReadVMovSF_V, ReadVMovSF_F]>;
 
 } // hasSideEffects = 0, mayLoad = 0, mayStore = 0, vm = 1
 } // Predicates = [HasVendorXTHeadV, HasStdExtF]
@@ -731,10 +728,10 @@ def XVFMV_S_F : RVInstV2<0b001101, 0b00000, OPFVF, (outs VR:$vd_wb),
 let Predicates = [HasVendorXTHeadV] in  {
 // Vector Slide Instructions
 let Constraints = "@earlyclobber $vd", RVVConstraint = SlideUp in {
-defm XVSLIDEUP_V : VSLD_IV_X_I<"vslideup", 0b001110>;
+defm XVSLIDEUP_V : VSLD_IV_X_I<"vslideup", 0b001110, /*slidesUp=*/true>;
 defm XVSLIDE1UP_V : VSLD1_MV_X<"vslide1up", 0b001110>;
 } // Constraints = "@earlyclobber $vd", RVVConstraint = SlideUp
-defm XVSLIDEDOWN_V : VSLD_IV_X_I<"vslidedown", 0b001111>;
+defm XVSLIDEDOWN_V : VSLD_IV_X_I<"vslidedown", 0b001111, /*slidesUp=*/false>;
 defm XVSLIDE1DOWN_V : VSLD1_MV_X<"vslide1down", 0b001111>;
 
 // Vector Register Gather Instruction
