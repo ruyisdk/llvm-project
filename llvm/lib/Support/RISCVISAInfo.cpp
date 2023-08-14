@@ -965,6 +965,11 @@ Error RISCVISAInfo::checkDependency() {
         errc::invalid_argument,
         "'xtheadvamo' requires 'a' extension to also be specified");
 
+  if (Exts.count("xtheadv") && HasVector)
+    return createStringError(
+        errc::invalid_argument,
+        "'xtheadv' extension is incompatible with 'v' or 'zve*' extension");
+
   // Additional dependency checks.
   // TODO: The 'q' extension requires rv64.
   // TODO: It is illegal to specify 'e' extensions with 'f' and 'd'.

@@ -474,6 +474,12 @@ TEST(ParseArchString, RejectsConflictingExtensions) {
     EXPECT_EQ(toString(RISCVISAInfo::parseArchString(Input, true).takeError()),
               "'zcf' is only supported for 'rv32'");
   }
+
+  for (StringRef Input : {"rv64iv_xtheadv", "rv32iv_xtheadv"}) {
+    EXPECT_EQ(toString(RISCVISAInfo::parseArchString(Input, true).takeError()),
+              "'xtheadv' extension is incompatible with "
+              "'v' or 'zve*' extension");
+  }
 }
 
 TEST(ToFeatureVector, IIsDroppedAndExperimentalExtensionsArePrefixed) {
