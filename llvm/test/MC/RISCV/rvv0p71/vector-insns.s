@@ -4490,51 +4490,51 @@ vwsub.wx v4, v8, a1, v0.t
 # CHECK-ENCODING: [0x57,0xe2,0x85,0xdc]
 
 vadc.vvm v4, v8, v12, v0
-# CHECK-INST: vadc.vvm v4, v8, v12, v0
+# CHECK-INST: vadc.vvm	v4, v8, v12, v0
 # CHECK-ENCODING: [0x57,0x02,0x86,0x42]
 
 vadc.vxm v4, v8, a1, v0
-# CHECK-INST: vadc.vxm v4, v8, a1, v0
+# CHECK-INST: vadc.vxm	v4, v8, a1, v0
 # CHECK-ENCODING: [0x57,0xc2,0x85,0x42]
 
 vadc.vim v4, v8, 15, v0
-# CHECK-INST: vadc.vim v4, v8, 15, v0
+# CHECK-INST: vadc.vim	v4, v8, 15, v0
 # CHECK-ENCODING: [0x57,0xb2,0x87,0x42]
 
 vadc.vim v4, v8, -16, v0
-# CHECK-INST: vadc.vim v4, v8, -16, v0
+# CHECK-INST: vadc.vim	v4, v8, -16, v0
 # CHECK-ENCODING: [0x57,0x32,0x88,0x42]
 
 vmadc.vvm v4, v8, v12, v0
-# CHECK-INST: vmadc.vvm v4, v8, v12, v0
+# CHECK-INST: vmadc.vvm	v4, v8, v12, v0
 # CHECK-ENCODING: [0x57,0x02,0x86,0x46]
 
 vmadc.vxm v4, v8, a1, v0
-# CHECK-INST: vmadc.vxm v4, v8, a1, v0
+# CHECK-INST: vmadc.vxm	v4, v8, a1, v0
 # CHECK-ENCODING: [0x57,0xc2,0x85,0x46]
 
 vmadc.vim v4, v8, 15, v0
-# CHECK-INST: vmadc.vim v4, v8, 15, v0
+# CHECK-INST: vmadc.vim	v4, v8, 15, v0
 # CHECK-ENCODING: [0x57,0xb2,0x87,0x46]
 
 vmadc.vim v4, v8, -16, v0
-# CHECK-INST: vmadc.vim v4, v8, -16, v0
+# CHECK-INST: vmadc.vim	v4, v8, -16, v0
 # CHECK-ENCODING: [0x57,0x32,0x88,0x46]
 
 vsbc.vvm v4, v8, v12, v0
-# CHECK-INST: vsbc.vvm v4, v8, v12, v0
+# CHECK-INST: vsbc.vvm	v4, v8, v12, v0
 # CHECK-ENCODING: [0x57,0x02,0x86,0x4a]
 
 vsbc.vxm v4, v8, a1, v0
-# CHECK-INST: vsbc.vxm v4, v8, a1, v0
+# CHECK-INST: vsbc.vxm	v4, v8, a1, v0
 # CHECK-ENCODING: [0x57,0xc2,0x85,0x4a]
 
 vmsbc.vvm v4, v8, v12, v0
-# CHECK-INST: vmsbc.vvm v4, v8, v12, v0
+# CHECK-INST: vmsbc.vvm	v4, v8, v12, v0
 # CHECK-ENCODING: [0x57,0x02,0x86,0x4e]
 
 vmsbc.vxm v4, v8, a1, v0
-# CHECK-INST: vmsbc.vxm v4, v8, a1, v0
+# CHECK-INST: vmsbc.vxm	v4, v8, a1, v0
 # CHECK-ENCODING: [0x57,0xc2,0x85,0x4e]
 
 # TODO: rvv 0.7.1
@@ -5404,7 +5404,7 @@ vwmacc.vx v4, a1, v8, v0.t
 # CHECK-ENCODING: [0x57,0xe2,0x85,0xf4]
 
 vwmaccsu.vv v4, v12, v8
-# CHECK-INST: vwmaccsu.vv v4, v12, v8
+# CHECK-INST: vwmaccsu.vv	v4, v12, v8
 # CHECK-ENCODING: [0x57,0x22,0x86,0xfa]
 
 vwmaccsu.vx v4, a1, v8
@@ -5412,7 +5412,7 @@ vwmaccsu.vx v4, a1, v8
 # CHECK-ENCODING: [0x57,0xe2,0x85,0xfa]
 
 vwmaccsu.vv v4, v12, v8, v0.t
-# CHECK-INST: vwmaccsu.vv v4, v12, v8, v0.t
+# CHECK-INST: vwmaccsu.vv	v4, v12, v8, v0.t
 # CHECK-ENCODING: [0x57,0x22,0x86,0xf8]
 
 vwmaccsu.vx v4, a1, v8, v0.t
