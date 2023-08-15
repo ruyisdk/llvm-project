@@ -164,6 +164,48 @@ multiclass XVNSHT_IV_V_X_I<string opcodestr, bits<6> funct6> {
                   ReadVMask]>;
 }
 
+let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in {
+// rvv 0.7.1 set vm=1 for `op vd, vs2, vs1, v0`
+class XVALUmVV<bits<6> funct6, RISCVVFormat opv, string opcodestr>
+    : RVInstVV<funct6, opv, (outs VR:$vd),
+                (ins VR:$vs2, VR:$vs1, VMV0:$v0),
+                opcodestr, "$vd, $vs2, $vs1, v0"> {
+  let vm = 1;
+}
+
+// rvv 0.7.1 set vm=1 for `op vd, vs2, rs1, v0`
+class XVALUmVX<bits<6> funct6, RISCVVFormat opv, string opcodestr>
+    : RVInstVX<funct6, opv, (outs VR:$vd),
+                (ins VR:$vs2, GPR:$rs1, VMV0:$v0),
+                opcodestr, "$vd, $vs2, $rs1, v0"> {
+  let vm = 1;
+}
+
+// rvv 0.7.1 set vm=1 for `op vd, vs2, imm, v0`
+class XVALUmVI<bits<6> funct6, string opcodestr, Operand optype = simm5>
+    : RVInstIVI<funct6, (outs VR:$vd),
+                (ins VR:$vs2, optype:$imm, VMV0:$v0),
+                opcodestr, "$vd, $vs2, $imm, v0"> {
+  let vm = 1;
+}
+
+multiclass XVALUm_IV_V_X<string opcodestr, bits<6> funct6> {
+  def VM : XVALUmVV<funct6, OPIVV, opcodestr # ".vvm">,
+           Sched<[WriteVICALUV_WorstCase, ReadVICALUV_WorstCase,
+                  ReadVICALUV_WorstCase, ReadVMask]>;
+  def XM : XVALUmVX<funct6, OPIVX, opcodestr # ".vxm">,
+           Sched<[WriteVICALUX_WorstCase, ReadVICALUV_WorstCase,
+                  ReadVICALUX_WorstCase, ReadVMask]>;
+}
+
+multiclass XVALUm_IV_V_X_I<string opcodestr, bits<6> funct6>
+    : XVALUm_IV_V_X<opcodestr, funct6> {
+  def IM : XVALUmVI<funct6, opcodestr # ".vim">,
+           Sched<[WriteVICALUI_WorstCase, ReadVICALUV_WorstCase,
+                  ReadVMask]>;
+}
+} // hasSideEffects = 0, mayLoad = 0, mayStore = 0
+
 //===----------------------------------------------------------------------===//
 // Instructions
 //===----------------------------------------------------------------------===//
@@ -314,15 +356,13 @@ defm XVWSUB_W : VALU_MV_V_X<"vwsub", 0b110111, "w">;
 } // Constraints = "@earlyclobber $vd"
 
 // Vector Integer Add-with-Carry / Subtract-with-Borrow Instructions
-defm XVADC_V : VALUm_IV_V_X_I<"vadc", 0b010000>;
+defm XVADC_V : XVALUm_IV_V_X_I<"vadc", 0b010000>;
 let Constraints = "@earlyclobber $vd", RVVConstraint = NoConstraint in {
-defm XVMADC_V : VALUm_IV_V_X_I<"vmadc", 0b010001>;
-defm XVMADC_V : VALUNoVm_IV_V_X_I<"vmadc", 0b010001>;
+defm XVMADC_V : XVALUm_IV_V_X_I<"vmadc", 0b010001>;
 } // Constraints = "@earlyclobber $vd", RVVConstraint = NoConstraint
-defm XVSBC_V : VALUm_IV_V_X<"vsbc", 0b010010>;
+defm XVSBC_V : XVALUm_IV_V_X<"vsbc", 0b010010>;
 let Constraints = "@earlyclobber $vd", RVVConstraint = NoConstraint in {
-defm XVMSBC_V : VALUm_IV_V_X<"vmsbc", 0b010011>;
-defm XVMSBC_V : VALUNoVm_IV_V_X<"vmsbc", 0b010011>;
+defm XVMSBC_V : XVALUm_IV_V_X<"vmsbc", 0b010011>;
 } // Constraints = "@earlyclobber $vd", RVVConstraint = NoConstraint
 
 // Vector Bitwise Logical Instructions
@@ -392,8 +432,8 @@ defm XVNMSUB_V : VMAC_MV_V_X<"vnmsub", 0b101011>;
 let Constraints = "@earlyclobber $vd", RVVConstraint = WidenV in {
 defm XVWMACCU_V : VWMAC_MV_V_X<"vwmaccu", 0b111100>;
 defm XVWMACC_V : VWMAC_MV_V_X<"vwmacc", 0b111101>;
-defm XVWMACCSU_V : VWMAC_MV_V_X<"vwmaccsu", 0b111111>;
-defm XVWMACCUS_V : VWMAC_MV_X<"vwmaccus", 0b111110>;
+defm XVWMACCSU_V : VWMAC_MV_V_X<"vwmaccsu", 0b111110>;
+defm XVWMACCUS_V : VWMAC_MV_X<"vwmaccus", 0b111111>;
 } // Constraints = "@earlyclobber $vd", RVVConstraint = WidenV
 
 // Vector Integer Merge Instructions
