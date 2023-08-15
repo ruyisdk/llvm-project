@@ -142,78 +142,60 @@ vwadd.wx v8, v4, a0
 
 vadc.vvm v8, v4, v20, v0
 # CHECK-INST: vadc.vvm v8, v4, v20, v0
-# CHECK-ENCODING: [0x57,0x04,0x4a,0x40]
+# CHECK-ENCODING: [0x57,0x04,0x4a,0x42]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
-# CHECK-UNKNOWN: 57 04 4a 40 <unknown>
+# CHECK-UNKNOWN: 57 04 4a 42 <unknown>
 
 vadc.vvm v4, v4, v20, v0
 # CHECK-INST: vadc.vvm v4, v4, v20, v0
-# CHECK-ENCODING: [0x57,0x02,0x4a,0x40]
+# CHECK-ENCODING: [0x57,0x02,0x4a,0x42]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
-# CHECK-UNKNOWN: 57 02 4a 40 <unknown>
+# CHECK-UNKNOWN: 57 02 4a 42 <unknown>
 
 vadc.vvm v8, v4, v8, v0
 # CHECK-INST: vadc.vvm v8, v4, v8, v0
-# CHECK-ENCODING: [0x57,0x04,0x44,0x40]
+# CHECK-ENCODING: [0x57,0x04,0x44,0x42]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
-# CHECK-UNKNOWN: 57 04 44 40 <unknown>
+# CHECK-UNKNOWN: 57 04 44 42 <unknown>
 
 vadc.vxm v8, v4, a0, v0
 # CHECK-INST: vadc.vxm v8, v4, a0, v0
-# CHECK-ENCODING: [0x57,0x44,0x45,0x40]
+# CHECK-ENCODING: [0x57,0x44,0x45,0x42]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
-# CHECK-UNKNOWN: 57 44 45 40 <unknown>
+# CHECK-UNKNOWN: 57 44 45 42 <unknown>
 
 vadc.vim v8, v4, 15, v0
 # CHECK-INST: vadc.vim v8, v4, 15, v0
-# CHECK-ENCODING: [0x57,0xb4,0x47,0x40]
+# CHECK-ENCODING: [0x57,0xb4,0x47,0x42]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
-# CHECK-UNKNOWN: 57 b4 47 40 <unknown>
+# CHECK-UNKNOWN: 57 b4 47 42 <unknown>
 
 vmadc.vvm v8, v4, v20, v0
 # CHECK-INST: vmadc.vvm v8, v4, v20, v0
-# CHECK-ENCODING: [0x57,0x04,0x4a,0x44]
-# CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
-# CHECK-UNKNOWN: 57 04 4a 44 <unknown>
-
-vmadc.vvm v4, v4, v20, v0
-# CHECK-INST: vmadc.vvm v4, v4, v20, v0
-# CHECK-ENCODING: [0x57,0x02,0x4a,0x44]
-# CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
-# CHECK-UNKNOWN: 57 02 4a 44 <unknown>
-
-vmadc.vvm v8, v4, v8, v0
-# CHECK-INST: vmadc.vvm v8, v4, v8, v0
-# CHECK-ENCODING: [0x57,0x04,0x44,0x44]
-# CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
-# CHECK-UNKNOWN: 57 04 44 44 <unknown>
-
-vmadc.vxm v8, v4, a0, v0
-# CHECK-INST: vmadc.vxm v8, v4, a0, v0
-# CHECK-ENCODING: [0x57,0x44,0x45,0x44]
-# CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
-# CHECK-UNKNOWN: 57 44 45 44 <unknown>
-
-vmadc.vim v8, v4, 15, v0
-# CHECK-INST: vmadc.vim v8, v4, 15, v0
-# CHECK-ENCODING: [0x57,0xb4,0x47,0x44]
-# CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
-# CHECK-UNKNOWN: 57 b4 47 44 <unknown>
-
-vmadc.vv v8, v4, v20
-# CHECK-INST: vmadc.vv v8, v4, v20
 # CHECK-ENCODING: [0x57,0x04,0x4a,0x46]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 04 4a 46 <unknown>
 
-vmadc.vx v8, v4, a0
-# CHECK-INST: vmadc.vx v8, v4, a0
+vmadc.vvm v4, v4, v20, v0
+# CHECK-INST: vmadc.vvm v4, v4, v20, v0
+# CHECK-ENCODING: [0x57,0x02,0x4a,0x46]
+# CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
+# CHECK-UNKNOWN: 57 02 4a 46 <unknown>
+
+vmadc.vvm v8, v4, v8, v0
+# CHECK-INST: vmadc.vvm v8, v4, v8, v0
+# CHECK-ENCODING: [0x57,0x04,0x44,0x46]
+# CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
+# CHECK-UNKNOWN: 57 04 44 46 <unknown>
+
+vmadc.vxm v8, v4, a0, v0
+# CHECK-INST: vmadc.vxm v8, v4, a0, v0
 # CHECK-ENCODING: [0x57,0x44,0x45,0x46]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 44 45 46 <unknown>
 
-vmadc.vi v8, v4, 15
-# CHECK-INST: vmadc.vi v8, v4, 15
+vmadc.vim v8, v4, 15, v0
+# CHECK-INST: vmadc.vim v8, v4, 15, v0
 # CHECK-ENCODING: [0x57,0xb4,0x47,0x46]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 b4 47 46 <unknown>
