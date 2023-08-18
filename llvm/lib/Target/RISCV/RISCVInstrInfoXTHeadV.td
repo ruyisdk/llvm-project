@@ -788,3 +788,19 @@ defm XVCOMPRESS_V : VCPR_MV_Mask<"vcompress", 0b010111>;
 } // Constraints = "@earlyclobber $vd", RVVConstraint = Vcompress
 } // Predicates = [HasVendorXTHeadV]
 } // AsmVariantName = "RVV0p71", DecoderNamespace = "RVV0p71"
+
+// Pesudo instructions
+let AsmVariantName = "RVV0p71" in {
+let Predicates = [HasVendorXTHeadV] in {
+// Vector Integer Comparison Instructions
+def : InstAlias<"vmsgtu.vv $vd, $va, $vb$vm",
+                (XVMSLTU_VV VR:$vd, VR:$vb, VR:$va, VMaskOp:$vm), 0>;
+def : InstAlias<"vmsgt.vv $vd, $va, $vb$vm",
+                (XVMSLT_VV VR:$vd, VR:$vb, VR:$va, VMaskOp:$vm), 0>;
+def : InstAlias<"vmsgeu.vv $vd, $va, $vb$vm",
+                (XVMSLEU_VV VR:$vd, VR:$vb, VR:$va, VMaskOp:$vm), 0>;
+def : InstAlias<"vmsge.vv $vd, $va, $vb$vm",
+                (XVMSLE_VV VR:$vd, VR:$vb, VR:$va, VMaskOp:$vm), 0>;
+} // Predicates = [HasVendorXTHeadV]
+} // AsmVariantName = "RVV0p71"
+
