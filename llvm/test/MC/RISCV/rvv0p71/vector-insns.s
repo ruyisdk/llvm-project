@@ -4803,45 +4803,37 @@ vnsra.vi v4, v8, 31, v0.t
 # CHECK-INST: vnsra.vi	v4, v8, 31, v0.t
 # CHECK-ENCODING: [0x57,0xb2,0x8f,0xb4]
 
-# TODO: rvv 0.7.1
-# vmsgt.vv v4, v8, v12
-# CHECK-INST-TODO: vmsgt.vv v4, v8, v12
-# CHECK-ENCODING-TODO: [0x57,0x02,0xc4,0x6e]
+vmsgt.vv v4, v8, v12
+# CHECK-INST: vmslt.vv v4, v12, v8
+# CHECK-ENCODING: [0x57,0x02,0xc4,0x6e]
 
-# TODO: rvv 0.7.1
-# vmsgtu.vv v4, v8, v12
-# CHECK-INST-TODO: vmsgtu.vv v4, v8, v12
-# CHECK-ENCODING-TODO: [0x57,0x02,0xc4,0x6a]
+vmsgtu.vv v4, v8, v12
+# CHECK-INST: vmsltu.vv v4, v12, v8
+# CHECK-ENCODING: [0x57,0x02,0xc4,0x6a]
 
-# TODO: rvv 0.7.1
-# vmsge.vv v4, v8, v12
-# CHECK-INST-TODO: vmsge.vv v4, v8, v12
-# CHECK-ENCODING-TODO: [0x57,0x02,0xc4,0x76]
+vmsge.vv v4, v8, v12
+# CHECK-INST: vmsle.vv v4, v12, v8
+# CHECK-ENCODING: [0x57,0x02,0xc4,0x76]
 
-# TODO: rvv 0.7.1
-# vmsgeu.vv v4, v8, v12
-# CHECK-INST-TODO: vmsgeu.vv v4, v8, v12
-# CHECK-ENCODING-TODO: [0x57,0x02,0xc4,0x72]
+vmsgeu.vv v4, v8, v12
+# CHECK-INST: vmsleu.vv v4, v12, v8
+# CHECK-ENCODING: [0x57,0x02,0xc4,0x72]
 
-# TODO: rvv 0.7.1
-# vmsgt.vv v4, v8, v12, v0.t
-# CHECK-INST-TODO: vmsgt.vv v4, v8, v12, v0.t
-# CHECK-ENCODING-TODO: [0x57,0x02,0xc4,0x6c]
+vmsgt.vv v4, v8, v12, v0.t
+# CHECK-INST: vmslt.vv v4, v12, v8, v0.t
+# CHECK-ENCODING: [0x57,0x02,0xc4,0x6c]
 
-# TODO: rvv 0.7.1
-# vmsgtu.vv v4, v8, v12, v0.t
-# CHECK-INST-TODO: vmsgtu.vv v4, v8, v12, v0.t
-# CHECK-ENCODING-TODO: [0x57,0x02,0xc4,0x68]
+vmsgtu.vv v4, v8, v12, v0.t
+# CHECK-INST: vmsltu.vv v4, v12, v8, v0.t
+# CHECK-ENCODING: [0x57,0x02,0xc4,0x68]
 
-# TODO: rvv 0.7.1
-# vmsge.vv v4, v8, v12, v0.t
-# CHECK-INST-TODO: vmsge.vv v4, v8, v12, v0.t
-# CHECK-ENCODING-TODO: [0x57,0x02,0xc4,0x74]
+vmsge.vv v4, v8, v12, v0.t
+# CHECK-INST: vmsle.vv v4, v12, v8, v0.t
+# CHECK-ENCODING: [0x57,0x02,0xc4,0x74]
 
-# TODO: rvv 0.7.1
-# vmsgeu.vv v4, v8, v12, v0.t
-# CHECK-INST-TODO: vmsgeu.vv v4, v8, v12, v0.t
-# CHECK-ENCODING-TODO: [0x57,0x02,0xc4,0x70]
+vmsgeu.vv v4, v8, v12, v0.t
+# CHECK-INST: vmsleu.vv v4, v12, v8, v0.t
+# CHECK-ENCODING: [0x57,0x02,0xc4,0x70]
 
 # TODO: rvv 0.7.1
 # vmslt.vi v4, v8, 16
