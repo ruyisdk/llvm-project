@@ -801,6 +801,30 @@ def : InstAlias<"vmsgeu.vv $vd, $va, $vb$vm",
                 (XVMSLEU_VV VR:$vd, VR:$vb, VR:$va, VMaskOp:$vm), 0>;
 def : InstAlias<"vmsge.vv $vd, $va, $vb$vm",
                 (XVMSLE_VV VR:$vd, VR:$vb, VR:$va, VMaskOp:$vm), 0>;
+
+// These pseudos need to be handled in RISCVAsmParser.cpp
+let isCodeGenOnly = 0, isAsmParserOnly = 1, hasSideEffects = 0, mayLoad = 0,
+    mayStore = 0 in {
+def PseudoXVMSGEU_VX : Pseudo<(outs VR:$vd),
+                              (ins VR:$vs2, GPR:$rs1),
+                              [], "vmsgeu.vx", "$vd, $vs2, $rs1">;
+def PseudoXVMSGE_VX : Pseudo<(outs VR:$vd),
+                             (ins VR:$vs2, GPR:$rs1),
+                             [], "vmsge.vx", "$vd, $vs2, $rs1">;
+def PseudoXVMSGEU_VX_M : Pseudo<(outs VRNoV0:$vd),
+                                (ins VR:$vs2, GPR:$rs1, VMaskOp:$vm),
+                                [], "vmsgeu.vx", "$vd, $vs2, $rs1$vm">;
+def PseudoXVMSGE_VX_M : Pseudo<(outs VRNoV0:$vd),
+                               (ins VR:$vs2, GPR:$rs1, VMaskOp:$vm),
+                               [], "vmsge.vx", "$vd, $vs2, $rs1$vm">;
+def PseudoXVMSGEU_VX_M_T : Pseudo<(outs VR:$vd, VRNoV0:$scratch),
+                                  (ins VR:$vs2, GPR:$rs1, VMaskOp:$vm),
+                                  [], "vmsgeu.vx", "$vd, $vs2, $rs1$vm, $scratch">;
+def PseudoXVMSGE_VX_M_T : Pseudo<(outs VR:$vd, VRNoV0:$scratch),
+                                 (ins VR:$vs2, GPR:$rs1, VMaskOp:$vm),
+                                 [], "vmsge.vx", "$vd, $vs2, $rs1$vm, $scratch">;
+} // isCodeGenOnly = 0, isAsmParserOnly = 1, hasSideEffects = 0, mayLoad = 0, mayStore = 0
+
 } // Predicates = [HasVendorXTHeadV]
 } // AsmVariantName = "RVV0p71"
 

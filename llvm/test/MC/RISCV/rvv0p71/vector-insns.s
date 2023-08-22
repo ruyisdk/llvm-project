@@ -4835,6 +4835,44 @@ vmsgeu.vv v4, v8, v12, v0.t
 # CHECK-INST: vmsleu.vv v4, v12, v8, v0.t
 # CHECK-ENCODING: [0x57,0x02,0xc4,0x70]
 
+vmsge.vx v4, v8, a1
+# CHECK-INST: vmslt.vx v4, v8, a1
+# CHECK-ENCODING: [0x57,0xc2,0x85,0x6e]
+# CHECK-INST: vmnand.mm v4, v4, v4
+# CHECK-ENCODING: [0x57,0x22,0x42,0x76]
+
+vmsgeu.vx v4, v8, a1
+# CHECK-INST: vmsltu.vx v4, v8, a1
+# CHECK-ENCODING: [0x57,0xc2,0x85,0x6a]
+# CHECK-INST: vmnand.mm v4, v4, v4
+# CHECK-ENCODING: [0x57,0x22,0x42,0x76]
+
+vmsge.vx v8, v12, a2, v0.t
+# CHECK-INST: vmslt.vx v8, v12, a2, v0.t
+# CHECK-ENCODING: [0x57,0x44,0xc6,0x6c]
+# CHECK-INST: vmxor.mm v8, v8, v0
+# CHECK-ENCODING: [0x57,0x24,0x80,0x6e]
+
+vmsgeu.vx v8, v12, a2, v0.t
+# CHECK-INST: vmsltu.vx v8, v12, a2, v0.t
+# CHECK-ENCODING: [0x57,0x44,0xc6,0x68]
+# CHECK-INST: vmxor.mm v8, v8, v0
+# CHECK-ENCODING: [0x57,0x24,0x80,0x6e]
+
+vmsge.vx v4, v8, a1, v0.t, v12
+# CHECK-INST: vmslt.vx v12, v8, a1
+# TODO: GCC produces vmslt.vx v12, v8, a1, v0.t
+# CHECK-ENCODING: [0x57,0xc6,0x85,0x6e]
+# CHECK-INST: vmandnot.mm v4, v4, v12
+# CHECK-ENCODING: [0x57,0x22,0x46,0x62]
+
+vmsgeu.vx v4, v8, a1, v0.t, v12
+# CHECK-INST: vmsltu.vx v12, v8, a1
+# TODO: GCC adds v0.t to the above vmslt.vx
+# CHECK-ENCODING: [0x57,0xc6,0x85,0x6a]
+# CHECK-INST: vmandnot.mm v4, v4, v12
+# CHECK-ENCODING: [0x57,0x22,0x46,0x62]
+
 # TODO: rvv 0.7.1
 # vmslt.vi v4, v8, 16
 # CHECK-INST-TODO: vmsle.vi	v4, v8, 15
