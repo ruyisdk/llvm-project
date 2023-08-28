@@ -789,7 +789,7 @@ defm XVCOMPRESS_V : VCPR_MV_Mask<"vcompress", 0b010111>;
 } // Predicates = [HasVendorXTHeadV]
 } // AsmVariantName = "RVV0p71", DecoderNamespace = "RVV0p71"
 
-// Pesudo instructions
+// Pseudo instructions
 let AsmVariantName = "RVV0p71" in {
 let Predicates = [HasVendorXTHeadV] in {
 // Vector Integer Comparison Instructions
