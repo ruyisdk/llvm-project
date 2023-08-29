@@ -849,6 +849,43 @@ def PseudoXVMSGE_VX_M_T : Pseudo<(outs VR:$vd, VRNoV0:$scratch),
                                  [], "vmsge.vx", "$vd, $vs2, $rs1$vm, $scratch">;
 } // isCodeGenOnly = 0, isAsmParserOnly = 1, hasSideEffects = 0, mayLoad = 0, mayStore = 0
 
+
+// Vector Floating-Point Compare Instructions
+def : InstAlias<"vmfgt.vv $vd, $va, $vb$vm",
+                (XVMFLT_VV VR:$vd, VR:$vb, VR:$va, VMaskOp:$vm), 0>;
+def : InstAlias<"vmfge.vv $vd, $va, $vb$vm",
+                (XVMFLE_VV VR:$vd, VR:$vb, VR:$va, VMaskOp:$vm), 0>;
+
+// Vector Bitwise Logical Instructions
+def : InstAlias<"vnot.v $vd, $vs$vm",
+                (XVXOR_VI VR:$vd, VR:$vs, -1, VMaskOp:$vm)>;
+def : InstAlias<"vnot.v $vd, $vs",
+                (XVXOR_VI VR:$vd, VR:$vs, -1, zero_reg)>;
+
+// Vector Widening Integer Add/Subtract
+def : InstAlias<"vwcvt.x.x.v $vd, $vs$vm",
+                (XVWADD_VX VR:$vd, VR:$vs, X0, VMaskOp:$vm)>;
+def : InstAlias<"vwcvt.x.x.v $vd, $vs",
+                (XVWADD_VX VR:$vd, VR:$vs, X0, zero_reg)>;
+def : InstAlias<"vwcvtu.x.x.v $vd, $vs$vm",
+                (XVWADDU_VX VR:$vd, VR:$vs, X0, VMaskOp:$vm)>;
+def : InstAlias<"vwcvtu.x.x.v $vd, $vs",
+                (XVWADDU_VX VR:$vd, VR:$vs, X0, zero_reg)>;
+
+// Integer Extract Instruction
+def : InstAlias<"vmv.x.s $rd, $vs",
+                (XVEXT_X_V GPR:$rd, VR:$vs, X0)>;
+
+// Vector Mask-Register Logical Instructions
+def : InstAlias<"vmcpy.m $vd, $vs",
+                (XVMAND_MM VR:$vd, VR:$vs, VR:$vs)>;
+def : InstAlias<"vmclr.m $vd",
+                (XVMXOR_MM VR:$vd, VR:$vd, VR:$vd)>;
+def : InstAlias<"vmset.m $vd",
+                (XVMXNOR_MM VR:$vd, VR:$vd, VR:$vd)>;
+def : InstAlias<"vmnot.m $vd, $vs",
+                (XVMNAND_MM VR:$vd, VR:$vs, VR:$vs)>;
+
 } // Predicates = [HasVendorXTHeadV]
 } // AsmVariantName = "RVV0p71"
 
