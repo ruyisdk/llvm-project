@@ -6934,36 +6934,6 @@ vcompress.vm v4, v8, v12
 # CHECK-INST: vcompress.vm	v4, v8, v12
 # CHECK-ENCODING: [0x57,0x22,0x86,0x5e]
 
-# TODO: rvv 0.7.1
-# vdot.vv v4, v8, v12
-# CHECK-INST-TODO: vdot.vv v4, v8, v12
-# CHECK-ENCODING-TODO: [0x57,0x02,0x86,0xe6]
-
-# TODO: rvv 0.7.1
-# vdotu.vv v4, v8, v12
-# CHECK-INST-TODO: vdotu.vv v4, v8, v12
-# CHECK-ENCODING-TODO: [0x57,0x02,0x86,0xe2]
-
-# TODO: rvv 0.7.1
-# vfdot.vv v4, v8, v12
-# CHECK-INST-TODO: vfdot.vv v4, v8, v12
-# CHECK-ENCODING-TODO: [0x57,0x12,0x86,0xe6]
-
-# TODO: rvv 0.7.1
-# vdot.vv v4, v8, v12, v0.t
-# CHECK-INST-TODO: vdot.vv v4, v8, v12, v0.t
-# CHECK-ENCODING-TODO: [0x57,0x02,0x86,0xe4]
-
-# TODO: rvv 0.7.1
-# vdotu.vv v4, v8, v12, v0.t
-# CHECK-INST-TODO: vdotu.vv v4, v8, v12, v0.t
-# CHECK-ENCODING-TODO: [0x57,0x02,0x86,0xe0]
-
-# TODO: rvv 0.7.1
-# vfdot.vv v4, v8, v12, v0.t
-# CHECK-INST-TODO: vfdot.vv v4, v8, v12, v0.t
-# CHECK-ENCODING-TODO: [0x57,0x12,0x86,0xe4]
-
 csrr a0, vstart
 # CHECK-INST: csrr	a0, vstart
 # CHECK-ENCODING: [0x73,0x25,0x80,0x00]
