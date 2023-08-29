@@ -3398,7 +3398,9 @@ bool RISCVAsmParser::validateInstruction(MCInst &Inst,
   unsigned Opcode = Inst.getOpcode();
 
   if (Opcode == RISCV::PseudoVMSGEU_VX_M_T ||
-      Opcode == RISCV::PseudoVMSGE_VX_M_T) {
+      Opcode == RISCV::PseudoVMSGE_VX_M_T ||
+      Opcode == RISCV::PseudoXVMSGEU_VX_M_T ||
+      Opcode == RISCV::PseudoXVMSGE_VX_M_T) {
     unsigned DestReg = Inst.getOperand(0).getReg();
     unsigned TempReg = Inst.getOperand(1).getReg();
     if (DestReg == TempReg) {
