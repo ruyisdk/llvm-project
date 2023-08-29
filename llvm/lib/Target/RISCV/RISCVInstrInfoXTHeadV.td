@@ -802,6 +802,7 @@ def : InstAlias<"vmsgeu.vv $vd, $va, $vb$vm",
 def : InstAlias<"vmsge.vv $vd, $va, $vb$vm",
                 (XVMSLE_VV VR:$vd, VR:$vb, VR:$va, VMaskOp:$vm), 0>;
 
+// These pseudos need to be handled in RISCVAsmParser::processInstruction
 let isCodeGenOnly = 0, isAsmParserOnly = 1, hasSideEffects = 0, mayLoad = 0,
     mayStore = 0 in {
 // For unsigned comparisons we need to special case 0 immediate to maintain
@@ -825,7 +826,7 @@ def PseudoXVMSLT_VI : Pseudo<(outs VR:$vd),
                              [], "vmslt.vi", "$vd, $vs2, $imm$vm">;
 }
 
-// These pseudos need to be handled in RISCVAsmParser.cpp
+// These pseudos need to be handled in RISCVAsmParser::processInstruction
 let isCodeGenOnly = 0, isAsmParserOnly = 1, hasSideEffects = 0, mayLoad = 0,
     mayStore = 0 in {
 def PseudoXVMSGEU_VX : Pseudo<(outs VR:$vd),
