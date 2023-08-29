@@ -838,6 +838,16 @@ def : InstAlias<"vnot.v $vd, $vs$vm",
 def : InstAlias<"vnot.v $vd, $vs",
                 (XVXOR_VI VR:$vd, VR:$vs, -1, zero_reg)>;
 
+// Vector Widening Integer Add/Subtract
+def : InstAlias<"vwcvt.x.x.v $vd, $vs$vm",
+                (XVWADD_VX VR:$vd, VR:$vs, X0, VMaskOp:$vm)>;
+def : InstAlias<"vwcvt.x.x.v $vd, $vs",
+                (XVWADD_VX VR:$vd, VR:$vs, X0, zero_reg)>;
+def : InstAlias<"vwcvtu.x.x.v $vd, $vs$vm",
+                (XVWADDU_VX VR:$vd, VR:$vs, X0, VMaskOp:$vm)>;
+def : InstAlias<"vwcvtu.x.x.v $vd, $vs",
+                (XVWADDU_VX VR:$vd, VR:$vs, X0, zero_reg)>;
+
 } // Predicates = [HasVendorXTHeadV]
 } // AsmVariantName = "RVV0p71"
 

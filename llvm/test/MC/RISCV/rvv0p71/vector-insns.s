@@ -4341,25 +4341,21 @@ vrsub.vi v4, v8, -16, v0.t
 # CHECK-INST: vrsub.vi	v4, v8, -16, v0.t
 # CHECK-ENCODING: [0x57,0x32,0x88,0x0c]
 
-# TODO: rvv 0.7.1
-# vwcvt.x.x.v v4, v8
-# CHECK-INST-TODO: vwcvt.x.x.v v4, v8
-# CHECK-ENCODING-TODO: [0x57,0x62,0x80,0xc6]
+vwcvt.x.x.v v4, v8
+# CHECK-INST: vwcvt.x.x.v v4, v8
+# CHECK-ENCODING: [0x57,0x62,0x80,0xc6]
 
-# TODO: rvv 0.7.1
-# vwcvtu.x.x.v v4, v8
-# CHECK-INST-TODO: vwcvtu.x.x.v v4, v8
-# CHECK-ENCODING-TODO: [0x57,0x62,0x80,0xc2]
+vwcvtu.x.x.v v4, v8
+# CHECK-INST: vwcvtu.x.x.v v4, v8
+# CHECK-ENCODING: [0x57,0x62,0x80,0xc2]
 
-# TODO: rvv 0.7.1
-# vwcvt.x.x.v v4, v8, v0.t
-# CHECK-INST-TODO: vwcvt.x.x.v v4, v8, v0.t
-# CHECK-ENCODING-TODO: [0x57,0x62,0x80,0xc4]
+vwcvt.x.x.v v4, v8, v0.t
+# CHECK-INST: vwcvt.x.x.v v4, v8, v0.t
+# CHECK-ENCODING: [0x57,0x62,0x80,0xc4]
 
-# TODO: rvv 0.7.1
-# vwcvtu.x.x.v v4, v8, v0.t
-# CHECK-INST-TODO: vwcvtu.x.x.v v4, v8, v0.t
-# CHECK-ENCODING-TODO: [0x57,0x62,0x80,0xc0]
+vwcvtu.x.x.v v4, v8, v0.t
+# CHECK-INST: vwcvtu.x.x.v v4, v8, v0.t
+# CHECK-ENCODING: [0x57,0x62,0x80,0xc0]
 
 vwaddu.vv v4, v8, v12
 # CHECK-INST: vwaddu.vv	v4, v8, v12
