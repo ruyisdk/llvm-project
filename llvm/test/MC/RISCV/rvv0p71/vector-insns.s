@@ -6337,25 +6337,21 @@ vfsgnjx.vf v4, v8, fa2, v0.t
 # CHECK-INST: vfsgnjx.vf	v4, v8, fa2, v0.t
 # CHECK-ENCODING: [0x57,0x52,0x86,0x28]
 
-# TODO: rvv 0.7.1
-# vmfgt.vv v4, v8, v12
-# CHECK-INST-TODO: vmfgt.vv v4, v8, v12
-# CHECK-ENCODING-TODO: [0x57,0x12,0xc4,0x6e]
+vmfgt.vv v4, v8, v12
+# CHECK-INST: vmflt.vv v4, v12, v8
+# CHECK-ENCODING: [0x57,0x12,0xc4,0x6e]
 
-# TODO: rvv 0.7.1
-# vmfge.vv v4, v8, v12
-# CHECK-INST-TODO: vmfge.vv v4, v8, v12
-# CHECK-ENCODING-TODO: [0x57,0x12,0xc4,0x66]
+vmfge.vv v4, v8, v12
+# CHECK-INST: vmfle.vv v4, v12, v8
+# CHECK-ENCODING: [0x57,0x12,0xc4,0x66]
 
-# TODO: rvv 0.7.1
-# vmfgt.vv v4, v8, v12, v0.t
-# CHECK-INST-TODO: vmfgt.vv v4, v8, v12, v0.t
-# CHECK-ENCODING-TODO: [0x57,0x12,0xc4,0x6c]
+vmfgt.vv v4, v8, v12, v0.t
+# CHECK-INST: vmflt.vv v4, v12, v8, v0.t
+# CHECK-ENCODING: [0x57,0x12,0xc4,0x6c]
 
-# TODO: rvv 0.7.1
-# vmfge.vv v4, v8, v12, v0.t
-# CHECK-INST-TODO: vmfge.vv v4, v8, v12, v0.t
-# CHECK-ENCODING-TODO: [0x57,0x12,0xc4,0x64]
+vmfge.vv v4, v8, v12, v0.t
+# CHECK-INST: vmfle.vv v4, v12, v8, v0.t
+# CHECK-ENCODING: [0x57,0x12,0xc4,0x64]
 
 vmfeq.vv v4, v8, v12
 # CHECK-INST: vmfeq.vv	v4, v8, v12

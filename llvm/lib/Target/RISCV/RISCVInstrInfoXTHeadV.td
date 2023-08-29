@@ -825,6 +825,13 @@ def PseudoXVMSGE_VX_M_T : Pseudo<(outs VR:$vd, VRNoV0:$scratch),
                                  [], "vmsge.vx", "$vd, $vs2, $rs1$vm, $scratch">;
 } // isCodeGenOnly = 0, isAsmParserOnly = 1, hasSideEffects = 0, mayLoad = 0, mayStore = 0
 
+
+// Vector Floating-Point Compare Instructions
+def : InstAlias<"vmfgt.vv $vd, $va, $vb$vm",
+                (XVMFLT_VV VR:$vd, VR:$vb, VR:$va, VMaskOp:$vm), 0>;
+def : InstAlias<"vmfge.vv $vd, $va, $vb$vm",
+                (XVMFLE_VV VR:$vd, VR:$vb, VR:$va, VMaskOp:$vm), 0>;
+
 } // Predicates = [HasVendorXTHeadV]
 } // AsmVariantName = "RVV0p71"
 
