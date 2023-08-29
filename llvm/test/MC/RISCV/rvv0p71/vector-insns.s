@@ -6807,10 +6807,9 @@ vid.v v4, v0.t
 # CHECK-INST: vid.v	v4, v0.t
 # CHECK-ENCODING: [0x57,0xa2,0x08,0x58]
 
-# TODO: rvv 0.7.1
-# vmv.x.s a0, v12
-# CHECK-INST-TODO: vmv.x.s a0, v12
-# CHECK-ENCODING-TODO: [0x57,0x25,0xc0,0x32]
+vmv.x.s a0, v12
+# CHECK-INST: vmv.x.s a0, v12
+# CHECK-ENCODING: [0x57,0x25,0xc0,0x32]
 
 vext.x.v a0, v12, a2
 # CHECK-INST: vext.x.v	a0, v12, a2

@@ -848,6 +848,10 @@ def : InstAlias<"vwcvtu.x.x.v $vd, $vs$vm",
 def : InstAlias<"vwcvtu.x.x.v $vd, $vs",
                 (XVWADDU_VX VR:$vd, VR:$vs, X0, zero_reg)>;
 
+// Integer Extract Instruction
+def : InstAlias<"vmv.x.s $rd, $vs",
+                (XVEXT_X_V GPR:$rd, VR:$vs, X0)>;
+
 } // Predicates = [HasVendorXTHeadV]
 } // AsmVariantName = "RVV0p71"
 
