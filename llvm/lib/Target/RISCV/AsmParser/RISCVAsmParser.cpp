@@ -3719,6 +3719,18 @@ bool RISCVAsmParser::processInstruction(MCInst &Inst, SMLoc IDLoc,
   case RISCV::PseudoXVMSGE_VX_M_T:
     emitXVMSGE(Inst, RISCV::XVMSLT_VX, IDLoc, Out);
     return false;
+  case RISCV::PseudoXVMSGE_VI:
+    emitVMSGE_VI(Inst, RISCV::XVMSGT_VI, RISCV::XVMSGT_VI, IDLoc, Out, true);
+    return false;
+  case RISCV::PseudoXVMSLT_VI:
+    emitVMSGE_VI(Inst, RISCV::XVMSLE_VI, RISCV::XVMSLE_VI, IDLoc, Out, true);
+    return false;
+  case RISCV::PseudoXVMSGEU_VI:
+    emitVMSGE_VI(Inst, RISCV::XVMSGTU_VI, RISCV::XVMSEQ_VV, IDLoc, Out, false);
+    return false;
+  case RISCV::PseudoXVMSLTU_VI:
+    emitVMSGE_VI(Inst, RISCV::XVMSLEU_VI, RISCV::XVMSNE_VV, IDLoc, Out, false);
+    return false;
   }
 
   emitToStreamer(Out, Inst);
