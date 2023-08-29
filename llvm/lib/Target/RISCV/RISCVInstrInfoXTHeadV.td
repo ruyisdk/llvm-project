@@ -852,6 +852,16 @@ def : InstAlias<"vwcvtu.x.x.v $vd, $vs",
 def : InstAlias<"vmv.x.s $rd, $vs",
                 (XVEXT_X_V GPR:$rd, VR:$vs, X0)>;
 
+// Vector Mask-Register Logical Instructions
+def : InstAlias<"vmcpy.m $vd, $vs",
+                (XVMAND_MM VR:$vd, VR:$vs, VR:$vs)>;
+def : InstAlias<"vmclr.m $vd",
+                (XVMXOR_MM VR:$vd, VR:$vd, VR:$vd)>;
+def : InstAlias<"vmset.m $vd",
+                (XVMXNOR_MM VR:$vd, VR:$vd, VR:$vd)>;
+def : InstAlias<"vmnot.m $vd, $vs",
+                (XVMNAND_MM VR:$vd, VR:$vs, VR:$vs)>;
+
 } // Predicates = [HasVendorXTHeadV]
 } // AsmVariantName = "RVV0p71"
 

@@ -4832,13 +4832,13 @@ vmsgeu.vv v4, v8, v12, v0.t
 vmsge.vx v4, v8, a1
 # CHECK-INST: vmslt.vx v4, v8, a1
 # CHECK-ENCODING: [0x57,0xc2,0x85,0x6e]
-# CHECK-INST: vmnand.mm v4, v4, v4
+# CHECK-INST: vmnot.m v4, v4
 # CHECK-ENCODING: [0x57,0x22,0x42,0x76]
 
 vmsgeu.vx v4, v8, a1
 # CHECK-INST: vmsltu.vx v4, v8, a1
 # CHECK-ENCODING: [0x57,0xc2,0x85,0x6a]
-# CHECK-INST: vmnand.mm v4, v4, v4
+# CHECK-INST: vmnot.m v4, v4
 # CHECK-ENCODING: [0x57,0x22,0x42,0x76]
 
 vmsge.vx v8, v12, a2, v0.t
@@ -6699,25 +6699,21 @@ vfwredsum.vs v4, v8, v12, v0.t
 # CHECK-INST: vfwredsum.vs	v4, v8, v12, v0.t
 # CHECK-ENCODING: [0x57,0x12,0x86,0xc4]
 
-# TODO: rvv 0.7.1
-# vmcpy.m v4, v8
-# CHECK-INST-TODO: vmcpy.m v4, v8
-# CHECK-ENCODING-TODO: [0x57,0x22,0x84,0x66]
+vmcpy.m v4, v8
+# CHECK-INST: vmcpy.m v4, v8
+# CHECK-ENCODING: [0x57,0x22,0x84,0x66]
 
-# TODO: rvv 0.7.1
-# vmclr.m v4
-# CHECK-INST-TODO: vmclr.m v4
-# CHECK-ENCODING-TODO: [0x57,0x22,0x42,0x6e]
+vmclr.m v4
+# CHECK-INST: vmclr.m v4
+# CHECK-ENCODING: [0x57,0x22,0x42,0x6e]
 
-# TODO: rvv 0.7.1
-# vmset.m v4
-# CHECK-INST-TODO: vmset.m v4
-# CHECK-ENCODING-TODO: [0x57,0x22,0x42,0x7e]
+vmset.m v4
+# CHECK-INST: vmset.m v4
+# CHECK-ENCODING: [0x57,0x22,0x42,0x7e]
 
-# TODO: rvv 0.7.1
-# vmnot.m v4, v8
-# CHECK-INST-TODO: vmnot.m v4, v8
-# CHECK-ENCODING-TODO: [0x57,0x22,0x84,0x76]
+vmnot.m v4, v8
+# CHECK-INST: vmnot.m v4, v8
+# CHECK-ENCODING: [0x57,0x22,0x84,0x76]
 
 vmand.mm v4, v8, v12
 # CHECK-INST: vmand.mm	v4, v8, v12
