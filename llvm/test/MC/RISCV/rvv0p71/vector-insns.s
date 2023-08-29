@@ -4537,15 +4537,13 @@ vmsbc.vxm v4, v8, a1, v0
 # CHECK-INST: vmsbc.vxm	v4, v8, a1, v0
 # CHECK-ENCODING: [0x57,0xc2,0x85,0x4e]
 
-# TODO: rvv 0.7.1
-# vnot.v v4, v8
-# CHECK-INST-TODO: vnot.v v4, v8
-# CHECK-ENCODING-TODO: [0x57,0xb2,0x8f,0x2e]
+vnot.v v4, v8
+# CHECK-INST: vnot.v v4, v8
+# CHECK-ENCODING: [0x57,0xb2,0x8f,0x2e]
 
-# TODO: rvv 0.7.1
-# vnot.v v4, v8, v0.t
-# CHECK-INST-TODO: vnot.v v4, v8, v0.t
-# CHECK-ENCODING-TODO: [0x57,0xb2,0x8f,0x2c]
+vnot.v v4, v8, v0.t
+# CHECK-INST: vnot.v v4, v8, v0.t
+# CHECK-ENCODING: [0x57,0xb2,0x8f,0x2c]
 
 vand.vv v4, v8, v12
 # CHECK-INST: vand.vv	v4, v8, v12

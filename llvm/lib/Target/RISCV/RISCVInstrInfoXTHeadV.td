@@ -832,6 +832,12 @@ def : InstAlias<"vmfgt.vv $vd, $va, $vb$vm",
 def : InstAlias<"vmfge.vv $vd, $va, $vb$vm",
                 (XVMFLE_VV VR:$vd, VR:$vb, VR:$va, VMaskOp:$vm), 0>;
 
+// Vector Bitwise Logical Instructions
+def : InstAlias<"vnot.v $vd, $vs$vm",
+                (XVXOR_VI VR:$vd, VR:$vs, -1, VMaskOp:$vm)>;
+def : InstAlias<"vnot.v $vd, $vs",
+                (XVXOR_VI VR:$vd, VR:$vs, -1, zero_reg)>;
+
 } // Predicates = [HasVendorXTHeadV]
 } // AsmVariantName = "RVV0p71"
 
