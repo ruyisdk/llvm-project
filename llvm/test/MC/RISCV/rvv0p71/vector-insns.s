@@ -4868,90 +4868,74 @@ vmsge.vx v4, v8, a1, v0.t, v12
 
 vmsgeu.vx v4, v8, a1, v0.t, v12
 # CHECK-INST: vmsltu.vx v12, v8, a1
-# TODO: GCC adds v0.t to the above vmslt.vx
+# TODO: GCC produces vmsltu.vx v12, v8, a1, v0.t
 # CHECK-ENCODING: [0x57,0xc6,0x85,0x6a]
 # CHECK-INST: vmandnot.mm v4, v4, v12
 # CHECK-ENCODING: [0x57,0x22,0x46,0x62]
 
-# TODO: rvv 0.7.1
-# vmslt.vi v4, v8, 16
-# CHECK-INST-TODO: vmsle.vi	v4, v8, 15
-# CHECK-ENCODING-TODO: [0x57,0xb2,0x87,0x76]
+vmslt.vi v4, v8, 16
+# CHECK-INST: vmsle.vi	v4, v8, 15
+# CHECK-ENCODING: [0x57,0xb2,0x87,0x76]
 
-# TODO: rvv 0.7.1
-# vmslt.vi v4, v8, -15
-# CHECK-INST-TODO: vmsle.vi	v4, v8, -16
-# CHECK-ENCODING-TODO: [0x57,0x32,0x88,0x76]
+vmslt.vi v4, v8, -15
+# CHECK-INST: vmsle.vi	v4, v8, -16
+# CHECK-ENCODING: [0x57,0x32,0x88,0x76]
 
-# TODO: rvv 0.7.1
-# vmsltu.vi v4, v8, 16
-# CHECK-INST-TODO: vmsleu.vi	v4, v8, 15
-# CHECK-ENCODING-TODO: [0x57,0xb2,0x87,0x72]
+vmsltu.vi v4, v8, 16
+# CHECK-INST: vmsleu.vi	v4, v8, 15
+# CHECK-ENCODING: [0x57,0xb2,0x87,0x72]
 
-# TODO: rvv 0.7.1
-# vmsltu.vi v4, v8, -15
-# CHECK-INST-TODO: vmsleu.vi	v4, v8, -16
-# CHECK-ENCODING-TODO: [0x57,0x32,0x88,0x72]
+vmsltu.vi v4, v8, -15
+# CHECK-INST: vmsleu.vi	v4, v8, -16
+# CHECK-ENCODING: [0x57,0x32,0x88,0x72]
 
-# TODO: rvv 0.7.1
-# vmsge.vi v4, v8, 16
-# CHECK-INST-TODO: vmsgt.vi	v4, v8, 15
-# CHECK-ENCODING-TODO: [0x57,0xb2,0x87,0x7e]
+vmsge.vi v4, v8, 16
+# CHECK-INST: vmsgt.vi	v4, v8, 15
+# CHECK-ENCODING: [0x57,0xb2,0x87,0x7e]
 
-# TODO: rvv 0.7.1
-# vmsge.vi v4, v8, -15
-# CHECK-INST-TODO: vmsgt.vi	v4, v8, -16
-# CHECK-ENCODING-TODO: [0x57,0x32,0x88,0x7e]
+vmsge.vi v4, v8, -15
+# CHECK-INST: vmsgt.vi	v4, v8, -16
+# CHECK-ENCODING: [0x57,0x32,0x88,0x7e]
 
-# TODO: rvv 0.7.1
-# vmsgeu.vi v4, v8, 16
-# CHECK-INST-TODO: vmsgtu.vi	v4, v8, 15
-# CHECK-ENCODING-TODO: [0x57,0xb2,0x87,0x7a]
+vmsgeu.vi v4, v8, 16
+# CHECK-INST: vmsgtu.vi	v4, v8, 15
+# CHECK-ENCODING: [0x57,0xb2,0x87,0x7a]
 
-# TODO: rvv 0.7.1
-# vmsgeu.vi v4, v8, -15
-# CHECK-INST-TODO: vmsgtu.vi	v4, v8, -16
-# CHECK-ENCODING-TODO: [0x57,0x32,0x88,0x7a]
+vmsgeu.vi v4, v8, -15
+# CHECK-INST: vmsgtu.vi	v4, v8, -16
+# CHECK-ENCODING: [0x57,0x32,0x88,0x7a]
 
-# TODO: rvv 0.7.1
-# vmslt.vi v4, v8, 16, v0.t
-# CHECK-INST-TODO: vmsle.vi	v4, v8, 15, v0.t
-# CHECK-ENCODING-TODO: [0x57,0xb2,0x87,0x74]
+vmslt.vi v4, v8, 16, v0.t
+# CHECK-INST: vmsle.vi	v4, v8, 15, v0.t
+# CHECK-ENCODING: [0x57,0xb2,0x87,0x74]
 
-# TODO: rvv 0.7.1
-# vmslt.vi v4, v8, -15, v0.t
-# CHECK-INST-TODO: vmsle.vi	v4, v8, -16, v0.t
-# CHECK-ENCODING-TODO: [0x57,0x32,0x88,0x74]
+vmslt.vi v4, v8, -15, v0.t
+# CHECK-INST: vmsle.vi	v4, v8, -16, v0.t
+# CHECK-ENCODING: [0x57,0x32,0x88,0x74]
 
-# TODO: rvv 0.7.1
-# vmsltu.vi v4, v8, 16, v0.t
-# CHECK-INST-TODO: vmsleu.vi	v4, v8, 15, v0.t
-# CHECK-ENCODING-TODO: [0x57,0xb2,0x87,0x70]
+vmsltu.vi v4, v8, 16, v0.t
+# CHECK-INST: vmsleu.vi	v4, v8, 15, v0.t
+# CHECK-ENCODING: [0x57,0xb2,0x87,0x70]
 
-# TODO: rvv 0.7.1
-# vmsltu.vi v4, v8, -15, v0.t
-# CHECK-INST-TODO: vmsleu.vi	v4, v8, -16, v0.t
-# CHECK-ENCODING-TODO: [0x57,0x32,0x88,0x70]
+vmsltu.vi v4, v8, -15, v0.t
+# CHECK-INST: vmsleu.vi	v4, v8, -16, v0.t
+# CHECK-ENCODING: [0x57,0x32,0x88,0x70]
 
-# TODO: rvv 0.7.1
-# vmsge.vi v4, v8, 16, v0.t
-# CHECK-INST-TODO: vmsgt.vi	v4, v8, 15, v0.t
-# CHECK-ENCODING-TODO: [0x57,0xb2,0x87,0x7c]
+vmsge.vi v4, v8, 16, v0.t
+# CHECK-INST: vmsgt.vi	v4, v8, 15, v0.t
+# CHECK-ENCODING: [0x57,0xb2,0x87,0x7c]
 
-# TODO: rvv 0.7.1
-# vmsge.vi v4, v8, -15, v0.t
-# CHECK-INST-TODO: vmsgt.vi	v4, v8, -16, v0.t
-# CHECK-ENCODING-TODO: [0x57,0x32,0x88,0x7c]
+vmsge.vi v4, v8, -15, v0.t
+# CHECK-INST: vmsgt.vi	v4, v8, -16, v0.t
+# CHECK-ENCODING: [0x57,0x32,0x88,0x7c]
 
-# TODO: rvv 0.7.1
-# vmsgeu.vi v4, v8, 16, v0.t
-# CHECK-INST-TODO: vmsgtu.vi	v4, v8, 15, v0.t
-# CHECK-ENCODING-TODO: [0x57,0xb2,0x87,0x78]
+vmsgeu.vi v4, v8, 16, v0.t
+# CHECK-INST: vmsgtu.vi	v4, v8, 15, v0.t
+# CHECK-ENCODING: [0x57,0xb2,0x87,0x78]
 
-# TODO: rvv 0.7.1
-# vmsgeu.vi v4, v8, -15, v0.t
-# CHECK-INST-TODO: vmsgtu.vi	v4, v8, -16, v0.t
-# CHECK-ENCODING-TODO: [0x57,0x32,0x88,0x78]
+vmsgeu.vi v4, v8, -15, v0.t
+# CHECK-INST: vmsgtu.vi	v4, v8, -16, v0.t
+# CHECK-ENCODING: [0x57,0x32,0x88,0x78]
 
 vmseq.vv v4, v8, v12
 # CHECK-INST: vmseq.vv	v4, v8, v12
