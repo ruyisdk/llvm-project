@@ -802,7 +802,31 @@ def : InstAlias<"vmsgeu.vv $vd, $va, $vb$vm",
 def : InstAlias<"vmsge.vv $vd, $va, $vb$vm",
                 (XVMSLE_VV VR:$vd, VR:$vb, VR:$va, VMaskOp:$vm), 0>;
 
-// These pseudos need to be handled in RISCVAsmParser.cpp
+// These pseudos need to be handled in RISCVAsmParser::processInstruction
+let isCodeGenOnly = 0, isAsmParserOnly = 1, hasSideEffects = 0, mayLoad = 0,
+    mayStore = 0 in {
+// For unsigned comparisons we need to special case 0 immediate to maintain
+// the always true/false semantics we would invert if we just decremented the
+// immediate like we do for signed. To match the GNU assembler we will use
+// vmseq/vmsne.vv with the same register for both operands which we can't do
+// from an InstAlias.
+def PseudoXVMSGEU_VI : Pseudo<(outs VR:$vd),
+                              (ins VR:$vs2, simm5_plus1:$imm, VMaskOp:$vm),
+                              [], "vmsgeu.vi", "$vd, $vs2, $imm$vm">;
+def PseudoXVMSLTU_VI : Pseudo<(outs VR:$vd),
+                              (ins VR:$vs2, simm5_plus1:$imm, VMaskOp:$vm),
+                              [], "vmsltu.vi", "$vd, $vs2, $imm$vm">;
+// Handle signed with pseudos as well for more consistency in the
+// implementation.
+def PseudoXVMSGE_VI : Pseudo<(outs VR:$vd),
+                             (ins VR:$vs2, simm5_plus1:$imm, VMaskOp:$vm),
+                             [], "vmsge.vi", "$vd, $vs2, $imm$vm">;
+def PseudoXVMSLT_VI : Pseudo<(outs VR:$vd),
+                             (ins VR:$vs2, simm5_plus1:$imm, VMaskOp:$vm),
+                             [], "vmslt.vi", "$vd, $vs2, $imm$vm">;
+}
+
+// These pseudos need to be handled in RISCVAsmParser::processInstruction
 let isCodeGenOnly = 0, isAsmParserOnly = 1, hasSideEffects = 0, mayLoad = 0,
     mayStore = 0 in {
 def PseudoXVMSGEU_VX : Pseudo<(outs VR:$vd),

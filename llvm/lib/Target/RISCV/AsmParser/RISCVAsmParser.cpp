@@ -165,6 +165,10 @@ class RISCVAsmParser : public MCTargetAsmParser {
   // Helper to emit pseudo vmsge{u}.vx instruction.
   void emitVMSGE(MCInst &Inst, unsigned Opcode, SMLoc IDLoc, MCStreamer &Out);
 
+  // Helper to emit pseudo vmsge{u}.vi instruction.
+  void emitVMSGE_VI(MCInst &Inst, unsigned Opcode, unsigned OpcodeImmIs0,
+                    SMLoc IDLoc, MCStreamer &Out, bool IsSigned);
+
   // Helper to emit pseudo vmsge{u}.vx instruction for XTHeadV extension.
   void emitXVMSGE(MCInst &Inst, unsigned Opcode, SMLoc IDLoc, MCStreamer &Out);
 
@@ -3369,6 +3373,38 @@ void RISCVAsmParser::emitXVMSGE(MCInst &Inst, unsigned Opcode, SMLoc IDLoc,
   }
 }
 
+void RISCVAsmParser::emitVMSGE_VI(MCInst &Inst, unsigned Opcode,
+                                  unsigned OpcodeImmIs0, SMLoc IDLoc,
+                                  MCStreamer &Out, bool IsSigned) {
+  int64_t Imm = Inst.getOperand(2).getImm();
+  if (IsSigned) {
+    // These instructions are signed and so is immediate so we can subtract one.
+    emitToStreamer(Out, MCInstBuilder(Opcode)
+                            .addOperand(Inst.getOperand(0))
+                            .addOperand(Inst.getOperand(1))
+                            .addImm(Imm - 1)
+                            .addOperand(Inst.getOperand(3)));
+  } else {
+    // Unsigned comparisons are tricky because the immediate is signed. If the
+    // immediate is 0 we can't just subtract one. vmsltu.vi v0, v1, 0 is always
+    // false, but vmsle.vi v0, v1, -1 is always true. Instead we use
+    // vmsne v0, v1, v1 which is always false.
+    if (Imm == 0) {
+      emitToStreamer(Out, MCInstBuilder(OpcodeImmIs0)
+                              .addOperand(Inst.getOperand(0))
+                              .addOperand(Inst.getOperand(1))
+                              .addOperand(Inst.getOperand(1))
+                              .addOperand(Inst.getOperand(3)));
+    } else {
+      // Other immediate values can subtract one like signed.
+      emitToStreamer(Out, MCInstBuilder(Opcode)
+                              .addOperand(Inst.getOperand(0))
+                              .addOperand(Inst.getOperand(1))
+                              .addImm(Imm - 1)
+                              .addOperand(Inst.getOperand(3)));
+    }
+  }
+}
 
 bool RISCVAsmParser::checkPseudoAddTPRel(MCInst &Inst,
                                          OperandVector &Operands) {
@@ -3654,49 +3690,17 @@ bool RISCVAsmParser::processInstruction(MCInst &Inst, SMLoc IDLoc,
     emitVMSGE(Inst, RISCV::VMSLT_VX, IDLoc, Out);
     return false;
   case RISCV::PseudoVMSGE_VI:
-  case RISCV::PseudoVMSLT_VI: {
-    // These instructions are signed and so is immediate so we can subtract one
-    // and change the opcode.
-    int64_t Imm = Inst.getOperand(2).getImm();
-    unsigned Opc = Inst.getOpcode() == RISCV::PseudoVMSGE_VI ? RISCV::VMSGT_VI
-                                                             : RISCV::VMSLE_VI;
-    emitToStreamer(Out, MCInstBuilder(Opc)
-                            .addOperand(Inst.getOperand(0))
-                            .addOperand(Inst.getOperand(1))
-                            .addImm(Imm - 1)
-                            .addOperand(Inst.getOperand(3)));
+    emitVMSGE_VI(Inst, RISCV::VMSGT_VI, RISCV::VMSGT_VI, IDLoc, Out, true);
     return false;
-  }
+  case RISCV::PseudoVMSLT_VI:
+    emitVMSGE_VI(Inst, RISCV::VMSLE_VI, RISCV::VMSLE_VI, IDLoc, Out, true);
+    return false;
   case RISCV::PseudoVMSGEU_VI:
-  case RISCV::PseudoVMSLTU_VI: {
-    int64_t Imm = Inst.getOperand(2).getImm();
-    // Unsigned comparisons are tricky because the immediate is signed. If the
-    // immediate is 0 we can't just subtract one. vmsltu.vi v0, v1, 0 is always
-    // false, but vmsle.vi v0, v1, -1 is always true. Instead we use
-    // vmsne v0, v1, v1 which is always false.
-    if (Imm == 0) {
-      unsigned Opc = Inst.getOpcode() == RISCV::PseudoVMSGEU_VI
-                         ? RISCV::VMSEQ_VV
-                         : RISCV::VMSNE_VV;
-      emitToStreamer(Out, MCInstBuilder(Opc)
-                              .addOperand(Inst.getOperand(0))
-                              .addOperand(Inst.getOperand(1))
-                              .addOperand(Inst.getOperand(1))
-                              .addOperand(Inst.getOperand(3)));
-    } else {
-      // Other immediate values can subtract one like signed.
-      unsigned Opc = Inst.getOpcode() == RISCV::PseudoVMSGEU_VI
-                         ? RISCV::VMSGTU_VI
-                         : RISCV::VMSLEU_VI;
-      emitToStreamer(Out, MCInstBuilder(Opc)
-                              .addOperand(Inst.getOperand(0))
-                              .addOperand(Inst.getOperand(1))
-                              .addImm(Imm - 1)
-                              .addOperand(Inst.getOperand(3)));
-    }
-
+    emitVMSGE_VI(Inst, RISCV::VMSGTU_VI, RISCV::VMSEQ_VV, IDLoc, Out, false);
     return false;
-  }
+  case RISCV::PseudoVMSLTU_VI:
+    emitVMSGE_VI(Inst, RISCV::VMSLEU_VI, RISCV::VMSNE_VV, IDLoc, Out, false);
+    return false;
   // for XTHeadV Extension
   case RISCV::PseudoXVMSGEU_VX:
   case RISCV::PseudoXVMSGEU_VX_M:
@@ -3707,6 +3711,18 @@ bool RISCVAsmParser::processInstruction(MCInst &Inst, SMLoc IDLoc,
   case RISCV::PseudoXVMSGE_VX_M:
   case RISCV::PseudoXVMSGE_VX_M_T:
     emitXVMSGE(Inst, RISCV::XVMSLT_VX, IDLoc, Out);
+    return false;
+  case RISCV::PseudoXVMSGE_VI:
+    emitVMSGE_VI(Inst, RISCV::XVMSGT_VI, RISCV::XVMSGT_VI, IDLoc, Out, true);
+    return false;
+  case RISCV::PseudoXVMSLT_VI:
+    emitVMSGE_VI(Inst, RISCV::XVMSLE_VI, RISCV::XVMSLE_VI, IDLoc, Out, true);
+    return false;
+  case RISCV::PseudoXVMSGEU_VI:
+    emitVMSGE_VI(Inst, RISCV::XVMSGTU_VI, RISCV::XVMSEQ_VV, IDLoc, Out, false);
+    return false;
+  case RISCV::PseudoXVMSLTU_VI:
+    emitVMSGE_VI(Inst, RISCV::XVMSLEU_VI, RISCV::XVMSNE_VV, IDLoc, Out, false);
     return false;
   }
 
