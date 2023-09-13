@@ -14,12 +14,13 @@
 // Vectors version 0.7.1
 
 let TargetPrefix = "riscv" in {
-  def int_riscv_xvsetvl  : Intrinsic<[llvm_i64_ty],
-                                     [llvm_i64_ty, llvm_i64_ty],
-                                     [IntrNoMem]>;
-  def int_riscv_xvsetvli : Intrinsic<[llvm_i64_ty],
-                                     [llvm_i64_ty, llvm_i64_ty],
-                                     [IntrNoMem]>;
+  // 6.1. vsetvli/vsetvl instructions
+  def int_riscv_xvsetvl    : Intrinsic<[llvm_i64_ty],
+                                       [/* AVL */ llvm_i64_ty, /* vtype */ llvm_i64_ty],
+                                       [IntrNoMem]>;
+  def int_riscv_xvsetvlmax : Intrinsic<[llvm_i64_ty],
+                                       [/* vtype */ llvm_i64_ty],
+                                       [IntrNoMem]>;
 
 //  defm xvadd : RISCVBinaryAAX;
 //  defm xvsub : RISCVBinaryAAX;
