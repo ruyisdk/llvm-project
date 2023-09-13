@@ -14,28 +14,34 @@
 // Vectors version 0.7.1
 
 let TargetPrefix = "riscv" in {
+  def int_riscv_xvsetvl  : Intrinsic<[llvm_i64_ty],
+                                     [llvm_i64_ty, llvm_i64_ty],
+                                     [IntrNoMem]>;
+  def int_riscv_xvsetvli : Intrinsic<[llvm_i64_ty],
+                                     [llvm_i64_ty, llvm_i64_ty],
+                                     [IntrNoMem]>;
 
-  defm xvadd : RISCVBinaryAAX;
-  defm xvsub : RISCVBinaryAAX;
-  defm xvrsub : RISCVBinaryAAX;
-
-  defm xvand : RISCVBinaryAAX;
-  defm xvor : RISCVBinaryAAX;
-  defm xvxor : RISCVBinaryAAX;
-
-  defm xvminu : RISCVBinaryAAX;
-  defm xvmin : RISCVBinaryAAX;
-  defm xvmaxu : RISCVBinaryAAX;
-  defm xvmax : RISCVBinaryAAX;
-
-  defm xvmul : RISCVBinaryAAX;
-  defm xvmulh : RISCVBinaryAAX;
-  defm xvmulhu : RISCVBinaryAAX;
-  defm xvmulhsu : RISCVBinaryAAX;
-
-  defm xvdivu : RISCVBinaryAAX;
-  defm xvdiv : RISCVBinaryAAX;
-  defm xvremu : RISCVBinaryAAX;
-  defm xvrem : RISCVBinaryAAX;
+//  defm xvadd : RISCVBinaryAAX;
+//  defm xvsub : RISCVBinaryAAX;
+//  defm xvrsub : RISCVBinaryAAX;
+//
+//  defm xvand : RISCVBinaryAAX;
+//  defm xvor : RISCVBinaryAAX;
+//  defm xvxor : RISCVBinaryAAX;
+//
+//  defm xvminu : RISCVBinaryAAX;
+//  defm xvmin : RISCVBinaryAAX;
+//  defm xvmaxu : RISCVBinaryAAX;
+//  defm xvmax : RISCVBinaryAAX;
+//
+//  defm xvmul : RISCVBinaryAAX;
+//  defm xvmulh : RISCVBinaryAAX;
+//  defm xvmulhu : RISCVBinaryAAX;
+//  defm xvmulhsu : RISCVBinaryAAX;
+//
+//  defm xvdivu : RISCVBinaryAAX;
+//  defm xvdiv : RISCVBinaryAAX;
+//  defm xvremu : RISCVBinaryAAX;
+//  defm xvrem : RISCVBinaryAAX;
 
 } // TargetPrefix = "riscv"

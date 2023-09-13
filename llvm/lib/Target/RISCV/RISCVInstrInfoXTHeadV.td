@@ -889,3 +889,8 @@ def : InstAlias<"vmnot.m $vd, $vs",
 } // Predicates = [HasVendorXTHeadV]
 } // AsmVariantName = "RVV0p71"
 
+//===----------------------------------------------------------------------===//
+// Patterns.
+//===----------------------------------------------------------------------===//
+
+def : Pat<(int_riscv_xvsetvl GPR:$rs1, GPR:$rs2), (XVSETVL GPR:$rs1, GPR:$rs2)>;
