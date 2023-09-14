@@ -18,7 +18,6 @@ declare i64 @llvm.riscv.xvsetvlmax(          i64 %sew, i64 %lmul);
 
 
 define i64 @intrinsic_xvsetvl_e8m1(i64 %avl) {
-entry:
 ; CHECK-LABEL: intrinsic_xvsetvl_e8m1
 ; CHECK: vsetvli a0, a0, e8, m1, d1
   %v = call i64 @llvm.riscv.xvsetvl(i64 %avl, i64 0, i64 0)
@@ -27,7 +26,6 @@ entry:
 
 
 define i64 @intrinsic_xvsetvl_e8m2(i64 %avl) {
-entry:
 ; CHECK-LABEL: intrinsic_xvsetvl_e8m2
 ; CHECK: vsetvli a0, a0, e8, m2, d1
   %v = call i64 @llvm.riscv.xvsetvl(i64 %avl, i64 0, i64 1)
@@ -36,7 +34,6 @@ entry:
 
 
 define i64 @intrinsic_xvsetvl_e8m4(i64 %avl) {
-entry:
 ; CHECK-LABEL: intrinsic_xvsetvl_e8m4
 ; CHECK: vsetvli a0, a0, e8, m4, d1
   %v = call i64 @llvm.riscv.xvsetvl(i64 %avl, i64 0, i64 2)
@@ -45,7 +42,6 @@ entry:
 
 
 define i64 @intrinsic_xvsetvl_e8m8(i64 %avl) {
-entry:
 ; CHECK-LABEL: intrinsic_xvsetvl_e8m8
 ; CHECK: vsetvli a0, a0, e8, m8, d1
   %v = call i64 @llvm.riscv.xvsetvl(i64 %avl, i64 0, i64 3)
@@ -54,7 +50,6 @@ entry:
 
 
 define i64 @intrinsic_xvsetvl_e16m1(i64 %avl) {
-entry:
 ; CHECK-LABEL: intrinsic_xvsetvl_e16m1
 ; CHECK: vsetvli a0, a0, e16, m1, d1
   %v = call i64 @llvm.riscv.xvsetvl(i64 %avl, i64 1, i64 0)
@@ -63,7 +58,6 @@ entry:
 
 
 define i64 @intrinsic_xvsetvl_e16m2(i64 %avl) {
-entry:
 ; CHECK-LABEL: intrinsic_xvsetvl_e16m2
 ; CHECK: vsetvli a0, a0, e16, m2, d1
   %v = call i64 @llvm.riscv.xvsetvl(i64 %avl, i64 1, i64 1)
@@ -72,7 +66,6 @@ entry:
 
 
 define i64 @intrinsic_xvsetvl_e16m4(i64 %avl) {
-entry:
 ; CHECK-LABEL: intrinsic_xvsetvl_e16m4
 ; CHECK: vsetvli a0, a0, e16, m4, d1
   %v = call i64 @llvm.riscv.xvsetvl(i64 %avl, i64 1, i64 2)
@@ -81,7 +74,6 @@ entry:
 
 
 define i64 @intrinsic_xvsetvl_e16m8(i64 %avl) {
-entry:
 ; CHECK-LABEL: intrinsic_xvsetvl_e16m8
 ; CHECK: vsetvli a0, a0, e16, m8, d1
   %v = call i64 @llvm.riscv.xvsetvl(i64 %avl, i64 1, i64 3)
@@ -90,7 +82,6 @@ entry:
 
 
 define i64 @intrinsic_xvsetvl_e32m1(i64 %avl) {
-entry:
 ; CHECK-LABEL: intrinsic_xvsetvl_e32m1
 ; CHECK: vsetvli a0, a0, e32, m1, d1
   %v = call i64 @llvm.riscv.xvsetvl(i64 %avl, i64 2, i64 0)
@@ -99,7 +90,6 @@ entry:
 
 
 define i64 @intrinsic_xvsetvl_e32m2(i64 %avl) {
-entry:
 ; CHECK-LABEL: intrinsic_xvsetvl_e32m2
 ; CHECK: vsetvli a0, a0, e32, m2, d1
   %v = call i64 @llvm.riscv.xvsetvl(i64 %avl, i64 2, i64 1)
@@ -108,7 +98,6 @@ entry:
 
 
 define i64 @intrinsic_xvsetvl_e32m4(i64 %avl) {
-entry:
 ; CHECK-LABEL: intrinsic_xvsetvl_e32m4
 ; CHECK: vsetvli a0, a0, e32, m4, d1
   %v = call i64 @llvm.riscv.xvsetvl(i64 %avl, i64 2, i64 2)
@@ -117,7 +106,6 @@ entry:
 
 
 define i64 @intrinsic_xvsetvl_e32m8(i64 %avl) {
-entry:
 ; CHECK-LABEL: intrinsic_xvsetvl_e32m8
 ; CHECK: vsetvli a0, a0, e32, m8, d1
   %v = call i64 @llvm.riscv.xvsetvl(i64 %avl, i64 2, i64 3)
@@ -126,7 +114,6 @@ entry:
 
 
 define i64 @intrinsic_xvsetvl_e64m1(i64 %avl) {
-entry:
 ; CHECK-LABEL: intrinsic_xvsetvl_e64m1
 ; CHECK: vsetvli a0, a0, e64, m1, d1
   %v = call i64 @llvm.riscv.xvsetvl(i64 %avl, i64 3, i64 0)
@@ -135,7 +122,6 @@ entry:
 
 
 define i64 @intrinsic_xvsetvl_e64m2(i64 %avl) {
-entry:
 ; CHECK-LABEL: intrinsic_xvsetvl_e64m2
 ; CHECK: vsetvli a0, a0, e64, m2, d1
   %v = call i64 @llvm.riscv.xvsetvl(i64 %avl, i64 3, i64 1)
@@ -144,7 +130,6 @@ entry:
 
 
 define i64 @intrinsic_xvsetvl_e64m4(i64 %avl) {
-entry:
 ; CHECK-LABEL: intrinsic_xvsetvl_e64m4
 ; CHECK: vsetvli a0, a0, e64, m4, d1
   %v = call i64 @llvm.riscv.xvsetvl(i64 %avl, i64 3, i64 2)
@@ -153,7 +138,6 @@ entry:
 
 
 define i64 @intrinsic_xvsetvl_e64m8(i64 %avl) {
-entry:
 ; CHECK-LABEL: intrinsic_xvsetvl_e64m8
 ; CHECK: vsetvli a0, a0, e64, m8, d1
   %v = call i64 @llvm.riscv.xvsetvl(i64 %avl, i64 3, i64 3)
