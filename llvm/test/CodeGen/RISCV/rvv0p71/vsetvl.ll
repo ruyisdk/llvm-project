@@ -16,6 +16,7 @@
 declare i64 @llvm.riscv.xvsetvl   (i64 %avl, i64 %sew, i64 %lmul);
 declare i64 @llvm.riscv.xvsetvlmax(          i64 %sew, i64 %lmul);
 
+
 define i64 @intrinsic_xvsetvl_e8m1(i64 %avl) {
 entry:
 ; CHECK-LABEL: intrinsic_xvsetvl_e8m1
