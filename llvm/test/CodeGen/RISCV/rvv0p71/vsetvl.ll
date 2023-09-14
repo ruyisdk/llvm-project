@@ -7,12 +7,11 @@
 ; -------------------------------------------
 ; | ASM name | e8  | e16 | e32 | e64 | e128 |
 ; | SEW      | 0   | 1   | 2   | 3   | 4    |
-; | SEW bin  | 000 | 001 | 010 | 011 | 100  |
 ; -------------------------------------------
 ; | ASM name | m1 | m2  | m4  | m8  |
 ; | LMUL     | 0  | 1   | 2   | 3   |
-; | LMUL bin | 00 | 01  | 10  | 11  |
 ; -----------------------------------
+; In intrinsic, ediv is always 1
 
 declare i64 @llvm.riscv.xvsetvl   (i64 %avl, i64 %sew, i64 %lmul);
 declare i64 @llvm.riscv.xvsetvlmax(          i64 %sew, i64 %lmul);
