@@ -16,10 +16,10 @@
 let TargetPrefix = "riscv" in {
   // 6.1. vsetvli/vsetvl instructions
   def int_riscv_xvsetvl    : Intrinsic<[llvm_i64_ty],
-                                       [/* AVL */ llvm_i64_ty, /* vtype */ llvm_i64_ty],
+                                       [/* AVL */ llvm_i64_ty, /* SEW */ llvm_i64_ty, /* LMUL */ llvm_i64_ty],
                                        [IntrNoMem]>;
   def int_riscv_xvsetvlmax : Intrinsic<[llvm_i64_ty],
-                                       [/* vtype */ llvm_i64_ty],
+                                       [/* SEW */ llvm_i64_ty, /* LMUL */ llvm_i64_ty],
                                        [IntrNoMem]>;
 
 //  defm xvadd : RISCVBinaryAAX;
