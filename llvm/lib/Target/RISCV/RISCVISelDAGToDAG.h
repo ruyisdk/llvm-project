@@ -160,6 +160,7 @@ public:
   void selectVSXSEG(SDNode *Node, bool IsMasked, bool IsOrdered);
 
   void selectVSETVLI(SDNode *Node);
+  void selectXVSETVLI(SDNode *Node);
 
   void selectSF_VC_X_SE(SDNode *Node);
 

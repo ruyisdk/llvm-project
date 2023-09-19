@@ -885,4 +885,3 @@ def : InstAlias<"vmnot.m $vd, $vs",
 
 } // Predicates = [HasVendorXTHeadV]
 } // AsmVariantName = "RVV0p71"
-
