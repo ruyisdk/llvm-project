@@ -573,6 +573,59 @@ void RISCVDAGToDAGISel::selectVSETVLI(SDNode *Node) {
               CurDAG->getMachineNode(Opcode, DL, XLenVT, VLOperand, VTypeIOp));
 }
 
+void RISCVDAGToDAGISel::selectXVSETVLI(SDNode *Node) {
+  if (!Subtarget->hasVendorXTHeadV())
+    return;
+  assert(Node->getOpcode() == ISD::INTRINSIC_WO_CHAIN && "Unexpected opcode");
+
+  SDLoc DL(Node);
+  MVT XLenVT = Subtarget->getXLenVT();
+
+  unsigned IntNo = Node->getConstantOperandVal(0);
+
+  assert((IntNo == Intrinsic::riscv_xvsetvlmax ||
+          IntNo == Intrinsic::riscv_xvsetvl) &&
+         "Unexpected vsetvl intrinsic");
+
+  // declare i64 @llvm.riscv.xvsetvl   (i64 %avl, i64 %sew, i64 %lmul);
+  // declare i64 @llvm.riscv.xvsetvlmax(          i64 %sew, i64 %lmul);
+  bool IsMax = IntNo == Intrinsic::riscv_xvsetvlmax;
+  unsigned SEWPosition = IsMax ? 1 : 2;
+  unsigned ExpectedOperands = SEWPosition + 2;
+  assert(Node->getNumOperands() == ExpectedOperands &&
+         "Unexpected number of operands");
+
+  unsigned SEW = Node->getConstantOperandVal(SEWPosition) & 0x7;
+  unsigned LMUL = Node->getConstantOperandVal(SEWPosition + 1) & 0x7;
+
+  // encodeXTHeadVType needs the literal version of SEW and LMUL,
+  // instead of the binary encoding version.
+  // Like, it needs SEW=8/16/32/64/128 instead of SEW=0/1/2/3/4
+
+  // Currently,
+  // the intrinsics for RVV 0.7 should accept binary encoding,
+  // in order to keep consistent with the RVV 1.0 implemented in LLVM.
+
+  // So we need to convert the binary encoding to the literal version,
+  // and encodeXTHeadVType will convert them back to the binary,
+  // and then use them to generate the VTYPEI.
+  // It's true that we can make encodeXTHeadVTYPE accepts the binary version,
+  // but that will make encodeXTHeadVTYPE inconsistent with encodeVTYPE,
+  // which is the corresponding function for RVV 1.0.
+  SEW = RISCVVType::decodeVSEW(SEW);
+  LMUL = 1 << LMUL;
+  auto VTypeI = RISCVVType::encodeXTHeadVTYPE(SEW, LMUL, 1);
+  auto VTypeIOp = CurDAG->getTargetConstant(VTypeI, DL, XLenVT);
+
+  // spec: if rs1 = x0, then use maximum vector length
+  auto AVLOp =
+      IsMax ? CurDAG->getRegister(RISCV::X0, XLenVT) : Node->getOperand(1);
+
+  auto Opcode = RISCV::XVSETVLI;
+  auto MN = CurDAG->getMachineNode(Opcode, DL, XLenVT, AVLOp, VTypeIOp);
+  ReplaceNode(Node, MN);
+}
+
 bool RISCVDAGToDAGISel::tryShrinkShlLogicImm(SDNode *Node) {
   MVT VT = Node->getSimpleValueType(0);
   unsigned Opcode = Node->getOpcode();
@@ -1548,6 +1601,9 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
     case Intrinsic::riscv_vsetvli:
     case Intrinsic::riscv_vsetvlimax:
       return selectVSETVLI(Node);
+    case Intrinsic::riscv_xvsetvl:
+    case Intrinsic::riscv_xvsetvlmax:
+      return selectXVSETVLI(Node);
     }
     break;
   }
