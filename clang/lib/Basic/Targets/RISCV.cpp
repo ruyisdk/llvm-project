@@ -200,6 +200,14 @@ void RISCVTargetInfo::getTargetDefines(const LangOptions &Opts,
     Builder.defineMacro("__riscv_v_intrinsic", Twine(getVersionValue(0, 11)));
   }
 
+  if (ISAInfo->hasExtension("xtheadv")) {
+    // TODO: should we define __riscv_vector here?
+    Builder.defineMacro("__riscv_vector");
+    Builder.defineMacro("__riscv_vector_xtheadv");
+    // TODO: which intrinsic version? reuse the v0.11 for now.
+    Builder.defineMacro("__riscv_v_intrinsic", Twine(getVersionValue(0, 11)));
+  }
+
   auto VScale = getVScaleRange(Opts);
   if (VScale && VScale->first && VScale->first == VScale->second)
     Builder.defineMacro("__riscv_v_fixed_vlen",
