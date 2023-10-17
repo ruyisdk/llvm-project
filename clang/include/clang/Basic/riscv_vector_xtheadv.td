@@ -1,4 +1,4 @@
-//==--- riscv_vector.td - RISC-V V-ext Builtin function list --------------===//
+//==--- riscv_vector_xtheadv.td - RISC-V V-ext Builtin function list ------===//
 //
 //  Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 //  See https://llvm.org/LICENSE.txt for license information.
@@ -8,7 +8,7 @@
 //
 // This file defines the builtins for RISC-V V-extension. See:
 //
-//     https://github.com/riscv/rvv-intrinsic-doc
+//     https://github.com/riscv-non-isa/rvv-intrinsic-doc/tree/v0.7.1
 //
 //===----------------------------------------------------------------------===//
 
