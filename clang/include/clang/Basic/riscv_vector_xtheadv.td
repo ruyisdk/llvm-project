@@ -13,3 +13,62 @@
 //===----------------------------------------------------------------------===//
 
 include "riscv_vector_common.td"
+
+multiclass RVVBuiltinSet<string intrinsic_name, string type_range,
+                         list<list<string>> suffixes_prototypes,
+                         list<int> intrinsic_types> {
+  let IRName = intrinsic_name, MaskedIRName = intrinsic_name # "_mask",
+      IntrinsicTypes = intrinsic_types in {
+    foreach s_p = suffixes_prototypes in {
+      let Name = NAME # "_" # s_p[0] in {
+        defvar suffix = s_p[1];
+        defvar prototype = s_p[2];
+        def : RVVBuiltin<suffix, prototype, type_range>;
+      }
+    }
+  }
+}
+
+// IntrinsicTypes is output, op1 [-1, 1]
+multiclass RVVOutOp1BuiltinSet<string intrinsic_name, string type_range,
+                               list<list<string>> suffixes_prototypes>
+    : RVVBuiltinSet<intrinsic_name, type_range, suffixes_prototypes, [-1, 1]>;
+
+multiclass RVVSignedBinBuiltinSet
+    : RVVOutOp1BuiltinSet<NAME, "csil",
+                          [["vv", "v", "vvv"],
+                           ["vx", "v", "vve"]]>;
+
+multiclass RVVUnsignedBinBuiltinSet
+    : RVVOutOp1BuiltinSet<NAME, "csil",
+                          [["vv", "Uv", "UvUvUv"],
+                           ["vx", "Uv", "UvUvUe"]]>;
+
+multiclass RVVIntBinBuiltinSet
+    : RVVSignedBinBuiltinSet,
+      RVVUnsignedBinBuiltinSet;
+
+
+// 6. Configuration-Setting Instructions
+// 6.1. vsetvli/vsetvl instructions
+
+let HasBuiltinAlias = false,
+    HasVL = false,
+    HasMasked = false,
+    MaskedPolicyScheme = NonePolicy,
+    Log2LMUL = [0],
+    ManualCodegen = [{IntrinsicTypes = {ResultType};}] in // Set XLEN type
+{
+  def xvsetvli : RVVBuiltin<"", "zzKzKz", "i">;
+  def xvsetvlimax : RVVBuiltin<"", "zKzKz", "i">;
+}
+
+// 12. Vector Integer Arithmetic Instructions
+// 12.1. Vector Single-Width Integer Add and Subtract
+let UnMaskedPolicyScheme = HasPassthruOperand in {
+defm xvadd : RVVIntBinBuiltinSet;
+defm xvsub : RVVIntBinBuiltinSet;
+defm xvrsub : RVVOutOp1BuiltinSet<"vrsub", "csil",
+                                 [["vx", "v", "vve"],
+                                  ["vx", "Uv", "UvUvUe"]]>;
+}
