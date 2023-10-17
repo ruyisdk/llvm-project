@@ -59,16 +59,15 @@ let HasBuiltinAlias = false,
     Log2LMUL = [0],
     ManualCodegen = [{IntrinsicTypes = {ResultType};}] in // Set XLEN type
 {
-  def xvsetvli : RVVBuiltin<"", "zzKzKz", "i">;
-  def xvsetvlimax : RVVBuiltin<"", "zKzKz", "i">;
+  def xvsetvl : RVVBuiltin<"", "zzKzKz", "i">;
+  def xvsetvlmax : RVVBuiltin<"", "zKzKz", "i">;
 }
 
 // 12. Vector Integer Arithmetic Instructions
 // 12.1. Vector Single-Width Integer Add and Subtract
+
+// TODO: add correspoinding llvm intrinsics for them, currently they exist here
+// only for avoiding assertion error in cmake task `ClangRISCVXTHeadVBuiltinSema`.
 let UnMaskedPolicyScheme = HasPassthruOperand in {
 defm xvadd : RVVIntBinBuiltinSet;
-defm xvsub : RVVIntBinBuiltinSet;
-defm xvrsub : RVVOutOp1BuiltinSet<"vrsub", "csil",
-                                 [["vx", "v", "vve"],
-                                  ["vx", "Uv", "UvUvUe"]]>;
 }
