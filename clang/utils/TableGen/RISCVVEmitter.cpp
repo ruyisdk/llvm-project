@@ -14,6 +14,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "TableGenBackends.h" // Declares all backends.
 #include "clang/Support/RISCVVIntrinsicUtils.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/ADT/SmallSet.h"
@@ -99,8 +100,8 @@ private:
 public:
   RVVEmitter(RecordKeeper &R) : Records(R) {}
 
-  /// Emit riscv_vector.h
-  void createHeader(raw_ostream &o);
+  /// Emit riscv_vector.h or riscv_vector_xtheadv.h
+  void createHeader(raw_ostream &o, clang::RVVHeaderType Type);
 
   /// Emit all the __builtin prototypes and code needed by Sema.
   void createBuiltins(raw_ostream &o);
@@ -311,7 +312,7 @@ void SemaSignatureTable::print(raw_ostream &OS) {
 //===----------------------------------------------------------------------===//
 // RVVEmitter implementation
 //===----------------------------------------------------------------------===//
-void RVVEmitter::createHeader(raw_ostream &OS) {
+void RVVEmitter::createHeader(raw_ostream &OS, clang::RVVHeaderType Type) {
 
   OS << "/*===---- riscv_vector.h - RISC-V V-extension RVVIntrinsics "
         "-------------------===\n"
@@ -340,7 +341,14 @@ void RVVEmitter::createHeader(raw_ostream &OS) {
   OS << "extern \"C\" {\n";
   OS << "#endif\n\n";
 
-  OS << "#pragma clang riscv intrinsic vector\n\n";
+  switch (Type) {
+  case clang::RVVHeaderType::RVV:
+    OS << "#pragma clang riscv intrinsic vector\n\n";
+    break;
+  case clang::RVVHeaderType::XTHEADV_VECTOR:
+    OS << "#pragma clang riscv intrinsic xtheadv_vector\n\n";
+    break;
+  }
 
   printHeaderCode(OS);
 
@@ -750,8 +758,8 @@ void RVVEmitter::createSema(raw_ostream &OS) {
 }
 
 namespace clang {
-void EmitRVVHeader(RecordKeeper &Records, raw_ostream &OS) {
-  RVVEmitter(Records).createHeader(OS);
+void EmitRVVHeader(RecordKeeper &Records, raw_ostream &OS, RVVHeaderType Type) {
+  RVVEmitter(Records).createHeader(OS, Type);
 }
 
 void EmitRVVBuiltins(RecordKeeper &Records, raw_ostream &OS) {

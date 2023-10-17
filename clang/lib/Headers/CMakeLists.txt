@@ -387,7 +387,7 @@ endif()
 if(RISCV IN_LIST LLVM_TARGETS_TO_BUILD)
   # Generate riscv_vector.h and riscv_vector_xtheadv.h
   clang_generate_header(-gen-riscv-vector-header riscv_vector.td riscv_vector.h)
-  clang_generate_header(-gen-riscv-vector-header riscv_vector_xtheadv.td riscv_vector_xtheadv.h)
+  clang_generate_header(-gen-riscv-xtheadv-header riscv_vector_xtheadv.td riscv_vector_xtheadv.h)
   list(APPEND riscv_generated_files
     "${CMAKE_CURRENT_BINARY_DIR}/riscv_vector.h"
     "${CMAKE_CURRENT_BINARY_DIR}/riscv_vector_xtheadv.h"
