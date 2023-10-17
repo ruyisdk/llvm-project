@@ -3909,365 +3909,293 @@ vlseg8eff.v v4, (a0), v0.t
 # CHECK-INST: vlseg8eff.v	v4, (a0), v0.t
 # CHECK-ENCODING: [0x07,0x72,0x05,0xe1]
 
-# TODO: rvv 0.7.1
-# vamoaddw.v v4, v8, (a1), v4
-# CHECK-INST-TODO: vamoaddw.v v4, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x06]
-
-# TODO: rvv 0.7.1
-# vamoaddw.v zero, v8, (a1), v4
-# CHECK-INST-TODO: vamoaddw.v zero, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x02]
-
-# TODO: rvv 0.7.1
-# vamoaddd.v v4, v8, (a1), v4
-# CHECK-INST-TODO: vamoaddd.v v4, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x06]
-
-# TODO: rvv 0.7.1
-# vamoaddd.v zero, v8, (a1), v4
-# CHECK-INST-TODO: vamoaddd.v zero, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x02]
-
-# TODO: rvv 0.7.1
-# vamoaddw.v v4, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoaddw.v v4, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x04]
-
-# TODO: rvv 0.7.1
-# vamoaddw.v zero, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoaddw.v zero, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x00]
-
-# TODO: rvv 0.7.1
-# vamoaddd.v v4, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoaddd.v v4, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x04]
-
-# TODO: rvv 0.7.1
-# vamoaddd.v zero, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoaddd.v zero, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x00]
-
-# TODO: rvv 0.7.1
-# vamoswapw.v v4, v8, (a1), v4
-# CHECK-INST-TODO: vamoswapw.v v4, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x0e]
-
-# TODO: rvv 0.7.1
-# vamoswapw.v zero, v8, (a1), v4
-# CHECK-INST-TODO: vamoswapw.v zero, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x0a]
-
-# TODO: rvv 0.7.1
-# vamoswapd.v v4, v8, (a1), v4
-# CHECK-INST-TODO: vamoswapd.v v4, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x0e]
-
-# TODO: rvv 0.7.1
-# vamoswapd.v zero, v8, (a1), v4
-# CHECK-INST-TODO: vamoswapd.v zero, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x0a]
-
-# TODO: rvv 0.7.1
-# vamoswapw.v v4, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoswapw.v v4, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x0c]
-
-# TODO: rvv 0.7.1
-# vamoswapw.v zero, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoswapw.v zero, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x08]
-
-# TODO: rvv 0.7.1
-# vamoswapd.v v4, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoswapd.v v4, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x0c]
-
-# TODO: rvv 0.7.1
-# vamoswapd.v zero, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoswapd.v zero, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x08]
-
-# TODO: rvv 0.7.1
-# vamoxorw.v v4, v8, (a1), v4
-# CHECK-INST-TODO: vamoxorw.v v4, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x26]
-
-# TODO: rvv 0.7.1
-# vamoxorw.v zero, v8, (a1), v4
-# CHECK-INST-TODO: vamoxorw.v zero, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x22]
-
-# TODO: rvv 0.7.1
-# vamoxord.v v4, v8, (a1), v4
-# CHECK-INST-TODO: vamoxord.v v4, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x26]
-
-# TODO: rvv 0.7.1
-# vamoxord.v zero, v8, (a1), v4
-# CHECK-INST-TODO: vamoxord.v zero, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x22]
-
-# TODO: rvv 0.7.1
-# vamoxorw.v v4, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoxorw.v v4, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x24]
-
-# TODO: rvv 0.7.1
-# vamoxorw.v zero, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoxorw.v zero, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x20]
-
-# TODO: rvv 0.7.1
-# vamoxord.v v4, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoxord.v v4, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x24]
-
-# TODO: rvv 0.7.1
-# vamoxord.v zero, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoxord.v zero, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x20]
-
-# TODO: rvv 0.7.1
-# vamoandw.v v4, v8, (a1), v4
-# CHECK-INST-TODO: vamoandw.v v4, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x66]
-
-# TODO: rvv 0.7.1
-# vamoandw.v zero, v8, (a1), v4
-# CHECK-INST-TODO: vamoandw.v zero, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x62]
-
-# TODO: rvv 0.7.1
-# vamoandd.v v4, v8, (a1), v4
-# CHECK-INST-TODO: vamoandd.v v4, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x66]
-
-# TODO: rvv 0.7.1
-# vamoandd.v zero, v8, (a1), v4
-# CHECK-INST-TODO: vamoandd.v zero, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x62]
-
-# TODO: rvv 0.7.1
-# vamoandw.v v4, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoandw.v v4, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x64]
-
-# TODO: rvv 0.7.1
-# vamoandw.v zero, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoandw.v zero, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x60]
-
-# TODO: rvv 0.7.1
-# vamoandd.v v4, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoandd.v v4, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x64]
-
-# TODO: rvv 0.7.1
-# vamoandd.v zero, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoandd.v zero, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x60]
-
-# TODO: rvv 0.7.1
-# vamoorw.v v4, v8, (a1), v4
-# CHECK-INST-TODO: vamoorw.v v4, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x46]
-
-# TODO: rvv 0.7.1
-# vamoorw.v zero, v8, (a1), v4
-# CHECK-INST-TODO: vamoorw.v zero, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x42]
-
-# TODO: rvv 0.7.1
-# vamoord.v v4, v8, (a1), v4
-# CHECK-INST-TODO: vamoord.v v4, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x46]
-
-# TODO: rvv 0.7.1
-# vamoord.v zero, v8, (a1), v4
-# CHECK-INST-TODO: vamoord.v zero, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x42]
-
-# TODO: rvv 0.7.1
-# vamoorw.v v4, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoorw.v v4, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x44]
-
-# TODO: rvv 0.7.1
-# vamoorw.v zero, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoorw.v zero, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x40]
-
-# TODO: rvv 0.7.1
-# vamoord.v v4, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoord.v v4, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x44]
-
-# TODO: rvv 0.7.1
-# vamoord.v zero, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamoord.v zero, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x40]
-
-# TODO: rvv 0.7.1
-# vamominw.v v4, v8, (a1), v4
-# CHECK-INST-TODO: vamominw.v v4, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x86]
-
-# TODO: rvv 0.7.1
-# vamominw.v zero, v8, (a1), v4
-# CHECK-INST-TODO: vamominw.v zero, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x82]
-
-# TODO: rvv 0.7.1
-# vamomind.v v4, v8, (a1), v4
-# CHECK-INST-TODO: vamomind.v v4, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x86]
-
-# TODO: rvv 0.7.1
-# vamomind.v zero, v8, (a1), v4
-# CHECK-INST-TODO: vamomind.v zero, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x82]
-
-# TODO: rvv 0.7.1
-# vamominw.v v4, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamominw.v v4, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x84]
-
-# TODO: rvv 0.7.1
-# vamominw.v zero, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamominw.v zero, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0x80]
-
-# TODO: rvv 0.7.1
-# vamomind.v v4, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamomind.v v4, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x84]
-
-# TODO: rvv 0.7.1
-# vamomind.v zero, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamomind.v zero, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0x80]
-
-# TODO: rvv 0.7.1
-# vamomaxw.v v4, v8, (a1), v4
-# CHECK-INST-TODO: vamomaxw.v v4, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0xa6]
-
-# TODO: rvv 0.7.1
-# vamomaxw.v zero, v8, (a1), v4
-# CHECK-INST-TODO: vamomaxw.v zero, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0xa2]
-
-# TODO: rvv 0.7.1
-# vamomaxd.v v4, v8, (a1), v4
-# CHECK-INST-TODO: vamomaxd.v v4, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0xa6]
-
-# TODO: rvv 0.7.1
-# vamomaxd.v zero, v8, (a1), v4
-# CHECK-INST-TODO: vamomaxd.v zero, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0xa2]
-
-# TODO: rvv 0.7.1
-# vamomaxw.v v4, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamomaxw.v v4, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0xa4]
-
-# TODO: rvv 0.7.1
-# vamomaxw.v zero, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamomaxw.v zero, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0xa0]
-
-# TODO: rvv 0.7.1
-# vamomaxd.v v4, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamomaxd.v v4, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0xa4]
-
-# TODO: rvv 0.7.1
-# vamomaxd.v zero, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamomaxd.v zero, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0xa0]
-
-# TODO: rvv 0.7.1
-# vamominuw.v v4, v8, (a1), v4
-# CHECK-INST-TODO: vamominuw.v v4, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0xc6]
-
-# TODO: rvv 0.7.1
-# vamominuw.v zero, v8, (a1), v4
-# CHECK-INST-TODO: vamominuw.v zero, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0xc2]
-
-# TODO: rvv 0.7.1
-# vamominud.v v4, v8, (a1), v4
-# CHECK-INST-TODO: vamominud.v v4, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0xc6]
-
-# TODO: rvv 0.7.1
-# vamominud.v zero, v8, (a1), v4
-# CHECK-INST-TODO: vamominud.v zero, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0xc2]
-
-# TODO: rvv 0.7.1
-# vamominuw.v v4, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamominuw.v v4, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0xc4]
-
-# TODO: rvv 0.7.1
-# vamominuw.v zero, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamominuw.v zero, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0xc0]
-
-# TODO: rvv 0.7.1
-# vamominud.v v4, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamominud.v v4, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0xc4]
-
-# TODO: rvv 0.7.1
-# vamominud.v zero, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamominud.v zero, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0xc0]
-
-# TODO: rvv 0.7.1
-# vamomaxuw.v v4, v8, (a1), v4
-# CHECK-INST-TODO: vamomaxuw.v v4, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0xe6]
-
-# TODO: rvv 0.7.1
-# vamomaxuw.v zero, v8, (a1), v4
-# CHECK-INST-TODO: vamomaxuw.v zero, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0xe2]
-
-# TODO: rvv 0.7.1
-# vamomaxud.v v4, v8, (a1), v4
-# CHECK-INST-TODO: vamomaxud.v v4, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0xe6]
-
-# TODO: rvv 0.7.1
-# vamomaxud.v zero, v8, (a1), v4
-# CHECK-INST-TODO: vamomaxud.v zero, v8, (a1), v4
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0xe2]
-
-# TODO: rvv 0.7.1
-# vamomaxuw.v v4, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamomaxuw.v v4, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0xe4]
-
-# TODO: rvv 0.7.1
-# vamomaxuw.v zero, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamomaxuw.v zero, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xe2,0x85,0xe0]
-
-# TODO: rvv 0.7.1
-# vamomaxud.v v4, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamomaxud.v v4, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0xe4]
-
-# TODO: rvv 0.7.1
-# vamomaxud.v zero, v8, (a1), v4, v0.t
-# CHECK-INST-TODO: vamomaxud.v zero, v8, (a1), v4, v0.t
-# CHECK-ENCODING-TODO: [0x2f,0xf2,0x85,0xe0]
+vamoaddw.v v4, v8, (a1), v4
+# CHECK-INST: vamoaddw.v v4, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x06]
+
+vamoaddw.v zero, v8, (a1), v4
+# CHECK-INST: vamoaddw.v x0, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x02]
+
+vamoaddd.v v4, v8, (a1), v4
+# CHECK-INST: vamoaddd.v v4, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x06]
+
+vamoaddd.v zero, v8, (a1), v4
+# CHECK-INST: vamoaddd.v x0, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x02]
+
+vamoaddw.v v4, v8, (a1), v4, v0.t
+# CHECK-INST: vamoaddw.v v4, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x04]
+
+vamoaddw.v zero, v8, (a1), v4, v0.t
+# CHECK-INST: vamoaddw.v x0, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x00]
+
+vamoaddd.v v4, v8, (a1), v4, v0.t
+# CHECK-INST: vamoaddd.v v4, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x04]
+
+vamoaddd.v zero, v8, (a1), v4, v0.t
+# CHECK-INST: vamoaddd.v x0, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x00]
+
+vamoswapw.v v4, v8, (a1), v4
+# CHECK-INST: vamoswapw.v v4, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x0e]
+
+vamoswapw.v zero, v8, (a1), v4
+# CHECK-INST: vamoswapw.v x0, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x0a]
+
+vamoswapd.v v4, v8, (a1), v4
+# CHECK-INST: vamoswapd.v v4, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x0e]
+
+vamoswapd.v zero, v8, (a1), v4
+# CHECK-INST: vamoswapd.v x0, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x0a]
+
+vamoswapw.v v4, v8, (a1), v4, v0.t
+# CHECK-INST: vamoswapw.v v4, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x0c]
+
+vamoswapw.v zero, v8, (a1), v4, v0.t
+# CHECK-INST: vamoswapw.v x0, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x08]
+
+vamoswapd.v v4, v8, (a1), v4, v0.t
+# CHECK-INST: vamoswapd.v v4, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x0c]
+
+vamoswapd.v zero, v8, (a1), v4, v0.t
+# CHECK-INST: vamoswapd.v x0, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x08]
+
+vamoxorw.v v4, v8, (a1), v4
+# CHECK-INST: vamoxorw.v v4, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x26]
+
+vamoxorw.v zero, v8, (a1), v4
+# CHECK-INST: vamoxorw.v x0, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x22]
+
+vamoxord.v v4, v8, (a1), v4
+# CHECK-INST: vamoxord.v v4, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x26]
+
+vamoxord.v zero, v8, (a1), v4
+# CHECK-INST: vamoxord.v x0, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x22]
+
+vamoxorw.v v4, v8, (a1), v4, v0.t
+# CHECK-INST: vamoxorw.v v4, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x24]
+
+vamoxorw.v zero, v8, (a1), v4, v0.t
+# CHECK-INST: vamoxorw.v x0, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x20]
+
+vamoxord.v v4, v8, (a1), v4, v0.t
+# CHECK-INST: vamoxord.v v4, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x24]
+
+vamoxord.v zero, v8, (a1), v4, v0.t
+# CHECK-INST: vamoxord.v x0, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x20]
+
+vamoandw.v v4, v8, (a1), v4
+# CHECK-INST: vamoandw.v v4, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x66]
+
+vamoandw.v zero, v8, (a1), v4
+# CHECK-INST: vamoandw.v x0, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x62]
+
+vamoandd.v v4, v8, (a1), v4
+# CHECK-INST: vamoandd.v v4, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x66]
+
+vamoandd.v zero, v8, (a1), v4
+# CHECK-INST: vamoandd.v x0, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x62]
+
+vamoandw.v v4, v8, (a1), v4, v0.t
+# CHECK-INST: vamoandw.v v4, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x64]
+
+vamoandw.v zero, v8, (a1), v4, v0.t
+# CHECK-INST: vamoandw.v x0, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x60]
+
+vamoandd.v v4, v8, (a1), v4, v0.t
+# CHECK-INST: vamoandd.v v4, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x64]
+
+vamoandd.v zero, v8, (a1), v4, v0.t
+# CHECK-INST: vamoandd.v x0, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x60]
+
+vamoorw.v v4, v8, (a1), v4
+# CHECK-INST: vamoorw.v v4, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x46]
+
+vamoorw.v zero, v8, (a1), v4
+# CHECK-INST: vamoorw.v x0, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x42]
+
+vamoord.v v4, v8, (a1), v4
+# CHECK-INST: vamoord.v v4, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x46]
+
+vamoord.v zero, v8, (a1), v4
+# CHECK-INST: vamoord.v x0, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x42]
+
+vamoorw.v v4, v8, (a1), v4, v0.t
+# CHECK-INST: vamoorw.v v4, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x44]
+
+vamoorw.v zero, v8, (a1), v4, v0.t
+# CHECK-INST: vamoorw.v x0, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x40]
+
+vamoord.v v4, v8, (a1), v4, v0.t
+# CHECK-INST: vamoord.v v4, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x44]
+
+vamoord.v zero, v8, (a1), v4, v0.t
+# CHECK-INST: vamoord.v x0, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x40]
+
+vamominw.v v4, v8, (a1), v4
+# CHECK-INST: vamominw.v v4, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x86]
+
+vamominw.v zero, v8, (a1), v4
+# CHECK-INST: vamominw.v x0, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x82]
+
+vamomind.v v4, v8, (a1), v4
+# CHECK-INST: vamomind.v v4, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x86]
+
+vamomind.v zero, v8, (a1), v4
+# CHECK-INST: vamomind.v x0, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x82]
+
+vamominw.v v4, v8, (a1), v4, v0.t
+# CHECK-INST: vamominw.v v4, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x84]
+
+vamominw.v zero, v8, (a1), v4, v0.t
+# CHECK-INST: vamominw.v x0, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0x80]
+
+vamomind.v v4, v8, (a1), v4, v0.t
+# CHECK-INST: vamomind.v v4, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x84]
+
+vamomind.v zero, v8, (a1), v4, v0.t
+# CHECK-INST: vamomind.v x0, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0x80]
+
+vamomaxw.v v4, v8, (a1), v4
+# CHECK-INST: vamomaxw.v v4, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0xa6]
+
+vamomaxw.v zero, v8, (a1), v4
+# CHECK-INST: vamomaxw.v x0, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0xa2]
+
+vamomaxd.v v4, v8, (a1), v4
+# CHECK-INST: vamomaxd.v v4, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0xa6]
+
+vamomaxd.v zero, v8, (a1), v4
+# CHECK-INST: vamomaxd.v x0, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0xa2]
+
+vamomaxw.v v4, v8, (a1), v4, v0.t
+# CHECK-INST: vamomaxw.v v4, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0xa4]
+
+vamomaxw.v zero, v8, (a1), v4, v0.t
+# CHECK-INST: vamomaxw.v x0, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0xa0]
+
+vamomaxd.v v4, v8, (a1), v4, v0.t
+# CHECK-INST: vamomaxd.v v4, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0xa4]
+
+vamomaxd.v zero, v8, (a1), v4, v0.t
+# CHECK-INST: vamomaxd.v x0, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0xa0]
+
+vamominuw.v v4, v8, (a1), v4
+# CHECK-INST: vamominuw.v v4, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0xc6]
+
+vamominuw.v zero, v8, (a1), v4
+# CHECK-INST: vamominuw.v x0, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0xc2]
+
+vamominud.v v4, v8, (a1), v4
+# CHECK-INST: vamominud.v v4, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0xc6]
+
+vamominud.v zero, v8, (a1), v4
+# CHECK-INST: vamominud.v x0, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0xc2]
+
+vamominuw.v v4, v8, (a1), v4, v0.t
+# CHECK-INST: vamominuw.v v4, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0xc4]
+
+vamominuw.v zero, v8, (a1), v4, v0.t
+# CHECK-INST: vamominuw.v x0, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0xc0]
+
+vamominud.v v4, v8, (a1), v4, v0.t
+# CHECK-INST: vamominud.v v4, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0xc4]
+
+vamominud.v zero, v8, (a1), v4, v0.t
+# CHECK-INST: vamominud.v x0, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0xc0]
+
+vamomaxuw.v v4, v8, (a1), v4
+# CHECK-INST: vamomaxuw.v v4, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0xe6]
+
+vamomaxuw.v zero, v8, (a1), v4
+# CHECK-INST: vamomaxuw.v x0, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0xe2]
+
+vamomaxud.v v4, v8, (a1), v4
+# CHECK-INST: vamomaxud.v v4, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0xe6]
+
+vamomaxud.v zero, v8, (a1), v4
+# CHECK-INST: vamomaxud.v x0, v8, (a1), v4
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0xe2]
+
+vamomaxuw.v v4, v8, (a1), v4, v0.t
+# CHECK-INST: vamomaxuw.v v4, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0xe4]
+
+vamomaxuw.v zero, v8, (a1), v4, v0.t
+# CHECK-INST: vamomaxuw.v x0, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xe2,0x85,0xe0]
+
+vamomaxud.v v4, v8, (a1), v4, v0.t
+# CHECK-INST: vamomaxud.v v4, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0xe4]
+
+vamomaxud.v zero, v8, (a1), v4, v0.t
+# CHECK-INST: vamomaxud.v x0, v8, (a1), v4, v0.t
+# CHECK-ENCODING: [0x2f,0xf2,0x85,0xe0]
 
 vadd.vv v4, v8, v12
 # CHECK-INST: vadd.vv	v4, v8, v12
