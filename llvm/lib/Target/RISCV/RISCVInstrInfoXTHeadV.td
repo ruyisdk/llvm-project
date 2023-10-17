@@ -206,6 +206,54 @@ multiclass XVALUm_IV_V_X_I<string opcodestr, bits<6> funct6>
 }
 } // hasSideEffects = 0, mayLoad = 0, mayStore = 0
 
+class XInstVAMO<bits<5> amoop, bits<3> width, dag outs,
+            dag ins, string opcodestr, string argstr>
+    : RVInst<outs, ins, opcodestr, argstr, [], InstFormatR> {
+  bits<5> vs2;
+  bits<5> rs1;
+  bit wd;
+  bit vm;
+
+  let Inst{31-27} = amoop;
+  let Inst{26} = wd;
+  let Inst{25} = vm;
+  let Inst{24-20} = vs2;
+  let Inst{19-15} = rs1;
+  let Inst{14-12} = width;
+  let Inst{6-0} = OPC_AMO.Value;
+
+  let Uses = [VTYPE, VL];
+}
+
+let hasSideEffects = 0, mayLoad = 1, mayStore = 1 in {
+// vamo vd, vs2, (rs1), vd, vm
+class XVAMOWd<bits<5> amoop, bits<3> width, string opcodestr>
+    : XInstVAMO<amoop, width, (outs VR:$vd_wd),
+            (ins VR:$vs2, GPR:$rs1, VR:$vd, VMaskOp:$vm),
+            opcodestr, "$vd_wd, $vs2, (${rs1}), $vd$vm"> {
+  let Constraints = "$vd_wd = $vd";
+  let wd = 1;
+  bits<5> vd;
+  let Inst{11-7} = vd;
+}
+
+// vamo x0, vs2, (rs1), vs3, vm
+class XVAMONoWd<bits<5> amoop, bits<3> width, string opcodestr>
+    : XInstVAMO<amoop, width, (outs),
+            (ins VR:$vs2, GPR:$rs1, VR:$vs3, VMaskOp:$vm),
+            opcodestr, "x0, $vs2, (${rs1}), $vs3$vm"> {
+  let wd = 0;
+  bits<5> vs3;
+  let Inst{11-7} = vs3;
+}
+
+} // hasSideEffects = 0, mayLoad = 1, mayStore = 1
+
+multiclass XVAMO<bits<5> amoop, bits<3> width, string opcodestr> {
+  def _WD : XVAMOWd<amoop, width, opcodestr>;
+  def _UNWD : XVAMONoWd<amoop, width, opcodestr>;
+}
+
 //===----------------------------------------------------------------------===//
 // Instructions
 //===----------------------------------------------------------------------===//
@@ -324,6 +372,39 @@ foreach nf=2-8 in {
   def XVSXSEG#nf#E_V : XVSXx<!add(nf, -1), 0b111, "vsxseg"#nf#"e.v">;
 }
 } // Predicates = [HasVendorXTHeadV, HasVendorXTHeadVlsseg]
+
+let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA] in {
+  // Vector AMO Instruction
+  defm XVAMO_SWAPW_V : XVAMO<0b00001, 0b110, "vamoswapw.v">;
+  defm XVAMO_ADDW_V : XVAMO<0b00000, 0b110, "vamoaddw.v">;
+  defm XVAMO_XORW_V : XVAMO<0b00100, 0b110, "vamoxorw.v">;
+  defm XVAMO_ANDW_V : XVAMO<0b01100, 0b110, "vamoandw.v">;
+  defm XVAMO_ORW_V : XVAMO<0b01000, 0b110, "vamoorw.v">;
+  defm XVAMO_MINW_V : XVAMO<0b10000, 0b110, "vamominw.v">;
+  defm XVAMO_MAXW_V : XVAMO<0b10100, 0b110, "vamomaxw.v">;
+  defm XVAMO_MINUW_V : XVAMO<0b11000, 0b110, "vamominuw.v">;
+  defm XVAMO_MAXUW_V : XVAMO<0b11100, 0b110, "vamomaxuw.v">;
+
+  defm XVAMO_SWAPD_V : XVAMO<0b00001, 0b111, "vamoswapd.v">;
+  defm XVAMO_ADDD_V : XVAMO<0b00000, 0b111, "vamoaddd.v">;
+  defm XVAMO_XORD_V : XVAMO<0b00100, 0b111, "vamoxord.v">;
+  defm XVAMO_ANDD_V : XVAMO<0b01100, 0b111, "vamoandd.v">;
+  defm XVAMO_ORD_V : XVAMO<0b01000, 0b111, "vamoord.v">;
+  defm XVAMO_MIND_V : XVAMO<0b10000, 0b111, "vamomind.v">;
+  defm XVAMO_MAXD_V : XVAMO<0b10100, 0b111, "vamomaxd.v">;
+  defm XVAMO_MINUD_V : XVAMO<0b11000, 0b111, "vamominud.v">;
+  defm XVAMO_MAXUD_V : XVAMO<0b11100, 0b111, "vamomaxud.v">;
+
+  defm XVAMO_SWAPQ_V : XVAMO<0b00001, 0b000, "vamoswapq.v">;
+  defm XVAMO_ADDQ_V : XVAMO<0b00000, 0b000, "vamoaddq.v">;
+  defm XVAMO_XORQ_V : XVAMO<0b00100, 0b000, "vamoxorq.v">;
+  defm XVAMO_ANDQ_V : XVAMO<0b01100, 0b000, "vamoandq.v">;
+  defm XVAMO_ORQ_V : XVAMO<0b01000, 0b000, "vamoorq.v">;
+  defm XVAMO_MINQ_V : XVAMO<0b10000, 0b000, "vamominq.v">;
+  defm XVAMO_MAXQ_V : XVAMO<0b10100, 0b000, "vamomaxq.v">;
+  defm XVAMO_MINUQ_V : XVAMO<0b11000, 0b000, "vamominuq.v">;
+  defm XVAMO_MAXUQ_V : XVAMO<0b11100, 0b000, "vamomaxuq.v">;
+} // Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA]
 
 let Predicates = [HasVendorXTHeadV] in {
 // Vector Single-Width Integer Add and Subtract
