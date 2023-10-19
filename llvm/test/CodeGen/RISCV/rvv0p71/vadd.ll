@@ -4,24 +4,48 @@
 ; RUN: sed 's/iXLen/i64/g' %s | llc -mtriple=riscv64 -mattr=+xtheadv \
 ; RUN:   -verify-machineinstrs | FileCheck %s --check-prefixes=CHECK,RV64
 
-declare <vscale x 1 x i8> @llvm.riscv.xvadd.nxv1i8.nxv1i8(
-  <vscale x 1 x i8>,
-  <vscale x 1 x i8>,
-  <vscale x 1 x i8>,
+declare <vscale x 8 x i8> @llvm.riscv.xvadd.nxv8i8.nxv8i8(
+  <vscale x 8 x i8>,
+  <vscale x 8 x i8>,
+  <vscale x 8 x i8>,
   iXLen);
 
-define <vscale x 1 x i8> @intrinsic_vadd_vv_nxv1i8_nxv1i8_nxv1i8(<vscale x 1 x i8> %0, <vscale x 1 x i8> %1, iXLen %2) nounwind {
-; CHECK-LABEL: intrinsic_vadd_vv_nxv1i8_nxv1i8_nxv1i8:
+define <vscale x 8 x i8> @intrinsic_xvadd_vv_nxv8i8_nxv8i8_nxv8i8(<vscale x 8 x i8> %0, <vscale x 8 x i8> %1, iXLen %2) nounwind {
+; CHECK-LABEL: intrinsic_xvadd_vv_nxv8i8_nxv8i8_nxv8i8:
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a0, e8, mf8, ta, ma
+; CHECK-NEXT:    vsetvli zero, a0, e8, m1, ta, ma
 ; CHECK-NEXT:    vadd.vv v8, v8, v9
 ; CHECK-NEXT:    ret
 entry:
-  %a = call <vscale x 1 x i8> @llvm.riscv.xvadd.nxv1i8.nxv1i8(
-    <vscale x 1 x i8> undef,
-    <vscale x 1 x i8> %0,
-    <vscale x 1 x i8> %1,
+  %a = call <vscale x 8 x i8> @llvm.riscv.xvadd.nxv8i8.nxv8i8(
+    <vscale x 8 x i8> undef,
+    <vscale x 8 x i8> %0,
+    <vscale x 8 x i8> %1,
     iXLen %2)
 
-  ret <vscale x 1 x i8> %a
+  ret <vscale x 8 x i8> %a
+}
+
+declare <vscale x 8 x i8> @llvm.riscv.xvadd.mask.nxv8i8.nxv8i8(
+  <vscale x 8 x i8>,
+  <vscale x 8 x i8>,
+  <vscale x 8 x i8>,
+  <vscale x 8 x i1>,
+  iXLen, iXLen);
+
+define <vscale x 8 x i8> @intrinsic_xvadd_mask_vv_nxv8i8_nxv8i8_nxv8i8(<vscale x 8 x i8> %0, <vscale x 8 x i8> %1, <vscale x 8 x i8> %2, <vscale x 8 x i1> %3, iXLen %4) nounwind {
+; CHECK-LABEL: intrinsic_xvadd_mask_vv_nxv8i8_nxv8i8_nxv8i8:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    vsetvli zero, a0, e8, m1, ta, mu
+; CHECK-NEXT:    vadd.vv v8, v9, v10, v0.t
+; CHECK-NEXT:    ret
+entry:
+  %a = call <vscale x 8 x i8> @llvm.riscv.xvadd.mask.nxv8i8.nxv8i8(
+    <vscale x 8 x i8> %0,
+    <vscale x 8 x i8> %1,
+    <vscale x 8 x i8> %2,
+    <vscale x 8 x i1> %3,
+    iXLen %4, iXLen 1)
+
+  ret <vscale x 8 x i8> %a
 }
