@@ -22,6 +22,7 @@ def XTHeadVTypeIAsmOperand : AsmOperandClass {
   let RenderMethod = "addVTypeIOperands";
 }
 
+// The RVV0.7 version of `VTypeIOp11`
 def XTHeadVTypeI : Operand<XLenVT> {
   let ParserMatchClass = XTHeadVTypeIAsmOperand;
   let PrintMethod = "printXTHeadVTypeI";

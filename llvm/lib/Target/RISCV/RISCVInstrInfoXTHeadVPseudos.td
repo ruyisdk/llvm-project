@@ -73,9 +73,23 @@ defset list<VTypeInfo> AllXVectors = {
 }
 
 //===----------------------------------------------------------------------===//
-// Pseudos.
+// Pseudos. These are used internally during code generation.
 //===----------------------------------------------------------------------===//
 
+//===----------------------------------------------------------------------===//
+// 6. Configuration-Setting Instructions
+//===----------------------------------------------------------------------===//
+
+let hasSideEffects = 1, mayLoad = 0, mayStore = 0, Defs = [VL, VTYPE] in {
+  def PseudoXVSETVLI : Pseudo<(outs GPR:$rd), (ins GPRNoX0:$rs1, XTHeadVTypeI:$vtypei), []>,
+                       Sched<[WriteVSETVLI, ReadVSETVLI]>;
+  def PseudoXVSETVLIX0 : Pseudo<(outs GPR:$rd), (ins GPRX0:$rs1, XTHeadVTypeI:$vtypei), []>,
+                         Sched<[WriteVSETVLI, ReadVSETVLI]>;
+}
+
+//===----------------------------------------------------------------------===//
+// 12. Vector Integer Arithmetic Instructions
+//===----------------------------------------------------------------------===//
 defm PseudoXVADD   : VPseudoVALU_VV_VX_VI;
 
 //===----------------------------------------------------------------------===//
