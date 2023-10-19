@@ -214,10 +214,10 @@ void RISCVVType::printVType(unsigned VType, raw_ostream &OS) {
 
 void RISCVVType::printXTHeadVType(unsigned VType, raw_ostream &OS) {
   unsigned VEDIV = (VType >> 5) & 0x3;
-  unsigned VSEW = (VType >> 2) & 0x7;
-  unsigned VLMUL = VType & 0x3;
+  unsigned VSEW = getXTHeadVSEW(VType);
+  unsigned VLMUL = getXTHeadVVLMUL(VType);
 
-  OS << "e" << RISCVVType::decodeVSEW(VSEW);
+  OS << "e" << VSEW;
   OS << ", m" << (1U << VLMUL);
   OS << ", d" << (1U << VEDIV);
 }
