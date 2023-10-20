@@ -21,4 +21,7 @@ let TargetPrefix = "riscv" in {
   def int_riscv_xvsetvlmax : Intrinsic<[llvm_i64_ty],
                                        [/* SEW */ llvm_i64_ty, /* LMUL */ llvm_i64_ty],
                                        [IntrNoMem]>;
+
+  defm xvadd : RISCVBinaryAAX;
+
 } // TargetPrefix = "riscv"

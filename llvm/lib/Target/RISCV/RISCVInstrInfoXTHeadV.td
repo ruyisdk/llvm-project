@@ -22,6 +22,7 @@ def XTHeadVTypeIAsmOperand : AsmOperandClass {
   let RenderMethod = "addVTypeIOperands";
 }
 
+// The RVV0.7 version of `VTypeIOp11`
 def XTHeadVTypeI : Operand<XLenVT> {
   let ParserMatchClass = XTHeadVTypeIAsmOperand;
   let PrintMethod = "printXTHeadVTypeI";
@@ -966,3 +967,5 @@ def : InstAlias<"vmnot.m $vd, $vs",
 
 } // Predicates = [HasVendorXTHeadV]
 } // AsmVariantName = "RVV0p71"
+
+include "RISCVInstrInfoXTHeadVPseudos.td"

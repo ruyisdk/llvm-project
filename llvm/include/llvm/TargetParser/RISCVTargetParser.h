@@ -135,6 +135,16 @@ inline static unsigned encodeEDIV(unsigned EDIV) {
   return Log2_32(EDIV);
 }
 
+inline static RISCVII::VLMUL getXTHeadVVLMUL(unsigned VType) {
+  unsigned VLMUL = VType & 0x3;
+  return static_cast<RISCVII::VLMUL>(VLMUL);
+}
+
+inline static unsigned getXTHeadVSEW(unsigned VType) {
+  unsigned VSEW = (VType >> 2) & 0x7;
+  return decodeVSEW(VSEW);
+}
+
 } // namespace RISCVVType
 
 } // namespace llvm
