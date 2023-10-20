@@ -617,11 +617,18 @@ void RISCVDAGToDAGISel::selectXVSETVLI(SDNode *Node) {
   auto VTypeI = RISCVVType::encodeXTHeadVTYPE(SEW, LMUL, 1);
   auto VTypeIOp = CurDAG->getTargetConstant(VTypeI, DL, XLenVT);
 
-  // spec: if rs1 = x0, then use maximum vector length
-  auto AVLOp =
-      IsMax ? CurDAG->getRegister(RISCV::X0, XLenVT) : Node->getOperand(1);
+  // Lower to pseudos to work with other passes like `RISCVInsertVSETVLI`.
+  SDValue AVLOp;
+  unsigned Opcode;
+  if (IsMax) {
+    // spec: if rs1 = x0, then use maximum vector length
+    Opcode = RISCV::PseudoXVSETVLIX0;
+    AVLOp = CurDAG->getRegister(RISCV::X0, XLenVT);
+  } else {
+    Opcode = RISCV::PseudoXVSETVLI;
+    AVLOp = Node->getOperand(1);
+  }
 
-  auto Opcode = RISCV::XVSETVLI;
   auto MN = CurDAG->getMachineNode(Opcode, DL, XLenVT, AVLOp, VTypeIOp);
   ReplaceNode(Node, MN);
 }

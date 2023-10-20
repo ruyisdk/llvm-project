@@ -49,6 +49,7 @@ private:
   bool expandCCOp(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
                   MachineBasicBlock::iterator &NextMBBI);
   bool expandVSetVL(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI);
+  bool expandXVSetVL(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI);
   bool expandVMSET_VMCLR(MachineBasicBlock &MBB,
                          MachineBasicBlock::iterator MBBI, unsigned Opcode);
   bool expandRV32ZdinxStore(MachineBasicBlock &MBB,
@@ -124,6 +125,9 @@ bool RISCVExpandPseudo::expandMI(MachineBasicBlock &MBB,
   case RISCV::PseudoVSETVLIX0:
   case RISCV::PseudoVSETIVLI:
     return expandVSetVL(MBB, MBBI);
+  case RISCV::PseudoXVSETVLI:
+  case RISCV::PseudoXVSETVLIX0:
+    return expandXVSetVL(MBB, MBBI);
   case RISCV::PseudoVMCLR_M_B1:
   case RISCV::PseudoVMCLR_M_B2:
   case RISCV::PseudoVMCLR_M_B4:
@@ -238,6 +242,31 @@ bool RISCVExpandPseudo::expandVSetVL(MachineBasicBlock &MBB,
   assert(Desc.getNumOperands() == 3 && "Unexpected instruction format");
 
   Register DstReg = MBBI->getOperand(0).getReg();
+  bool DstIsDead = MBBI->getOperand(0).isDead();
+  BuildMI(MBB, MBBI, DL, Desc)
+      .addReg(DstReg, RegState::Define | getDeadRegState(DstIsDead))
+      .add(MBBI->getOperand(1))  // VL
+      .add(MBBI->getOperand(2)); // VType
+
+  MBBI->eraseFromParent(); // The pseudo instruction is gone now.
+  return true;
+}
+
+bool RISCVExpandPseudo::expandXVSetVL(MachineBasicBlock &MBB,
+                                      MachineBasicBlock::iterator MBBI) {
+  assert(MBBI->getNumExplicitOperands() == 3 && MBBI->getNumOperands() >= 5 &&
+         "Unexpected instruction format");
+
+  DebugLoc DL = MBBI->getDebugLoc();
+
+  assert((MBBI->getOpcode() == RISCV::PseudoXVSETVLI ||
+          MBBI->getOpcode() == RISCV::PseudoXVSETVLIX0) &&
+         "Unexpected pseudo instruction");
+  unsigned Opcode = RISCV::XVSETVLI;
+  const MCInstrDesc &Desc = TII->get(Opcode);
+  assert(Desc.getNumOperands() == 3 && "Unexpected instruction format");
+
+  Register DstReg = MBBI->getOperand(0).getReg(); // maybe X0
   bool DstIsDead = MBBI->getOperand(0).isDead();
   BuildMI(MBB, MBBI, DL, Desc)
       .addReg(DstReg, RegState::Define | getDeadRegState(DstIsDead))
