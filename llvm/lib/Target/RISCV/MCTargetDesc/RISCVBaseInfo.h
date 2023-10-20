@@ -482,6 +482,11 @@ inline static RISCVII::VLMUL getVLMUL(unsigned VType) {
   return static_cast<RISCVII::VLMUL>(VLMUL);
 }
 
+inline static RISCVII::VLMUL getXTHeadVVLMUL(unsigned VType) {
+  unsigned VLMUL = VType & 0x3;
+  return static_cast<RISCVII::VLMUL>(VLMUL);
+}
+
 // Decode VLMUL into 1,2,4,8 and fractional indicator.
 std::pair<unsigned, bool> decodeVLMUL(RISCVII::VLMUL VLMUL);
 
@@ -503,6 +508,11 @@ inline static unsigned encodeSEW(unsigned SEW) {
 
 inline static unsigned getSEW(unsigned VType) {
   unsigned VSEW = (VType >> 3) & 0x7;
+  return decodeVSEW(VSEW);
+}
+
+inline static unsigned getXTHeadVSEW(unsigned VType) {
+  unsigned VSEW = (VType >> 2) & 0x7;
   return decodeVSEW(VSEW);
 }
 

@@ -11,7 +11,7 @@
 ; | ASM name | m1 | m2  | m4  | m8  |
 ; | LMUL     | 0  | 1   | 2   | 3   |
 ; -----------------------------------
-; In intrinsic, ediv is always 1
+; In intrinsic, ediv is always 0 for ASM name `d1`
 
 declare i64 @llvm.riscv.xvsetvl   (i64 %avl, i64 %sew, i64 %lmul);
 declare i64 @llvm.riscv.xvsetvlmax(          i64 %sew, i64 %lmul);
