@@ -518,7 +518,7 @@ bool ClangTableGenMain(raw_ostream &OS, RecordKeeper &Records) {
     EmitRVVHeader(Records, OS, RVVHeaderType::XTHEADV_VECTOR);
     break;
   case GenRISCVVectorBuiltins:
-    EmitRVVBuiltins(Records, OS);
+    EmitRVVBuiltins(Records, OS, RVVHeaderType::RVV);
     break;
   case GenRISCVVectorBuiltinCG:
     EmitRVVBuiltinCG(Records, OS);
@@ -527,7 +527,7 @@ bool ClangTableGenMain(raw_ostream &OS, RecordKeeper &Records) {
     EmitRVVBuiltinSema(Records, OS);
     break;
   case GenRISCVSiFiveVectorBuiltins:
-    EmitRVVBuiltins(Records, OS);
+    EmitRVVBuiltins(Records, OS, RVVHeaderType::RVV);
     break;
   case GenRISCVSiFiveVectorBuiltinCG:
     EmitRVVBuiltinCG(Records, OS);
@@ -536,7 +536,7 @@ bool ClangTableGenMain(raw_ostream &OS, RecordKeeper &Records) {
     EmitRVVBuiltinSema(Records, OS);
     break;
   case GenRISCVXTHeadVBuiltins:
-    EmitRVVBuiltins(Records, OS);
+    EmitRVVBuiltins(Records, OS, RVVHeaderType::XTHEADV_VECTOR);
     break;
   case GenRISCVXTHeadVBuiltinCG:
     EmitRVVBuiltinCG(Records, OS);

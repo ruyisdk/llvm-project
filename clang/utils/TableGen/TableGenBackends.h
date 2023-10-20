@@ -123,7 +123,8 @@ void EmitMveBuiltinAliases(llvm::RecordKeeper &Records, llvm::raw_ostream &OS);
 
 void EmitRVVHeader(llvm::RecordKeeper &Records, llvm::raw_ostream &OS,
                    RVVHeaderType Type);
-void EmitRVVBuiltins(llvm::RecordKeeper &Records, llvm::raw_ostream &OS);
+void EmitRVVBuiltins(llvm::RecordKeeper &Records, llvm::raw_ostream &OS,
+                     RVVHeaderType Type);
 void EmitRVVBuiltinCG(llvm::RecordKeeper &Records, llvm::raw_ostream &OS);
 void EmitRVVBuiltinSema(llvm::RecordKeeper &Records, llvm::raw_ostream &OS);
 

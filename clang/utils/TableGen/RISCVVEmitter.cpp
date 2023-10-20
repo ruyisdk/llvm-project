@@ -104,7 +104,7 @@ public:
   void createHeader(raw_ostream &o, clang::RVVHeaderType Type);
 
   /// Emit all the __builtin prototypes and code needed by Sema.
-  void createBuiltins(raw_ostream &o);
+  void createBuiltins(raw_ostream &o, clang::RVVHeaderType Type);
 
   /// Emit all the information needed to map builtin -> LLVM IR intrinsic.
   void createCodeGen(raw_ostream &o);
@@ -421,7 +421,7 @@ void RVVEmitter::createHeader(raw_ostream &OS, clang::RVVHeaderType Type) {
   OS << "#endif // __RISCV_VECTOR_H\n";
 }
 
-void RVVEmitter::createBuiltins(raw_ostream &OS) {
+void RVVEmitter::createBuiltins(raw_ostream &OS, clang::RVVHeaderType Type) {
   std::vector<std::unique_ptr<RVVIntrinsic>> Defs;
   createRVVIntrinsics(Defs);
 
@@ -430,7 +430,8 @@ void RVVEmitter::createBuiltins(raw_ostream &OS) {
 
   OS << "#if defined(TARGET_BUILTIN) && !defined(RISCVV_BUILTIN)\n";
   OS << "#define RISCVV_BUILTIN(ID, TYPE, ATTRS) TARGET_BUILTIN(ID, TYPE, "
-        "ATTRS, \"zve32x\")\n";
+        "ATTRS, \""
+     << (Type == clang::RVVHeaderType::RVV ? "zve32x" : "xtheadv") << "\")\n";
   OS << "#endif\n";
   for (auto &Def : Defs) {
     auto P =
@@ -762,8 +763,9 @@ void EmitRVVHeader(RecordKeeper &Records, raw_ostream &OS, RVVHeaderType Type) {
   RVVEmitter(Records).createHeader(OS, Type);
 }
 
-void EmitRVVBuiltins(RecordKeeper &Records, raw_ostream &OS) {
-  RVVEmitter(Records).createBuiltins(OS);
+void EmitRVVBuiltins(RecordKeeper &Records, raw_ostream &OS,
+                     RVVHeaderType Type) {
+  RVVEmitter(Records).createBuiltins(OS, Type);
 }
 
 void EmitRVVBuiltinCG(RecordKeeper &Records, raw_ostream &OS) {

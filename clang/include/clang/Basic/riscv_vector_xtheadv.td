@@ -14,6 +14,11 @@
 
 include "riscv_vector_common.td"
 
+class XRVVBuiltin<string suffix, string prototype, string type_range,
+                  string overloaded_suffix = "">
+    : RVVBuiltin<suffix, prototype, type_range, overloaded_suffix> {
+}
+
 multiclass RVVBuiltinSet<string intrinsic_name, string type_range,
                          list<list<string>> suffixes_prototypes,
                          list<int> intrinsic_types> {
@@ -23,7 +28,7 @@ multiclass RVVBuiltinSet<string intrinsic_name, string type_range,
       let Name = NAME # "_" # s_p[0] in {
         defvar suffix = s_p[1];
         defvar prototype = s_p[2];
-        def : RVVBuiltin<suffix, prototype, type_range>;
+        def : XRVVBuiltin<suffix, prototype, type_range>;
       }
     }
   }
