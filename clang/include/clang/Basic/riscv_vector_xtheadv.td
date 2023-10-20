@@ -49,8 +49,9 @@ multiclass RVVIntBinBuiltinSet
       RVVUnsignedBinBuiltinSet;
 
 
+//===----------------------------------------------------------------------===//
 // 6. Configuration-Setting Instructions
-// 6.1. vsetvli/vsetvl instructions
+//===----------------------------------------------------------------------===//
 
 let HasBuiltinAlias = false,
     HasVL = false,
@@ -63,11 +64,10 @@ let HasBuiltinAlias = false,
   def xvsetvlmax : RVVBuiltin<"", "zKzKz", "i">;
 }
 
+//===----------------------------------------------------------------------===//
 // 12. Vector Integer Arithmetic Instructions
-// 12.1. Vector Single-Width Integer Add and Subtract
+//===----------------------------------------------------------------------===//
 
-// TODO: add correspoinding llvm intrinsics for them, currently they exist here
-// only for avoiding assertion error in cmake task `ClangRISCVXTHeadVBuiltinSema`.
 let UnMaskedPolicyScheme = HasPassthruOperand in {
-defm xvadd : RVVIntBinBuiltinSet;
+  defm xvadd : RVVIntBinBuiltinSet;
 }
