@@ -251,8 +251,8 @@ class XVAMONoWd<bits<5> amoop, bits<3> width, string opcodestr>
 } // hasSideEffects = 0, mayLoad = 1, mayStore = 1
 
 multiclass XVAMO<bits<5> amoop, bits<3> width, string opcodestr> {
-  def _WD : XVAMOWd<amoop, width, opcodestr>;
-  def _UNWD : XVAMONoWd<amoop, width, opcodestr>;
+  def _WD_V : XVAMOWd<amoop, width, opcodestr>;
+  def _UNWD_V : XVAMONoWd<amoop, width, opcodestr>;
 }
 
 //===----------------------------------------------------------------------===//
@@ -376,35 +376,35 @@ foreach nf=2-8 in {
 
 let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA] in {
   // Vector AMO Instruction
-  defm XVAMO_SWAPW_V : XVAMO<0b00001, 0b110, "vamoswapw.v">;
-  defm XVAMO_ADDW_V : XVAMO<0b00000, 0b110, "vamoaddw.v">;
-  defm XVAMO_XORW_V : XVAMO<0b00100, 0b110, "vamoxorw.v">;
-  defm XVAMO_ANDW_V : XVAMO<0b01100, 0b110, "vamoandw.v">;
-  defm XVAMO_ORW_V : XVAMO<0b01000, 0b110, "vamoorw.v">;
-  defm XVAMO_MINW_V : XVAMO<0b10000, 0b110, "vamominw.v">;
-  defm XVAMO_MAXW_V : XVAMO<0b10100, 0b110, "vamomaxw.v">;
-  defm XVAMO_MINUW_V : XVAMO<0b11000, 0b110, "vamominuw.v">;
-  defm XVAMO_MAXUW_V : XVAMO<0b11100, 0b110, "vamomaxuw.v">;
+  defm XVAMOSWAPW : XVAMO<0b00001, 0b110, "vamoswapw.v">;
+  defm XVAMOADDW : XVAMO<0b00000, 0b110, "vamoaddw.v">;
+  defm XVAMOXORW : XVAMO<0b00100, 0b110, "vamoxorw.v">;
+  defm XVAMOANDW : XVAMO<0b01100, 0b110, "vamoandw.v">;
+  defm XVAMOORW : XVAMO<0b01000, 0b110, "vamoorw.v">;
+  defm XVAMOMINW : XVAMO<0b10000, 0b110, "vamominw.v">;
+  defm XVAMOMAXW : XVAMO<0b10100, 0b110, "vamomaxw.v">;
+  defm XVAMOMINUW : XVAMO<0b11000, 0b110, "vamominuw.v">;
+  defm XVAMOMAXUW : XVAMO<0b11100, 0b110, "vamomaxuw.v">;
 
-  defm XVAMO_SWAPD_V : XVAMO<0b00001, 0b111, "vamoswapd.v">;
-  defm XVAMO_ADDD_V : XVAMO<0b00000, 0b111, "vamoaddd.v">;
-  defm XVAMO_XORD_V : XVAMO<0b00100, 0b111, "vamoxord.v">;
-  defm XVAMO_ANDD_V : XVAMO<0b01100, 0b111, "vamoandd.v">;
-  defm XVAMO_ORD_V : XVAMO<0b01000, 0b111, "vamoord.v">;
-  defm XVAMO_MIND_V : XVAMO<0b10000, 0b111, "vamomind.v">;
-  defm XVAMO_MAXD_V : XVAMO<0b10100, 0b111, "vamomaxd.v">;
-  defm XVAMO_MINUD_V : XVAMO<0b11000, 0b111, "vamominud.v">;
-  defm XVAMO_MAXUD_V : XVAMO<0b11100, 0b111, "vamomaxud.v">;
+  defm XVAMOSWAPD : XVAMO<0b00001, 0b111, "vamoswapd.v">;
+  defm XVAMOADDD : XVAMO<0b00000, 0b111, "vamoaddd.v">;
+  defm XVAMOXORD : XVAMO<0b00100, 0b111, "vamoxord.v">;
+  defm XVAMOANDD : XVAMO<0b01100, 0b111, "vamoandd.v">;
+  defm XVAMOORD : XVAMO<0b01000, 0b111, "vamoord.v">;
+  defm XVAMOMIND : XVAMO<0b10000, 0b111, "vamomind.v">;
+  defm XVAMOMAXD : XVAMO<0b10100, 0b111, "vamomaxd.v">;
+  defm XVAMOMINUD : XVAMO<0b11000, 0b111, "vamominud.v">;
+  defm XVAMOMAXUD : XVAMO<0b11100, 0b111, "vamomaxud.v">;
 
-  defm XVAMO_SWAPQ_V : XVAMO<0b00001, 0b000, "vamoswapq.v">;
-  defm XVAMO_ADDQ_V : XVAMO<0b00000, 0b000, "vamoaddq.v">;
-  defm XVAMO_XORQ_V : XVAMO<0b00100, 0b000, "vamoxorq.v">;
-  defm XVAMO_ANDQ_V : XVAMO<0b01100, 0b000, "vamoandq.v">;
-  defm XVAMO_ORQ_V : XVAMO<0b01000, 0b000, "vamoorq.v">;
-  defm XVAMO_MINQ_V : XVAMO<0b10000, 0b000, "vamominq.v">;
-  defm XVAMO_MAXQ_V : XVAMO<0b10100, 0b000, "vamomaxq.v">;
-  defm XVAMO_MINUQ_V : XVAMO<0b11000, 0b000, "vamominuq.v">;
-  defm XVAMO_MAXUQ_V : XVAMO<0b11100, 0b000, "vamomaxuq.v">;
+  defm XVAMOSWAPQ : XVAMO<0b00001, 0b000, "vamoswapq.v">;
+  defm XVAMOADDQ : XVAMO<0b00000, 0b000, "vamoaddq.v">;
+  defm XVAMOXORQ : XVAMO<0b00100, 0b000, "vamoxorq.v">;
+  defm XVAMOANDQ : XVAMO<0b01100, 0b000, "vamoandq.v">;
+  defm XVAMOORQ : XVAMO<0b01000, 0b000, "vamoorq.v">;
+  defm XVAMOMINQ : XVAMO<0b10000, 0b000, "vamominq.v">;
+  defm XVAMOMAXQ : XVAMO<0b10100, 0b000, "vamomaxq.v">;
+  defm XVAMOMINUQ : XVAMO<0b11000, 0b000, "vamominuq.v">;
+  defm XVAMOMAXUQ : XVAMO<0b11100, 0b000, "vamomaxuq.v">;
 } // Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA]
 
 let Predicates = [HasVendorXTHeadV] in {

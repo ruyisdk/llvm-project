@@ -25,3 +25,37 @@ let TargetPrefix = "riscv" in {
   defm xvadd : RISCVBinaryAAX;
 
 } // TargetPrefix = "riscv"
+
+let TargetPrefix = "riscv" in {
+  // 8. Vector AMO Operations (Zvamo)
+
+  // For atomic operations without mask
+  // Input: (base pointer, index, value, vl)
+  class XVAMONoMask
+        : Intrinsic<[llvm_anyvector_ty],
+                    [llvm_ptr_ty, llvm_anyvector_ty, LLVMMatchType<0>,
+                     llvm_anyint_ty],
+                    [NoCapture<ArgIndex<0>>]>, RISCVVIntrinsic;
+  // For atomic operations with mask
+  // Input: (base pointer, index, value, mask, vl)
+  class XVAMOMask
+        : Intrinsic<[llvm_anyvector_ty],
+                    [llvm_ptr_ty, llvm_anyvector_ty, LLVMMatchType<0>,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty],
+                    [NoCapture<ArgIndex<0>>]>, RISCVVIntrinsic;
+
+  multiclass XIntrinsicVAMO {
+    def "int_riscv_" # NAME           : XVAMONoMask;
+    def "int_riscv_" # NAME # "_mask" : XVAMOMask;
+  }
+
+  defm xvamoswap : XIntrinsicVAMO;
+  defm xvamoadd  : XIntrinsicVAMO;
+  defm xvamoxor  : XIntrinsicVAMO;
+  defm xvamoand  : XIntrinsicVAMO;
+  defm xvamoor   : XIntrinsicVAMO;
+  defm xvamomin  : XIntrinsicVAMO;
+  defm xvamomax  : XIntrinsicVAMO;
+  defm xvamominu : XIntrinsicVAMO;
+  defm xvamomaxu : XIntrinsicVAMO;
+} // TargetPrefix = "riscv"
