@@ -15,12 +15,23 @@
 
 let TargetPrefix = "riscv" in {
   // 6. Configuration-Setting and Utility
-  def int_riscv_xvsetvl    : Intrinsic<[llvm_i64_ty],
-                                       [/* AVL */ llvm_i64_ty, /* SEW */ llvm_i64_ty, /* LMUL */ llvm_i64_ty],
-                                       [IntrNoMem]>;
-  def int_riscv_xvsetvlmax : Intrinsic<[llvm_i64_ty],
-                                       [/* SEW */ llvm_i64_ty, /* LMUL */ llvm_i64_ty],
-                                       [IntrNoMem]>;
+  def int_riscv_xvsetvl    : Intrinsic<[llvm_anyint_ty],
+                                       [/* AVL */ LLVMMatchType<0>,
+                                        /* SEW */ LLVMMatchType<0>,
+                                        /* LMUL */ LLVMMatchType<0>
+                                       ],
+                                       [IntrNoMem,
+                                        ImmArg<ArgIndex<1>>,
+                                        ImmArg<ArgIndex<2>>
+                                       ]>;
+  def int_riscv_xvsetvlmax : Intrinsic<[llvm_anyint_ty],
+                                       [/* SEW */ LLVMMatchType<0>,
+                                        /* LMUL */ LLVMMatchType<0>
+                                       ],
+                                       [IntrNoMem,
+                                        ImmArg<ArgIndex<0>>,
+                                        ImmArg<ArgIndex<1>>
+                                       ]>;
 
   defm xvadd : RISCVBinaryAAX;
 

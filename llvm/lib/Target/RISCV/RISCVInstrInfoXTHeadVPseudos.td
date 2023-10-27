@@ -80,12 +80,15 @@ defset list<VTypeInfo> AllXVectors = {
 // 6. Configuration-Setting Instructions
 //===----------------------------------------------------------------------===//
 
-let hasSideEffects = 1, mayLoad = 0, mayStore = 0, Defs = [VL, VTYPE] in {
-  def PseudoXVSETVLI : Pseudo<(outs GPR:$rd), (ins GPRNoX0:$rs1, XTHeadVTypeI:$vtypei), []>,
-                       Sched<[WriteVSETVLI, ReadVSETVLI]>;
-  def PseudoXVSETVLIX0 : Pseudo<(outs GPR:$rd), (ins GPRX0:$rs1, XTHeadVTypeI:$vtypei), []>,
+// These can't be reused, since the vtypei in rvv 0.7 differs from the one in rvv 1.0
+let Predicates = [HasVendorXTHeadV] in {
+  let hasSideEffects = 1, mayLoad = 0, mayStore = 0, Defs = [VL, VTYPE] in {
+    def PseudoXVSETVLI : Pseudo<(outs GPR:$rd), (ins GPRNoX0:$rs1, XTHeadVTypeI:$vtypei), []>,
                          Sched<[WriteVSETVLI, ReadVSETVLI]>;
-}
+    def PseudoXVSETVLIX0 : Pseudo<(outs GPR:$rd), (ins GPRX0:$rs1, XTHeadVTypeI:$vtypei), []>,
+                           Sched<[WriteVSETVLI, ReadVSETVLI]>;
+  }
+} // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
 // 8. Vector AMO Operations
@@ -153,26 +156,33 @@ multiclass XVPseudoAMO {
   defm "D" : XVPseudoAMOMem<64>;
 }
 
-defm PseudoXVAMOSWAP : XVPseudoAMO;
-defm PseudoXVAMOADD  : XVPseudoAMO;
-defm PseudoXVAMOXOR  : XVPseudoAMO;
-defm PseudoXVAMOAND  : XVPseudoAMO;
-defm PseudoXVAMOOR   : XVPseudoAMO;
-defm PseudoXVAMOMIN  : XVPseudoAMO;
-defm PseudoXVAMOMAX  : XVPseudoAMO;
-defm PseudoXVAMOMINU : XVPseudoAMO;
-defm PseudoXVAMOMAXU : XVPseudoAMO;
+let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA] in {
+  defm PseudoXVAMOSWAP : XVPseudoAMO;
+  defm PseudoXVAMOADD  : XVPseudoAMO;
+  defm PseudoXVAMOXOR  : XVPseudoAMO;
+  defm PseudoXVAMOAND  : XVPseudoAMO;
+  defm PseudoXVAMOOR   : XVPseudoAMO;
+  defm PseudoXVAMOMIN  : XVPseudoAMO;
+  defm PseudoXVAMOMAX  : XVPseudoAMO;
+  defm PseudoXVAMOMINU : XVPseudoAMO;
+  defm PseudoXVAMOMAXU : XVPseudoAMO;
+} // Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA]
 
+// TODO: try to reuse them from RISCVInstrInfoVPseudos.td, see the `HasStdVOrXTHeadV` predicate
 //===----------------------------------------------------------------------===//
 // 12. Vector Integer Arithmetic Instructions
 //===----------------------------------------------------------------------===//
-defm PseudoXVADD   : VPseudoVALU_VV_VX_VI;
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoXVADD   : VPseudoVALU_VV_VX_VI;
+} // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
 // Patterns. Enabling code generation from intrinsics to pseudos, then to asms.
 //===----------------------------------------------------------------------===//
 
-defm : VPatBinaryV_VV_VX_VI<"int_riscv_xvadd", "PseudoXVADD", AllIntegerXVectors>;
+let Predicates = [HasVendorXTHeadV] in {
+  defm : VPatBinaryV_VV_VX_VI<"int_riscv_xvadd", "PseudoXVADD", AllIntegerXVectors>;
+} // Predicates = [HasVendorXTHeadV]
 
 // Patterns for vamo intrinsics.
 class XVPatAMOWDNoMask<string intrinsic_name,
