@@ -6079,7 +6079,7 @@ multiclass VPatCompare_VI<string intrinsic, string inst,
 // Pseudo instructions
 //===----------------------------------------------------------------------===//
 
-let Predicates = [HasVInstructions] in {
+let Predicates = [HasStdVOrXTHeadV] in {
 
 //===----------------------------------------------------------------------===//
 // Pseudo Instructions for CodeGen
@@ -6091,6 +6091,10 @@ let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCodeGenOnly = 1 in {
                         PseudoInstExpansion<(CSRRS GPR:$rd, SysRegVLENB.Encoding, X0)>,
                         Sched<[WriteRdVLENB]>;
 }
+
+} // Predicates = [HasStdVOrXTHeadV]
+
+let Predicates = [HasVInstructions] in {
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCodeGenOnly = 1,
     Uses = [VL] in
