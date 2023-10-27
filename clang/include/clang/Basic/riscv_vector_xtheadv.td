@@ -58,6 +58,57 @@ multiclass RVVIntBinBuiltinSet
 // 6. Configuration-Setting Instructions
 //===----------------------------------------------------------------------===//
 
+// vsetvl/vsetvlmax are a macro because they require constant integers in SEW
+// and LMUL.
+let HeaderCode =
+[{
+#define __riscv_vsetvl_e8m1(avl) __builtin_rvv_xvsetvl((size_t)(avl), 0, 0)
+#define __riscv_vsetvl_e8m2(avl) __builtin_rvv_xvsetvl((size_t)(avl), 0, 1)
+#define __riscv_vsetvl_e8m4(avl) __builtin_rvv_xvsetvl((size_t)(avl), 0, 2)
+#define __riscv_vsetvl_e8m8(avl) __builtin_rvv_xvsetvl((size_t)(avl), 0, 3)
+
+#define __riscv_vsetvl_e16m1(avl) __builtin_rvv_xvsetvl((size_t)(avl), 1, 0)
+#define __riscv_vsetvl_e16m2(avl) __builtin_rvv_xvsetvl((size_t)(avl), 1, 1)
+#define __riscv_vsetvl_e16m4(avl) __builtin_rvv_xvsetvl((size_t)(avl), 1, 2)
+#define __riscv_vsetvl_e16m8(avl) __builtin_rvv_xvsetvl((size_t)(avl), 1, 3)
+
+#define __riscv_vsetvl_e32m1(avl) __builtin_rvv_xvsetvl((size_t)(avl), 2, 0)
+#define __riscv_vsetvl_e32m2(avl) __builtin_rvv_xvsetvl((size_t)(avl), 2, 1)
+#define __riscv_vsetvl_e32m4(avl) __builtin_rvv_xvsetvl((size_t)(avl), 2, 2)
+#define __riscv_vsetvl_e32m8(avl) __builtin_rvv_xvsetvl((size_t)(avl), 2, 3)
+
+#if __riscv_v_elen >= 64
+#define __riscv_vsetvl_e64m1(avl) __builtin_rvv_xvsetvl((size_t)(avl), 3, 0)
+#define __riscv_vsetvl_e64m2(avl) __builtin_rvv_xvsetvl((size_t)(avl), 3, 1)
+#define __riscv_vsetvl_e64m4(avl) __builtin_rvv_xvsetvl((size_t)(avl), 3, 2)
+#define __riscv_vsetvl_e64m8(avl) __builtin_rvv_xvsetvl((size_t)(avl), 3, 3)
+#endif
+
+#define __riscv_vsetvlmax_e8m1() __builtin_rvv_xvsetvlmax(0, 0)
+#define __riscv_vsetvlmax_e8m2() __builtin_rvv_xvsetvlmax(0, 1)
+#define __riscv_vsetvlmax_e8m4() __builtin_rvv_xvsetvlmax(0, 2)
+#define __riscv_vsetvlmax_e8m8() __builtin_rvv_xvsetvlmax(0, 3)
+
+#define __riscv_vsetvlmax_e16m1() __builtin_rvv_xvsetvlmax(1, 0)
+#define __riscv_vsetvlmax_e16m2() __builtin_rvv_xvsetvlmax(1, 1)
+#define __riscv_vsetvlmax_e16m4() __builtin_rvv_xvsetvlmax(1, 2)
+#define __riscv_vsetvlmax_e16m8() __builtin_rvv_xvsetvlmax(1, 3)
+
+#define __riscv_vsetvlmax_e32m1() __builtin_rvv_xvsetvlmax(2, 0)
+#define __riscv_vsetvlmax_e32m2() __builtin_rvv_xvsetvlmax(2, 1)
+#define __riscv_vsetvlmax_e32m4() __builtin_rvv_xvsetvlmax(2, 2)
+#define __riscv_vsetvlmax_e32m8() __builtin_rvv_xvsetvlmax(2, 3)
+
+#if __riscv_v_elen >= 64
+#define __riscv_vsetvlmax_e64m1() __builtin_rvv_xvsetvlmax(3, 0)
+#define __riscv_vsetvlmax_e64m2() __builtin_rvv_xvsetvlmax(3, 1)
+#define __riscv_vsetvlmax_e64m4() __builtin_rvv_xvsetvlmax(3, 2)
+#define __riscv_vsetvlmax_e64m8() __builtin_rvv_xvsetvlmax(3, 3)
+#endif
+
+}] in
+def xvsetvl_macro: RVVHeader;
+
 let HasBuiltinAlias = false,
     HasVL = false,
     HasMasked = false,
