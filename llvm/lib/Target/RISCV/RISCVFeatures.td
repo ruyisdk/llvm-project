@@ -924,3 +924,17 @@ def FeatureVendorXTHeadVediv
 def HasVendorXTHeadVediv : Predicate<"Subtarget->hasVendorXTHeadVediv()">,
                                      AssemblerPredicate<(all_of FeatureVendorXTHeadVediv),
                                      "'xtheadvediv' (T-Head Divided Element Extension)">;
+
+// Predicates for reusing instructions/intrinsics in both RVV 1.0 and 0.7
+def HasStdVOrXTHeadV    : Predicate<"Subtarget->hasVInstructions()">,
+      AssemblerPredicate<
+          (any_of FeatureStdExtZve32x, FeatureVendorXTHeadV),
+          "'V' (Vector Extension for Application Processors), 'Zve32x', "
+          "'Zve64x' (Vector Extensions for Embedded Processors) or"
+          "'XTHeadV' (Vector Extension for T-Head)">;
+def HasStdVOrXTHeadVI64 : Predicate<"Subtarget->hasVInstructionsI64()">,
+      AssemblerPredicate<
+          (any_of FeatureStdExtZve64x, FeatureVendorXTHeadV),
+          "'V' (Vector Extension for Application Processors), 'Zve64x' "
+          "(Vector Extensions for Embedded Processors) or"
+          "'XTHeadV' (Vector Extension for T-Head)">;
