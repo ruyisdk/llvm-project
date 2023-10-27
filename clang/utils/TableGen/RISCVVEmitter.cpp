@@ -640,6 +640,8 @@ void RVVEmitter::createRVVIntrinsics(
     // riscv_vector.h
     if (Name == "vsetvli" || Name == "vsetvlimax")
       continue;
+    if (Name == "xvsetvl" || Name == "xvsetvlmax")
+      continue;
 
     if (!SemaRecords)
       continue;
