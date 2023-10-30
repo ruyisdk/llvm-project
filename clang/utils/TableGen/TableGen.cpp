@@ -98,12 +98,16 @@ enum ActionType {
   GenArmCdeBuiltinCG,
   GenArmCdeBuiltinAliases,
   GenRISCVVectorHeader,
+  GenRISCVXTHeadVHeader,
   GenRISCVVectorBuiltins,
   GenRISCVVectorBuiltinCG,
   GenRISCVVectorBuiltinSema,
   GenRISCVSiFiveVectorBuiltins,
   GenRISCVSiFiveVectorBuiltinCG,
   GenRISCVSiFiveVectorBuiltinSema,
+  GenRISCVXTHeadVBuiltins,
+  GenRISCVXTHeadVBuiltinCG,
+  GenRISCVXTHeadVBuiltinSema,
   GenAttrDocs,
   GenDiagDocs,
   GenOptDocs,
@@ -280,6 +284,8 @@ cl::opt<ActionType> Action(
                    "Generate list of valid ARM CDE builtin aliases for clang"),
         clEnumValN(GenRISCVVectorHeader, "gen-riscv-vector-header",
                    "Generate riscv_vector.h for clang"),
+        clEnumValN(GenRISCVXTHeadVHeader, "gen-riscv-xtheadv-header",
+                   "Generate riscv_vector.h for clang"),
         clEnumValN(GenRISCVVectorBuiltins, "gen-riscv-vector-builtins",
                    "Generate riscv_vector_builtins.inc for clang"),
         clEnumValN(GenRISCVVectorBuiltinCG, "gen-riscv-vector-builtin-codegen",
@@ -295,6 +301,12 @@ cl::opt<ActionType> Action(
         clEnumValN(GenRISCVSiFiveVectorBuiltinSema,
                    "gen-riscv-sifive-vector-builtin-sema",
                    "Generate riscv_sifive_vector_builtin_sema.inc for clang"),
+        clEnumValN(GenRISCVXTHeadVBuiltins, "gen-riscv-xtheadv-builtins",
+                   "Generate riscv_xtheadv_builtins.inc for clang"),
+        clEnumValN(GenRISCVXTHeadVBuiltinCG, "gen-riscv-xtheadv-builtin-codegen",
+                   "Generate riscv_xtheadv_builtin_cg.inc for clang"),
+        clEnumValN(GenRISCVXTHeadVBuiltinSema, "gen-riscv-xtheadv-builtin-sema",
+                   "Generate riscv_xtheadv_builtin_sema.inc for clang"),
         clEnumValN(GenAttrDocs, "gen-attr-docs",
                    "Generate attribute documentation"),
         clEnumValN(GenDiagDocs, "gen-diag-docs",
@@ -536,10 +548,13 @@ bool ClangTableGenMain(raw_ostream &OS, RecordKeeper &Records) {
     EmitCdeBuiltinAliases(Records, OS);
     break;
   case GenRISCVVectorHeader:
-    EmitRVVHeader(Records, OS);
+    EmitRVVHeader(Records, OS, RVVHeaderType::RVV);
+    break;
+  case GenRISCVXTHeadVHeader:
+    EmitRVVHeader(Records, OS, RVVHeaderType::XTHEADV_VECTOR);
     break;
   case GenRISCVVectorBuiltins:
-    EmitRVVBuiltins(Records, OS);
+    EmitRVVBuiltins(Records, OS, RVVHeaderType::RVV);
     break;
   case GenRISCVVectorBuiltinCG:
     EmitRVVBuiltinCG(Records, OS);
@@ -548,12 +563,21 @@ bool ClangTableGenMain(raw_ostream &OS, RecordKeeper &Records) {
     EmitRVVBuiltinSema(Records, OS);
     break;
   case GenRISCVSiFiveVectorBuiltins:
-    EmitRVVBuiltins(Records, OS);
+    EmitRVVBuiltins(Records, OS, RVVHeaderType::RVV);
     break;
   case GenRISCVSiFiveVectorBuiltinCG:
     EmitRVVBuiltinCG(Records, OS);
     break;
   case GenRISCVSiFiveVectorBuiltinSema:
+    EmitRVVBuiltinSema(Records, OS);
+    break;
+  case GenRISCVXTHeadVBuiltins:
+    EmitRVVBuiltins(Records, OS, RVVHeaderType::XTHEADV_VECTOR);
+    break;
+  case GenRISCVXTHeadVBuiltinCG:
+    EmitRVVBuiltinCG(Records, OS);
+    break;
+  case GenRISCVXTHeadVBuiltinSema:
     EmitRVVBuiltinSema(Records, OS);
     break;
   case GenAttrDocs:

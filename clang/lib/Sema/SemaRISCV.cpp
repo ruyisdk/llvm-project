@@ -66,6 +66,12 @@ static const PrototypeDescriptor RVSiFiveVectorSignatureTable[] = {
 #undef DECL_SIGNATURE_TABLE
 };
 
+static const PrototypeDescriptor RVXTHeadVSignatureTable[] = {
+#define DECL_SIGNATURE_TABLE
+#include "clang/Basic/riscv_xtheadv_builtin_sema.inc"
+#undef DECL_SIGNATURE_TABLE
+};
+
 static const RVVIntrinsicRecord RVVIntrinsicRecords[] = {
 #define DECL_INTRINSIC_RECORDS
 #include "clang/Basic/riscv_vector_builtin_sema.inc"
@@ -78,6 +84,12 @@ static const RVVIntrinsicRecord RVSiFiveVectorIntrinsicRecords[] = {
 #undef DECL_INTRINSIC_RECORDS
 };
 
+static const RVVIntrinsicRecord RVXTHeadVIntrinsicRecords[] = {
+#define DECL_INTRINSIC_RECORDS
+#include "clang/Basic/riscv_xtheadv_builtin_sema.inc"
+#undef DECL_INTRINSIC_RECORDS
+};
+
 // Get subsequence of signature table.
 static ArrayRef<PrototypeDescriptor>
 ProtoSeq2ArrayRef(IntrinsicKind K, uint16_t Index, uint8_t Length) {
@@ -86,6 +98,8 @@ ProtoSeq2ArrayRef(IntrinsicKind K, uint16_t Index, uint8_t Length) {
     return ArrayRef(&RVVSignatureTable[Index], Length);
   case IntrinsicKind::SIFIVE_VECTOR:
     return ArrayRef(&RVSiFiveVectorSignatureTable[Index], Length);
+  case IntrinsicKind::XTHEADV_VECTOR:
+    return ArrayRef(&RVXTHeadVSignatureTable[Index], Length);
   }
   llvm_unreachable("Unhandled IntrinsicKind");
 }
@@ -164,6 +178,7 @@ private:
   RVVTypeCache TypeCache;
   bool ConstructedRISCVVBuiltins;
   bool ConstructedRISCVSiFiveVectorBuiltins;
+  bool ConstructedRISCVXTHeadVBuiltins;
 
   // List of all RVV intrinsic.
   std::vector<RVVIntrinsicDef> IntrinsicList;
@@ -189,6 +204,7 @@ public:
   RISCVIntrinsicManagerImpl(clang::Sema &S) : S(S), Context(S.Context) {
     ConstructedRISCVVBuiltins = false;
     ConstructedRISCVSiFiveVectorBuiltins = false;
+    ConstructedRISCVXTHeadVBuiltins = false;
   }
 
   // Initialize IntrinsicList
@@ -362,6 +378,11 @@ void RISCVIntrinsicManagerImpl::InitIntrinsicList() {
     ConstructedRISCVSiFiveVectorBuiltins = true;
     ConstructRVVIntrinsics(RVSiFiveVectorIntrinsicRecords,
                            IntrinsicKind::SIFIVE_VECTOR);
+  }
+  if (S.RISCV().DeclareRISCVXTHeadVBuiltins && !ConstructedRISCVXTHeadVBuiltins) {
+    ConstructedRISCVXTHeadVBuiltins = true;
+    ConstructRVVIntrinsics(RVXTHeadVIntrinsicRecords,
+                           IntrinsicKind::XTHEADV_VECTOR);
   }
 }
 
@@ -1378,6 +1399,9 @@ void SemaRISCV::checkRVVTypeSupport(QualType Ty, SourceLocation Loc, Decl *D,
   unsigned EltSize = SemaRef.Context.getTypeSize(Info.ElementType);
   unsigned MinElts = Info.EC.getKnownMinValue();
 
+  // TODO[XTHEADVECTOR]: better error message
+  // Note: XTHEADVECTOR contains everything.
+
   if (Info.ElementType->isSpecificBuiltinType(BuiltinType::Double) &&
       !FeatureMap.lookup("zve64d"))
     Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve64d";
@@ -1385,20 +1409,20 @@ void SemaRISCV::checkRVVTypeSupport(QualType Ty, SourceLocation Loc, Decl *D,
   // least zve64x
   else if (((EltSize == 64 && Info.ElementType->isIntegerType()) ||
             MinElts == 1) &&
-           !FeatureMap.lookup("zve64x"))
+           (!FeatureMap.lookup("zve64x") && !FeatureMap.lookup("xtheadv")))
     Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve64x";
   else if (Info.ElementType->isFloat16Type() && !FeatureMap.lookup("zvfh") &&
-           !FeatureMap.lookup("zvfhmin"))
+           (!FeatureMap.lookup("zvfhmin") && !FeatureMap.lookup("xtheadv")))
     Diag(Loc, diag::err_riscv_type_requires_extension, D)
         << Ty << "zvfh or zvfhmin";
-  else if (Info.ElementType->isBFloat16Type() && !FeatureMap.lookup("zvfbfmin"))
+  else if (Info.ElementType->isBFloat16Type() && (!FeatureMap.lookup("zvfbfmin") && !FeatureMap.lookup("xtheadv")))
     Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zvfbfmin";
   else if (Info.ElementType->isSpecificBuiltinType(BuiltinType::Float) &&
-           !FeatureMap.lookup("zve32f"))
+           (!FeatureMap.lookup("zve32f") && !FeatureMap.lookup("xtheadv")))
     Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve32f";
   // Given that caller already checked isRVVType() before calling this function,
   // if we don't have at least zve32x supported, then we need to emit error.
-  else if (!FeatureMap.lookup("zve32x"))
+  else if (!FeatureMap.lookup("zve32x") && !FeatureMap.lookup("xtheadv"))
     Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve32x";
 }
 
