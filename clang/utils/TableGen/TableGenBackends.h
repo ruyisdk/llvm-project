@@ -24,6 +24,13 @@ class RecordKeeper;
 
 namespace clang {
 
+// Decide whether to emit header code
+// `#pragma clang riscv intrinsic vector` for RVV 1.0 (the `RVV`),
+// or
+// `#pragma clang riscv intrinsic xtheadv_vector` for RVV 0.7.1 (the
+// `XTHEADV_VECTOR`).
+enum RVVHeaderType : uint8_t { RVV, XTHEADV_VECTOR };
+
 void EmitClangDeclContext(llvm::RecordKeeper &RK, llvm::raw_ostream &OS);
 void EmitClangASTNodes(llvm::RecordKeeper &RK, llvm::raw_ostream &OS,
                        const std::string &N, const std::string &S);
@@ -114,8 +121,10 @@ void EmitMveBuiltinSema(llvm::RecordKeeper &Records, llvm::raw_ostream &OS);
 void EmitMveBuiltinCG(llvm::RecordKeeper &Records, llvm::raw_ostream &OS);
 void EmitMveBuiltinAliases(llvm::RecordKeeper &Records, llvm::raw_ostream &OS);
 
-void EmitRVVHeader(llvm::RecordKeeper &Records, llvm::raw_ostream &OS);
-void EmitRVVBuiltins(llvm::RecordKeeper &Records, llvm::raw_ostream &OS);
+void EmitRVVHeader(llvm::RecordKeeper &Records, llvm::raw_ostream &OS,
+                   RVVHeaderType Type);
+void EmitRVVBuiltins(llvm::RecordKeeper &Records, llvm::raw_ostream &OS,
+                     RVVHeaderType Type);
 void EmitRVVBuiltinCG(llvm::RecordKeeper &Records, llvm::raw_ostream &OS);
 void EmitRVVBuiltinSema(llvm::RecordKeeper &Records, llvm::raw_ostream &OS);
 

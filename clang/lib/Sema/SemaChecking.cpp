@@ -5402,24 +5402,28 @@ bool Sema::CheckWebAssemblyBuiltinFunctionCall(const TargetInfo &TI,
 
 void Sema::checkRVVTypeSupport(QualType Ty, SourceLocation Loc, ValueDecl *D) {
   const TargetInfo &TI = Context.getTargetInfo();
+  // TODO[RVV 0.7.1]: better error message
+  // Note: RVV 0.7.1 contains everything.
+
   // (ELEN, LMUL) pairs of (8, mf8), (16, mf4), (32, mf2), (64, m1) requires at
   // least zve64x
   if ((Ty->isRVVType(/* Bitwidth */ 64, /* IsFloat */ false) ||
        Ty->isRVVType(/* ElementCount */ 1)) &&
-      !TI.hasFeature("zve64x"))
+      (!TI.hasFeature("zve64x") &&
+       !TI.hasFeature("xtheadv")))
     Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve64x";
   if (Ty->isRVVType(/* Bitwidth */ 16, /* IsFloat */ true) &&
-      !TI.hasFeature("zvfh"))
+      (!TI.hasFeature("zvfh") && !TI.hasFeature("xtheadv")))
     Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zvfh";
   if (Ty->isRVVType(/* Bitwidth */ 32, /* IsFloat */ true) &&
-      !TI.hasFeature("zve32f"))
+      (!TI.hasFeature("zve32f") && !TI.hasFeature("xtheadv")))
     Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve32f";
   if (Ty->isRVVType(/* Bitwidth */ 64, /* IsFloat */ true) &&
-      !TI.hasFeature("zve64d"))
+      (!TI.hasFeature("zve64d") && !TI.hasFeature("xtheadv")))
     Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve64d";
   // Given that caller already checked isRVVType() before calling this function,
   // if we don't have at least zve32x supported, then we need to emit error.
-  if (!TI.hasFeature("zve32x"))
+  if (!TI.hasFeature("zve32x") && !TI.hasFeature("xtheadv"))
     Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve32x";
 }
 
