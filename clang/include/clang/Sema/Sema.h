@@ -1654,7 +1654,7 @@ public:
   bool DeclareRISCVSiFiveVectorBuiltins = false;
 
   /// Indicate RISC-V vector 0.7.1 builtin functions enabled or not.
-  bool DeclareRISCVV0p7Builtins = false;
+  bool DeclareRISCVXTHeadVBuiltins = false;
 
 private:
   std::unique_ptr<sema::RISCVIntrinsicManager> RVIntrinsicManager;

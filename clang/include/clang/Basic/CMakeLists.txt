@@ -117,3 +117,12 @@ clang_tablegen(riscv_sifive_vector_builtin_cg.inc -gen-riscv-sifive-vector-built
 clang_tablegen(riscv_sifive_vector_builtin_sema.inc -gen-riscv-sifive-vector-builtin-sema
   SOURCE riscv_sifive_vector.td
   TARGET ClangRISCVSiFiveVectorBuiltinSema)
+clang_tablegen(riscv_xtheadv_builtins.inc -gen-riscv-xtheadv-builtins
+  SOURCE riscv_vector_xtheadv.td
+  TARGET ClangRISCVXTHeadVBuiltins)
+clang_tablegen(riscv_xtheadv_builtin_cg.inc -gen-riscv-xtheadv-builtin-codegen
+  SOURCE riscv_vector_xtheadv.td
+  TARGET ClangRISCVXTHeadVBuiltinCG)
+clang_tablegen(riscv_xtheadv_builtin_sema.inc -gen-riscv-xtheadv-builtin-sema
+  SOURCE riscv_vector_xtheadv.td
+  TARGET ClangRISCVXTHeadVBuiltinSema)

@@ -66,6 +66,12 @@ static const PrototypeDescriptor RVSiFiveVectorSignatureTable[] = {
 #undef DECL_SIGNATURE_TABLE
 };
 
+static const PrototypeDescriptor RVXTHeadVSignatureTable[] = {
+#define DECL_SIGNATURE_TABLE
+#include "clang/Basic/riscv_xtheadv_builtin_sema.inc"
+#undef DECL_SIGNATURE_TABLE
+};
+
 static const RVVIntrinsicRecord RVVIntrinsicRecords[] = {
 #define DECL_INTRINSIC_RECORDS
 #include "clang/Basic/riscv_vector_builtin_sema.inc"
@@ -78,6 +84,12 @@ static const RVVIntrinsicRecord RVSiFiveVectorIntrinsicRecords[] = {
 #undef DECL_INTRINSIC_RECORDS
 };
 
+static const RVVIntrinsicRecord RVXTHeadVIntrinsicRecords[] = {
+#define DECL_INTRINSIC_RECORDS
+#include "clang/Basic/riscv_xtheadv_builtin_sema.inc"
+#undef DECL_INTRINSIC_RECORDS
+};
+
 // Get subsequence of signature table.
 static ArrayRef<PrototypeDescriptor>
 ProtoSeq2ArrayRef(IntrinsicKind K, uint16_t Index, uint8_t Length) {
@@ -86,6 +98,8 @@ ProtoSeq2ArrayRef(IntrinsicKind K, uint16_t Index, uint8_t Length) {
     return ArrayRef(&RVVSignatureTable[Index], Length);
   case IntrinsicKind::SIFIVE_VECTOR:
     return ArrayRef(&RVSiFiveVectorSignatureTable[Index], Length);
+  case IntrinsicKind::XTHEADV_VECTOR:
+    return ArrayRef(&RVXTHeadVSignatureTable[Index], Length);
   }
   llvm_unreachable("Unhandled IntrinsicKind");
 }
@@ -160,6 +174,7 @@ private:
   RVVTypeCache TypeCache;
   bool ConstructedRISCVVBuiltins;
   bool ConstructedRISCVSiFiveVectorBuiltins;
+  bool ConstructedRISCVXTHeadVBuiltins;
 
   // List of all RVV intrinsic.
   std::vector<RVVIntrinsicDef> IntrinsicList;
@@ -329,6 +344,11 @@ void RISCVIntrinsicManagerImpl::InitIntrinsicList() {
     ConstructedRISCVSiFiveVectorBuiltins = true;
     ConstructRVVIntrinsics(RVSiFiveVectorIntrinsicRecords,
                            IntrinsicKind::SIFIVE_VECTOR);
+  }
+  if (S.DeclareRISCVXTHeadVBuiltins && !ConstructedRISCVXTHeadVBuiltins) {
+    ConstructedRISCVXTHeadVBuiltins = true;
+    ConstructRVVIntrinsics(RVXTHeadVIntrinsicRecords,
+                           IntrinsicKind::XTHEADV_VECTOR);
   }
 }
 
