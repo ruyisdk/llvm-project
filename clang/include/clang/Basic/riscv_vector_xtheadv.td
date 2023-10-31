@@ -107,7 +107,7 @@ let HeaderCode =
 [{
 
 /* These two builtins comes from the 1.0 implementation, */
-/* for compatibility, we forward these calls to the the corresponding 0.7 builtins. */
+/* for compatibility, we forward these calls to the corresponding 0.7 builtins. */
 #define __builtin_rvv_vsetvli(avl, sew, lmul) __builtin_rvv_xvsetvl((size_t)(avl), sew, lmul)
 #define __builtin_rvv_vsetvlimax(sew, lmul)   __builtin_rvv_xvsetvlmax(sew, lmul)
 
