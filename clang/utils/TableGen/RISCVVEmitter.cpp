@@ -327,13 +327,30 @@ void RVVEmitter::createHeader(raw_ostream &OS, clang::RVVHeaderType Type) {
         "------===\n"
         " */\n\n";
 
+  if (Type == clang::RVVHeaderType::RVV) {
+    // `__riscv_vector_xtheadv` is defined in `RISCVTargetInfo::getTargetDefines`
+    // If in `riscv_vector.h` we found that the xtheadv extension is required and enabled,
+    // we forward the include directive to the real header containing intrinsics for xtheadv.
+    OS << "#ifdef __riscv_vector_xtheadv\n";
+    OS << "#include <riscv_vector_xtheadv.h>\n";
+    OS << "#else\n\n";
+    // Otherwise, we include the real header containing intrinsics for RVV 1.0
+  }
+
   OS << "#ifndef __RISCV_VECTOR_H\n";
   OS << "#define __RISCV_VECTOR_H\n\n";
 
   OS << "#include <stdint.h>\n";
   OS << "#include <stddef.h>\n\n";
 
-  OS << "#ifndef __riscv_vector\n";
+  switch (Type) {
+  case clang::RVVHeaderType::RVV:
+    OS << "#ifndef __riscv_vector\n";
+    break;
+  case clang::RVVHeaderType::XTHEADV_VECTOR:
+    OS << "#ifndef __riscv_vector_xtheadv\n";
+    break;
+  }
   OS << "#error \"Vector intrinsics require the vector extension.\"\n";
   OS << "#endif\n\n";
 
@@ -419,6 +436,10 @@ void RVVEmitter::createHeader(raw_ostream &OS, clang::RVVHeaderType Type) {
   OS << "}\n";
   OS << "#endif // __cplusplus\n";
   OS << "#endif // __RISCV_VECTOR_H\n";
+
+  if (Type == clang::RVVHeaderType::RVV) {
+    OS << "#endif // __riscv_vector_xtheadv\n\n";
+  }
 }
 
 void RVVEmitter::createBuiltins(raw_ostream &OS, clang::RVVHeaderType Type) {
