@@ -11808,6 +11808,8 @@ def err_riscv_builtin_requires_extension : Error<
   "builtin requires%select{| at least one of the following extensions to be enabled}0: %1">;
 def err_riscv_builtin_invalid_lmul : Error<
   "LMUL argument must be in the range [0,3] or [5,7]">;
+def err_riscv_builtin_invalid_lmul_non_fractional : Error<
+  "LMUL argument must be in the range [0,3]">;
 def err_riscv_type_requires_extension : Error<
   "RISC-V type %0 requires the '%1' extension"
 >;

@@ -13629,7 +13629,7 @@ private:
   bool CheckPPCBuiltinFunctionCall(const TargetInfo &TI, unsigned BuiltinID,
                                    CallExpr *TheCall);
   bool CheckAMDGCNBuiltinFunctionCall(unsigned BuiltinID, CallExpr *TheCall);
-  bool CheckRISCVLMUL(CallExpr *TheCall, unsigned ArgNum);
+  bool CheckRISCVLMUL(CallExpr *TheCall, unsigned ArgNum, bool AllowFractional);
   bool CheckRISCVBuiltinFunctionCall(const TargetInfo &TI, unsigned BuiltinID,
                                      CallExpr *TheCall);
   void checkRVVTypeSupport(QualType Ty, SourceLocation Loc, ValueDecl *D);
