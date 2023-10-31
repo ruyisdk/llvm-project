@@ -62,6 +62,12 @@ multiclass RVVIntBinBuiltinSet
 // and LMUL.
 let HeaderCode =
 [{
+
+/* These two builtins comes from the 1.0 implementation, */
+/* for compatibility, we forward these calls to the the corresponding 0.7 builtins. */
+#define __builtin_rvv_vsetvli(avl, sew, lmul) __builtin_rvv_xvsetvl((size_t)(avl), sew, lmul)
+#define __builtin_rvv_vsetvlimax(sew, lmul)   __builtin_rvv_xvsetvlmax(sew, lmul)
+
 #define __riscv_vsetvl_e8m1(avl) __builtin_rvv_xvsetvl((size_t)(avl), 0, 0)
 #define __riscv_vsetvl_e8m2(avl) __builtin_rvv_xvsetvl((size_t)(avl), 0, 1)
 #define __riscv_vsetvl_e8m4(avl) __builtin_rvv_xvsetvl((size_t)(avl), 0, 2)
