@@ -1,7 +1,7 @@
 // RUN: %clang_cc1 -triple riscv64 -target-feature +xtheadv \
 // RUN: -O0 -emit-llvm %s -o - | FileCheck %s
 
-#include <riscv_vector_xtheadv.h>
+#include <riscv_vector.h>
 
 // This test case tests the typedef generated under riscv_vector_xtheadv.h
 

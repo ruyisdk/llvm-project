@@ -1,6 +1,6 @@
 // RUN: %clang_cc1 %s -triple=riscv64 -target-feature +xtheadv -fsyntax-only -verify
 
-#include <riscv_vector_xtheadv.h>
+#include <riscv_vector.h>
 
 void test(void) {
   __builtin_rvv_vsetvli(1, 7, 0); // expected-error {{argument value 7 is outside the valid range [0, 3]}}
