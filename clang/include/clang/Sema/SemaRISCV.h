@@ -30,7 +30,7 @@ class SemaRISCV : public SemaBase {
 public:
   SemaRISCV(Sema &S);
 
-  bool CheckLMUL(CallExpr *TheCall, unsigned ArgNum);
+  bool CheckLMUL(CallExpr *TheCall, unsigned ArgNum, bool AllowFractional);
   bool CheckBuiltinFunctionCall(const TargetInfo &TI, unsigned BuiltinID,
                                 CallExpr *TheCall);
   void checkRVVTypeSupport(QualType Ty, SourceLocation Loc, Decl *D,

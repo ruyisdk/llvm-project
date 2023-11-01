@@ -527,7 +527,7 @@ CreateRISCVIntrinsicManager(Sema &S) {
   return std::make_unique<RISCVIntrinsicManagerImpl>(S);
 }
 
-bool SemaRISCV::CheckLMUL(CallExpr *TheCall, unsigned ArgNum) {
+bool SemaRISCV::CheckLMUL(CallExpr *TheCall, unsigned ArgNum, bool AllowFractional) {
   llvm::APSInt Result;
 
   // We can't check the value of a dependent argument.
@@ -540,10 +540,13 @@ bool SemaRISCV::CheckLMUL(CallExpr *TheCall, unsigned ArgNum) {
     return true;
 
   int64_t Val = Result.getSExtValue();
-  if ((Val >= 0 && Val <= 3) || (Val >= 5 && Val <= 7))
+  if ((Val >= 0 && Val <= 3) || (AllowFractional && (Val >= 5 && Val <= 7)))
     return false;
 
-  return Diag(TheCall->getBeginLoc(), diag::err_riscv_builtin_invalid_lmul)
+  return Diag(TheCall->getBeginLoc(),
+              AllowFractional
+                  ? diag::err_riscv_builtin_invalid_lmul
+                  : diag::err_riscv_builtin_invalid_lmul_non_fractional)
          << Arg->getSourceRange();
 }
 
@@ -649,10 +652,16 @@ bool SemaRISCV::CheckBuiltinFunctionCall(const TargetInfo &TI,
   switch (BuiltinID) {
   case RISCVVector::BI__builtin_rvv_vsetvli:
     return SemaRef.BuiltinConstantArgRange(TheCall, 1, 0, 3) ||
-           CheckLMUL(TheCall, 2);
+           CheckLMUL(TheCall, 2, true);
   case RISCVVector::BI__builtin_rvv_vsetvlimax:
     return SemaRef.BuiltinConstantArgRange(TheCall, 0, 0, 3) ||
-           CheckLMUL(TheCall, 1);
+           CheckLMUL(TheCall, 1, true);
+  case RISCVVector::BI__builtin_rvv_xvsetvl:
+    return SemaRef.BuiltinConstantArgRange(TheCall, 1, 0, 3) ||
+           CheckLMUL(TheCall, 2, false);
+  case RISCVVector::BI__builtin_rvv_xvsetvlmax:
+    return SemaRef.BuiltinConstantArgRange(TheCall, 0, 0, 3) ||
+           CheckLMUL(TheCall, 1, false);
   case RISCVVector::BI__builtin_rvv_vget_v: {
     ASTContext::BuiltinVectorTypeInfo ResVecInfo =
         Context.getBuiltinVectorTypeInfo(cast<BuiltinType>(
@@ -763,7 +772,7 @@ bool SemaRISCV::CheckBuiltinFunctionCall(const TargetInfo &TI,
            SemaRef.BuiltinConstantArgRange(TheCall, 1, 0, 31) ||
            SemaRef.BuiltinConstantArgRange(TheCall, 2, 0, 31) ||
            SemaRef.BuiltinConstantArgRange(TheCall, 3, -16, 15) ||
-           CheckLMUL(TheCall, 5);
+           CheckLMUL(TheCall, 5, true);
   case RISCVVector::BI__builtin_rvv_sf_vc_iv_se:
     // bit_27_26, bit_11_7, vs2, simm5
     return SemaRef.BuiltinConstantArgRange(TheCall, 0, 0, 3) ||
@@ -794,7 +803,7 @@ bool SemaRISCV::CheckBuiltinFunctionCall(const TargetInfo &TI,
     return SemaRef.BuiltinConstantArgRange(TheCall, 0, 0, 3) ||
            SemaRef.BuiltinConstantArgRange(TheCall, 1, 0, 31) ||
            SemaRef.BuiltinConstantArgRange(TheCall, 2, 0, 31) ||
-           CheckLMUL(TheCall, 5);
+           CheckLMUL(TheCall, 5, true);
   case RISCVVector::BI__builtin_rvv_sf_vc_xv_se:
   case RISCVVector::BI__builtin_rvv_sf_vc_vv_se:
     // bit_27_26, bit_11_7, vs2, xs1/vs1

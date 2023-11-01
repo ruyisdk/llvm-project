@@ -4161,5 +4161,5 @@ void PragmaRISCVHandler::HandlePragma(Preprocessor &PP,
   else if (II->isStr("sifive_vector"))
     Actions.RISCV().DeclareSiFiveVectorBuiltins = true;
   else if (II->isStr("xtheadv_vector"))
-    Actions.RISCV().DeclareRISCVV0p7Builtins = true;
+    Actions.RISCV().DeclareRISCVXTHeadVBuiltins = true;
 }
