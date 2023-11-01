@@ -4457,7 +4457,7 @@ bool Sema::CheckAMDGCNBuiltinFunctionCall(unsigned BuiltinID,
   return false;
 }
 
-bool Sema::CheckRISCVLMUL(CallExpr *TheCall, unsigned ArgNum) {
+bool Sema::CheckRISCVLMUL(CallExpr *TheCall, unsigned ArgNum, bool AllowFractional) {
   llvm::APSInt Result;
 
   // We can't check the value of a dependent argument.
@@ -4470,10 +4470,13 @@ bool Sema::CheckRISCVLMUL(CallExpr *TheCall, unsigned ArgNum) {
     return true;
 
   int64_t Val = Result.getSExtValue();
-  if ((Val >= 0 && Val <= 3) || (Val >= 5 && Val <= 7))
+  if ((Val >= 0 && Val <= 3) || (AllowFractional && (Val >= 5 && Val <= 7)))
     return false;
 
-  return Diag(TheCall->getBeginLoc(), diag::err_riscv_builtin_invalid_lmul)
+  return Diag(TheCall->getBeginLoc(),
+              AllowFractional
+                  ? diag::err_riscv_builtin_invalid_lmul
+                  : diag::err_riscv_builtin_invalid_lmul_non_fractional)
          << Arg->getSourceRange();
 }
 
@@ -4601,10 +4604,16 @@ bool Sema::CheckRISCVBuiltinFunctionCall(const TargetInfo &TI,
   switch (BuiltinID) {
   case RISCVVector::BI__builtin_rvv_vsetvli:
     return SemaBuiltinConstantArgRange(TheCall, 1, 0, 3) ||
-           CheckRISCVLMUL(TheCall, 2);
+           CheckRISCVLMUL(TheCall, 2, true);
   case RISCVVector::BI__builtin_rvv_vsetvlimax:
     return SemaBuiltinConstantArgRange(TheCall, 0, 0, 3) ||
-           CheckRISCVLMUL(TheCall, 1);
+           CheckRISCVLMUL(TheCall, 1, true);
+  case RISCVVector::BI__builtin_rvv_xvsetvl:
+    return SemaBuiltinConstantArgRange(TheCall, 1, 0, 3) ||
+           CheckRISCVLMUL(TheCall, 2, false);
+  case RISCVVector::BI__builtin_rvv_xvsetvlmax:
+    return SemaBuiltinConstantArgRange(TheCall, 0, 0, 3) ||
+           CheckRISCVLMUL(TheCall, 1, false);
   case RISCVVector::BI__builtin_rvv_vget_v: {
     ASTContext::BuiltinVectorTypeInfo ResVecInfo =
         Context.getBuiltinVectorTypeInfo(cast<BuiltinType>(
