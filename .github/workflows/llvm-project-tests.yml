@@ -14,7 +14,7 @@ on:
         required: false
       os_list:
         required: false
-        default: '["ubuntu-latest", "windows-2019", "macOS-13"]'
+        default: '["self-hosted"]'
       python_version:
         required: false
         type: string
@@ -39,7 +39,7 @@ on:
         type: string
         # Use windows-2019 due to:
         # https://developercommunity.visualstudio.com/t/Prev-Issue---with-__assume-isnan-/1597317
-        default: '["ubuntu-latest", "windows-2019", "macOS-13"]'
+        default: '["self-hosted"]'
 
       python_version:
         required: false
@@ -81,7 +81,7 @@ jobs:
         with:
           python-version: ${{ inputs.python_version }}
       - name: Install Ninja
-        if: runner.os != 'Linux'
+        if: matrix.os != 'self-hosted' # ninja-build is already installed in self-hosted runners
         uses: llvm/actions/install-ninja@main
       # actions/checkout deletes any existing files in the new git directory,
       # so this needs to either run before ccache-action or it has to use
@@ -89,8 +89,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 250
+          clean: false # Don't delete untracked files, so the self-hosted runner can be incremental between runs.
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1
+        if: matrix.os != 'self-hosted' # ccache is already installed in self-hosted runners
         with:
           # A full build of llvm, clang, lld, and lldb takes about 250MB
           # of ccache space. There's not much reason to have more than this,
@@ -124,11 +126,13 @@ jobs:
             extra_cmake_args="-DLLVM_DISABLE_ASSEMBLY_FILES=ON"
           fi
           echo "llvm-builddir=$builddir" >> "$GITHUB_OUTPUT"
+          # Use `-DLLVM_PARALLEL_LINK_JOBS=1` to avoid OOM when linking Debug ELFs.
           cmake -G Ninja \
                 -B "$builddir" \
                 -S llvm \
                 -DLLVM_ENABLE_PROJECTS="${{ inputs.projects }}" \
-                -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_BUILD_TYPE=Debug \
+                -DLLVM_PARALLEL_LINK_JOBS=1 \
                 -DLLVM_ENABLE_ASSERTIONS=ON \
                 -DLLDB_INCLUDE_TESTS=OFF \
                 -DLIBCLC_TARGETS_TO_BUILD="amdgcn--;amdgcn--amdhsa;r600--;nvptx--;nvptx64--;nvptx--nvidiacl;nvptx64--nvidiacl" \
