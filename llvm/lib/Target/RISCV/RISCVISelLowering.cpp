@@ -1322,8 +1322,40 @@ bool RISCVTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
     return SetRVVLoadStoreInfo(/*PtrOp*/ 1,
                                /*IsStore*/ false,
                                /*IsUnitStrided*/ true);
+  case Intrinsic::riscv_xvlb:
+  case Intrinsic::riscv_xvlbu:
+  case Intrinsic::riscv_xvlb_mask:
+  case Intrinsic::riscv_xvlbu_mask:
+  case Intrinsic::riscv_xvlh:
+  case Intrinsic::riscv_xvlhu:
+  case Intrinsic::riscv_xvlh_mask:
+  case Intrinsic::riscv_xvlhu_mask:
+  case Intrinsic::riscv_xvlw:
+  case Intrinsic::riscv_xvlwu:
+  case Intrinsic::riscv_xvlw_mask:
+  case Intrinsic::riscv_xvlwu_mask:
+  case Intrinsic::riscv_xvle:
+  case Intrinsic::riscv_xvle_mask:
+    if (!Subtarget.hasVendorXTHeadV())
+      return false;
+    return SetRVVLoadStoreInfo(/*PtrOp*/ 1,
+                               /*IsStore*/ false,
+                               /*IsUnitStrided*/ true);
   case Intrinsic::riscv_vse:
   case Intrinsic::riscv_vse_mask:
+    return SetRVVLoadStoreInfo(/*PtrOp*/ 1,
+                               /*IsStore*/ true,
+                               /*IsUnitStrided*/ true);
+  case Intrinsic::riscv_xvsb:
+  case Intrinsic::riscv_xvsh:
+  case Intrinsic::riscv_xvsw:
+  case Intrinsic::riscv_xvse:
+  case Intrinsic::riscv_xvsb_mask:
+  case Intrinsic::riscv_xvsh_mask:
+  case Intrinsic::riscv_xvsw_mask:
+  case Intrinsic::riscv_xvse_mask:
+    if (!Subtarget.hasVendorXTHeadV())
+      return false;
     return SetRVVLoadStoreInfo(/*PtrOp*/ 1,
                                /*IsStore*/ true,
                                /*IsUnitStrided*/ true);
