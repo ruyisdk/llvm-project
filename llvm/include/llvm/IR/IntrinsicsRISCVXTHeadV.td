@@ -37,6 +37,79 @@ let TargetPrefix = "riscv" in {
 
 } // TargetPrefix = "riscv"
 
+let TargetPrefix = "riscv" in {
+  // 7. Vector Loads and Stores
+
+  // 7.4 Vector Unit-Strided Instructions
+  // For unit stride load
+  // Input: (passthru, pointer, vl)
+  class XVUSLoad
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, llvm_ptr_ty, llvm_anyint_ty],
+                    [NoCapture<ArgIndex<1>>, IntrReadMem]>, RISCVVIntrinsic {
+    let VLOperand = 2;
+  }
+
+  // For unit stride mask load
+  // Input: (passthru, pointer, vl)
+  class XVUSLoadMasked
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, llvm_ptr_ty,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>,
+                     llvm_anyint_ty],
+                    [NoCapture<ArgIndex<1>>, IntrReadMem]>,
+                    RISCVVIntrinsic {
+    let VLOperand = 3;
+  }
+
+  // For unit stride store
+  // Input: (vector_in, pointer, vl)
+  class XVUSStore
+        : DefaultAttrsIntrinsic<[],
+                    [llvm_anyvector_ty, llvm_ptr_ty, llvm_anyint_ty],
+                    [NoCapture<ArgIndex<1>>, IntrWriteMem]>, RISCVVIntrinsic {
+    let VLOperand = 2;
+  }
+
+  // For unit stride store with mask
+  // Input: (vector_in, pointer, mask, vl)
+  class XVUSStoreMasked
+        : DefaultAttrsIntrinsic<[],
+                    [llvm_anyvector_ty, llvm_ptr_ty,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>,
+                     llvm_anyint_ty],
+                    [NoCapture<ArgIndex<1>>, IntrWriteMem]>, RISCVVIntrinsic {
+    let VLOperand = 3;
+  }
+
+  // We define vlx (e.g. vlb), vlxu (e.g. vlbu) and vle
+  // seperately here because otherwise we cannot distinguish
+  // which intrinsic the user actually calls when lowering pseudos.
+  def int_riscv_xvlb : XVUSLoad;
+  def int_riscv_xvlh : XVUSLoad;
+  def int_riscv_xvlw : XVUSLoad;
+  def int_riscv_xvle : XVUSLoad;
+  def int_riscv_xvlbu : XVUSLoad;
+  def int_riscv_xvlhu : XVUSLoad;
+  def int_riscv_xvlwu : XVUSLoad;
+  def int_riscv_xvlb_mask : XVUSLoadMasked;
+  def int_riscv_xvlh_mask : XVUSLoadMasked;
+  def int_riscv_xvlw_mask : XVUSLoadMasked;
+  def int_riscv_xvle_mask : XVUSLoadMasked;
+  def int_riscv_xvlbu_mask : XVUSLoadMasked;
+  def int_riscv_xvlhu_mask : XVUSLoadMasked;
+  def int_riscv_xvlwu_mask : XVUSLoadMasked;
+
+  def int_riscv_xvsb : XVUSStore;
+  def int_riscv_xvsh : XVUSStore;
+  def int_riscv_xvsw : XVUSStore;
+  def int_riscv_xvse : XVUSStore;
+  def int_riscv_xvsb_mask : XVUSStoreMasked;
+  def int_riscv_xvsh_mask : XVUSStoreMasked;
+  def int_riscv_xvsw_mask : XVUSStoreMasked;
+  def int_riscv_xvse_mask : XVUSStoreMasked;
+} // TargetPrefix = "riscv"
+
 // let TargetPrefix = "riscv" in {
 //   // 8. Vector AMO Operations (Zvamo)
 
