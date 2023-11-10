@@ -147,7 +147,14 @@ public:
                                   bool IsMasked, bool IsStridedOrIndexed,
                                   SmallVectorImpl<SDValue> &Operands,
                                   bool IsLoad = false, MVT *IndexVT = nullptr);
+  void addXTHeadVLoadStoreOperands(SDNode *Node, unsigned SEWImm,
+                                  const SDLoc &DL, unsigned CurOp,
+                                  bool IsMasked, SmallVectorImpl<SDValue> &Operands);
 
+  void selectXVL(SDNode *Node, const SDLoc& DL, unsigned IntNo,
+                 bool IsUnsigned, bool IsMasked, bool IsE);
+  void selectXVS(SDNode *Node, const SDLoc& DL, unsigned IntNo,
+                 bool IsMasked, bool IsE);
   void selectVLSEG(SDNode *Node, bool IsMasked, bool IsStrided);
   void selectVLSEGFF(SDNode *Node, bool IsMasked);
   void selectVLXSEG(SDNode *Node, bool IsMasked, bool IsOrdered);
@@ -239,9 +246,28 @@ struct VLEPseudo {
   uint16_t Pseudo;
 };
 
+struct XVLPseudo {
+  uint16_t Masked : 1;
+  uint16_t Unsigned : 1;
+  uint16_t IsE : 1;
+  uint16_t Log2MEM : 3;
+  uint16_t Log2SEW : 3;
+  uint16_t LMUL : 3;
+  uint16_t Pseudo;
+};
+
 struct VSEPseudo {
   uint16_t Masked :1;
   uint16_t Strided : 1;
+  uint16_t Log2SEW : 3;
+  uint16_t LMUL : 3;
+  uint16_t Pseudo;
+};
+
+struct XVSPseudo {
+  uint16_t Masked : 1;
+  uint16_t IsE : 1;
+  uint16_t Log2MEM : 3;
   uint16_t Log2SEW : 3;
   uint16_t LMUL : 3;
   uint16_t Pseudo;
@@ -271,6 +297,9 @@ struct RISCVMaskedPseudoInfo {
 #define GET_RISCVVLXTable_DECL
 #define GET_RISCVVSXTable_DECL
 #define GET_RISCVMaskedPseudosTable_DECL
+
+#define GET_XTHeadVVLTable_DECL
+#define GET_XTHeadVVSTable_DECL
 #include "RISCVGenSearchableTables.inc"
 } // namespace RISCV
 
