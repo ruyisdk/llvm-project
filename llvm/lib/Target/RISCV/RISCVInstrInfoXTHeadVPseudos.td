@@ -72,8 +72,9 @@ defset list<VTypeInfo> AllXVectors = {
   }
 }
 
-class XTHeadVVL<bit M, bit U, bit E, bits<3> ME, bits<3> S, bits<3> L> {
+class XTHeadVVL<bit M, bit ST, bit U, bit E, bits<3> ME, bits<3> S, bits<3> L> {
   bits<1> Masked = M;
+  bits<1> Strided = ST;
   bits<1> Unsigned = U;
   bits<1> IsE = E;
   bits<3> Log2MEM = ME;
@@ -85,13 +86,14 @@ class XTHeadVVL<bit M, bit U, bit E, bits<3> ME, bits<3> S, bits<3> L> {
 def XTHeadVVLTable : GenericTable {
   let FilterClass = "XTHeadVVL";
   let CppTypeName = "XVLPseudo";
-  let Fields = ["Masked", "Unsigned", "IsE", "Log2MEM", "Log2SEW", "LMUL", "Pseudo"];
-  let PrimaryKey = ["Masked", "Unsigned", "IsE", "Log2MEM", "Log2SEW", "LMUL"];
+  let Fields = ["Masked", "Strided", "Unsigned", "IsE", "Log2MEM", "Log2SEW", "LMUL", "Pseudo"];
+  let PrimaryKey = ["Masked", "Strided", "Unsigned", "IsE", "Log2MEM", "Log2SEW", "LMUL"];
   let PrimaryKeyName = "getXVLPseudo";
 }
 
-class XTHeadVVS<bit M, bit E, bits<3> ME, bits<3> S, bits<3> L> {
+class XTHeadVVS<bit M, bit ST, bit E, bits<3> ME, bits<3> S, bits<3> L> {
   bits<1> Masked = M;
+  bits<1> Strided = ST;
   bits<1> IsE = E;
   bits<3> Log2MEM = ME;
   bits<3> Log2SEW = S;
@@ -102,8 +104,8 @@ class XTHeadVVS<bit M, bit E, bits<3> ME, bits<3> S, bits<3> L> {
 def XTHeadVVSTable : GenericTable {
   let FilterClass = "XTHeadVVS";
   let CppTypeName = "XVSPseudo";
-  let Fields = ["Masked", "IsE", "Log2MEM", "Log2SEW", "LMUL", "Pseudo"];
-  let PrimaryKey = ["Masked", "IsE", "Log2MEM", "Log2SEW", "LMUL"];
+  let Fields = ["Masked", "Strided", "IsE", "Log2MEM", "Log2SEW", "LMUL", "Pseudo"];
+  let PrimaryKey = ["Masked", "Strided", "IsE", "Log2MEM", "Log2SEW", "LMUL"];
   let PrimaryKeyName = "getXVSPseudo";
 }
 
@@ -141,7 +143,7 @@ class XVPseudoUSLoadNoMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e>
       Pseudo<(outs RetClass:$rd),
              (ins RetClass:$dest, GPRMem:$rs1, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
-      XTHeadVVL</*Masked*/0, unsigned, e,
+      XTHeadVVL</*Masked*/0, /*Strided*/0, unsigned, e,
                 !logtwo(MEM), !logtwo(REG), VLMul> {
   let mayLoad = 1;
   let mayStore = 0;
@@ -157,7 +159,7 @@ class XVPseudoUSLoadMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e> :
                    GPRMem:$rs1,
                    VMaskOp:$vm, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
-      XTHeadVVL</*Masked*/1, unsigned, e,
+      XTHeadVVL</*Masked*/1, /*Strided*/0, unsigned, e,
                 !logtwo(MEM), !logtwo(REG), VLMul> {
   let mayLoad = 1;
   let mayStore = 0;
@@ -171,7 +173,7 @@ class XVPseudoUSStoreNoMask<VReg StClass, int MEM, int REG, bit e>:
       Pseudo<(outs),
               (ins StClass:$rd, GPRMem:$rs1, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
-      XTHeadVVS</*Masked*/0, e, !logtwo(MEM), !logtwo(REG), VLMul> {
+      XTHeadVVS</*Masked*/0, /*Strided*/0, e, !logtwo(MEM), !logtwo(REG), VLMul> {
   let mayLoad = 0;
   let mayStore = 1;
   let hasSideEffects = 0;
@@ -183,7 +185,7 @@ class XVPseudoUSStoreMask<VReg StClass, int MEM, int REG, int e>:
       Pseudo<(outs),
               (ins StClass:$rd, GPRMem:$rs1, VMaskOp:$vm, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
-      XTHeadVVS</*Masked*/1, e, !logtwo(MEM), !logtwo(REG), VLMul> {
+      XTHeadVVS</*Masked*/1, /*Strided*/0, e, !logtwo(MEM), !logtwo(REG), VLMul> {
   let mayLoad = 0;
   let mayStore = 1;
   let hasSideEffects = 0;
@@ -275,9 +277,146 @@ multiclass XVPseudoUSStore {
   }
 }
 
+// 7.5 Vector Strided Instructions
+class XVPseudoSLoadNoMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e>:
+      Pseudo<(outs RetClass:$rd),
+             (ins RetClass:$dest, GPRMem:$rs1, GPR:$rs2, AVL:$vl,
+                  ixlenimm:$sew),[]>,
+      RISCVVPseudo,
+      XTHeadVVL</*Masked*/0, /*Strided*/1, unsigned, e,
+                !logtwo(MEM), !logtwo(REG), VLMul> {
+  let mayLoad = 1;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+  let Constraints = "$rd = $dest";
+}
+
+class XVPseudoSLoadMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e>:
+      Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd),
+              (ins GetVRegNoV0<RetClass>.R:$merge,
+                   GPRMem:$rs1, GPR:$rs2,
+                   VMaskOp:$vm, AVL:$vl, ixlenimm:$sew),[]>,
+      RISCVVPseudo,
+      XTHeadVVL</*Masked*/1, /*Strided*/1, unsigned, e,
+                !logtwo(MEM), !logtwo(REG), VLMul> {
+  let mayLoad = 1;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let Constraints = "$rd = $merge";
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+}
+
+class XVPseudoSStoreNoMask<VReg StClass, int MEM, int REG, bit e>:
+      Pseudo<(outs),
+              (ins StClass:$rd, GPRMem:$rs1, GPR:$rs2, AVL:$vl, ixlenimm:$sew),[]>,
+      RISCVVPseudo,
+      XTHeadVVS</*Masked*/0, /*Strided*/1, e, !logtwo(MEM), !logtwo(REG), VLMul> {
+  let mayLoad = 0;
+  let mayStore = 1;
+  let hasSideEffects = 0;
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+}
+
+class XVPseudoSStoreMask<VReg StClass, int MEM, int REG, int e>:
+      Pseudo<(outs),
+              (ins StClass:$rd, GPRMem:$rs1, GPR:$rs2, VMaskOp:$vm, AVL:$vl, ixlenimm:$sew),[]>,
+      RISCVVPseudo,
+      XTHeadVVS</*Masked*/1, /*Strided*/1, e, !logtwo(MEM), !logtwo(REG), VLMul> {
+  let mayLoad = 0;
+  let mayStore = 1;
+  let hasSideEffects = 0;
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+}
+
+multiclass XVPseudoSLoad {
+  foreach mem = [8, 16, 32] in {
+    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+      defvar LInfo = lmul.MX;
+      defvar vreg = lmul.vrclass;
+      defvar tag = MemBitsToTag<mem>.ret;
+      foreach reg = EEWList in {
+        if !ge(reg, mem) then {
+          let VLMul = lmul.value, SEW = mem in {
+            def "S" # tag # "_V_E" # reg # "_" # LInfo :
+              XVPseudoSLoadNoMask<vreg, mem, reg, 0, 0>,
+              VLESched<LInfo>;
+            def "S" # tag # "U_V_E" # reg # "_" # LInfo :
+              XVPseudoSLoadNoMask<vreg, mem, reg, 1, 0>,
+              VLESched<LInfo>;
+            def "S" # tag # "_V_E" # reg # "_" # LInfo # "_MASK" :
+              XVPseudoSLoadMask<vreg, mem, reg, 0, 0>,
+              RISCVMaskedPseudo<MaskIdx=3>,
+              VLESched<LInfo>;
+            def "S" # tag # "U_V_E" # reg # "_" # LInfo # "_MASK" :
+              XVPseudoSLoadMask<vreg, mem, reg, 1, 0>,
+              RISCVMaskedPseudo<MaskIdx=3>,
+              VLESched<LInfo>;
+          }
+        }
+      }
+    }
+  }
+  foreach eew = EEWList in {
+    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+      defvar LInfo = lmul.MX;
+      defvar vreg = lmul.vrclass;
+      let VLMul = lmul.value, SEW = eew in {
+        def "SE_V_E" # eew # "_" # LInfo :
+          XVPseudoSLoadNoMask<vreg, eew, eew, 0, 1>,
+          VLESched<LInfo>;
+        def "SE_V_E" # eew # "_" # LInfo # "_MASK" :
+          XVPseudoSLoadMask<vreg, eew, eew, 0, 1>,
+          RISCVMaskedPseudo<MaskIdx=3>,
+          VLESched<LInfo>;
+      }
+    }
+  }
+}
+
+multiclass XVPseudoSStore {
+  foreach mem = [8, 16, 32] in {
+    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+      defvar LInfo = lmul.MX;
+      defvar vreg = lmul.vrclass;
+      defvar tag = MemBitsToTag<mem>.ret;
+      foreach sew = EEWList in {
+        let VLMul = lmul.value, SEW = mem in {
+          def "S" # tag # "_V_E" # sew # "_" # LInfo :
+            XVPseudoSStoreNoMask<vreg, mem, sew, 0>,
+            VSESched<LInfo>;
+          def "S" # tag # "_V_E" # sew # "_" # LInfo # "_MASK" :
+            XVPseudoSStoreMask<vreg, mem, sew, 0>,
+            VSESched<LInfo>;
+        }
+      }
+    }
+  }
+  foreach eew = EEWList in {
+    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+      defvar LInfo = lmul.MX;
+      defvar vreg = lmul.vrclass;
+      let VLMul = lmul.value, SEW = eew in {
+        def "SE_V_E" # eew # "_" # LInfo :
+          XVPseudoSStoreNoMask<vreg, eew, eew, 1>,
+          VSESched<LInfo>;
+        def "SE_V_E" # eew # "_" # LInfo # "_MASK" :
+          XVPseudoSStoreMask<vreg, eew, eew, 1>,
+          VSESched<LInfo>;
+      }
+    }
+  }
+}
+
 let Predicates = [HasVendorXTHeadV] in {
   defm PseudoXVL : XVPseudoUSLoad;
   defm PseudoXVS : XVPseudoUSStore;
+  defm PseudoXVL : XVPseudoSLoad;
+  defm PseudoXVS : XVPseudoSStore;
 } // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
