@@ -72,6 +72,15 @@ defset list<VTypeInfo> AllXVectors = {
   }
 }
 
+class GetXVTypePredicates<VTypeInfo vti> {
+  // TODO: distinguish different types (like F16, F32, F64, AnyF)? Is it needed?
+  list<Predicate> Predicates = !cond(!eq(vti.Scalar, f16) : [HasVendorXTHeadV],
+                                     !eq(vti.Scalar, f32) : [HasVendorXTHeadV],
+                                     !eq(vti.Scalar, f64) : [HasVendorXTHeadV],
+                                     !eq(vti.SEW, 64) : [HasVendorXTHeadV],
+                                     true : [HasVendorXTHeadV]);
+}
+
 class XTHeadVVL<bit M, bit ST, bit U, bit E, bits<3> ME, bits<3> S, bits<3> L> {
   bits<1> Masked = M;
   bits<1> Strided = ST;
@@ -418,6 +427,70 @@ let Predicates = [HasVendorXTHeadV] in {
   defm PseudoXVL : XVPseudoSLoad;
   defm PseudoXVS : XVPseudoSStore;
 } // Predicates = [HasVendorXTHeadV]
+
+//===----------------------------------------------------------------------===//
+// 7. Vector Loads and Stores
+// for emulating Vector Load/Store Whole Register Instructions in RVV 1.0
+//===----------------------------------------------------------------------===//
+class VPseudoWholeLoad<Instruction instr, LMULInfo m, RegisterClass VRC>
+  : VPseudo<instr, m, (outs VRC:$vd),   (ins GPRMemZeroOffset:$rs1)> {
+}
+
+multiclass XVPseudoWholeLoadN<bits<3> nf, LMULInfo m, RegisterClass VRC> {
+  foreach l = [8, 16, 32, 64] in {
+    defvar s = !cast<SchedWrite>("WriteVLD" # !add(nf, 1) # "R");
+
+    def E # l # _V : VPseudoWholeLoad<XVLE_V, m, VRC>,
+                     Sched<[s, ReadVLDX]>;
+  }
+}
+
+let Predicates = [HasVendorXTHeadV] in {
+  // Whole register load
+  let hasSideEffects = 0, mayLoad = 1, mayStore = 0, isCodeGenOnly = 1 in {
+    defm PseudoXVL1R : XVPseudoWholeLoadN<0, V_M1, VR>;
+    defm PseudoXVL2R : XVPseudoWholeLoadN<1, V_M2, VRM2>;
+    defm PseudoXVL4R : XVPseudoWholeLoadN<3, V_M4, VRM4>;
+    defm PseudoXVL8R : XVPseudoWholeLoadN<7, V_M8, VRM8>;
+  }
+  // Whole register store
+  let hasSideEffects = 0, mayLoad = 0, mayStore = 1, isCodeGenOnly = 1 in {
+    def PseudoXVS1R_V : VPseudo<XVSB_V, V_M1, (outs), (ins VR:$vs3,  GPRMemZeroOffset:$rs1)>,
+                        Sched<[WriteVST1R, ReadVST1R, ReadVSTX]>;
+    def PseudoXVS2R_V : VPseudo<XVSH_V, V_M2, (outs), (ins VRM2:$vs3, GPRMemZeroOffset:$rs1)>,
+                        Sched<[WriteVST2R, ReadVST2R, ReadVSTX]>;
+    def PseudoXVS4R_V : VPseudo<XVSW_V, V_M4, (outs), (ins VRM4:$vs3, GPRMemZeroOffset:$rs1)>,
+                        Sched<[WriteVST4R, ReadVST4R, ReadVSTX]>;
+    def PseudoXVS8R_V : VPseudo<XVSE_V, V_M8, (outs), (ins VRM8:$vs3, GPRMemZeroOffset:$rs1)>,
+                        Sched<[WriteVST8R, ReadVST8R, ReadVSTX]>;
+  }
+} // Predicates = [HasVendorXTHeadV]
+
+multiclass XVPatUSLoadStoreWholeVRSDNode<ValueType type,
+                                         int log2sew,
+                                         LMULInfo vlmul,
+                                         VReg reg_class,
+                                         int sew = !shl(1, log2sew)> {
+  defvar load_instr =
+    !cast<Instruction>("PseudoXVL"#!substr(vlmul.MX, 1)#"RE"#sew#"_V");
+  defvar store_instr =
+    !cast<Instruction>("PseudoXVS"#!substr(vlmul.MX, 1)#"R_V");
+
+  // Load
+  def : Pat<(type (load GPR:$rs1)),
+            (load_instr GPR:$rs1)>;
+  // Store
+  def : Pat<(store type:$rs2, GPR:$rs1),
+            (store_instr reg_class:$rs2, GPR:$rs1)>;
+}
+foreach vti = [XVI8M1, XVI16M1, XVI32M1, XVI64M1] in
+  let Predicates = GetXVTypePredicates<vti>.Predicates in
+  defm : XVPatUSLoadStoreWholeVRSDNode<vti.Vector, vti.Log2SEW, vti.LMul,
+                                       vti.RegClass>;
+foreach vti = GroupIntegerXVectors in
+  let Predicates = GetXVTypePredicates<vti>.Predicates in
+  defm : XVPatUSLoadStoreWholeVRSDNode<vti.Vector, vti.Log2SEW, vti.LMul,
+                                       vti.RegClass>;
 
 //===----------------------------------------------------------------------===//
 // 8. Vector AMO Operations
