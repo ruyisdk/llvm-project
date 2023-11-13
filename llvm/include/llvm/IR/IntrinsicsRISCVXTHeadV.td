@@ -108,6 +108,71 @@ let TargetPrefix = "riscv" in {
   def int_riscv_xvsh_mask : XVUSStoreMasked;
   def int_riscv_xvsw_mask : XVUSStoreMasked;
   def int_riscv_xvse_mask : XVUSStoreMasked;
+
+  // 7.5 Vector Strided Instructions
+  // For strided load with passthru operand
+  // Input: (maskedoff, pointer, strided, vl)
+  class XVSLoad
+    : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                [LLVMMatchType<0>, llvm_ptr_ty,
+                 llvm_anyint_ty, LLVMMatchType<1>],
+                [NoCapture<ArgIndex<1>>, IntrReadMem]>, RISCVVIntrinsic {
+    let VLOperand = 3;
+  }
+
+  // For strided load with mask
+  // Input: (maskedoff, pointer, stride, mask, vl)
+  class XVSLoadMasked
+    : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                [LLVMMatchType<0>, llvm_ptr_ty, llvm_anyint_ty,
+                 LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, LLVMMatchType<1>],
+                [NoCapture<ArgIndex<1>>, IntrReadMem]>,
+                RISCVVIntrinsic {
+    let VLOperand = 4;
+  }
+
+  // For strided store
+  // Input: (vector_in, pointer, stride, vl)
+  class XVSStore
+        : DefaultAttrsIntrinsic<[],
+                    [llvm_anyvector_ty, llvm_ptr_ty,
+                     llvm_anyint_ty, LLVMMatchType<1>],
+                    [NoCapture<ArgIndex<1>>, IntrWriteMem]>, RISCVVIntrinsic {
+    let VLOperand = 3;
+  }
+  // For stride store with mask
+  // Input: (vector_in, pointer, stirde, mask, vl)
+  class XVSStoreMasked
+        : DefaultAttrsIntrinsic<[],
+                    [llvm_anyvector_ty, llvm_ptr_ty, llvm_anyint_ty,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, LLVMMatchType<1>],
+                    [NoCapture<ArgIndex<1>>, IntrWriteMem]>, RISCVVIntrinsic {
+    let VLOperand = 4;
+  }
+
+  def int_riscv_xvlsb : XVSLoad;
+  def int_riscv_xvlsh : XVSLoad;
+  def int_riscv_xvlsw : XVSLoad;
+  def int_riscv_xvlse : XVSLoad;
+  def int_riscv_xvlsbu : XVSLoad;
+  def int_riscv_xvlshu : XVSLoad;
+  def int_riscv_xvlswu : XVSLoad;
+  def int_riscv_xvlsb_mask : XVSLoadMasked;
+  def int_riscv_xvlsh_mask : XVSLoadMasked;
+  def int_riscv_xvlsw_mask : XVSLoadMasked;
+  def int_riscv_xvlse_mask : XVSLoadMasked;
+  def int_riscv_xvlsbu_mask : XVSLoadMasked;
+  def int_riscv_xvlshu_mask : XVSLoadMasked;
+  def int_riscv_xvlswu_mask : XVSLoadMasked;
+
+  def int_riscv_xvssb : XVSStore;
+  def int_riscv_xvssh : XVSStore;
+  def int_riscv_xvssw : XVSStore;
+  def int_riscv_xvsse : XVSStore;
+  def int_riscv_xvssb_mask : XVSStoreMasked;
+  def int_riscv_xvssh_mask : XVSStoreMasked;
+  def int_riscv_xvssw_mask : XVSStoreMasked;
+  def int_riscv_xvsse_mask : XVSStoreMasked;
 } // TargetPrefix = "riscv"
 
 // let TargetPrefix = "riscv" in {
