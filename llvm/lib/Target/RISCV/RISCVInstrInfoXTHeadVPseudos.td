@@ -455,11 +455,11 @@ let Predicates = [HasVendorXTHeadV] in {
   }
   // Whole register store
   let hasSideEffects = 0, mayLoad = 0, mayStore = 1, isCodeGenOnly = 1 in {
-    def PseudoXVS1R_V : VPseudo<XVSB_V, V_M1, (outs), (ins VR:$vs3,  GPRMemZeroOffset:$rs1)>,
+    def PseudoXVS1R_V : VPseudo<XVSE_V, V_M1, (outs), (ins VR:$vs3,  GPRMemZeroOffset:$rs1)>,
                         Sched<[WriteVST1R, ReadVST1R, ReadVSTX]>;
-    def PseudoXVS2R_V : VPseudo<XVSH_V, V_M2, (outs), (ins VRM2:$vs3, GPRMemZeroOffset:$rs1)>,
+    def PseudoXVS2R_V : VPseudo<XVSE_V, V_M2, (outs), (ins VRM2:$vs3, GPRMemZeroOffset:$rs1)>,
                         Sched<[WriteVST2R, ReadVST2R, ReadVSTX]>;
-    def PseudoXVS4R_V : VPseudo<XVSW_V, V_M4, (outs), (ins VRM4:$vs3, GPRMemZeroOffset:$rs1)>,
+    def PseudoXVS4R_V : VPseudo<XVSE_V, V_M4, (outs), (ins VRM4:$vs3, GPRMemZeroOffset:$rs1)>,
                         Sched<[WriteVST4R, ReadVST4R, ReadVSTX]>;
     def PseudoXVS8R_V : VPseudo<XVSE_V, V_M8, (outs), (ins VRM8:$vs3, GPRMemZeroOffset:$rs1)>,
                         Sched<[WriteVST8R, ReadVST8R, ReadVSTX]>;
