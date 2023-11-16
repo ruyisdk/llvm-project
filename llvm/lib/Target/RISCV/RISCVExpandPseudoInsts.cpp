@@ -50,6 +50,8 @@ private:
                   MachineBasicBlock::iterator &NextMBBI);
   bool expandVSetVL(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI);
   bool expandXVSetVL(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI);
+  bool expandXWholeLoad(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI);
+  bool expandXWholeStore(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI);
   bool expandVMSET_VMCLR(MachineBasicBlock &MBB,
                          MachineBasicBlock::iterator MBBI, unsigned Opcode);
   bool expandRV32ZdinxStore(MachineBasicBlock &MBB,
@@ -128,6 +130,28 @@ bool RISCVExpandPseudo::expandMI(MachineBasicBlock &MBB,
   case RISCV::PseudoXVSETVLI:
   case RISCV::PseudoXVSETVLIX0:
     return expandXVSetVL(MBB, MBBI);
+  case RISCV::PseudoXVL1RE8_V:
+  case RISCV::PseudoXVL1RE16_V:
+  case RISCV::PseudoXVL1RE32_V:
+  case RISCV::PseudoXVL1RE64_V:
+  case RISCV::PseudoXVL2RE8_V:
+  case RISCV::PseudoXVL2RE16_V:
+  case RISCV::PseudoXVL2RE32_V:
+  case RISCV::PseudoXVL2RE64_V:
+  case RISCV::PseudoXVL4RE8_V:
+  case RISCV::PseudoXVL4RE16_V:
+  case RISCV::PseudoXVL4RE32_V:
+  case RISCV::PseudoXVL4RE64_V:
+  case RISCV::PseudoXVL8RE8_V:
+  case RISCV::PseudoXVL8RE16_V:
+  case RISCV::PseudoXVL8RE32_V:
+  case RISCV::PseudoXVL8RE64_V:
+    return expandXWholeLoad(MBB, MBBI);
+  case RISCV::PseudoXVS1R_V:
+  case RISCV::PseudoXVS2R_V:
+  case RISCV::PseudoXVS4R_V:
+  case RISCV::PseudoXVS8R_V:
+    return expandXWholeStore(MBB, MBBI);
   case RISCV::PseudoVMCLR_M_B1:
   case RISCV::PseudoVMCLR_M_B2:
   case RISCV::PseudoVMCLR_M_B4:
@@ -273,6 +297,18 @@ bool RISCVExpandPseudo::expandXVSetVL(MachineBasicBlock &MBB,
       .add(MBBI->getOperand(1))  // VL
       .add(MBBI->getOperand(2)); // VType
 
+  MBBI->eraseFromParent(); // The pseudo instruction is gone now.
+  return true;
+}
+
+bool RISCVExpandPseudo::expandXWholeLoad(MachineBasicBlock &MBB,
+                                         MachineBasicBlock::iterator MBBI) {
+  MBBI->eraseFromParent(); // The pseudo instruction is gone now.
+  return true;
+}
+
+bool RISCVExpandPseudo::expandXWholeStore(MachineBasicBlock &MBB,
+                                          MachineBasicBlock::iterator MBBI) {
   MBBI->eraseFromParent(); // The pseudo instruction is gone now.
   return true;
 }
