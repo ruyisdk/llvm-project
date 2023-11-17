@@ -14618,7 +14618,7 @@ static MachineBasicBlock *emitXWholeLoad(MachineInstr &MI,
       .addReg(RISCV::X0);
 
   // Generate `vsetvli x0, x0, e<SEW>, m<LMUL>`
-  auto VTypeI = RISCVVType::encodeXTHeadVTYPE(SEW, LMUL, 1); //
+  auto VTypeI = RISCVVType::encodeXTHeadVTYPE(SEW, LMUL, 1);
   BuildMI(*BB, MI, DL, TII->get(RISCV::XVSETVLI))
       .addReg(RISCV::X0, RegState::Define | RegState::Dead)
       .addReg(RISCV::X0)
@@ -14644,7 +14644,49 @@ static MachineBasicBlock *emitXWholeLoad(MachineInstr &MI,
 }
 
 static MachineBasicBlock *emitXWholeStore(MachineInstr &MI,
-                                          MachineBasicBlock *BB) {
+                                          MachineBasicBlock *BB,
+                                          unsigned LMUL) {
+  DebugLoc DL = MI.getDebugLoc();
+
+  auto *TII = BB->getParent()->getSubtarget().getInstrInfo();
+  auto *MRI = &BB->getParent()->getRegInfo();
+
+  Register SavedVL = MRI->createVirtualRegister(&RISCV::GPRRegClass);
+  Register SavedVType = MRI->createVirtualRegister(&RISCV::GPRRegClass);
+
+  // Spec: The assembler pseudoinstruction to read a CSR, `CSRR rd, csr`, is
+  // encoded as `CSRRS rd, csr, x0`.
+  BuildMI(*BB, MI, DL, TII->get(RISCV::CSRRS), SavedVL)
+      .addImm(RISCVSysReg::lookupSysRegByName("VL")->Encoding)
+      .addReg(RISCV::X0);
+  BuildMI(*BB, MI, DL, TII->get(RISCV::CSRRS), SavedVType)
+      .addImm(RISCVSysReg::lookupSysRegByName("VTYPE")->Encoding)
+      .addReg(RISCV::X0);
+
+  // Generate `vsetvli x0, x0, e<SEW>, m<LMUL>`
+  unsigned SEW = 8; // TODO: guess from operands
+  auto VTypeI = RISCVVType::encodeXTHeadVTYPE(SEW, LMUL, 1);
+  BuildMI(*BB, MI, DL, TII->get(RISCV::XVSETVLI))
+      .addReg(RISCV::X0, RegState::Define | RegState::Dead)
+      .addReg(RISCV::X0)
+      .addImm(VTypeI)
+      .addReg(RISCV::VL, RegState::Implicit);
+
+  // Generate `vse.v`
+  // From GCC: `vs<LMUL>r.v vd, offset(rs1)` -> `vse.v vd, offset(rs1)`
+  BuildMI(*BB, MI, DL, TII->get(RISCV::XVSE_V))
+      .add(MI.getOperand(0))      // dst
+      .add(MI.getOperand(1))      // rs1(address)
+      .addReg(RISCV::NoRegister); // vmask, currently no mask
+
+  // Restore vl, vtype with `vsetvl x0, SavedVL, SavedVType`
+  BuildMI(*BB, MI, DL, TII->get(RISCV::XVSETVL))
+      .addReg(RISCV::X0, RegState::Define | RegState::Dead)
+      .addReg(SavedVL, RegState::Kill)
+      .addReg(SavedVType, RegState::Kill);
+
+  // Erase the pseudoinstruction.
+  MI.eraseFromParent();
   return BB;
 }
 
@@ -14786,10 +14828,13 @@ RISCVTargetLowering::EmitInstrWithCustomInserter(MachineInstr &MI,
 
   // Emulated whole store instructions for RVV 0.7
   case RISCV::PseudoXVS1R_V:
+    return emitXWholeStore(MI, BB, 1);
   case RISCV::PseudoXVS2R_V:
+    return emitXWholeStore(MI, BB, 2);
   case RISCV::PseudoXVS4R_V:
+    return emitXWholeStore(MI, BB, 4);
   case RISCV::PseudoXVS8R_V:
-    return emitXWholeStore(MI, BB);
+    return emitXWholeStore(MI, BB, 8);
   }
 }
 
