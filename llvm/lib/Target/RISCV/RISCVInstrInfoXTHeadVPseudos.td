@@ -447,14 +447,14 @@ multiclass XVPseudoWholeLoadN<bits<3> nf, LMULInfo m, RegisterClass VRC> {
 
 let Predicates = [HasVendorXTHeadV] in {
   // Whole register load
-  let hasSideEffects = 0, mayLoad = 1, mayStore = 0, isCodeGenOnly = 1 in {
+  let hasSideEffects = 0, mayLoad = 1, mayStore = 0, isCodeGenOnly = 1, usesCustomInserter = 1 in {
     defm PseudoXVL1R : XVPseudoWholeLoadN<0, V_M1, VR>;
     defm PseudoXVL2R : XVPseudoWholeLoadN<1, V_M2, VRM2>;
     defm PseudoXVL4R : XVPseudoWholeLoadN<3, V_M4, VRM4>;
     defm PseudoXVL8R : XVPseudoWholeLoadN<7, V_M8, VRM8>;
   }
   // Whole register store
-  let hasSideEffects = 0, mayLoad = 0, mayStore = 1, isCodeGenOnly = 1 in {
+  let hasSideEffects = 0, mayLoad = 0, mayStore = 1, isCodeGenOnly = 1, usesCustomInserter = 1 in {
     def PseudoXVS1R_V : VPseudo<XVSE_V, V_M1, (outs), (ins VR:$vs3,  GPRMemZeroOffset:$rs1)>,
                         Sched<[WriteVST1R, ReadVST1R, ReadVSTX]>;
     def PseudoXVS2R_V : VPseudo<XVSE_V, V_M2, (outs), (ins VRM2:$vs3, GPRMemZeroOffset:$rs1)>,

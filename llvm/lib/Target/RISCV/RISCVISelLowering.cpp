@@ -14597,6 +14597,57 @@ static MachineBasicBlock *emitFROUND(MachineInstr &MI, MachineBasicBlock *MBB,
   return DoneMBB;
 }
 
+static MachineBasicBlock *emitXWholeLoad(MachineInstr &MI,
+                                         MachineBasicBlock *BB, unsigned SEW,
+                                         unsigned LMUL) {
+  DebugLoc DL = MI.getDebugLoc();
+
+  auto *TII = BB->getParent()->getSubtarget().getInstrInfo();
+  auto *MRI = &BB->getParent()->getRegInfo();
+
+  Register SavedVL = MRI->createVirtualRegister(&RISCV::GPRRegClass);
+  Register SavedVType = MRI->createVirtualRegister(&RISCV::GPRRegClass);
+
+  // Spec: The assembler pseudoinstruction to read a CSR, `CSRR rd, csr`, is
+  // encoded as `CSRRS rd, csr, x0`.
+  BuildMI(*BB, MI, DL, TII->get(RISCV::CSRRS), SavedVL)
+      .addImm(RISCVSysReg::lookupSysRegByName("VL")->Encoding)
+      .addReg(RISCV::X0);
+  BuildMI(*BB, MI, DL, TII->get(RISCV::CSRRS), SavedVType)
+      .addImm(RISCVSysReg::lookupSysRegByName("VTYPE")->Encoding)
+      .addReg(RISCV::X0);
+
+  // Generate `vsetvli x0, x0, e<SEW>, m<LMUL>`
+  auto VTypeI = RISCVVType::encodeXTHeadVTYPE(SEW, LMUL, 1); //
+  BuildMI(*BB, MI, DL, TII->get(RISCV::XVSETVLI))
+      .addReg(RISCV::X0, RegState::Define | RegState::Dead)
+      .addReg(RISCV::X0)
+      .addImm(VTypeI)
+      .addReg(RISCV::VL, RegState::Implicit);
+
+  // Generate `vle.v`
+  // From GCC: `vl<LMUL>re<SEW>.v vd, offset(rs1)` -> `vle.v vd, offset(rs1)`
+  BuildMI(*BB, MI, DL, TII->get(RISCV::XVLE_V))
+      .add(MI.getOperand(0))      // dst
+      .add(MI.getOperand(1))      // rs1(address)
+      .addReg(RISCV::NoRegister); // vmask, currently no mask
+
+  // Restore vl, vtype with `vsetvl x0, SavedVL, SavedVType`
+  BuildMI(*BB, MI, DL, TII->get(RISCV::XVSETVL))
+      .addReg(RISCV::X0, RegState::Define | RegState::Dead)
+      .addReg(SavedVL, RegState::Kill)
+      .addReg(SavedVType, RegState::Kill);
+
+  // Erase the pseudoinstruction.
+  MI.eraseFromParent();
+  return BB;
+}
+
+static MachineBasicBlock *emitXWholeStore(MachineInstr &MI,
+                                          MachineBasicBlock *BB) {
+  return BB;
+}
+
 MachineBasicBlock *
 RISCVTargetLowering::EmitInstrWithCustomInserter(MachineInstr &MI,
                                                  MachineBasicBlock *BB) const {
@@ -14716,6 +14767,29 @@ RISCVTargetLowering::EmitInstrWithCustomInserter(MachineInstr &MI,
   case RISCV::PseudoFROUND_D_INX:
   case RISCV::PseudoFROUND_D_IN32X:
     return emitFROUND(MI, BB, Subtarget);
+
+#define PseudoXVL_CASE_SEW_LMUL(SEW_val, LMUL_val)                             \
+  case RISCV::PseudoXVL##LMUL_val##RE##SEW_val##_V:                            \
+    return emitXWholeLoad(MI, BB, SEW_val, LMUL_val);
+
+#define PseudoXVL_CASE_SEW(SEW_val)                                            \
+  PseudoXVL_CASE_SEW_LMUL(SEW_val, 1);                                         \
+  PseudoXVL_CASE_SEW_LMUL(SEW_val, 2);                                         \
+  PseudoXVL_CASE_SEW_LMUL(SEW_val, 4);                                         \
+  PseudoXVL_CASE_SEW_LMUL(SEW_val, 8);
+
+  // Emulated whole load instructions for RVV 0.7
+  PseudoXVL_CASE_SEW(8);
+  PseudoXVL_CASE_SEW(16);
+  PseudoXVL_CASE_SEW(32);
+  PseudoXVL_CASE_SEW(64);
+
+  // Emulated whole store instructions for RVV 0.7
+  case RISCV::PseudoXVS1R_V:
+  case RISCV::PseudoXVS2R_V:
+  case RISCV::PseudoXVS4R_V:
+  case RISCV::PseudoXVS8R_V:
+    return emitXWholeStore(MI, BB);
   }
 }
 
