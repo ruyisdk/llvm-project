@@ -14652,9 +14652,8 @@ static MachineBasicBlock *emitXWholeLoad(MachineInstr &MI,
 }
 
 static MachineBasicBlock *emitXWholeStore(MachineInstr &MI,
-                                          MachineBasicBlock *BB,
+                                          MachineBasicBlock *BB, unsigned SEW,
                                           unsigned LMUL) {
-  unsigned SEW = 8; // TODO: guess from operands
   return emitXWholeLoadStore(MI, BB, SEW, LMUL, RISCV::XVSE_V);
 }
 
@@ -14794,15 +14793,21 @@ RISCVTargetLowering::EmitInstrWithCustomInserter(MachineInstr &MI,
   PseudoXVL_CASE_SEW(32);
   PseudoXVL_CASE_SEW(64);
 
+#define PseudoXVS_CASE_SEW_LMUL(SEW_val, LMUL_val)                             \
+  case RISCV::PseudoXVS##LMUL_val##RE##SEW_val##_V:                            \
+    return emitXWholeStore(MI, BB, SEW_val, LMUL_val);
+
+#define PseudoXVS_CASE_SEW(SEW_val)                                            \
+  PseudoXVS_CASE_SEW_LMUL(SEW_val, 1);                                         \
+  PseudoXVS_CASE_SEW_LMUL(SEW_val, 2);                                         \
+  PseudoXVS_CASE_SEW_LMUL(SEW_val, 4);                                         \
+  PseudoXVS_CASE_SEW_LMUL(SEW_val, 8);
+
   // Emulated whole store instructions for RVV 0.7
-  case RISCV::PseudoXVS1R_V:
-    return emitXWholeStore(MI, BB, 1);
-  case RISCV::PseudoXVS2R_V:
-    return emitXWholeStore(MI, BB, 2);
-  case RISCV::PseudoXVS4R_V:
-    return emitXWholeStore(MI, BB, 4);
-  case RISCV::PseudoXVS8R_V:
-    return emitXWholeStore(MI, BB, 8);
+  PseudoXVS_CASE_SEW(8);
+  PseudoXVS_CASE_SEW(16);
+  PseudoXVS_CASE_SEW(32);
+  PseudoXVS_CASE_SEW(64);
   }
 }
 

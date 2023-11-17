@@ -445,6 +445,20 @@ multiclass XVPseudoWholeLoadN<bits<3> nf, LMULInfo m, RegisterClass VRC> {
   }
 }
 
+class VPseudoWholeStore<Instruction instr, LMULInfo m, RegisterClass VRC>
+  : VPseudo<instr, m, (outs),   (ins VRC:$vs3, GPRMemZeroOffset:$rs1)> {
+}
+
+multiclass XVPseudoWholeStoreN<bits<3> nf, LMULInfo m, RegisterClass VRC> {
+  foreach l = [8, 16, 32, 64] in {
+    defvar sw = !cast<SchedWrite>("WriteVST" # !add(nf, 1) # "R");
+    defvar sr = !cast<SchedRead>("ReadVST" # !add(nf, 1) # "R");
+
+    def E # l # _V : VPseudoWholeStore<XVSE_V, m, VRC>,
+                     Sched<[sw, sr, ReadVSTX]>;
+  }
+}
+
 let Predicates = [HasVendorXTHeadV] in {
   // Whole register load
   let hasSideEffects = 0, mayLoad = 1, mayStore = 0, isCodeGenOnly = 1, usesCustomInserter = 1 in {
@@ -455,14 +469,10 @@ let Predicates = [HasVendorXTHeadV] in {
   }
   // Whole register store
   let hasSideEffects = 0, mayLoad = 0, mayStore = 1, isCodeGenOnly = 1, usesCustomInserter = 1 in {
-    def PseudoXVS1R_V : VPseudo<XVSE_V, V_M1, (outs), (ins VR:$vs3,  GPRMemZeroOffset:$rs1)>,
-                        Sched<[WriteVST1R, ReadVST1R, ReadVSTX]>;
-    def PseudoXVS2R_V : VPseudo<XVSE_V, V_M2, (outs), (ins VRM2:$vs3, GPRMemZeroOffset:$rs1)>,
-                        Sched<[WriteVST2R, ReadVST2R, ReadVSTX]>;
-    def PseudoXVS4R_V : VPseudo<XVSE_V, V_M4, (outs), (ins VRM4:$vs3, GPRMemZeroOffset:$rs1)>,
-                        Sched<[WriteVST4R, ReadVST4R, ReadVSTX]>;
-    def PseudoXVS8R_V : VPseudo<XVSE_V, V_M8, (outs), (ins VRM8:$vs3, GPRMemZeroOffset:$rs1)>,
-                        Sched<[WriteVST8R, ReadVST8R, ReadVSTX]>;
+    defm PseudoXVS1R : XVPseudoWholeStoreN<0, V_M1, VR>;
+    defm PseudoXVS2R : XVPseudoWholeStoreN<1, V_M2, VRM2>;
+    defm PseudoXVS4R : XVPseudoWholeStoreN<3, V_M4, VRM4>;
+    defm PseudoXVS8R : XVPseudoWholeStoreN<7, V_M8, VRM8>;
   }
 } // Predicates = [HasVendorXTHeadV]
 
@@ -474,7 +484,7 @@ multiclass XVPatUSLoadStoreWholeVRSDNode<ValueType type,
   defvar load_instr =
     !cast<Instruction>("PseudoXVL"#!substr(vlmul.MX, 1)#"RE"#sew#"_V");
   defvar store_instr =
-    !cast<Instruction>("PseudoXVS"#!substr(vlmul.MX, 1)#"R_V");
+    !cast<Instruction>("PseudoXVS"#!substr(vlmul.MX, 1)#"RE"#sew#"_V");
 
   // Load
   def : Pat<(type (load GPR:$rs1)),
