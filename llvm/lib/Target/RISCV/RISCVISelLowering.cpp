@@ -14597,9 +14597,10 @@ static MachineBasicBlock *emitFROUND(MachineInstr &MI, MachineBasicBlock *MBB,
   return DoneMBB;
 }
 
-static MachineBasicBlock *emitXWholeLoad(MachineInstr &MI,
-                                         MachineBasicBlock *BB, unsigned SEW,
-                                         unsigned LMUL) {
+static MachineBasicBlock *emitXWholeLoadStore(MachineInstr &MI,
+                                              MachineBasicBlock *BB,
+                                              unsigned SEW, unsigned LMUL,
+                                              unsigned Opcode) {
   DebugLoc DL = MI.getDebugLoc();
 
   auto *TII = BB->getParent()->getSubtarget().getInstrInfo();
@@ -14625,11 +14626,12 @@ static MachineBasicBlock *emitXWholeLoad(MachineInstr &MI,
       .addImm(VTypeI)
       .addReg(RISCV::VL, RegState::Implicit);
 
-  // Generate `vle.v`
-  // From GCC: `vl<LMUL>re<SEW>.v vd, offset(rs1)` -> `vle.v vd, offset(rs1)`
-  BuildMI(*BB, MI, DL, TII->get(RISCV::XVLE_V))
-      .add(MI.getOperand(0))      // dst
-      .add(MI.getOperand(1))      // rs1(address)
+  // Generate `vle.v` or `vse.v`
+  // From GCC: `vl<LMUL>re<SEW>.v vd, (rs)` -> `vle.v vd, (rs), vm`
+  // From GCC: `vs<LMUL>r.v       vd, (rs)` -> `vse.v vs, (rs), vm`
+  BuildMI(*BB, MI, DL, TII->get(Opcode))
+      .add(MI.getOperand(0))      // vd or vs
+      .add(MI.getOperand(1))      // rs, the load/store address
       .addReg(RISCV::NoRegister); // vmask, currently no mask
 
   // Restore vl, vtype with `vsetvl x0, SavedVL, SavedVType`
@@ -14643,51 +14645,17 @@ static MachineBasicBlock *emitXWholeLoad(MachineInstr &MI,
   return BB;
 }
 
+static MachineBasicBlock *emitXWholeLoad(MachineInstr &MI,
+                                         MachineBasicBlock *BB, unsigned SEW,
+                                         unsigned LMUL) {
+  return emitXWholeLoadStore(MI, BB, SEW, LMUL, RISCV::XVLE_V);
+}
+
 static MachineBasicBlock *emitXWholeStore(MachineInstr &MI,
                                           MachineBasicBlock *BB,
                                           unsigned LMUL) {
-  DebugLoc DL = MI.getDebugLoc();
-
-  auto *TII = BB->getParent()->getSubtarget().getInstrInfo();
-  auto *MRI = &BB->getParent()->getRegInfo();
-
-  Register SavedVL = MRI->createVirtualRegister(&RISCV::GPRRegClass);
-  Register SavedVType = MRI->createVirtualRegister(&RISCV::GPRRegClass);
-
-  // Spec: The assembler pseudoinstruction to read a CSR, `CSRR rd, csr`, is
-  // encoded as `CSRRS rd, csr, x0`.
-  BuildMI(*BB, MI, DL, TII->get(RISCV::CSRRS), SavedVL)
-      .addImm(RISCVSysReg::lookupSysRegByName("VL")->Encoding)
-      .addReg(RISCV::X0);
-  BuildMI(*BB, MI, DL, TII->get(RISCV::CSRRS), SavedVType)
-      .addImm(RISCVSysReg::lookupSysRegByName("VTYPE")->Encoding)
-      .addReg(RISCV::X0);
-
-  // Generate `vsetvli x0, x0, e<SEW>, m<LMUL>`
   unsigned SEW = 8; // TODO: guess from operands
-  auto VTypeI = RISCVVType::encodeXTHeadVTYPE(SEW, LMUL, 1);
-  BuildMI(*BB, MI, DL, TII->get(RISCV::XVSETVLI))
-      .addReg(RISCV::X0, RegState::Define | RegState::Dead)
-      .addReg(RISCV::X0)
-      .addImm(VTypeI)
-      .addReg(RISCV::VL, RegState::Implicit);
-
-  // Generate `vse.v`
-  // From GCC: `vs<LMUL>r.v vd, offset(rs1)` -> `vse.v vd, offset(rs1)`
-  BuildMI(*BB, MI, DL, TII->get(RISCV::XVSE_V))
-      .add(MI.getOperand(0))      // dst
-      .add(MI.getOperand(1))      // rs1(address)
-      .addReg(RISCV::NoRegister); // vmask, currently no mask
-
-  // Restore vl, vtype with `vsetvl x0, SavedVL, SavedVType`
-  BuildMI(*BB, MI, DL, TII->get(RISCV::XVSETVL))
-      .addReg(RISCV::X0, RegState::Define | RegState::Dead)
-      .addReg(SavedVL, RegState::Kill)
-      .addReg(SavedVType, RegState::Kill);
-
-  // Erase the pseudoinstruction.
-  MI.eraseFromParent();
-  return BB;
+  return emitXWholeLoadStore(MI, BB, SEW, LMUL, RISCV::XVSE_V);
 }
 
 MachineBasicBlock *
