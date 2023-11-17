@@ -149,12 +149,13 @@ public:
                                   bool IsLoad = false, MVT *IndexVT = nullptr);
   void addXTHeadVLoadStoreOperands(SDNode *Node, unsigned SEWImm,
                                   const SDLoc &DL, unsigned CurOp,
-                                  bool IsMasked, SmallVectorImpl<SDValue> &Operands);
+                                  bool IsMasked, bool IsStrided,
+                                  SmallVectorImpl<SDValue> &Operands);
 
   void selectXVL(SDNode *Node, const SDLoc& DL, unsigned IntNo,
-                 bool IsUnsigned, bool IsMasked, bool IsE);
+                 bool IsUnsigned, bool IsMasked, bool IsStrided, bool IsE);
   void selectXVS(SDNode *Node, const SDLoc& DL, unsigned IntNo,
-                 bool IsMasked, bool IsE);
+                 bool IsMasked, bool IsStrided, bool IsE);
   void selectVLSEG(SDNode *Node, bool IsMasked, bool IsStrided);
   void selectVLSEGFF(SDNode *Node, bool IsMasked);
   void selectVLXSEG(SDNode *Node, bool IsMasked, bool IsOrdered);
@@ -248,6 +249,7 @@ struct VLEPseudo {
 
 struct XVLPseudo {
   uint16_t Masked : 1;
+  uint16_t Strided : 1;
   uint16_t Unsigned : 1;
   uint16_t IsE : 1;
   uint16_t Log2MEM : 3;
@@ -266,6 +268,7 @@ struct VSEPseudo {
 
 struct XVSPseudo {
   uint16_t Masked : 1;
+  uint16_t Strided : 1;
   uint16_t IsE : 1;
   uint16_t Log2MEM : 3;
   uint16_t Log2SEW : 3;
