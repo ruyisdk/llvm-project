@@ -11,7 +11,6 @@
 // the post-regalloc scheduling pass.
 //
 //===----------------------------------------------------------------------===//
-
 #include "RISCV.h"
 #include "RISCVInstrInfo.h"
 #include "RISCVTargetMachine.h"
@@ -303,6 +302,101 @@ bool RISCVExpandPseudo::expandXVSetVL(MachineBasicBlock &MBB,
 
 bool RISCVExpandPseudo::expandXWholeLoad(MachineBasicBlock &MBB,
                                          MachineBasicBlock::iterator MBBI) {
+  // Accepts: vl<LMUL>re<SEW>.v vd, offset(rs1)
+  assert(MBBI->getNumExplicitOperands() == 2 && MBBI->getNumOperands() == 2 &&
+         "Unexpected instruction format for XWholeLoad");
+
+  DebugLoc DL = MBBI->getDebugLoc();
+
+  assert((MBBI->getOpcode() == RISCV::PseudoXVL1RE8_V ||
+          MBBI->getOpcode() == RISCV::PseudoXVL1RE16_V ||
+          MBBI->getOpcode() == RISCV::PseudoXVL1RE32_V ||
+          MBBI->getOpcode() == RISCV::PseudoXVL1RE64_V ||
+          MBBI->getOpcode() == RISCV::PseudoXVL2RE8_V ||
+          MBBI->getOpcode() == RISCV::PseudoXVL2RE16_V ||
+          MBBI->getOpcode() == RISCV::PseudoXVL2RE32_V ||
+          MBBI->getOpcode() == RISCV::PseudoXVL2RE64_V ||
+          MBBI->getOpcode() == RISCV::PseudoXVL4RE8_V ||
+          MBBI->getOpcode() == RISCV::PseudoXVL4RE16_V ||
+          MBBI->getOpcode() == RISCV::PseudoXVL4RE32_V ||
+          MBBI->getOpcode() == RISCV::PseudoXVL4RE64_V ||
+          MBBI->getOpcode() == RISCV::PseudoXVL8RE8_V ||
+          MBBI->getOpcode() == RISCV::PseudoXVL8RE16_V ||
+          MBBI->getOpcode() == RISCV::PseudoXVL8RE32_V ||
+          MBBI->getOpcode() == RISCV::PseudoXVL8RE64_V) &&
+         "Unexpected pseudo instruction");
+
+  unsigned SEW;  // should be 8, 16, 32, 64
+  unsigned LMUL; // should be 1, 2, 4, 8
+
+  // `vl<LMUL>re<SEW>.v a, b` -> `vsetvli x0, x0, e<SEW>, m<LMUL>` + `vle.v a,
+  // b`
+#define CaseOp(SEW_val, LMUL_val)                                              \
+  case RISCV::PseudoXVL##LMUL_val##RE##SEW_val##_V:                            \
+    std::tie(SEW, LMUL) = std::make_pair(SEW_val, LMUL_val);                   \
+    break
+
+  switch (MBBI->getOpcode()) {
+    CaseOp(8, 1);
+    CaseOp(16, 1);
+    CaseOp(32, 1);
+    CaseOp(64, 1);
+    CaseOp(8, 2);
+    CaseOp(16, 2);
+    CaseOp(32, 2);
+    CaseOp(64, 2);
+    CaseOp(8, 4);
+    CaseOp(16, 4);
+    CaseOp(32, 4);
+    CaseOp(64, 4);
+    CaseOp(8, 8);
+    CaseOp(16, 8);
+    CaseOp(32, 8);
+    CaseOp(64, 8);
+  default:
+    llvm_unreachable("Unexpected opcode!");
+  }
+#undef CaseOp
+
+  // Backup vl, vtype
+  auto *MRI = &MBBI->getMF()->getRegInfo();
+  Register SavedVL = MRI->createVirtualRegister(&RISCV::GPRRegClass);
+  Register SavedVType = MRI->createVirtualRegister(&RISCV::GPRRegClass);
+  // Spec: The assembler pseudoinstruction to read a CSR, `CSRR rd, csr`, is
+  // encoded as `CSRRS rd, csr, x0`.
+  BuildMI(MBB, MBBI, DL, TII->get(RISCV::CSRRS), SavedVL)
+      .addImm(RISCVSysReg::lookupSysRegByName("VL")->Encoding)
+      .addReg(RISCV::X0);
+  BuildMI(MBB, MBBI, DL, TII->get(RISCV::CSRRS), SavedVType)
+      .addImm(RISCVSysReg::lookupSysRegByName("VTYPE")->Encoding)
+      .addReg(RISCV::X0);
+
+  // Generate `vsetvli x0, x0, e<SEW>, m<LMUL>`
+  auto VTypeI = RISCVVType::encodeXTHeadVTYPE(SEW, LMUL, 1); //
+  BuildMI(MBB, MBBI, DL, TII->get(RISCV::XVSETVLI))
+      .addReg(RISCV::X0, RegState::Define | RegState::Dead)
+      .addReg(RISCV::X0)
+      .addImm(VTypeI)
+      .addReg(RISCV::VL, RegState::Implicit);
+
+  // Generate `vle.v`
+  // From GCC: `vl<LMUL>re<SEW>.v vd, offset(rs1)` -> `vle.v vd, offset(rs1)`
+  BuildMI(MBB, MBBI, DL, TII->get(RISCV::XVLE_V))
+      .add(MBBI->getOperand(0))  // dst
+      .add(MBBI->getOperand(1)); // rs1(address)
+
+  // Restore vl, vtype
+  // Spec: The assembler pseudoinstruction to write a CSR, `CSRW csr, rs1`, is
+  // encoded as `CSRRW x0, csr, rs1`.
+  BuildMI(MBB, MBBI, DL, TII->get(RISCV::CSRRW))
+      .addReg(RISCV::X0, RegState::Define | RegState::Dead) // x0
+      .addImm(RISCVSysReg::lookupSysRegByName("VL")->Encoding)
+      .addReg(SavedVL, RegState::Kill); // rs1
+  BuildMI(MBB, MBBI, DL, TII->get(RISCV::CSRRW))
+      .addReg(RISCV::X0, RegState::Define | RegState::Dead) // x0
+      .addImm(RISCVSysReg::lookupSysRegByName("VTYPE")->Encoding)
+      .addReg(SavedVType, RegState::Kill); // rs1
+
   MBBI->eraseFromParent(); // The pseudo instruction is gone now.
   return true;
 }
