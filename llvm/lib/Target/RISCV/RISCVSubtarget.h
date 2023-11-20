@@ -165,20 +165,40 @@ public:
   bool hasMacroFusion() const { return hasLUIADDIFusion(); }
 
   // Vector codegen related methods.
+  // If a SubTarget has either standard V or XTHeadV:
   bool hasVInstructions() const {
-    return HasStdExtZve32x || HasVendorXTHeadV;
+    return hasOnlyStdV() || hasVendorXTHeadV();
   }
   bool hasVInstructionsI64() const {
-    return HasStdExtZve64x || HasVendorXTHeadV;
+    return hasOnlyStdVI64() || hasVendorXTHeadV();
   }
-  bool hasVInstructionsF16() const { return HasStdExtZvfh; }
+  bool hasVInstructionsF16() const { return hasOnlyStdVF16(); }
+  bool hasVInstructionsF32() const { return hasOnlyStdVF32(); }
+  bool hasVInstructionsF64() const { return hasOnlyStdVF64(); }
+  bool hasVInstructionsAnyF() const { return hasOnlyStdVAnyF(); }
+  bool hasVInstructionsFullMultiply() const { return hasOnlyStdV() || hasVendorXTHeadV(); }
+  //  If a SubTarget only has the standard V extension:
+  bool hasOnlyStdV() const {
+    return HasStdExtZve32x;
+  }
+  bool hasOnlyStdVI64() const {
+    return HasStdExtZve64x;
+  }
+  bool hasOnlyStdVF16() const { return HasStdExtZvfh; }
   // FIXME: Consider Zfinx in the future
-  bool hasVInstructionsF32() const { return HasStdExtZve32f && HasStdExtF; }
+  bool hasOnlyStdVF32() const { return HasStdExtZve32f && HasStdExtF; }
   // FIXME: Consider Zdinx in the future
-  bool hasVInstructionsF64() const { return HasStdExtZve64d && HasStdExtD; }
+  bool hasOnlyStdVF64() const { return HasStdExtZve64d && HasStdExtD; }
   // F16 and F64 both require F32.
-  bool hasVInstructionsAnyF() const { return hasVInstructionsF32(); }
-  bool hasVInstructionsFullMultiply() const { return HasStdExtV; }
+  bool hasOnlyStdVAnyF() const { return hasOnlyStdVF32(); }
+  bool hasOnlyStdVFullMultiply() const { return HasStdExtV; }
+  // XTHeadV codegen related methods.
+  bool hasStdVOrXTHeadV() const {
+    return hasVInstructions() || hasVendorXTHeadV();
+  }
+  bool hasStdVOrXTHeadVI64() const {
+    return hasVInstructionsI64() || hasVendorXTHeadV();
+  }
   unsigned getMaxInterleaveFactor() const {
     return hasVInstructions() ? MaxInterleaveFactor : 1;
   }

@@ -174,6 +174,8 @@ static bool isConvertibleToVMV_V_V(const RISCVSubtarget &STI,
   Register SrcReg = MBBI->getOperand(1).getReg();
   const TargetRegisterInfo *TRI = STI.getRegisterInfo();
 
+  bool XTHeadV = STI.hasVendorXTHeadV();
+
   bool FoundDef = false;
   bool FirstVSetVLI = false;
   unsigned FirstSEW = 0;
@@ -184,7 +186,9 @@ static bool isConvertibleToVMV_V_V(const RISCVSubtarget &STI,
 
     if (MBBI->getOpcode() == RISCV::PseudoVSETVLI ||
         MBBI->getOpcode() == RISCV::PseudoVSETVLIX0 ||
-        MBBI->getOpcode() == RISCV::PseudoVSETIVLI) {
+        MBBI->getOpcode() == RISCV::PseudoVSETIVLI ||
+        MBBI->getOpcode() == RISCV::PseudoXVSETVLI ||
+        MBBI->getOpcode() == RISCV::PseudoXVSETVLIX0) {
       // There is a vsetvli between COPY and source define instruction.
       // vy = def_vop ...  (producing instruction)
       // ...
@@ -195,8 +199,11 @@ static bool isConvertibleToVMV_V_V(const RISCVSubtarget &STI,
         if (!FirstVSetVLI) {
           FirstVSetVLI = true;
           unsigned FirstVType = MBBI->getOperand(2).getImm();
-          RISCVII::VLMUL FirstLMul = RISCVVType::getVLMUL(FirstVType);
-          FirstSEW = RISCVVType::getSEW(FirstVType);
+          RISCVII::VLMUL FirstLMul =
+              XTHeadV ? RISCVVType::getXTHeadVVLMUL(FirstVType)
+                      : RISCVVType::getVLMUL(FirstVType);
+          FirstSEW = XTHeadV ? RISCVVType::getXTHeadVSEW(FirstVType)
+                             : RISCVVType::getSEW(FirstVType);
           // The first encountered vsetvli must have the same lmul as the
           // register class of COPY.
           if (FirstLMul != LMul)
@@ -217,13 +224,15 @@ static bool isConvertibleToVMV_V_V(const RISCVSubtarget &STI,
       unsigned VType = MBBI->getOperand(2).getImm();
       // If there is a vsetvli between COPY and the producing instruction.
       if (FirstVSetVLI) {
-        // If SEW is different, return false.
-        if (RISCVVType::getSEW(VType) != FirstSEW)
+        // If NewSEW is different, return false.
+        auto NewSEW = XTHeadV ? RISCVVType::getXTHeadVSEW(VType)
+                              : RISCVVType::getSEW(VType);
+        if (NewSEW != FirstSEW)
           return false;
       }
 
       // If the vsetvli is tail undisturbed, keep the whole register move.
-      if (!RISCVVType::isTailAgnostic(VType))
+      if (!XTHeadV && !RISCVVType::isTailAgnostic(VType))
         return false;
 
       // The checking is conservative. We only have register classes for
@@ -231,7 +240,9 @@ static bool isConvertibleToVMV_V_V(const RISCVSubtarget &STI,
       // for fractional LMUL operations. However, we could not use the vsetvli
       // lmul for widening operations. The result of widening operation is
       // 2 x LMUL.
-      return LMul == RISCVVType::getVLMUL(VType);
+      auto NewLMul = XTHeadV ? RISCVVType::getXTHeadVVLMUL(VType)
+                             : RISCVVType::getVLMUL(VType);
+      return LMul == NewLMul;
     } else if (MBBI->isInlineAsm() || MBBI->isCall()) {
       return false;
     } else if (MBBI->getNumDefs()) {
