@@ -212,3 +212,16 @@ let TargetPrefix = "riscv" in {
   // 12. Vector Integer Arithmetic Instructions
   defm xvadd : RISCVBinaryAAX;
 } // TargetPrefix = "riscv"
+
+let TargetPrefix = "riscv" in {
+  // 12.14. Vector Integer Merge and Move Instructions
+  // Output: (vector)
+  // Input: (passthru, vector_in, vl)
+  def int_riscv_xvmv_v_v : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                                                 [LLVMMatchType<0>,
+                                                  LLVMMatchType<0>,
+                                                  llvm_anyint_ty],
+                                                 [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 2;
+  }
+} // TargetPrefix = "riscv"

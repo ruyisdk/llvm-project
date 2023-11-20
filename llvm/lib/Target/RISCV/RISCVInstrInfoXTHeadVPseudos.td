@@ -717,3 +717,47 @@ let Predicates = [HasVendorXTHeadV] in {
   // TODO: try `int_riscv_vadd`
   defm : VPatBinaryV_VV_VX_VI<"int_riscv_xvadd", "PseudoXVADD", AllIntegerXVectors>;
 } // Predicates = [HasVendorXTHeadV]
+
+//===----------------------------------------------------------------------===//
+// 12.14. Vector Integer Merge and Move Instructions
+//===----------------------------------------------------------------------===//
+multiclass XVPseudoUnaryVMV_V_X_I {
+  foreach m = MxListXTHeadV in {
+    let VLMul = m.value in {
+      defvar mx = m.MX;
+      defvar WriteVIMovV_MX = !cast<SchedWrite>("WriteVIMovV_" # mx);
+      defvar WriteVIMovX_MX = !cast<SchedWrite>("WriteVIMovX_" # mx);
+      defvar WriteVIMovI_MX = !cast<SchedWrite>("WriteVIMovI_" # mx);
+      defvar ReadVIMovV_MX = !cast<SchedRead>("ReadVIMovV_" # mx);
+      defvar ReadVIMovX_MX = !cast<SchedRead>("ReadVIMovX_" # mx);
+
+      let VLMul = m.value in {
+        def "_V_" # mx : VPseudoUnaryNoMask<m.vrclass, m.vrclass>,
+                           Sched<[WriteVIMovV_MX, ReadVIMovV_MX]>;
+        def "_X_" # mx : VPseudoUnaryNoMask<m.vrclass, GPR>,
+                           Sched<[WriteVIMovX_MX, ReadVIMovX_MX]>;
+        def "_I_" # mx : VPseudoUnaryNoMask<m.vrclass, simm5>,
+                           Sched<[WriteVIMovI_MX]>;
+      }
+    }
+  }
+}
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoXVMV_V : XVPseudoUnaryVMV_V_X_I;
+} // Predicates = [HasVendorXTHeadV]
+
+// Patterns for `int_riscv_vmv_v_v` -> `PseudoXVMV_V_V_<LMUL>`
+foreach vti = AllXVectors in {
+  let Predicates = GetXVTypePredicates<vti>.Predicates in {
+    // vmv.v.v
+    // TODO: try `int_riscv_vmv_v_v`
+    def : Pat<(vti.Vector (int_riscv_xvmv_v_v (vti.Vector vti.RegClass:$passthru),
+                                              (vti.Vector vti.RegClass:$rs1),
+                                              VLOpFrag)),
+              (!cast<Instruction>("PseudoXVMV_V_V_"#vti.LMul.MX)
+               $passthru, $rs1, GPR:$vl, vti.Log2SEW, TU_MU)>;
+
+    // TODO: vmv.v.x, vmv.v.i
+  }
+}
