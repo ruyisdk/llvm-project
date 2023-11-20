@@ -6,7 +6,9 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file defines all of RISC-V Vector Extension version 0.7.1 intrinsics.
+// This file defines the prototype (in LLVM IR) of RVV 0.7.1 intrinsics.
+// Refer to RISCVInstrrInfoXTHeadVPseudos.td for lowering from intrinsic calls
+// to MC instructions.
 //
 //===----------------------------------------------------------------------===//
 
@@ -32,9 +34,6 @@ let TargetPrefix = "riscv" in {
                                         ImmArg<ArgIndex<0>>,
                                         ImmArg<ArgIndex<1>>
                                        ]>;
-
-  defm xvadd : RISCVBinaryAAX;
-
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
@@ -207,4 +206,9 @@ let TargetPrefix = "riscv" in {
   defm xvamomax  : XIntrinsicVAMO;
   defm xvamominu : XIntrinsicVAMO;
   defm xvamomaxu : XIntrinsicVAMO;
+} // TargetPrefix = "riscv"
+
+let TargetPrefix = "riscv" in {
+  // 12. Vector Integer Arithmetic Instructions
+  defm xvadd : RISCVBinaryAAX;
 } // TargetPrefix = "riscv"

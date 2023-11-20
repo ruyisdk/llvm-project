@@ -11,6 +11,13 @@
 ///
 /// This file is included from RISCVInstrInfoXTHeadV.td
 
+//===----------------------------------------------------------------------===//
+// Register definitions, helper functions, etc.
+//===----------------------------------------------------------------------===//
+
+// Used to iterate over all possible LMULs in RVV 0.7.1
+defvar MxListXTHeadV = [V_M1, V_M2, V_M4, V_M8];
+
 // Redefine `AllIntegerVectors` from RISCVInstrInfoVPseudos.td to remove fractionally-grouped register groups
 // like MF2, MF4, MF8, which are not supported by the 'V' extension 0.7.1.
 defset list<VTypeInfo> AllXVectors = {
@@ -119,7 +126,17 @@ def XTHeadVVSTable : GenericTable {
 }
 
 //===----------------------------------------------------------------------===//
-// Pseudos. These are used internally during code generation.
+// The following code defines the pseudo instructions and their patterns.
+// 1. "Pseudos" are defined in the same way as normal instructions, except they
+// start with the prefix "Pseudo".  Pseudo instructions are expanded to MC
+// instructions in the `RISCVExpandPseudoInsts.cpp` file.
+// 2. "Patterns" tell LLVM how to lower intrinsic calls to pseudos or MC instructions.
+// If an intrinsic call is lowered to a pseudo, the pseudo is then expanded
+// to MC instructions as described above.
+//
+// Some intrinsics may be lowered manually (for example, `RSICVISelDAGToDAG.cpp`).
+// Patterns are not needed for these instructions, like
+// `int_riscv_xvsetvl` and `int_riscv_xvsetvlmax` in `IntrinsicRISCVXTHeadV.td`.
 //===----------------------------------------------------------------------===//
 
 //===----------------------------------------------------------------------===//
@@ -204,7 +221,7 @@ class XVPseudoUSStoreMask<VReg StClass, int MEM, int REG, int e>:
 
 multiclass XVPseudoUSLoad {
   foreach mem = [8, 16, 32] in {
-    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+    foreach lmul = MxListXTHeadV in {
       defvar LInfo = lmul.MX;
       defvar vreg = lmul.vrclass;
       defvar tag = MemBitsToTag<mem>.ret;
@@ -234,7 +251,7 @@ multiclass XVPseudoUSLoad {
   }
   // For VLE, whose mem bits and reg bits is both SEW
   foreach eew = EEWList in {
-    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+    foreach lmul = MxListXTHeadV in {
       defvar LInfo = lmul.MX;
       defvar vreg = lmul.vrclass;
       let VLMul = lmul.value, SEW = eew in {
@@ -252,7 +269,7 @@ multiclass XVPseudoUSLoad {
 
 multiclass XVPseudoUSStore {
   foreach mem = [8, 16, 32] in {
-    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+    foreach lmul = MxListXTHeadV in {
       defvar LInfo = lmul.MX;
       defvar vreg = lmul.vrclass;
       defvar tag = MemBitsToTag<mem>.ret;
@@ -271,7 +288,7 @@ multiclass XVPseudoUSStore {
   }
   // For VSE, whose mem bits and reg bits is both SEW
   foreach eew = EEWList in {
-    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+    foreach lmul = MxListXTHeadV in {
       defvar LInfo = lmul.MX;
       defvar vreg = lmul.vrclass;
       let VLMul = lmul.value, SEW = eew in {
@@ -344,7 +361,7 @@ class XVPseudoSStoreMask<VReg StClass, int MEM, int REG, int e>:
 
 multiclass XVPseudoSLoad {
   foreach mem = [8, 16, 32] in {
-    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+    foreach lmul = MxListXTHeadV in {
       defvar LInfo = lmul.MX;
       defvar vreg = lmul.vrclass;
       defvar tag = MemBitsToTag<mem>.ret;
@@ -371,7 +388,7 @@ multiclass XVPseudoSLoad {
     }
   }
   foreach eew = EEWList in {
-    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+    foreach lmul = MxListXTHeadV in {
       defvar LInfo = lmul.MX;
       defvar vreg = lmul.vrclass;
       let VLMul = lmul.value, SEW = eew in {
@@ -389,7 +406,7 @@ multiclass XVPseudoSLoad {
 
 multiclass XVPseudoSStore {
   foreach mem = [8, 16, 32] in {
-    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+    foreach lmul = MxListXTHeadV in {
       defvar LInfo = lmul.MX;
       defvar vreg = lmul.vrclass;
       defvar tag = MemBitsToTag<mem>.ret;
@@ -406,7 +423,7 @@ multiclass XVPseudoSStore {
     }
   }
   foreach eew = EEWList in {
-    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+    foreach lmul = MxListXTHeadV in {
       defvar LInfo = lmul.MX;
       defvar vreg = lmul.vrclass;
       let VLMul = lmul.value, SEW = eew in {
@@ -476,6 +493,7 @@ let Predicates = [HasVendorXTHeadV] in {
   }
 } // Predicates = [HasVendorXTHeadV]
 
+// patterns for emulated whole register load/store
 multiclass XVPatUSLoadStoreWholeVRSDNode<ValueType type,
                                          int log2sew,
                                          LMULInfo vlmul,
@@ -493,6 +511,8 @@ multiclass XVPatUSLoadStoreWholeVRSDNode<ValueType type,
   def : Pat<(store type:$rs2, GPR:$rs1),
             (store_instr reg_class:$rs2, GPR:$rs1)>;
 }
+
+// Explicitly define the expected instruction selection result for each vector type
 foreach vti = [XVI8M1, XVI16M1, XVI32M1, XVI64M1] in
   let Predicates = GetXVTypePredicates<vti>.Predicates in
   defm : XVPatUSLoadStoreWholeVRSDNode<vti.Vector, vti.Log2SEW, vti.LMul,
@@ -547,7 +567,7 @@ multiclass XVPseudoAMOMem<int mem> {
   // the base vector "V" extension, only SEW up to ELEN = max(XLEN, FLEN)
   // are required to be supported, therefore only [32, 64] is allowed here.
   foreach sew = [32, 64] in {
-    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+    foreach lmul = MxListXTHeadV in {
       defvar octuple_lmul = lmul.octuple;
       // Calculate emul = sew * lmul / mem
       defvar octuple_emul = !srl(!mul(sew, octuple_lmul), !logtwo(mem));
@@ -579,22 +599,6 @@ let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA] in {
   defm PseudoXVAMOMINU : XVPseudoAMO;
   defm PseudoXVAMOMAXU : XVPseudoAMO;
 } // Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA]
-
-// TODO: try to reuse them from RISCVInstrInfoVPseudos.td, see the `HasStdVOrXTHeadV` predicate
-//===----------------------------------------------------------------------===//
-// 12. Vector Integer Arithmetic Instructions
-//===----------------------------------------------------------------------===//
-let Predicates = [HasVendorXTHeadV] in {
-  defm PseudoXVADD   : VPseudoVALU_VV_VX_VI;
-} // Predicates = [HasVendorXTHeadV]
-
-//===----------------------------------------------------------------------===//
-// Patterns. Enabling code generation from intrinsics to pseudos, then to asms.
-//===----------------------------------------------------------------------===//
-
-let Predicates = [HasVendorXTHeadV] in {
-  defm : VPatBinaryV_VV_VX_VI<"int_riscv_xvadd", "PseudoXVADD", AllIntegerXVectors>;
-} // Predicates = [HasVendorXTHeadV]
 
 // Patterns for vamo intrinsics.
 class XVPatAMOWDNoMask<string intrinsic_name,
@@ -683,3 +687,33 @@ let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA] in {
   defm : XVPatAMOV_WD<"int_riscv_xvamominu", "PseudoXVAMOMINU", AllIntegerXVectors>;
   defm : XVPatAMOV_WD<"int_riscv_xvamomaxu", "PseudoXVAMOMAXU", AllIntegerXVectors>;
 } // Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA]
+
+//===----------------------------------------------------------------------===//
+// 12. Vector Integer Arithmetic Instructions
+//===----------------------------------------------------------------------===//
+multiclass XVPseudoVALU_VV_VX_VI<Operand ImmType = simm5, string Constraint = ""> {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVIALUV_MX = !cast<SchedWrite>("WriteVIALUV_" # mx);
+    defvar WriteVIALUX_MX = !cast<SchedWrite>("WriteVIALUX_" # mx);
+    defvar WriteVIALUI_MX = !cast<SchedWrite>("WriteVIALUI_" # mx);
+    defvar ReadVIALUV_MX = !cast<SchedRead>("ReadVIALUV_" # mx);
+    defvar ReadVIALUX_MX = !cast<SchedRead>("ReadVIALUX_" # mx);
+
+    defm "" : VPseudoBinaryV_VV<m, Constraint>,
+            Sched<[WriteVIALUV_MX, ReadVIALUV_MX, ReadVIALUV_MX, ReadVMask]>;
+    defm "" : VPseudoBinaryV_VX<m, Constraint>,
+            Sched<[WriteVIALUX_MX, ReadVIALUV_MX, ReadVIALUX_MX, ReadVMask]>;
+    defm "" : VPseudoBinaryV_VI<ImmType, m, Constraint>,
+            Sched<[WriteVIALUI_MX, ReadVIALUV_MX, ReadVMask]>;
+  }
+}
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoXVADD   : XVPseudoVALU_VV_VX_VI;
+} // Predicates = [HasVendorXTHeadV]
+
+let Predicates = [HasVendorXTHeadV] in {
+  // TODO: try `int_riscv_vadd`
+  defm : VPatBinaryV_VV_VX_VI<"int_riscv_xvadd", "PseudoXVADD", AllIntegerXVectors>;
+} // Predicates = [HasVendorXTHeadV]
