@@ -199,6 +199,15 @@ public:
   bool hasStdVOrXTHeadVI64() const {
     return hasVInstructionsI64() || hasVendorXTHeadV();
   }
+  bool hasStdVOrXTHeadVF16() const {
+    return hasVInstructionsF16() || hasVendorXTHeadV();
+  }
+  bool hasStdVOrXTHeadVF32() const {
+    return hasVInstructionsF32() || hasVendorXTHeadV();
+  }
+  bool hasStdVOrXTHeadVF64() const {
+    return hasVInstructionsF64() || hasVendorXTHeadV();
+  }
   unsigned getMaxInterleaveFactor() const {
     return hasVInstructions() ? MaxInterleaveFactor : 1;
   }
