@@ -14,7 +14,7 @@ define <vscale x 2 x i32> @intrinsic_xvamomin_v_nxv2i32_nxv2i32(<vscale x 2 x i3
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e32, m1, d1
 ; CHECK-NEXT:    vamominw.v v9, v8, (a0), v9
-; CHECK-NEXT:    vmv1r.v v8, v9
+; CHECK-NEXT:    vmv.v.v v8, v9
 ; CHECK-NEXT:    ret
 
 entry:
@@ -39,7 +39,7 @@ define <vscale x 2 x i32> @intrinsic_xvamomin_mask_v_nxv2i32_nxv2i32(<vscale x 2
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e32, m1, d1
 ; CHECK-NEXT:    vamominw.v v9, v8, (a0), v9, v0.t
-; CHECK-NEXT:    vmv1r.v v8, v9
+; CHECK-NEXT:    vmv.v.v v8, v9
 ; CHECK-NEXT:    ret
 
 entry:
@@ -64,7 +64,7 @@ define <vscale x 4 x i32> @intrinsic_xvamomin_v_nxv4i32_nxv4i32(<vscale x 4 x i3
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e32, m2, d1
 ; CHECK-NEXT:    vamominw.v v10, v8, (a0), v10
-; CHECK-NEXT:    vmv2r.v v8, v10
+; CHECK-NEXT:    vmv.v.v v8, v10
 ; CHECK-NEXT:    ret
 
 entry:
@@ -89,7 +89,7 @@ define <vscale x 4 x i32> @intrinsic_xvamomin_mask_v_nxv4i32_nxv4i32(<vscale x 4
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e32, m2, d1
 ; CHECK-NEXT:    vamominw.v v10, v8, (a0), v10, v0.t
-; CHECK-NEXT:    vmv2r.v v8, v10
+; CHECK-NEXT:    vmv.v.v v8, v10
 ; CHECK-NEXT:    ret
 
 entry:
@@ -114,7 +114,7 @@ define <vscale x 8 x i32> @intrinsic_xvamomin_v_nxv8i32_nxv8i32(<vscale x 8 x i3
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e32, m4, d1
 ; CHECK-NEXT:    vamominw.v v12, v8, (a0), v12
-; CHECK-NEXT:    vmv4r.v v8, v12
+; CHECK-NEXT:    vmv.v.v v8, v12
 ; CHECK-NEXT:    ret
 
 entry:
@@ -139,7 +139,7 @@ define <vscale x 8 x i32> @intrinsic_xvamomin_mask_v_nxv8i32_nxv8i32(<vscale x 8
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e32, m4, d1
 ; CHECK-NEXT:    vamominw.v v12, v8, (a0), v12, v0.t
-; CHECK-NEXT:    vmv4r.v v8, v12
+; CHECK-NEXT:    vmv.v.v v8, v12
 ; CHECK-NEXT:    ret
 
 entry:
@@ -164,7 +164,7 @@ define <vscale x 16 x i32> @intrinsic_xvamomin_v_nxv16i32_nxv16i32(<vscale x 16 
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e32, m8, d1
 ; CHECK-NEXT:    vamominw.v v16, v8, (a0), v16
-; CHECK-NEXT:    vmv8r.v v8, v16
+; CHECK-NEXT:    vmv.v.v v8, v16
 ; CHECK-NEXT:    ret
 
 entry:
@@ -189,7 +189,7 @@ define <vscale x 16 x i32> @intrinsic_xvamomin_mask_v_nxv16i32_nxv16i32(<vscale 
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e32, m8, d1
 ; CHECK-NEXT:    vamominw.v v16, v8, (a0), v16, v0.t
-; CHECK-NEXT:    vmv8r.v v8, v16
+; CHECK-NEXT:    vmv.v.v v8, v16
 ; CHECK-NEXT:    ret
 
 entry:
@@ -214,7 +214,7 @@ define <vscale x 2 x i64> @intrinsic_xvamomin_v_nxv2i64_nxv2i32(<vscale x 2 x i6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e64, m2, d1
 ; CHECK-NEXT:    vamomind.v v10, v8, (a0), v10
-; CHECK-NEXT:    vmv2r.v v8, v10
+; CHECK-NEXT:    vmv.v.v v8, v10
 ; CHECK-NEXT:    ret
 
 entry:
@@ -239,7 +239,7 @@ define <vscale x 2 x i64> @intrinsic_xvamomin_mask_v_nxv2i64_nxv2i32(<vscale x 2
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e64, m2, d1
 ; CHECK-NEXT:    vamomind.v v10, v8, (a0), v10, v0.t
-; CHECK-NEXT:    vmv2r.v v8, v10
+; CHECK-NEXT:    vmv.v.v v8, v10
 ; CHECK-NEXT:    ret
 
 entry:
@@ -264,7 +264,7 @@ define <vscale x 4 x i64> @intrinsic_xvamomin_v_nxv4i64_nxv4i32(<vscale x 4 x i6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e64, m4, d1
 ; CHECK-NEXT:    vamomind.v v12, v8, (a0), v12
-; CHECK-NEXT:    vmv4r.v v8, v12
+; CHECK-NEXT:    vmv.v.v v8, v12
 ; CHECK-NEXT:    ret
 
 entry:
@@ -289,7 +289,7 @@ define <vscale x 4 x i64> @intrinsic_xvamomin_mask_v_nxv4i64_nxv4i32(<vscale x 4
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e64, m4, d1
 ; CHECK-NEXT:    vamomind.v v12, v8, (a0), v12, v0.t
-; CHECK-NEXT:    vmv4r.v v8, v12
+; CHECK-NEXT:    vmv.v.v v8, v12
 ; CHECK-NEXT:    ret
 
 entry:
@@ -314,7 +314,7 @@ define <vscale x 8 x i64> @intrinsic_xvamomin_v_nxv8i64_nxv8i32(<vscale x 8 x i6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e64, m8, d1
 ; CHECK-NEXT:    vamomind.v v16, v8, (a0), v16
-; CHECK-NEXT:    vmv8r.v v8, v16
+; CHECK-NEXT:    vmv.v.v v8, v16
 ; CHECK-NEXT:    ret
 
 entry:
@@ -339,7 +339,7 @@ define <vscale x 8 x i64> @intrinsic_xvamomin_mask_v_nxv8i64_nxv8i32(<vscale x 8
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e64, m8, d1
 ; CHECK-NEXT:    vamomind.v v16, v8, (a0), v16, v0.t
-; CHECK-NEXT:    vmv8r.v v8, v16
+; CHECK-NEXT:    vmv.v.v v8, v16
 ; CHECK-NEXT:    ret
 
 entry:
@@ -364,7 +364,7 @@ define <vscale x 2 x i32> @intrinsic_xvamomin_v_nxv2i32_nxv2i64(<vscale x 2 x i3
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e32, m1, d1
 ; CHECK-NEXT:    vamominw.v v10, v8, (a0), v10
-; CHECK-NEXT:    vmv1r.v v8, v10
+; CHECK-NEXT:    vmv.v.v v8, v10
 ; CHECK-NEXT:    ret
 
 entry:
@@ -389,7 +389,7 @@ define <vscale x 2 x i32> @intrinsic_xvamomin_mask_v_nxv2i32_nxv2i64(<vscale x 2
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e32, m1, d1
 ; CHECK-NEXT:    vamominw.v v10, v8, (a0), v10, v0.t
-; CHECK-NEXT:    vmv1r.v v8, v10
+; CHECK-NEXT:    vmv.v.v v8, v10
 ; CHECK-NEXT:    ret
 
 entry:
@@ -414,7 +414,7 @@ define <vscale x 4 x i32> @intrinsic_xvamomin_v_nxv4i32_nxv4i64(<vscale x 4 x i3
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e32, m2, d1
 ; CHECK-NEXT:    vamominw.v v12, v8, (a0), v12
-; CHECK-NEXT:    vmv2r.v v8, v12
+; CHECK-NEXT:    vmv.v.v v8, v12
 ; CHECK-NEXT:    ret
 
 entry:
@@ -439,7 +439,7 @@ define <vscale x 4 x i32> @intrinsic_xvamomin_mask_v_nxv4i32_nxv4i64(<vscale x 4
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e32, m2, d1
 ; CHECK-NEXT:    vamominw.v v12, v8, (a0), v12, v0.t
-; CHECK-NEXT:    vmv2r.v v8, v12
+; CHECK-NEXT:    vmv.v.v v8, v12
 ; CHECK-NEXT:    ret
 
 entry:
@@ -464,7 +464,7 @@ define <vscale x 8 x i32> @intrinsic_xvamomin_v_nxv8i32_nxv8i64(<vscale x 8 x i3
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e32, m4, d1
 ; CHECK-NEXT:    vamominw.v v16, v8, (a0), v16
-; CHECK-NEXT:    vmv4r.v v8, v16
+; CHECK-NEXT:    vmv.v.v v8, v16
 ; CHECK-NEXT:    ret
 
 entry:
@@ -489,7 +489,7 @@ define <vscale x 8 x i32> @intrinsic_xvamomin_mask_v_nxv8i32_nxv8i64(<vscale x 8
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e32, m4, d1
 ; CHECK-NEXT:    vamominw.v v16, v8, (a0), v16, v0.t
-; CHECK-NEXT:    vmv4r.v v8, v16
+; CHECK-NEXT:    vmv.v.v v8, v16
 ; CHECK-NEXT:    ret
 
 entry:
@@ -514,7 +514,7 @@ define <vscale x 1 x i64> @intrinsic_xvamomin_v_nxv1i64_nxv1i64(<vscale x 1 x i6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e64, m1, d1
 ; CHECK-NEXT:    vamomind.v v9, v8, (a0), v9
-; CHECK-NEXT:    vmv1r.v v8, v9
+; CHECK-NEXT:    vmv.v.v v8, v9
 ; CHECK-NEXT:    ret
 
 entry:
@@ -539,7 +539,7 @@ define <vscale x 1 x i64> @intrinsic_xvamomin_mask_v_nxv1i64_nxv1i64(<vscale x 1
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e64, m1, d1
 ; CHECK-NEXT:    vamomind.v v9, v8, (a0), v9, v0.t
-; CHECK-NEXT:    vmv1r.v v8, v9
+; CHECK-NEXT:    vmv.v.v v8, v9
 ; CHECK-NEXT:    ret
 
 entry:
@@ -564,7 +564,7 @@ define <vscale x 2 x i64> @intrinsic_xvamomin_v_nxv2i64_nxv2i64(<vscale x 2 x i6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e64, m2, d1
 ; CHECK-NEXT:    vamomind.v v10, v8, (a0), v10
-; CHECK-NEXT:    vmv2r.v v8, v10
+; CHECK-NEXT:    vmv.v.v v8, v10
 ; CHECK-NEXT:    ret
 
 entry:
@@ -589,7 +589,7 @@ define <vscale x 2 x i64> @intrinsic_xvamomin_mask_v_nxv2i64_nxv2i64(<vscale x 2
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e64, m2, d1
 ; CHECK-NEXT:    vamomind.v v10, v8, (a0), v10, v0.t
-; CHECK-NEXT:    vmv2r.v v8, v10
+; CHECK-NEXT:    vmv.v.v v8, v10
 ; CHECK-NEXT:    ret
 
 entry:
@@ -614,7 +614,7 @@ define <vscale x 4 x i64> @intrinsic_xvamomin_v_nxv4i64_nxv4i64(<vscale x 4 x i6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e64, m4, d1
 ; CHECK-NEXT:    vamomind.v v12, v8, (a0), v12
-; CHECK-NEXT:    vmv4r.v v8, v12
+; CHECK-NEXT:    vmv.v.v v8, v12
 ; CHECK-NEXT:    ret
 
 entry:
@@ -639,7 +639,7 @@ define <vscale x 4 x i64> @intrinsic_xvamomin_mask_v_nxv4i64_nxv4i64(<vscale x 4
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e64, m4, d1
 ; CHECK-NEXT:    vamomind.v v12, v8, (a0), v12, v0.t
-; CHECK-NEXT:    vmv4r.v v8, v12
+; CHECK-NEXT:    vmv.v.v v8, v12
 ; CHECK-NEXT:    ret
 
 entry:
@@ -664,7 +664,7 @@ define <vscale x 8 x i64> @intrinsic_xvamomin_v_nxv8i64_nxv8i64(<vscale x 8 x i6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e64, m8, d1
 ; CHECK-NEXT:    vamomind.v v16, v8, (a0), v16
-; CHECK-NEXT:    vmv8r.v v8, v16
+; CHECK-NEXT:    vmv.v.v v8, v16
 ; CHECK-NEXT:    ret
 
 entry:
@@ -689,7 +689,7 @@ define <vscale x 8 x i64> @intrinsic_xvamomin_mask_v_nxv8i64_nxv8i64(<vscale x 8
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    vsetvli zero, a1, e64, m8, d1
 ; CHECK-NEXT:    vamomind.v v16, v8, (a0), v16, v0.t
-; CHECK-NEXT:    vmv8r.v v8, v16
+; CHECK-NEXT:    vmv.v.v v8, v16
 ; CHECK-NEXT:    ret
 
 entry:
