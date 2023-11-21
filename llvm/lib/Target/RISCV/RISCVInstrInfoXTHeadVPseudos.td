@@ -11,6 +11,13 @@
 ///
 /// This file is included from RISCVInstrInfoXTHeadV.td
 
+//===----------------------------------------------------------------------===//
+// Register definitions, helper functions, etc.
+//===----------------------------------------------------------------------===//
+
+// Used to iterate over all possible LMULs in RVV 0.7.1
+defvar MxListXTHeadV = [V_M1, V_M2, V_M4, V_M8];
+
 // Redefine `AllIntegerVectors` from RISCVInstrInfoVPseudos.td to remove fractionally-grouped register groups
 // like MF2, MF4, MF8, which are not supported by the 'V' extension 0.7.1.
 defset list<VTypeInfo> AllXVectors = {
@@ -119,7 +126,17 @@ def XTHeadVVSTable : GenericTable {
 }
 
 //===----------------------------------------------------------------------===//
-// Pseudos. These are used internally during code generation.
+// The following code defines the pseudo instructions and their patterns.
+// 1. "Pseudos" are defined in the same way as normal instructions, except they
+// start with the prefix "Pseudo".  Pseudo instructions are expanded to MC
+// instructions in the `RISCVExpandPseudoInsts.cpp` file.
+// 2. "Patterns" tell LLVM how to lower intrinsic calls to pseudos or MC instructions.
+// If an intrinsic call is lowered to a pseudo, the pseudo is then expanded
+// to MC instructions as described above.
+//
+// Some intrinsics may be lowered manually (for example, `RSICVISelDAGToDAG.cpp`).
+// Patterns are not needed for these instructions, like
+// `int_riscv_xvsetvl` and `int_riscv_xvsetvlmax` in `IntrinsicRISCVXTHeadV.td`.
 //===----------------------------------------------------------------------===//
 
 //===----------------------------------------------------------------------===//
@@ -204,7 +221,7 @@ class XVPseudoUSStoreMask<VReg StClass, int MEM, int REG, int e>:
 
 multiclass XVPseudoUSLoad {
   foreach mem = [8, 16, 32] in {
-    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+    foreach lmul = MxListXTHeadV in {
       defvar LInfo = lmul.MX;
       defvar vreg = lmul.vrclass;
       defvar tag = MemBitsToTag<mem>.ret;
@@ -234,7 +251,7 @@ multiclass XVPseudoUSLoad {
   }
   // For VLE, whose mem bits and reg bits is both SEW
   foreach eew = EEWList in {
-    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+    foreach lmul = MxListXTHeadV in {
       defvar LInfo = lmul.MX;
       defvar vreg = lmul.vrclass;
       let VLMul = lmul.value, SEW = eew in {
@@ -252,7 +269,7 @@ multiclass XVPseudoUSLoad {
 
 multiclass XVPseudoUSStore {
   foreach mem = [8, 16, 32] in {
-    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+    foreach lmul = MxListXTHeadV in {
       defvar LInfo = lmul.MX;
       defvar vreg = lmul.vrclass;
       defvar tag = MemBitsToTag<mem>.ret;
@@ -271,7 +288,7 @@ multiclass XVPseudoUSStore {
   }
   // For VSE, whose mem bits and reg bits is both SEW
   foreach eew = EEWList in {
-    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+    foreach lmul = MxListXTHeadV in {
       defvar LInfo = lmul.MX;
       defvar vreg = lmul.vrclass;
       let VLMul = lmul.value, SEW = eew in {
@@ -344,7 +361,7 @@ class XVPseudoSStoreMask<VReg StClass, int MEM, int REG, int e>:
 
 multiclass XVPseudoSLoad {
   foreach mem = [8, 16, 32] in {
-    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+    foreach lmul = MxListXTHeadV in {
       defvar LInfo = lmul.MX;
       defvar vreg = lmul.vrclass;
       defvar tag = MemBitsToTag<mem>.ret;
@@ -371,7 +388,7 @@ multiclass XVPseudoSLoad {
     }
   }
   foreach eew = EEWList in {
-    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+    foreach lmul = MxListXTHeadV in {
       defvar LInfo = lmul.MX;
       defvar vreg = lmul.vrclass;
       let VLMul = lmul.value, SEW = eew in {
@@ -389,7 +406,7 @@ multiclass XVPseudoSLoad {
 
 multiclass XVPseudoSStore {
   foreach mem = [8, 16, 32] in {
-    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+    foreach lmul = MxListXTHeadV in {
       defvar LInfo = lmul.MX;
       defvar vreg = lmul.vrclass;
       defvar tag = MemBitsToTag<mem>.ret;
@@ -406,7 +423,7 @@ multiclass XVPseudoSStore {
     }
   }
   foreach eew = EEWList in {
-    foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
+    foreach lmul = MxListXTHeadV in {
       defvar LInfo = lmul.MX;
       defvar vreg = lmul.vrclass;
       let VLMul = lmul.value, SEW = eew in {
@@ -476,6 +493,7 @@ let Predicates = [HasVendorXTHeadV] in {
   }
 } // Predicates = [HasVendorXTHeadV]
 
+// patterns for emulated whole register load/store
 multiclass XVPatUSLoadStoreWholeVRSDNode<ValueType type,
                                          int log2sew,
                                          LMULInfo vlmul,
@@ -493,6 +511,8 @@ multiclass XVPatUSLoadStoreWholeVRSDNode<ValueType type,
   def : Pat<(store type:$rs2, GPR:$rs1),
             (store_instr reg_class:$rs2, GPR:$rs1)>;
 }
+
+// Explicitly define the expected instruction selection result for each vector type
 foreach vti = [XVI8M1, XVI16M1, XVI32M1, XVI64M1] in
   let Predicates = GetXVTypePredicates<vti>.Predicates in
   defm : XVPatUSLoadStoreWholeVRSDNode<vti.Vector, vti.Log2SEW, vti.LMul,
@@ -507,179 +527,237 @@ foreach vti = GroupIntegerXVectors in
 //===----------------------------------------------------------------------===//
 
 // Pseudo base class for unmasked vamo instructions
-// class XVPseudoAMOWDNoMask<VReg RetClass,
-//                           VReg Op1Class> :
-//         Pseudo<(outs GetVRegNoV0<RetClass>.R:$vd_wd),
-//                (ins Op1Class:$vs2,
-//                     GPR:$rs1,
-//                     GetVRegNoV0<RetClass>.R:$vd,
-//                     AVL:$vl, ixlenimm:$sew), []>,
-//         RISCVVPseudo {
-//   let mayLoad = 1;
-//   let mayStore = 1;
-//   let hasSideEffects = 1;
-//   let Constraints = "$vd_wd = $vd";
-//   let HasVLOp = 1;
-//   let HasSEWOp = 1;
-//   let BaseInstr = !cast<Instruction>(PseudoToVInst<NAME>.VInst # "_V");
-// }
+class XVPseudoAMOWDNoMask<VReg RetClass,
+                          VReg Op1Class> :
+        Pseudo<(outs GetVRegNoV0<RetClass>.R:$vd_wd),
+               (ins Op1Class:$vs2,
+                    GPR:$rs1,
+                    GetVRegNoV0<RetClass>.R:$vd,
+                    AVL:$vl, ixlenimm:$sew), []>,
+        RISCVVPseudo {
+  let mayLoad = 1;
+  let mayStore = 1;
+  let hasSideEffects = 1;
+  let Constraints = "$vd_wd = $vd";
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+  let BaseInstr = !cast<Instruction>(PseudoToVInst<NAME>.VInst # "_V");
+}
 
-// // Pseudo base class for masked vamo instructions
-// class XVPseudoAMOWDMask<VReg RetClass,
-//                         VReg Op1Class> :
-//         Pseudo<(outs GetVRegNoV0<RetClass>.R:$vd_wd),
-//                (ins Op1Class:$vs2,
-//                     GPR:$rs1,
-//                     GetVRegNoV0<RetClass>.R:$vd,
-//                     VMaskOp:$vm, AVL:$vl, ixlenimm:$sew), []>,
-//         RISCVVPseudo {
-//   let mayLoad = 1;
-//   let mayStore = 1;
-//   let hasSideEffects = 1;
-//   let Constraints = "$vd_wd = $vd";
-//   let HasVLOp = 1;
-//   let HasSEWOp = 1;
-//   let BaseInstr = !cast<Instruction>(PseudoToVInst<NAME>.VInst # "_V");
-// }
+// Pseudo base class for masked vamo instructions
+class XVPseudoAMOWDMask<VReg RetClass,
+                        VReg Op1Class> :
+        Pseudo<(outs GetVRegNoV0<RetClass>.R:$vd_wd),
+               (ins Op1Class:$vs2,
+                    GPR:$rs1,
+                    GetVRegNoV0<RetClass>.R:$vd,
+                    VMaskOp:$vm, AVL:$vl, ixlenimm:$sew), []>,
+        RISCVVPseudo {
+  let mayLoad = 1;
+  let mayStore = 1;
+  let hasSideEffects = 1;
+  let Constraints = "$vd_wd = $vd";
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+  let BaseInstr = !cast<Instruction>(PseudoToVInst<NAME>.VInst # "_V");
+}
 
-// multiclass XVPseudoAMOMem<int mem> {
-//   // VAMO in RVV 0.7.1 supports 32, 64, and 128 Mem data bits, and in
-//   // the base vector "V" extension, only SEW up to ELEN = max(XLEN, FLEN)
-//   // are required to be supported, therefore only [32, 64] is allowed here.
-//   foreach sew = [32, 64] in {
-//     foreach lmul = [V_M1, V_M2, V_M4, V_M8] in {
-//       defvar octuple_lmul = lmul.octuple;
-//       // Calculate emul = sew * lmul / mem
-//       defvar octuple_emul = !srl(!mul(sew, octuple_lmul), !logtwo(mem));
-//       if !and(!ge(octuple_emul, 8), !le(octuple_emul, 64)) then {
-//         defvar emulMX = octuple_to_str<octuple_emul>.ret;
-//         defvar emul = !cast<LMULInfo>("V_" # emulMX);
-//         let VLMul = lmul.value in {
-//           def "_WD_" # lmul.MX # "_" # emulMX : XVPseudoAMOWDNoMask<lmul.vrclass, emul.vrclass>;
-//           def "_WD_" # lmul.MX # "_" # emulMX # "_MASK" : XVPseudoAMOWDMask<lmul.vrclass, emul.vrclass>;
-//         }
-//       }
-//     }
-//   }
-// }
+multiclass XVPseudoAMOMem<int mem> {
+  // VAMO in RVV 0.7.1 supports 32, 64, and 128 Mem data bits, and in
+  // the base vector "V" extension, only SEW up to ELEN = max(XLEN, FLEN)
+  // are required to be supported, therefore only [32, 64] is allowed here.
+  foreach sew = [32, 64] in {
+    foreach lmul = MxListXTHeadV in {
+      defvar octuple_lmul = lmul.octuple;
+      // Calculate emul = sew * lmul / mem
+      defvar octuple_emul = !srl(!mul(sew, octuple_lmul), !logtwo(mem));
+      if !and(!ge(octuple_emul, 8), !le(octuple_emul, 64)) then {
+        defvar emulMX = octuple_to_str<octuple_emul>.ret;
+        defvar emul = !cast<LMULInfo>("V_" # emulMX);
+        let VLMul = lmul.value in {
+          def "_WD_" # lmul.MX # "_" # emulMX : XVPseudoAMOWDNoMask<lmul.vrclass, emul.vrclass>;
+          def "_WD_" # lmul.MX # "_" # emulMX # "_MASK" : XVPseudoAMOWDMask<lmul.vrclass, emul.vrclass>;
+        }
+      }
+    }
+  }
+}
 
-// multiclass XVPseudoAMO {
-//   defm "W" : XVPseudoAMOMem<32>;
-//   defm "D" : XVPseudoAMOMem<64>;
-// }
+multiclass XVPseudoAMO {
+  defm "W" : XVPseudoAMOMem<32>;
+  defm "D" : XVPseudoAMOMem<64>;
+}
 
-// let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA] in {
-//   defm PseudoXVAMOSWAP : XVPseudoAMO;
-//   defm PseudoXVAMOADD  : XVPseudoAMO;
-//   defm PseudoXVAMOXOR  : XVPseudoAMO;
-//   defm PseudoXVAMOAND  : XVPseudoAMO;
-//   defm PseudoXVAMOOR   : XVPseudoAMO;
-//   defm PseudoXVAMOMIN  : XVPseudoAMO;
-//   defm PseudoXVAMOMAX  : XVPseudoAMO;
-//   defm PseudoXVAMOMINU : XVPseudoAMO;
-//   defm PseudoXVAMOMAXU : XVPseudoAMO;
-// } // Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA]
+let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA] in {
+  defm PseudoXVAMOSWAP : XVPseudoAMO;
+  defm PseudoXVAMOADD  : XVPseudoAMO;
+  defm PseudoXVAMOXOR  : XVPseudoAMO;
+  defm PseudoXVAMOAND  : XVPseudoAMO;
+  defm PseudoXVAMOOR   : XVPseudoAMO;
+  defm PseudoXVAMOMIN  : XVPseudoAMO;
+  defm PseudoXVAMOMAX  : XVPseudoAMO;
+  defm PseudoXVAMOMINU : XVPseudoAMO;
+  defm PseudoXVAMOMAXU : XVPseudoAMO;
+} // Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA]
 
-// TODO: try to reuse them from RISCVInstrInfoVPseudos.td, see the `HasStdVOrXTHeadV` predicate
+// Patterns for vamo intrinsics.
+class XVPatAMOWDNoMask<string intrinsic_name,
+                    string inst,
+                    ValueType result_type,
+                    ValueType op1_type,
+                    int sew,
+                    LMULInfo vlmul,
+                    LMULInfo emul,
+                    VReg op1_reg_class> :
+  Pat<(result_type (!cast<Intrinsic>(intrinsic_name)
+                    GPR:$rs1,
+                    (op1_type op1_reg_class:$vs2),
+                    (result_type vlmul.vrclass:$vd),
+                    VLOpFrag)),
+                   (!cast<Instruction>(inst # "_WD_" # vlmul.MX # "_" # emul.MX)
+                    $vs2, $rs1, $vd,
+                    GPR:$vl, sew)>;
+
+class XVPatAMOWDMask<string intrinsic_name,
+                    string inst,
+                    ValueType result_type,
+                    ValueType op1_type,
+                    ValueType mask_type,
+                    int sew,
+                    LMULInfo vlmul,
+                    LMULInfo emul,
+                    VReg op1_reg_class> :
+  Pat<(result_type (!cast<Intrinsic>(intrinsic_name # "_mask")
+                    GPR:$rs1,
+                    (op1_type op1_reg_class:$vs2),
+                    (result_type vlmul.vrclass:$vd),
+                    (mask_type V0),
+                    VLOpFrag)),
+                  (!cast<Instruction>(inst # "_WD_" # vlmul.MX # "_" # emul.MX # "_MASK")
+                    $vs2, $rs1, $vd,
+                    (mask_type V0), GPR:$vl, sew)>;
+
+multiclass XVPatAMOWD<string intrinsic,
+                     string inst,
+                     ValueType result_type,
+                     ValueType offset_type,
+                     ValueType mask_type,
+                     int sew,
+                     LMULInfo vlmul,
+                     LMULInfo emul,
+                     VReg op1_reg_class> {
+  def : XVPatAMOWDNoMask<intrinsic, inst, result_type, offset_type,
+                        sew, vlmul, emul, op1_reg_class>;
+  def : XVPatAMOWDMask<intrinsic, inst, result_type, offset_type,
+                      mask_type, sew, vlmul, emul, op1_reg_class>;
+}
+
+multiclass XVPatAMOV_WD<string intrinsic,
+                       string inst,
+                       list<VTypeInfo> vtilist> {
+  foreach eew = [32, 64] in {
+    foreach vti = vtilist in {
+      if !or(!eq(vti.SEW, 32), !eq(vti.SEW, 64)) then {
+        defvar octuple_lmul = vti.LMul.octuple;
+        // Calculate emul = eew * lmul / sew
+        defvar octuple_emul = !srl(!mul(eew, octuple_lmul), vti.Log2SEW);
+        // emul must be in range 8 - 64, since rvv 0.7.1 does not
+        // allow fractional lmul
+        if !and(!ge(octuple_emul, 8), !le(octuple_emul, 64)) then {
+          defvar emulMX = octuple_to_str<octuple_emul>.ret;
+          defvar offsetVti = !cast<VTypeInfo>("XVI" # eew # emulMX);
+          defvar inst_tag = inst # !cond(!eq(vti.SEW, 32) : "W", !eq(vti.SEW, 64) : "D");
+          defm : XVPatAMOWD<intrinsic, inst_tag,
+                           vti.Vector, offsetVti.Vector,
+                           vti.Mask, vti.Log2SEW, vti.LMul, offsetVti.LMul, offsetVti.RegClass>;
+        }
+      }
+    }
+  }
+}
+
+let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA] in {
+  defm : XVPatAMOV_WD<"int_riscv_xvamoswap", "PseudoXVAMOSWAP", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_xvamoadd", "PseudoXVAMOADD", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_xvamoxor", "PseudoXVAMOXOR", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_xvamoand", "PseudoXVAMOAND", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_xvamoor", "PseudoXVAMOOR", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_xvamomin", "PseudoXVAMOMIN", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_xvamomax", "PseudoXVAMOMAX", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_xvamominu", "PseudoXVAMOMINU", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_xvamomaxu", "PseudoXVAMOMAXU", AllIntegerXVectors>;
+} // Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA]
+
 //===----------------------------------------------------------------------===//
 // 12. Vector Integer Arithmetic Instructions
 //===----------------------------------------------------------------------===//
+multiclass XVPseudoVALU_VV_VX_VI<Operand ImmType = simm5, string Constraint = ""> {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVIALUV_MX = !cast<SchedWrite>("WriteVIALUV_" # mx);
+    defvar WriteVIALUX_MX = !cast<SchedWrite>("WriteVIALUX_" # mx);
+    defvar WriteVIALUI_MX = !cast<SchedWrite>("WriteVIALUI_" # mx);
+    defvar ReadVIALUV_MX = !cast<SchedRead>("ReadVIALUV_" # mx);
+    defvar ReadVIALUX_MX = !cast<SchedRead>("ReadVIALUX_" # mx);
+
+    defm "" : VPseudoBinaryV_VV<m, Constraint>,
+            Sched<[WriteVIALUV_MX, ReadVIALUV_MX, ReadVIALUV_MX, ReadVMask]>;
+    defm "" : VPseudoBinaryV_VX<m, Constraint>,
+            Sched<[WriteVIALUX_MX, ReadVIALUV_MX, ReadVIALUX_MX, ReadVMask]>;
+    defm "" : VPseudoBinaryV_VI<ImmType, m, Constraint>,
+            Sched<[WriteVIALUI_MX, ReadVIALUV_MX, ReadVMask]>;
+  }
+}
+
 let Predicates = [HasVendorXTHeadV] in {
-  defm PseudoXVADD   : VPseudoVALU_VV_VX_VI;
+  defm PseudoXVADD   : XVPseudoVALU_VV_VX_VI;
 } // Predicates = [HasVendorXTHeadV]
 
-//===----------------------------------------------------------------------===//
-// Patterns. Enabling code generation from intrinsics to pseudos, then to asms.
-//===----------------------------------------------------------------------===//
-
 let Predicates = [HasVendorXTHeadV] in {
+  // TODO: try `int_riscv_vadd`
   defm : VPatBinaryV_VV_VX_VI<"int_riscv_xvadd", "PseudoXVADD", AllIntegerXVectors>;
 } // Predicates = [HasVendorXTHeadV]
 
-// Patterns for vamo intrinsics.
-// class XVPatAMOWDNoMask<string intrinsic_name,
-//                     string inst,
-//                     ValueType result_type,
-//                     ValueType op1_type,
-//                     int sew,
-//                     LMULInfo vlmul,
-//                     LMULInfo emul,
-//                     VReg op1_reg_class> :
-//   Pat<(result_type (!cast<Intrinsic>(intrinsic_name)
-//                     GPR:$rs1,
-//                     (op1_type op1_reg_class:$vs2),
-//                     (result_type vlmul.vrclass:$vd),
-//                     VLOpFrag)),
-//                    (!cast<Instruction>(inst # "_WD_" # vlmul.MX # "_" # emul.MX)
-//                     $vs2, $rs1, $vd,
-//                     GPR:$vl, sew)>;
+//===----------------------------------------------------------------------===//
+// 12.14. Vector Integer Merge and Move Instructions
+//===----------------------------------------------------------------------===//
+multiclass XVPseudoUnaryVMV_V_X_I {
+  foreach m = MxListXTHeadV in {
+    let VLMul = m.value in {
+      defvar mx = m.MX;
+      defvar WriteVIMovV_MX = !cast<SchedWrite>("WriteVIMovV_" # mx);
+      defvar WriteVIMovX_MX = !cast<SchedWrite>("WriteVIMovX_" # mx);
+      defvar WriteVIMovI_MX = !cast<SchedWrite>("WriteVIMovI_" # mx);
+      defvar ReadVIMovV_MX = !cast<SchedRead>("ReadVIMovV_" # mx);
+      defvar ReadVIMovX_MX = !cast<SchedRead>("ReadVIMovX_" # mx);
 
-// class XVPatAMOWDMask<string intrinsic_name,
-//                     string inst,
-//                     ValueType result_type,
-//                     ValueType op1_type,
-//                     ValueType mask_type,
-//                     int sew,
-//                     LMULInfo vlmul,
-//                     LMULInfo emul,
-//                     VReg op1_reg_class> :
-//   Pat<(result_type (!cast<Intrinsic>(intrinsic_name # "_mask")
-//                     GPR:$rs1,
-//                     (op1_type op1_reg_class:$vs2),
-//                     (result_type vlmul.vrclass:$vd),
-//                     (mask_type V0),
-//                     VLOpFrag)),
-//                   (!cast<Instruction>(inst # "_WD_" # vlmul.MX # "_" # emul.MX # "_MASK")
-//                     $vs2, $rs1, $vd,
-//                     (mask_type V0), GPR:$vl, sew)>;
+      let VLMul = m.value in {
+        def "_V_" # mx : VPseudoUnaryNoMask<m.vrclass, m.vrclass>,
+                           Sched<[WriteVIMovV_MX, ReadVIMovV_MX]>;
+        def "_X_" # mx : VPseudoUnaryNoMask<m.vrclass, GPR>,
+                           Sched<[WriteVIMovX_MX, ReadVIMovX_MX]>;
+        def "_I_" # mx : VPseudoUnaryNoMask<m.vrclass, simm5>,
+                           Sched<[WriteVIMovI_MX]>;
+      }
+    }
+  }
+}
 
-// multiclass XVPatAMOWD<string intrinsic,
-//                      string inst,
-//                      ValueType result_type,
-//                      ValueType offset_type,
-//                      ValueType mask_type,
-//                      int sew,
-//                      LMULInfo vlmul,
-//                      LMULInfo emul,
-//                      VReg op1_reg_class> {
-//   def : XVPatAMOWDNoMask<intrinsic, inst, result_type, offset_type,
-//                         sew, vlmul, emul, op1_reg_class>;
-//   def : XVPatAMOWDMask<intrinsic, inst, result_type, offset_type,
-//                       mask_type, sew, vlmul, emul, op1_reg_class>;
-// }
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoXVMV_V : XVPseudoUnaryVMV_V_X_I;
+} // Predicates = [HasVendorXTHeadV]
 
-// multiclass XVPatAMOV_WD<string intrinsic,
-//                        string inst,
-//                        list<VTypeInfo> vtilist> {
-//   foreach eew = [32, 64] in {
-//     foreach vti = vtilist in {
-//       if !or(!eq(vti.SEW, 32), !eq(vti.SEW, 64)) then {
-//         defvar octuple_lmul = vti.LMul.octuple;
-//         // Calculate emul = eew * lmul / sew
-//         defvar octuple_emul = !srl(!mul(eew, octuple_lmul), vti.Log2SEW);
-//         // emul must be in range 8 - 64, since rvv 0.7.1 does not
-//         // allow fractional lmul
-//         if !and(!ge(octuple_emul, 8), !le(octuple_emul, 64)) then {
-//           defvar emulMX = octuple_to_str<octuple_emul>.ret;
-//           defvar offsetVti = !cast<VTypeInfo>("XVI" # eew # emulMX);
-//           defvar inst_tag = inst # !cond(!eq(vti.SEW, 32) : "W", !eq(vti.SEW, 64) : "D");
-//           defm : XVPatAMOWD<intrinsic, inst_tag,
-//                            vti.Vector, offsetVti.Vector,
-//                            vti.Mask, vti.Log2SEW, vti.LMul, offsetVti.LMul, offsetVti.RegClass>;
-//         }
-//       }
-//     }
-//   }
-// }
+// Patterns for `int_riscv_vmv_v_v` -> `PseudoXVMV_V_V_<LMUL>`
+foreach vti = AllXVectors in {
+  let Predicates = GetXVTypePredicates<vti>.Predicates in {
+    // vmv.v.v
+    // TODO: try `int_riscv_vmv_v_v`
+    def : Pat<(vti.Vector (int_riscv_xvmv_v_v (vti.Vector vti.RegClass:$passthru),
+                                              (vti.Vector vti.RegClass:$rs1),
+                                              VLOpFrag)),
+              (!cast<Instruction>("PseudoXVMV_V_V_"#vti.LMul.MX)
+               $passthru, $rs1, GPR:$vl, vti.Log2SEW, TU_MU)>;
 
-// let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA] in {
-//   defm : XVPatAMOV_WD<"int_riscv_xvamoswap", "PseudoXVAMOSWAP", AllIntegerXVectors>;
-//   defm : XVPatAMOV_WD<"int_riscv_xvamoadd", "PseudoXVAMOADD", AllIntegerXVectors>;
-//   defm : XVPatAMOV_WD<"int_riscv_xvamoxor", "PseudoXVAMOXOR", AllIntegerXVectors>;
-//   defm : XVPatAMOV_WD<"int_riscv_xvamoand", "PseudoXVAMOAND", AllIntegerXVectors>;
-//   defm : XVPatAMOV_WD<"int_riscv_xvamoor", "PseudoXVAMOOR", AllIntegerXVectors>;
-//   defm : XVPatAMOV_WD<"int_riscv_xvamomin", "PseudoXVAMOMIN", AllIntegerXVectors>;
-//   defm : XVPatAMOV_WD<"int_riscv_xvamomax", "PseudoXVAMOMAX", AllIntegerXVectors>;
-//   defm : XVPatAMOV_WD<"int_riscv_xvamominu", "PseudoXVAMOMINU", AllIntegerXVectors>;
-//   defm : XVPatAMOV_WD<"int_riscv_xvamomaxu", "PseudoXVAMOMAXU", AllIntegerXVectors>;
-// } // Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA]
+    // TODO: vmv.v.x, vmv.v.i
+  }
+}
