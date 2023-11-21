@@ -436,25 +436,26 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
       UseVMV_V_V = true;
       // We only need to handle LMUL = 1/2/4/8 here because we only define
       // vector register classes for LMUL = 1/2/4/8.
+      bool XTHeadV = STI.hasVendorXTHeadV();
       unsigned VIOpc;
       switch (LMul) {
       default:
         llvm_unreachable("Impossible LMUL for vector register copy.");
       case RISCVII::LMUL_1:
-        Opc = RISCV::PseudoVMV_V_V_M1;
-        VIOpc = RISCV::PseudoVMV_V_I_M1;
+        Opc = XTHeadV ? RISCV::PseudoXVMV_V_V_M1 : RISCV::PseudoVMV_V_V_M1;
+        VIOpc = XTHeadV ? RISCV::PseudoXVMV_V_I_M1 : RISCV::PseudoVMV_V_I_M1;
         break;
       case RISCVII::LMUL_2:
-        Opc = RISCV::PseudoVMV_V_V_M2;
-        VIOpc = RISCV::PseudoVMV_V_I_M2;
+        Opc = XTHeadV ? RISCV::PseudoXVMV_V_V_M2 : RISCV::PseudoVMV_V_V_M2;
+        VIOpc = XTHeadV ? RISCV::PseudoXVMV_V_I_M2 : RISCV::PseudoVMV_V_I_M2;
         break;
       case RISCVII::LMUL_4:
-        Opc = RISCV::PseudoVMV_V_V_M4;
-        VIOpc = RISCV::PseudoVMV_V_I_M4;
+        Opc = XTHeadV ? RISCV::PseudoXVMV_V_V_M4 : RISCV::PseudoVMV_V_V_M4;
+        VIOpc = XTHeadV ? RISCV::PseudoXVMV_V_I_M4 : RISCV::PseudoVMV_V_I_M4;
         break;
       case RISCVII::LMUL_8:
-        Opc = RISCV::PseudoVMV_V_V_M8;
-        VIOpc = RISCV::PseudoVMV_V_I_M8;
+        Opc = XTHeadV ? RISCV::PseudoXVMV_V_V_M8 : RISCV::PseudoVMV_V_V_M8;
+        VIOpc = XTHeadV ? RISCV::PseudoXVMV_V_I_M8 : RISCV::PseudoVMV_V_I_M8;
         break;
       }
 
@@ -481,6 +482,7 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
         MIB.addReg(RISCV::VTYPE, RegState::Implicit);
       }
     } else {
+      // TODO[RVV 0.7.1]: check `XTHeadV` when we have tuple type support
       int I = 0, End = NF, Incr = 1;
       unsigned SrcEncoding = TRI->getEncodingValue(SrcReg);
       unsigned DstEncoding = TRI->getEncodingValue(DstReg);

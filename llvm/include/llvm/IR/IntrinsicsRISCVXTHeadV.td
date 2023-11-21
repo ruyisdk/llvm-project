@@ -6,7 +6,9 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file defines all of RISC-V Vector Extension version 0.7.1 intrinsics.
+// This file defines the prototype (in LLVM IR) of RVV 0.7.1 intrinsics.
+// Refer to RISCVInstrrInfoXTHeadVPseudos.td for lowering from intrinsic calls
+// to MC instructions.
 //
 //===----------------------------------------------------------------------===//
 
@@ -32,9 +34,6 @@ let TargetPrefix = "riscv" in {
                                         ImmArg<ArgIndex<0>>,
                                         ImmArg<ArgIndex<1>>
                                        ]>;
-
-  defm xvadd : RISCVBinaryAAX;
-
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
@@ -175,36 +174,54 @@ let TargetPrefix = "riscv" in {
   def int_riscv_xvsse_mask : XVSStoreMasked;
 } // TargetPrefix = "riscv"
 
-// let TargetPrefix = "riscv" in {
-//   // 8. Vector AMO Operations (Zvamo)
+let TargetPrefix = "riscv" in {
+  // 8. Vector AMO Operations (Zvamo)
 
-//   // For atomic operations without mask
-//   // Input: (base pointer, index, value, vl)
-//   class XVAMONoMask
-//         : Intrinsic<[llvm_anyvector_ty],
-//                     [llvm_ptr_ty, llvm_anyvector_ty, LLVMMatchType<0>,
-//                      llvm_anyint_ty],
-//                     [NoCapture<ArgIndex<0>>]>, RISCVVIntrinsic;
-//   // For atomic operations with mask
-//   // Input: (base pointer, index, value, mask, vl)
-//   class XVAMOMask
-//         : Intrinsic<[llvm_anyvector_ty],
-//                     [llvm_ptr_ty, llvm_anyvector_ty, LLVMMatchType<0>,
-//                      LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty],
-//                     [NoCapture<ArgIndex<0>>]>, RISCVVIntrinsic;
+  // For atomic operations without mask
+  // Input: (base pointer, index, value, vl)
+  class XVAMONoMask
+        : Intrinsic<[llvm_anyvector_ty],
+                    [llvm_ptr_ty, llvm_anyvector_ty, LLVMMatchType<0>,
+                     llvm_anyint_ty],
+                    [NoCapture<ArgIndex<0>>]>, RISCVVIntrinsic;
+  // For atomic operations with mask
+  // Input: (base pointer, index, value, mask, vl)
+  class XVAMOMask
+        : Intrinsic<[llvm_anyvector_ty],
+                    [llvm_ptr_ty, llvm_anyvector_ty, LLVMMatchType<0>,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty],
+                    [NoCapture<ArgIndex<0>>]>, RISCVVIntrinsic;
 
-//   multiclass XIntrinsicVAMO {
-//     def "int_riscv_" # NAME           : XVAMONoMask;
-//     def "int_riscv_" # NAME # "_mask" : XVAMOMask;
-//   }
+  multiclass XIntrinsicVAMO {
+    def "int_riscv_" # NAME           : XVAMONoMask;
+    def "int_riscv_" # NAME # "_mask" : XVAMOMask;
+  }
 
-//   defm xvamoswap : XIntrinsicVAMO;
-//   defm xvamoadd  : XIntrinsicVAMO;
-//   defm xvamoxor  : XIntrinsicVAMO;
-//   defm xvamoand  : XIntrinsicVAMO;
-//   defm xvamoor   : XIntrinsicVAMO;
-//   defm xvamomin  : XIntrinsicVAMO;
-//   defm xvamomax  : XIntrinsicVAMO;
-//   defm xvamominu : XIntrinsicVAMO;
-//   defm xvamomaxu : XIntrinsicVAMO;
-// } // TargetPrefix = "riscv"
+  defm xvamoswap : XIntrinsicVAMO;
+  defm xvamoadd  : XIntrinsicVAMO;
+  defm xvamoxor  : XIntrinsicVAMO;
+  defm xvamoand  : XIntrinsicVAMO;
+  defm xvamoor   : XIntrinsicVAMO;
+  defm xvamomin  : XIntrinsicVAMO;
+  defm xvamomax  : XIntrinsicVAMO;
+  defm xvamominu : XIntrinsicVAMO;
+  defm xvamomaxu : XIntrinsicVAMO;
+} // TargetPrefix = "riscv"
+
+let TargetPrefix = "riscv" in {
+  // 12. Vector Integer Arithmetic Instructions
+  defm xvadd : RISCVBinaryAAX;
+} // TargetPrefix = "riscv"
+
+let TargetPrefix = "riscv" in {
+  // 12.14. Vector Integer Merge and Move Instructions
+  // Output: (vector)
+  // Input: (passthru, vector_in, vl)
+  def int_riscv_xvmv_v_v : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                                                 [LLVMMatchType<0>,
+                                                  LLVMMatchType<0>,
+                                                  llvm_anyint_ty],
+                                                 [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 2;
+  }
+} // TargetPrefix = "riscv"
