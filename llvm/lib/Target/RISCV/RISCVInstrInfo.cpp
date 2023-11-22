@@ -536,6 +536,7 @@ void RISCVInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
 
   MachineFunction *MF = MBB.getParent();
   MachineFrameInfo &MFI = MF->getFrameInfo();
+  bool XTHeadV = STI.hasVendorXTHeadV();
 
   unsigned Opcode;
   bool IsScalableVector = true;
@@ -556,13 +557,17 @@ void RISCVInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
     Opcode = RISCV::FSD;
     IsScalableVector = false;
   } else if (RISCV::VRRegClass.hasSubClassEq(RC)) {
-    Opcode = RISCV::VS1R_V;
+    // [RVV 0.7.1] Spec:
+    // The vector whole register store instructions are encoded
+    // similar to unmasked unit-stride store of elements with EEW=8.
+    // Same for the following similar cases.
+    Opcode = XTHeadV ? RISCV::PseudoXVS1RE8_V : RISCV::VS1R_V;
   } else if (RISCV::VRM2RegClass.hasSubClassEq(RC)) {
-    Opcode = RISCV::VS2R_V;
+    Opcode = XTHeadV ? RISCV::PseudoXVS2RE8_V : RISCV::VS2R_V;
   } else if (RISCV::VRM4RegClass.hasSubClassEq(RC)) {
-    Opcode = RISCV::VS4R_V;
+    Opcode = XTHeadV ? RISCV::PseudoXVS4RE8_V : RISCV::VS4R_V;
   } else if (RISCV::VRM8RegClass.hasSubClassEq(RC)) {
-    Opcode = RISCV::VS8R_V;
+    Opcode = XTHeadV ? RISCV::PseudoXVS8RE8_V : RISCV::VS8R_V;
   } else if (RISCV::VRN2M1RegClass.hasSubClassEq(RC))
     Opcode = RISCV::PseudoVSPILL2_M1;
   else if (RISCV::VRN2M2RegClass.hasSubClassEq(RC))
@@ -623,6 +628,7 @@ void RISCVInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
 
   MachineFunction *MF = MBB.getParent();
   MachineFrameInfo &MFI = MF->getFrameInfo();
+  bool XTHeadV = STI.hasVendorXTHeadV();
 
   unsigned Opcode;
   bool IsScalableVector = true;
@@ -643,13 +649,13 @@ void RISCVInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
     Opcode = RISCV::FLD;
     IsScalableVector = false;
   } else if (RISCV::VRRegClass.hasSubClassEq(RC)) {
-    Opcode = RISCV::VL1RE8_V;
+    Opcode = XTHeadV ? RISCV::PseudoXVL1RE8_V : RISCV::VL1RE8_V;
   } else if (RISCV::VRM2RegClass.hasSubClassEq(RC)) {
-    Opcode = RISCV::VL2RE8_V;
+    Opcode = XTHeadV ? RISCV::PseudoXVL2RE8_V : RISCV::VL2RE8_V;
   } else if (RISCV::VRM4RegClass.hasSubClassEq(RC)) {
-    Opcode = RISCV::VL4RE8_V;
+    Opcode = XTHeadV ? RISCV::PseudoXVL4RE8_V : RISCV::VL4RE8_V;
   } else if (RISCV::VRM8RegClass.hasSubClassEq(RC)) {
-    Opcode = RISCV::VL8RE8_V;
+    Opcode = XTHeadV ? RISCV::PseudoXVL8RE8_V : RISCV::VL8RE8_V;
   } else if (RISCV::VRN2M1RegClass.hasSubClassEq(RC))
     Opcode = RISCV::PseudoVRELOAD2_M1;
   else if (RISCV::VRN2M2RegClass.hasSubClassEq(RC))

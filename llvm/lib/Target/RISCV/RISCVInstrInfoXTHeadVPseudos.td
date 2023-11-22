@@ -714,7 +714,6 @@ let Predicates = [HasVendorXTHeadV] in {
 } // Predicates = [HasVendorXTHeadV]
 
 let Predicates = [HasVendorXTHeadV] in {
-  // TODO: try `int_riscv_vadd`
   defm : VPatBinaryV_VV_VX_VI<"int_riscv_xvadd", "PseudoXVADD", AllIntegerXVectors>;
 } // Predicates = [HasVendorXTHeadV]
 
@@ -751,7 +750,6 @@ let Predicates = [HasVendorXTHeadV] in {
 foreach vti = AllXVectors in {
   let Predicates = GetXVTypePredicates<vti>.Predicates in {
     // vmv.v.v
-    // TODO: try `int_riscv_vmv_v_v`
     def : Pat<(vti.Vector (int_riscv_xvmv_v_v (vti.Vector vti.RegClass:$passthru),
                                               (vti.Vector vti.RegClass:$rs1),
                                               VLOpFrag)),
