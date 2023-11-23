@@ -14657,6 +14657,42 @@ static MachineBasicBlock *emitXWholeStore(MachineInstr &MI,
   return emitXWholeLoadStore(MI, BB, SEW, LMUL, RISCV::XVSE_V);
 }
 
+static MachineBasicBlock *emitXWholeMove(MachineInstr &MI,
+                                         MachineBasicBlock *BB, unsigned NREGS) {
+  DebugLoc DL = MI.getDebugLoc();
+
+  auto *TII = BB->getParent()->getSubtarget().getInstrInfo();
+  auto *MRI = &BB->getParent()->getRegInfo();
+  auto *TRI = BB->getParent()->getSubtarget().getRegisterInfo();
+
+  // From RVV Spec 1.0:
+  // vmv<nr>r.v vd,  vs2  # General form
+  // vmv1r.v    v1,  v2   # Copy v1=v2
+  // vmv2r.v    v10, v12  # Copy v10=v12; v11=v13
+  // vmv4r.v    v4,  v8   # Copy v4=v8; v5=v9; v6=v10; v7=v11
+  // vmv8r.v    v0,  v8   # Copy v0=v8; v1=v9; ...; v7=v15
+
+  // We decide to emulate these instructions by "expanding" them to a sequence
+  // of individual `vmv.v` instructions, where vector-ness is not preserved.
+  // But I suppose this is fine since `RISCVInstrInfo::copyPhysReg` also expands
+  // suitable `vmv<nr>r.v` instructions to `vmv.v` sequence
+  // when `NF` (much like the `NREGS` here) is not 1.
+  // TODO[RVV 0.7.1]: be like vector operations?
+
+  auto DstReg = MI.getOperand(0).getReg();
+  auto SrcReg = MI.getOperand(1).getReg();
+
+  for (unsigned I = 0; I < NREGS; ++I) {
+    auto VReg = MRI->createVirtualRegister(&RISCV::VRRegClass);
+    BuildMI(*BB, MI, DL, TII->get(RISCV::XVMV_V_V), DstReg)
+        .addReg(SrcReg);
+    // How to increment `DstReg` and `SrcReg` depends on the register class?
+  }
+
+  MI.eraseFromParent();
+  return BB;
+}
+
 MachineBasicBlock *
 RISCVTargetLowering::EmitInstrWithCustomInserter(MachineInstr &MI,
                                                  MachineBasicBlock *BB) const {
@@ -14776,6 +14812,16 @@ RISCVTargetLowering::EmitInstrWithCustomInserter(MachineInstr &MI,
   case RISCV::PseudoFROUND_D_INX:
   case RISCV::PseudoFROUND_D_IN32X:
     return emitFROUND(MI, BB, Subtarget);
+
+  // Emulated whole move instructions for RVV 0.7
+  case RISCV::PseudoXVMV1R_V:
+    return emitXWholeMove(MI, BB, 1);
+  case RISCV::PseudoXVMV2R_V:
+    return emitXWholeMove(MI, BB, 2);
+  case RISCV::PseudoXVMV4R_V:
+    return emitXWholeMove(MI, BB, 4);
+  case RISCV::PseudoXVMV8R_V:
+    return emitXWholeMove(MI, BB, 8);
 
 #define PseudoXVL_CASE_SEW_LMUL(SEW_val, LMUL_val)                             \
   case RISCV::PseudoXVL##LMUL_val##RE##SEW_val##_V:                            \
