@@ -766,14 +766,19 @@ foreach vti = AllXVectors in {
 //===----------------------------------------------------------------------===//
 
 class XVPseudoWholeMove<Instruction instr, LMULInfo m, RegisterClass VRC>
-  : VPseudo<instr, m, (outs VRC:$vd), (ins VRC:$vs1)> {
+  : VPseudo<instr, m, (outs VRC:$vd), (ins VRC:$vs2)> {
 }
 
 let Predicates = [HasVendorXTHeadV] in {
   let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCodeGenOnly = 1, usesCustomInserter = 1 in {
+    // Note: All `LMULInfo` and `RegisterClass` should be `V_M1` and `VR` respectively.
+    // From RVV Spec 1.0: "These instructions are intended to aid compilers to
+    // shuffle vector registers without needing to know or change vl or vtype."
+    // The 1, 2, 4, 8 in suffixes are "the number of individual vector registers, NREG, to copy",
+    // rather than LMUL.
     def PseudoXVMV1R_V : XVPseudoWholeMove<XVMV_V_V, V_M1, VR>;
-    def PseudoXVMV2R_V : XVPseudoWholeMove<XVMV_V_V, V_M2, VRM2>;
-    def PseudoXVMV4R_V : XVPseudoWholeMove<XVMV_V_V, V_M4, VRM4>;
-    def PseudoXVMV8R_V : XVPseudoWholeMove<XVMV_V_V, V_M8, VRM8>;
+    def PseudoXVMV2R_V : XVPseudoWholeMove<XVMV_V_V, V_M1, VR>;
+    def PseudoXVMV4R_V : XVPseudoWholeMove<XVMV_V_V, V_M1, VR>;
+    def PseudoXVMV8R_V : XVPseudoWholeMove<XVMV_V_V, V_M1, VR>;
   }
 } // Predicates = [HasVendorXTHeadV]
