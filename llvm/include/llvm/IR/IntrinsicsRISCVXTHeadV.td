@@ -194,6 +194,25 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 4;
   }
 
+  // For indexed store
+  // Input: (vector_in, pointer, index, vl)
+  class XVIStore
+        : DefaultAttrsIntrinsic<[],
+                    [llvm_anyvector_ty, llvm_ptr_ty,
+                     llvm_anyvector_ty, llvm_anyint_ty],
+                    [NoCapture<ArgIndex<1>>, IntrWriteMem]>, RISCVVIntrinsic {
+    let VLOperand = 3;
+  }
+  // For indexed store with mask
+  // Input: (vector_in, pointer, index, mask, vl)
+  class XVIStoreMasked
+        : DefaultAttrsIntrinsic<[],
+                    [llvm_anyvector_ty, llvm_ptr_ty, llvm_anyvector_ty,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty],
+                    [NoCapture<ArgIndex<1>>, IntrWriteMem]>, RISCVVIntrinsic {
+    let VLOperand = 4;
+  }
+
   def int_riscv_xvlxb : XVILoad;
   def int_riscv_xvlxh : XVILoad;
   def int_riscv_xvlxw : XVILoad;
@@ -208,6 +227,15 @@ let TargetPrefix = "riscv" in {
   def int_riscv_xvlxbu_mask : XVILoadMasked;
   def int_riscv_xvlxhu_mask : XVILoadMasked;
   def int_riscv_xvlxwu_mask : XVILoadMasked;
+
+  def int_riscv_xvsxb : XVIStore;
+  def int_riscv_xvsxh : XVIStore;
+  def int_riscv_xvsxw : XVIStore;
+  def int_riscv_xvsxe : XVIStore;
+  def int_riscv_xvsxb_mask : XVIStoreMasked;
+  def int_riscv_xvsxh_mask : XVIStoreMasked;
+  def int_riscv_xvsxw_mask : XVIStoreMasked;
+  def int_riscv_xvsxe_mask : XVIStoreMasked;
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
