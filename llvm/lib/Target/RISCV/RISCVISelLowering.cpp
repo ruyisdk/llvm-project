@@ -1382,6 +1382,20 @@ bool RISCVTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
   case Intrinsic::riscv_xvlswu_mask:
   case Intrinsic::riscv_xvlse:
   case Intrinsic::riscv_xvlse_mask:
+  case Intrinsic::riscv_xvlxb:
+  case Intrinsic::riscv_xvlxbu:
+  case Intrinsic::riscv_xvlxb_mask:
+  case Intrinsic::riscv_xvlxbu_mask:
+  case Intrinsic::riscv_xvlxh:
+  case Intrinsic::riscv_xvlxhu:
+  case Intrinsic::riscv_xvlxh_mask:
+  case Intrinsic::riscv_xvlxhu_mask:
+  case Intrinsic::riscv_xvlxw:
+  case Intrinsic::riscv_xvlxwu:
+  case Intrinsic::riscv_xvlxw_mask:
+  case Intrinsic::riscv_xvlxwu_mask:
+  case Intrinsic::riscv_xvlxe:
+  case Intrinsic::riscv_xvlxe_mask:
     if (!Subtarget.hasVendorXTHeadV())
       return false;
     return SetRVVLoadStoreInfo(/*PtrOp*/ 1,
