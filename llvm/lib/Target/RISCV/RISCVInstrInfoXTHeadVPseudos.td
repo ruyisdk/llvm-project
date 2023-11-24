@@ -88,9 +88,11 @@ class GetXVTypePredicates<VTypeInfo vti> {
                                      true : [HasVendorXTHeadV]);
 }
 
-class XTHeadVVL<bit M, bit ST, bit U, bit E, bits<3> ME, bits<3> S, bits<3> L> {
+class XTHeadVVL<bit M, bit ST, bit I, bit U, bit E,
+                bits<3> ME, bits<3> S, bits<3> L> {
   bits<1> Masked = M;
   bits<1> Strided = ST;
+  bits<1> Indexed = I;
   bits<1> Unsigned = U;
   bits<1> IsE = E;
   bits<3> Log2MEM = ME;
@@ -102,8 +104,10 @@ class XTHeadVVL<bit M, bit ST, bit U, bit E, bits<3> ME, bits<3> S, bits<3> L> {
 def XTHeadVVLTable : GenericTable {
   let FilterClass = "XTHeadVVL";
   let CppTypeName = "XVLPseudo";
-  let Fields = ["Masked", "Strided", "Unsigned", "IsE", "Log2MEM", "Log2SEW", "LMUL", "Pseudo"];
-  let PrimaryKey = ["Masked", "Strided", "Unsigned", "IsE", "Log2MEM", "Log2SEW", "LMUL"];
+  let Fields = ["Masked", "Strided", "Indexed", "Unsigned",
+                "IsE", "Log2MEM", "Log2SEW", "LMUL", "Pseudo"];
+  let PrimaryKey = ["Masked", "Strided", "Indexed", "Unsigned",
+                    "IsE", "Log2MEM", "Log2SEW", "LMUL"];
   let PrimaryKeyName = "getXVLPseudo";
 }
 
@@ -169,7 +173,7 @@ class XVPseudoUSLoadNoMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e>
       Pseudo<(outs RetClass:$rd),
              (ins RetClass:$dest, GPRMem:$rs1, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
-      XTHeadVVL</*Masked*/0, /*Strided*/0, unsigned, e,
+      XTHeadVVL</*Masked*/0, /*Strided*/0, /*Indexed*/0, unsigned, e,
                 !logtwo(MEM), !logtwo(REG), VLMul> {
   let mayLoad = 1;
   let mayStore = 0;
@@ -185,7 +189,7 @@ class XVPseudoUSLoadMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e> :
                    GPRMem:$rs1,
                    VMaskOp:$vm, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
-      XTHeadVVL</*Masked*/1, /*Strided*/0, unsigned, e,
+      XTHeadVVL</*Masked*/1, /*Strided*/0, /*Indexed*/0, unsigned, e,
                 !logtwo(MEM), !logtwo(REG), VLMul> {
   let mayLoad = 1;
   let mayStore = 0;
@@ -309,7 +313,7 @@ class XVPseudoSLoadNoMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e>:
              (ins RetClass:$dest, GPRMem:$rs1, GPR:$rs2, AVL:$vl,
                   ixlenimm:$sew),[]>,
       RISCVVPseudo,
-      XTHeadVVL</*Masked*/0, /*Strided*/1, unsigned, e,
+      XTHeadVVL</*Masked*/0, /*Strided*/1, /*Indexed*/0, unsigned, e,
                 !logtwo(MEM), !logtwo(REG), VLMul> {
   let mayLoad = 1;
   let mayStore = 0;
@@ -325,7 +329,7 @@ class XVPseudoSLoadMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e>:
                    GPRMem:$rs1, GPR:$rs2,
                    VMaskOp:$vm, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
-      XTHeadVVL</*Masked*/1, /*Strided*/1, unsigned, e,
+      XTHeadVVL</*Masked*/1, /*Strided*/1, /*Indexed*/0, unsigned, e,
                 !logtwo(MEM), !logtwo(REG), VLMul> {
   let mayLoad = 1;
   let mayStore = 0;
@@ -438,11 +442,89 @@ multiclass XVPseudoSStore {
   }
 }
 
+// 7.6 Vector Indexed Instructions
+class XVPseudoILoadNoMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e>:
+      Pseudo<(outs RetClass:$rd),
+             (ins RetClass:$dest, GPRMem:$rs1, RetClass:$rs2,
+              AVL:$vl, ixlenimm:$sew),[]>,
+      RISCVVPseudo,
+      XTHeadVVL</*Masked*/0, /*Strided*/0, /*Indexed*/1, unsigned, e,
+                !logtwo(MEM), !logtwo(REG), VLMul> {
+  let mayLoad = 1;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+  let Constraints = "$rd = $dest";
+}
+
+class XVPseudoILoadMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e>:
+      Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd),
+              (ins GetVRegNoV0<RetClass>.R:$merge,
+                   GPRMem:$rs1, RetClass:$rs2,
+                   VMaskOp:$vm, AVL:$vl, ixlenimm:$sew),[]>,
+      RISCVVPseudo,
+      XTHeadVVL</*Masked*/1, /*Strided*/0, /*Indexed*/1, unsigned, e,
+                !logtwo(MEM), !logtwo(REG), VLMul> {
+  let mayLoad = 1;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+  let Constraints = "$rd = $merge";
+}
+
+multiclass XVPseudoILoad {
+  foreach mem = [8, 16, 32] in {
+    foreach lmul = MxListXTHeadV in {
+      defvar LInfo = lmul.MX;
+      defvar vreg = lmul.vrclass;
+      defvar tag = MemBitsToTag<mem>.ret;
+      foreach reg = EEWList in {
+        if !ge(reg, mem) then {
+          let VLMul = lmul.value, SEW = mem in {
+            def "X" # tag # "_V_E" # reg # "_" # LInfo :
+              XVPseudoILoadNoMask<vreg, mem, reg, 0, 0>,
+              VLXSched<mem, "O", LInfo, LInfo>;
+            def "X" # tag # "U_V_E" # reg # "_" # LInfo :
+              XVPseudoILoadNoMask<vreg, mem, reg, 1, 0>,
+              VLXSched<mem, "O", LInfo, LInfo>;
+            def "X" # tag # "_V_E" # reg # "_" # LInfo # "_MASK" :
+              XVPseudoILoadMask<vreg, mem, reg, 0, 0>,
+              RISCVMaskedPseudo<MaskIdx=3>,
+              VLXSched<mem, "O", LInfo, LInfo>;
+            def "X" # tag # "U_V_E" # reg # "_" # LInfo # "_MASK" :
+              XVPseudoILoadMask<vreg, mem, reg, 1, 0>,
+              RISCVMaskedPseudo<MaskIdx=3>,
+              VLXSched<mem, "O", LInfo, LInfo>;
+          }
+        }
+      }
+    }
+  }
+  foreach eew = EEWList in {
+    foreach lmul = MxListXTHeadV in {
+      defvar LInfo = lmul.MX;
+      defvar vreg = lmul.vrclass;
+      let VLMul = lmul.value, SEW = eew in {
+        def "XE_V_E" # eew # "_" # LInfo :
+          XVPseudoILoadNoMask<vreg, eew, eew, 0, 1>,
+          VLXSched<eew, "O", LInfo, LInfo>;
+        def "XE_V_E" # eew # "_" # LInfo # "_MASK" :
+          XVPseudoILoadMask<vreg, eew, eew, 0, 1>,
+          RISCVMaskedPseudo<MaskIdx=3>,
+          VLXSched<eew, "O", LInfo, LInfo>;
+      }
+    }
+  }
+}
+
 let Predicates = [HasVendorXTHeadV] in {
   defm PseudoXVL : XVPseudoUSLoad;
   defm PseudoXVS : XVPseudoUSStore;
   defm PseudoXVL : XVPseudoSLoad;
   defm PseudoXVS : XVPseudoSStore;
+  defm PseudoXVL : XVPseudoILoad;
 } // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
