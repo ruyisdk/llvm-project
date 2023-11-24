@@ -154,7 +154,7 @@ public:
   void selectXVL(SDNode *Node, const SDLoc& DL, unsigned IntNo, bool IsUnsigned,
                  bool IsMasked, bool IsStrided, bool IsIndexed, bool IsE);
   void selectXVS(SDNode *Node, const SDLoc& DL, unsigned IntNo,
-                 bool IsMasked, bool IsStrided, bool IsE);
+                 bool IsMasked, bool IsStrided, bool IsIndexed, bool IsE);
   void selectVLSEG(SDNode *Node, bool IsMasked, bool IsStrided);
   void selectVLSEGFF(SDNode *Node, bool IsMasked);
   void selectVLXSEG(SDNode *Node, bool IsMasked, bool IsOrdered);
@@ -269,6 +269,7 @@ struct VSEPseudo {
 struct XVSPseudo {
   uint16_t Masked : 1;
   uint16_t Strided : 1;
+  uint16_t Indexed : 1;
   uint16_t IsE : 1;
   uint16_t Log2MEM : 3;
   uint16_t Log2SEW : 3;

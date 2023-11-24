@@ -436,24 +436,30 @@ void RISCVDAGToDAGISel::selectXVL(
 }
 
 void RISCVDAGToDAGISel::selectXVS(
-    SDNode *Node, const SDLoc& DL, unsigned IntNo,
-    bool IsMasked, bool IsStrided, bool IsE) {
+    SDNode *Node, const SDLoc& DL, unsigned IntNo, bool IsMasked,
+    bool IsStrided, bool IsIndexed, bool IsE) {
   auto Tag2Log2MEM = [] (unsigned no) {
     switch (no) {
     case Intrinsic::riscv_xvsb:
     case Intrinsic::riscv_xvsb_mask:
     case Intrinsic::riscv_xvssb:
     case Intrinsic::riscv_xvssb_mask:
+    case Intrinsic::riscv_xvsxb:
+    case Intrinsic::riscv_xvsxb_mask:
       return 3;
     case Intrinsic::riscv_xvsh:
     case Intrinsic::riscv_xvsh_mask:
     case Intrinsic::riscv_xvssh:
     case Intrinsic::riscv_xvssh_mask:
+    case Intrinsic::riscv_xvsxh:
+    case Intrinsic::riscv_xvsxh_mask:
       return 4;
     case Intrinsic::riscv_xvsw:
     case Intrinsic::riscv_xvsw_mask:
     case Intrinsic::riscv_xvssw:
     case Intrinsic::riscv_xvssw_mask:
+    case Intrinsic::riscv_xvsxw:
+    case Intrinsic::riscv_xvsxw_mask:
       return 5;
     }
     llvm_unreachable("Impossible intrinsic tag");
@@ -466,13 +472,25 @@ void RISCVDAGToDAGISel::selectXVS(
   SmallVector<SDValue, 8> Operands;
   Operands.push_back(Node->getOperand(CurOp++)); // Store value.
 
-  addXTHeadVLoadStoreOperands(Node, Log2SEW, DL, CurOp, IsMasked, IsStrided, Operands);
+  MVT IndexVT;
+  addXTHeadVLoadStoreOperands(Node, Log2SEW, DL, CurOp, IsMasked,
+                              IsStrided | IsIndexed, Operands, &IndexVT);
 
   RISCVII::VLMUL LMUL = RISCVTargetLowering::getLMUL(VT);
+  if (IsIndexed) {
+    assert(VT.getVectorElementCount() == IndexVT.getVectorElementCount() &&
+           "Element count mismatch");
+    unsigned IndexLog2EEW = Log2_32(IndexVT.getScalarSizeInBits());
+    if (IndexLog2EEW == 6 && !Subtarget->is64Bit()) {
+      report_fatal_error("The V extension does not support EEW=64 for index "
+                         "values when XLEN=32");
+    }
+  }
+
   unsigned Log2MEM = IsE ? Log2SEW : Tag2Log2MEM(IntNo);
   const RISCV::XVSPseudo *P =
-    RISCV::getXVSPseudo(IsMasked, IsStrided, IsE, Log2MEM, Log2SEW,
-                        static_cast<unsigned>(LMUL));
+    RISCV::getXVSPseudo(IsMasked, IsStrided, IsIndexed, IsE,
+                        Log2MEM, Log2SEW, static_cast<unsigned>(LMUL));
   MachineSDNode *Store =
     CurDAG->getMachineNode(P->Pseudo, DL, Node->getVTList(), Operands);
 
@@ -2245,6 +2263,28 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
       ReplaceNode(Node, Store);
       return;
     }
+    case Intrinsic::riscv_xvsxb:
+    case Intrinsic::riscv_xvsxh:
+    case Intrinsic::riscv_xvsxw:
+    case Intrinsic::riscv_xvsxe: {
+      if (!Subtarget->hasVendorXTHeadV())
+        return;
+      bool IsE = IntNo == Intrinsic::riscv_xvsxe;
+      selectXVS(Node, DL, IntNo, /*IsMask*/ false,
+                /*IsStrided*/ false, /*IsIndexed*/ true, IsE);
+      return;
+    }
+    case Intrinsic::riscv_xvsxb_mask:
+    case Intrinsic::riscv_xvsxh_mask:
+    case Intrinsic::riscv_xvsxw_mask:
+    case Intrinsic::riscv_xvsxe_mask: {
+      if (!Subtarget->hasVendorXTHeadV())
+        return;
+      bool IsE = IntNo == Intrinsic::riscv_xvsxe_mask;
+      selectXVS(Node, DL, IntNo, /*IsMask*/ true,
+                /*IsStrided*/ false, /*IsIndexed*/ true, IsE);
+      return;
+    }
     case Intrinsic::riscv_vsm:
     case Intrinsic::riscv_vse:
     case Intrinsic::riscv_vse_mask:
@@ -2283,7 +2323,8 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
       if (!Subtarget->hasVendorXTHeadV())
         return;
       bool IsE = IntNo == Intrinsic::riscv_xvse;
-      selectXVS(Node, DL, IntNo, /*IsMask*/ false, /*IsStrided*/ false, IsE);
+      selectXVS(Node, DL, IntNo, /*IsMask*/ false,
+                /*IsStrided*/ false, /*IsIndexed*/ false, IsE);
       return;
     }
     case Intrinsic::riscv_xvssb:
@@ -2293,7 +2334,8 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
       if (!Subtarget->hasVendorXTHeadV())
         return;
       bool IsE = IntNo == Intrinsic::riscv_xvsse;
-      selectXVS(Node, DL, IntNo, /*IsMask*/ false, /*IsStrided*/ true, IsE);
+      selectXVS(Node, DL, IntNo, /*IsMask*/ false,
+                /*IsStrided*/ true, /*IsIndexed*/ false, IsE);
       return;
     }
     case Intrinsic::riscv_xvsb_mask:
@@ -2303,7 +2345,8 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
       if (!Subtarget->hasVendorXTHeadV())
         return;
       bool IsE = IntNo == Intrinsic::riscv_xvse_mask;
-      selectXVS(Node, DL, IntNo, /*IsMask*/ true, /*IsStrided*/ false, IsE);
+      selectXVS(Node, DL, IntNo, /*IsMask*/ true,
+                /*IsStrided*/ false, /*IsIndexed*/ false, IsE);
       return;
     }
     case Intrinsic::riscv_xvssb_mask:
@@ -2313,7 +2356,8 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
       if (!Subtarget->hasVendorXTHeadV())
         return;
       bool IsE = IntNo == Intrinsic::riscv_xvsse_mask;
-      selectXVS(Node, DL, IntNo, /*IsMask*/ true, /*IsStrided*/ true, IsE);
+      selectXVS(Node, DL, IntNo, /*IsMask*/ true,
+                /*IsStrided*/ true, /*IsIndexed*/ false, IsE);
       return;
     }
     }
