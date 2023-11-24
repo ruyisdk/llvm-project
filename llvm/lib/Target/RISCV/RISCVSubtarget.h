@@ -172,10 +172,10 @@ public:
   bool hasVInstructionsI64() const {
     return hasOnlyStdVI64() || hasVendorXTHeadV();
   }
-  bool hasVInstructionsF16() const { return hasOnlyStdVF16(); }
-  bool hasVInstructionsF32() const { return hasOnlyStdVF32(); }
-  bool hasVInstructionsF64() const { return hasOnlyStdVF64(); }
-  bool hasVInstructionsAnyF() const { return hasOnlyStdVAnyF(); }
+  bool hasVInstructionsF16() const { return hasOnlyStdVF16() || hasVendorXTHeadV(); }
+  bool hasVInstructionsF32() const { return hasOnlyStdVF32() || hasVendorXTHeadV(); }
+  bool hasVInstructionsF64() const { return hasOnlyStdVF64() || hasVendorXTHeadV(); }
+  bool hasVInstructionsAnyF() const { return hasOnlyStdVAnyF() || hasVendorXTHeadV(); }
   bool hasVInstructionsFullMultiply() const { return hasOnlyStdV() || hasVendorXTHeadV(); }
   //  If a SubTarget only has the standard V extension:
   bool hasOnlyStdV() const {
@@ -198,6 +198,15 @@ public:
   }
   bool hasStdVOrXTHeadVI64() const {
     return hasVInstructionsI64() || hasVendorXTHeadV();
+  }
+  bool hasStdVOrXTHeadVF16() const {
+    return hasVInstructionsF16() || hasVendorXTHeadV();
+  }
+  bool hasStdVOrXTHeadVF32() const {
+    return hasVInstructionsF32() || hasVendorXTHeadV();
+  }
+  bool hasStdVOrXTHeadVF64() const {
+    return hasVInstructionsF64() || hasVendorXTHeadV();
   }
   unsigned getMaxInterleaveFactor() const {
     return hasVInstructions() ? MaxInterleaveFactor : 1;
