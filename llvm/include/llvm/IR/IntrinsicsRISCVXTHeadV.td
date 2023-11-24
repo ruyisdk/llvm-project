@@ -172,6 +172,42 @@ let TargetPrefix = "riscv" in {
   def int_riscv_xvssh_mask : XVSStoreMasked;
   def int_riscv_xvssw_mask : XVSStoreMasked;
   def int_riscv_xvsse_mask : XVSStoreMasked;
+
+  // 7.6. Vector Indexed Instructions
+  // For indexed load with passthru operand
+  // Input: (passthru, pointer, index, vl)
+  class XVILoad
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, llvm_ptr_ty,
+                     llvm_anyvector_ty, llvm_anyint_ty],
+                    [NoCapture<ArgIndex<1>>, IntrReadMem]>, RISCVVIntrinsic {
+    let VLOperand = 3;
+  }
+  // For indexed load with mask
+  // Input: (maskedoff, pointer, index, mask, vl)
+  class XVILoadMasked
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, llvm_ptr_ty, llvm_anyvector_ty,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty],
+                    [NoCapture<ArgIndex<1>>, IntrReadMem]>,
+                    RISCVVIntrinsic {
+    let VLOperand = 4;
+  }
+
+  def int_riscv_xvlxb : XVILoad;
+  def int_riscv_xvlxh : XVILoad;
+  def int_riscv_xvlxw : XVILoad;
+  def int_riscv_xvlxe : XVILoad;
+  def int_riscv_xvlxbu : XVILoad;
+  def int_riscv_xvlxhu : XVILoad;
+  def int_riscv_xvlxwu : XVILoad;
+  def int_riscv_xvlxb_mask : XVILoadMasked;
+  def int_riscv_xvlxh_mask : XVILoadMasked;
+  def int_riscv_xvlxw_mask : XVILoadMasked;
+  def int_riscv_xvlxe_mask : XVILoadMasked;
+  def int_riscv_xvlxbu_mask : XVILoadMasked;
+  def int_riscv_xvlxhu_mask : XVILoadMasked;
+  def int_riscv_xvlxwu_mask : XVILoadMasked;
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
