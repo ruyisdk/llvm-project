@@ -309,6 +309,7 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
                                  const DebugLoc &DL, MCRegister DstReg,
                                  MCRegister SrcReg, bool KillSrc) const {
   const TargetRegisterInfo *TRI = STI.getRegisterInfo();
+  bool XTHeadV = STI.hasVendorXTHeadV();
 
   if (RISCV::GPRPF64RegClass.contains(DstReg))
     DstReg = TRI->getSubReg(DstReg, RISCV::sub_32);
@@ -358,16 +359,16 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
     Opc = RISCV::FSGNJ_D;
     IsScalableVector = false;
   } else if (RISCV::VRRegClass.contains(DstReg, SrcReg)) {
-    Opc = RISCV::VMV1R_V;
+    Opc = XTHeadV ? RISCV::PseudoXVMV1R_V : RISCV::VMV1R_V;
     LMul = RISCVII::LMUL_1;
   } else if (RISCV::VRM2RegClass.contains(DstReg, SrcReg)) {
-    Opc = RISCV::VMV2R_V;
+    Opc = XTHeadV ? RISCV::PseudoXVMV2R_V : RISCV::VMV2R_V;
     LMul = RISCVII::LMUL_2;
   } else if (RISCV::VRM4RegClass.contains(DstReg, SrcReg)) {
-    Opc = RISCV::VMV4R_V;
+    Opc = XTHeadV ? RISCV::PseudoXVMV4R_V : RISCV::VMV4R_V;
     LMul = RISCVII::LMUL_4;
   } else if (RISCV::VRM8RegClass.contains(DstReg, SrcReg)) {
-    Opc = RISCV::VMV8R_V;
+    Opc = XTHeadV ? RISCV::PseudoXVMV8R_V : RISCV::VMV8R_V;
     LMul = RISCVII::LMUL_8;
   } else if (RISCV::VRN2M1RegClass.contains(DstReg, SrcReg)) {
     Opc = RISCV::VMV1R_V;
@@ -536,6 +537,7 @@ void RISCVInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
 
   MachineFunction *MF = MBB.getParent();
   MachineFrameInfo &MFI = MF->getFrameInfo();
+  bool XTHeadV = STI.hasVendorXTHeadV();
 
   unsigned Opcode;
   bool IsScalableVector = true;
@@ -556,13 +558,17 @@ void RISCVInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
     Opcode = RISCV::FSD;
     IsScalableVector = false;
   } else if (RISCV::VRRegClass.hasSubClassEq(RC)) {
-    Opcode = RISCV::VS1R_V;
+    // [RVV 0.7.1] Spec:
+    // The vector whole register store instructions are encoded
+    // similar to unmasked unit-stride store of elements with EEW=8.
+    // Same for the following similar cases.
+    Opcode = XTHeadV ? RISCV::PseudoXVS1RE8_V : RISCV::VS1R_V;
   } else if (RISCV::VRM2RegClass.hasSubClassEq(RC)) {
-    Opcode = RISCV::VS2R_V;
+    Opcode = XTHeadV ? RISCV::PseudoXVS2RE8_V : RISCV::VS2R_V;
   } else if (RISCV::VRM4RegClass.hasSubClassEq(RC)) {
-    Opcode = RISCV::VS4R_V;
+    Opcode = XTHeadV ? RISCV::PseudoXVS4RE8_V : RISCV::VS4R_V;
   } else if (RISCV::VRM8RegClass.hasSubClassEq(RC)) {
-    Opcode = RISCV::VS8R_V;
+    Opcode = XTHeadV ? RISCV::PseudoXVS8RE8_V : RISCV::VS8R_V;
   } else if (RISCV::VRN2M1RegClass.hasSubClassEq(RC))
     Opcode = RISCV::PseudoVSPILL2_M1;
   else if (RISCV::VRN2M2RegClass.hasSubClassEq(RC))
@@ -623,6 +629,7 @@ void RISCVInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
 
   MachineFunction *MF = MBB.getParent();
   MachineFrameInfo &MFI = MF->getFrameInfo();
+  bool XTHeadV = STI.hasVendorXTHeadV();
 
   unsigned Opcode;
   bool IsScalableVector = true;
@@ -643,13 +650,13 @@ void RISCVInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
     Opcode = RISCV::FLD;
     IsScalableVector = false;
   } else if (RISCV::VRRegClass.hasSubClassEq(RC)) {
-    Opcode = RISCV::VL1RE8_V;
+    Opcode = XTHeadV ? RISCV::PseudoXVL1RE8_V : RISCV::VL1RE8_V;
   } else if (RISCV::VRM2RegClass.hasSubClassEq(RC)) {
-    Opcode = RISCV::VL2RE8_V;
+    Opcode = XTHeadV ? RISCV::PseudoXVL2RE8_V : RISCV::VL2RE8_V;
   } else if (RISCV::VRM4RegClass.hasSubClassEq(RC)) {
-    Opcode = RISCV::VL4RE8_V;
+    Opcode = XTHeadV ? RISCV::PseudoXVL4RE8_V : RISCV::VL4RE8_V;
   } else if (RISCV::VRM8RegClass.hasSubClassEq(RC)) {
-    Opcode = RISCV::VL8RE8_V;
+    Opcode = XTHeadV ? RISCV::PseudoXVL8RE8_V : RISCV::VL8RE8_V;
   } else if (RISCV::VRN2M1RegClass.hasSubClassEq(RC))
     Opcode = RISCV::PseudoVRELOAD2_M1;
   else if (RISCV::VRN2M2RegClass.hasSubClassEq(RC))

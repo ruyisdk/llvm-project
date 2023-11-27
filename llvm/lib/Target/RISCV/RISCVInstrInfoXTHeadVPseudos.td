@@ -449,7 +449,7 @@ let Predicates = [HasVendorXTHeadV] in {
 // 7. Vector Loads and Stores
 // for emulating Vector Load/Store Whole Register Instructions in RVV 1.0
 //===----------------------------------------------------------------------===//
-class VPseudoWholeLoad<Instruction instr, LMULInfo m, RegisterClass VRC>
+class XVPseudoWholeLoad<Instruction instr, LMULInfo m, RegisterClass VRC>
   : VPseudo<instr, m, (outs VRC:$vd),   (ins GPRMemZeroOffset:$rs1)> {
 }
 
@@ -457,12 +457,12 @@ multiclass XVPseudoWholeLoadN<bits<3> nf, LMULInfo m, RegisterClass VRC> {
   foreach l = [8, 16, 32, 64] in {
     defvar s = !cast<SchedWrite>("WriteVLD" # !add(nf, 1) # "R");
 
-    def E # l # _V : VPseudoWholeLoad<XVLE_V, m, VRC>,
+    def E # l # _V : XVPseudoWholeLoad<XVLE_V, m, VRC>,
                      Sched<[s, ReadVLDX]>;
   }
 }
 
-class VPseudoWholeStore<Instruction instr, LMULInfo m, RegisterClass VRC>
+class XVPseudoWholeStore<Instruction instr, LMULInfo m, RegisterClass VRC>
   : VPseudo<instr, m, (outs),   (ins VRC:$vs3, GPRMemZeroOffset:$rs1)> {
 }
 
@@ -471,7 +471,7 @@ multiclass XVPseudoWholeStoreN<bits<3> nf, LMULInfo m, RegisterClass VRC> {
     defvar sw = !cast<SchedWrite>("WriteVST" # !add(nf, 1) # "R");
     defvar sr = !cast<SchedRead>("ReadVST" # !add(nf, 1) # "R");
 
-    def E # l # _V : VPseudoWholeStore<XVSE_V, m, VRC>,
+    def E # l # _V : XVPseudoWholeStore<XVSE_V, m, VRC>,
                      Sched<[sw, sr, ReadVSTX]>;
   }
 }
@@ -714,7 +714,6 @@ let Predicates = [HasVendorXTHeadV] in {
 } // Predicates = [HasVendorXTHeadV]
 
 let Predicates = [HasVendorXTHeadV] in {
-  // TODO: try `int_riscv_vadd`
   defm : VPatBinaryV_VV_VX_VI<"int_riscv_xvadd", "PseudoXVADD", AllIntegerXVectors>;
 } // Predicates = [HasVendorXTHeadV]
 
@@ -751,7 +750,6 @@ let Predicates = [HasVendorXTHeadV] in {
 foreach vti = AllXVectors in {
   let Predicates = GetXVTypePredicates<vti>.Predicates in {
     // vmv.v.v
-    // TODO: try `int_riscv_vmv_v_v`
     def : Pat<(vti.Vector (int_riscv_xvmv_v_v (vti.Vector vti.RegClass:$passthru),
                                               (vti.Vector vti.RegClass:$rs1),
                                               VLOpFrag)),
@@ -761,3 +759,26 @@ foreach vti = AllXVectors in {
     // TODO: vmv.v.x, vmv.v.i
   }
 }
+
+//===----------------------------------------------------------------------===//
+// 12.14. Vector Integer Merge and Move Instructions
+// for emulating Whole Vector Register Move Instructions in RVV 1.0
+//===----------------------------------------------------------------------===//
+
+class XVPseudoWholeMove<Instruction instr, LMULInfo m, RegisterClass VRC>
+  : VPseudo<instr, m, (outs VRC:$vd), (ins VRC:$vs2)> {
+}
+
+let Predicates = [HasVendorXTHeadV] in {
+  let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCodeGenOnly = 1, usesCustomInserter = 1 in {
+    // Note: All `LMULInfo` and `RegisterClass` should be `V_M1` and `VR` respectively.
+    // From RVV Spec 1.0: "These instructions are intended to aid compilers to
+    // shuffle vector registers without needing to know or change vl or vtype."
+    // The 1, 2, 4, 8 in suffixes are "the number of individual vector registers, NREG, to copy",
+    // rather than LMUL.
+    def PseudoXVMV1R_V : XVPseudoWholeMove<XVMV_V_V, V_M1, VR>;
+    def PseudoXVMV2R_V : XVPseudoWholeMove<XVMV_V_V, V_M1, VR>;
+    def PseudoXVMV4R_V : XVPseudoWholeMove<XVMV_V_V, V_M1, VR>;
+    def PseudoXVMV8R_V : XVPseudoWholeMove<XVMV_V_V, V_M1, VR>;
+  }
+} // Predicates = [HasVendorXTHeadV]
