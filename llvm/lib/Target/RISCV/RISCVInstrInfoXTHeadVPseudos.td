@@ -601,8 +601,52 @@ let Predicates = [HasVendorXTHeadV] in {
 // 7. Vector Loads and Stores
 // for emulating Vector Load/Store Whole Register Instructions in RVV 1.0
 //===----------------------------------------------------------------------===//
+
+// This part redefines `vle.v` and `vse.v`, with the type of operands
+// being VRM2, VRM4 and VRM8, but generates the same MC instructions.
+// That is, only to make the lowered whole load/store well-typed.
+// See: https://github.com/ruyisdk/llvm-project/pull/23#issuecomment-1816071060
+// TODO: consider using `PseudoXVLE_V_E*_M*` and `PseudoXVSE_V_E*_M*` defined above.
+
+let hasSideEffects = 0, mayLoad = 1, mayStore = 0, RVVConstraint = VMConstraint in {
+  class XVLxU_VRC<bits<3> nf, bits<3> width, string opcodestr, RegisterClass VRC>
+      : XVLoadStore<nf, OPC_LOAD_FP, 0b000, width, (outs VRC:$rd),
+                    (ins GPRMemZeroOffset:$rs1, VMaskOp:$vm),
+                    opcodestr, "$rd, ${rs1}$vm"> {
+    let rs2 = 0b00000;
+  }
+}
+let hasSideEffects = 0, mayLoad = 0, mayStore = 1 in {
+  class XVSx_VRC<bits<3> nf, bits<3> width, string opcodestr, RegisterClass VRC>
+      : XVLoadStore<nf, OPC_STORE_FP, 0b000, width, (outs),
+                    (ins VRC:$rd, GPRMemZeroOffset:$rs1, VMaskOp:$vm),
+                    opcodestr, "$rd, ${rs1}$vm"> {
+    let rs2 = 0b00000;
+  }
+}
+
+// Set `isCodeGenOnly = 1` to hide them from the tablegened assembly parser,
+// to avoid decoding conflict with the original `vle.v` and `vse.v` in RISCVInstraInfoXTHeadV.td
+let Predicates = [HasVendorXTHeadV], isCodeGenOnly = 1 in {
+  def XVLE_M1_V : XVLxU_VRC<0b000, 0b111, "vle.v", VR>;
+  def XVLE_M2_V : XVLxU_VRC<0b000, 0b111, "vle.v", VRM2>;
+  def XVLE_M4_V : XVLxU_VRC<0b000, 0b111, "vle.v", VRM4>;
+  def XVLE_M8_V : XVLxU_VRC<0b000, 0b111, "vle.v", VRM8>;
+
+  def XVSE_M1_V : XVSx_VRC<0b000, 0b111, "vse.v", VR>;
+  def XVSE_M2_V : XVSx_VRC<0b000, 0b111, "vse.v", VRM2>;
+  def XVSE_M4_V : XVSx_VRC<0b000, 0b111, "vse.v", VRM4>;
+  def XVSE_M8_V : XVSx_VRC<0b000, 0b111, "vse.v", VRM8>;
+}
+
+// This part defines the pseudo version of vl<n>r.v and vs<n>r.v,
+// and explcitly binds them to LLVM IR `load`/`store` intrinsic calls
+// in the instruction selection process, which enables directly
+// loading/storing a vector register in LLVM IR with builtin `load`/`store`,
+// without the need of remembering the RISCV-V intrinsic name and type.
+// See: llvm/test/CodeGen/RISCV/rvv0p71/whole-load-store-*.ll
 class XVPseudoWholeLoad<Instruction instr, LMULInfo m, RegisterClass VRC>
-  : VPseudo<instr, m, (outs VRC:$vd),   (ins GPRMemZeroOffset:$rs1)> {
+  : VPseudo<instr, m, (outs VRC:$vd), (ins GPRMemZeroOffset:$rs1)> {
 }
 
 multiclass XVPseudoWholeLoadN<bits<3> nf, LMULInfo m, RegisterClass VRC> {
@@ -615,7 +659,7 @@ multiclass XVPseudoWholeLoadN<bits<3> nf, LMULInfo m, RegisterClass VRC> {
 }
 
 class XVPseudoWholeStore<Instruction instr, LMULInfo m, RegisterClass VRC>
-  : VPseudo<instr, m, (outs),   (ins VRC:$vs3, GPRMemZeroOffset:$rs1)> {
+  : VPseudo<instr, m, (outs), (ins VRC:$vs3, GPRMemZeroOffset:$rs1)> {
 }
 
 multiclass XVPseudoWholeStoreN<bits<3> nf, LMULInfo m, RegisterClass VRC> {
@@ -645,7 +689,7 @@ let Predicates = [HasVendorXTHeadV] in {
   }
 } // Predicates = [HasVendorXTHeadV]
 
-// patterns for emulated whole register load/store
+// Patterns to bind the pseudo instructions to LLVM IR `load`/`store` intrinsic calls.
 multiclass XVPatUSLoadStoreWholeVRSDNode<ValueType type,
                                          int log2sew,
                                          LMULInfo vlmul,

@@ -14850,7 +14850,7 @@ RISCVTargetLowering::EmitInstrWithCustomInserter(MachineInstr &MI,
 #define PseudoXVL_CASE_SEW_LMUL(SEW_val, LMUL_val)                             \
   case RISCV::PseudoXVL##LMUL_val##RE##SEW_val##_V:                            \
     return emitXWholeLoad(MI, BB, SEW_val, LMUL_val,                           \
-                          RISCV::PseudoXVLE_V_E##SEW_val##_M##LMUL_val);
+                          RISCV::XVLE_M##LMUL_val##_V);
 
 #define PseudoXVL_CASE_SEW(SEW_val)                                            \
   PseudoXVL_CASE_SEW_LMUL(SEW_val, 1);                                         \
@@ -14867,7 +14867,7 @@ RISCVTargetLowering::EmitInstrWithCustomInserter(MachineInstr &MI,
 #define PseudoXVS_CASE_SEW_LMUL(SEW_val, LMUL_val)                             \
   case RISCV::PseudoXVS##LMUL_val##RE##SEW_val##_V:                            \
   return emitXWholeStore(MI, BB, SEW_val, LMUL_val,                            \
-                         RISCV::PseudoXVSE_V_E##SEW_val##_M##LMUL_val);
+                         RISCV::XVSE_M##LMUL_val##_V);
 
 #define PseudoXVS_CASE_SEW(SEW_val)                                            \
   PseudoXVS_CASE_SEW_LMUL(SEW_val, 1);                                         \
