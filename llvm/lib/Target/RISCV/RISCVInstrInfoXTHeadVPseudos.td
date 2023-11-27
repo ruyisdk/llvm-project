@@ -637,7 +637,7 @@ let Predicates = [HasVendorXTHeadV], isCodeGenOnly = 1 in {
   def XVSE_M2_V : XVSx_VRC<0b000, 0b111, "vse.v", VRM2>;
   def XVSE_M4_V : XVSx_VRC<0b000, 0b111, "vse.v", VRM4>;
   def XVSE_M8_V : XVSx_VRC<0b000, 0b111, "vse.v", VRM8>;
-}
+} // Predicates = [HasVendorXTHeadV], isCodeGenOnly = 1
 
 // This part defines the pseudo version of vl<n>r.v and vs<n>r.v,
 // and explcitly binds them to LLVM IR `load`/`store` intrinsic calls
@@ -672,6 +672,9 @@ multiclass XVPseudoWholeStoreN<bits<3> nf, LMULInfo m, RegisterClass VRC> {
   }
 }
 
+// Set `usesCustomInserter = 1` to lower these manually to `XVLE_M*_V` defined above.
+// See: RISCVISelLowering.cpp, function `RISCVTargetLowering::EmitInstrWithCustomInserter`
+// and `emitXWholeLoadStore`.
 let Predicates = [HasVendorXTHeadV] in {
   // Whole register load
   let hasSideEffects = 0, mayLoad = 1, mayStore = 0, isCodeGenOnly = 1, usesCustomInserter = 1 in {
