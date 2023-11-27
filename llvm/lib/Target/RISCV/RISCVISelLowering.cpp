@@ -14659,6 +14659,8 @@ static MachineBasicBlock *emitXWholeStore(MachineInstr &MI,
 
 static MachineBasicBlock *emitXWholeMove(MachineInstr &MI,
                                          MachineBasicBlock *BB, unsigned NREGS) {
+  assert((NREGS == 1 || NREGS == 2 || NREGS == 4 || NREGS == 8) &&
+         "Unexpected NREGS");
   DebugLoc DL = MI.getDebugLoc();
 
   auto *TII = BB->getParent()->getSubtarget().getInstrInfo();
@@ -14682,7 +14684,6 @@ static MachineBasicBlock *emitXWholeMove(MachineInstr &MI,
   auto DstRegNo = MI.getOperand(0).getReg();
   auto SrcRegNo = MI.getOperand(1).getReg();
 
-  // NREGS = 1, 2, 4, 8
   for (unsigned I = 0; I < NREGS; ++I) {
     auto DstReg = TRI->getSubReg(DstRegNo, RISCV::sub_vrm1_0 + I);
     auto SrcReg = TRI->getSubReg(SrcRegNo, RISCV::sub_vrm1_0 + I);
