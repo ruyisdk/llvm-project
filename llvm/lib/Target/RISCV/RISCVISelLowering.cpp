@@ -14679,14 +14679,15 @@ static MachineBasicBlock *emitXWholeMove(MachineInstr &MI,
   // when `NF` (much like the `NREGS` here) is not 1.
   // TODO[RVV 0.7.1]: be like vector operations?
 
-  auto DstReg = MI.getOperand(0).getReg();
-  auto SrcReg = MI.getOperand(1).getReg();
+  auto DstRegNo = MI.getOperand(0).getReg();
+  auto SrcRegNo = MI.getOperand(1).getReg();
 
+  // NREGS = 1, 2, 4, 8
   for (unsigned I = 0; I < NREGS; ++I) {
-    auto VReg = MRI->createVirtualRegister(&RISCV::VRRegClass);
+    auto DstReg = TRI->getSubReg(DstRegNo, RISCV::sub_vrm1_0 + I);
+    auto SrcReg = TRI->getSubReg(SrcRegNo, RISCV::sub_vrm1_0 + I);
     BuildMI(*BB, MI, DL, TII->get(RISCV::XVMV_V_V), DstReg)
         .addReg(SrcReg);
-    // How to increment `DstReg` and `SrcReg` depends on the register class?
   }
 
   MI.eraseFromParent();
