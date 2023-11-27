@@ -650,7 +650,7 @@ class XVPseudoWholeLoad<Instruction instr, LMULInfo m, RegisterClass VRC>
 }
 
 multiclass XVPseudoWholeLoadN<bits<3> nf, LMULInfo m, RegisterClass VRC> {
-  foreach l = [8, 16, 32, 64] in {
+  foreach l = EEWList in {
     defvar s = !cast<SchedWrite>("WriteVLD" # !add(nf, 1) # "R");
 
     def E # l # _V : XVPseudoWholeLoad<XVLE_V, m, VRC>,
@@ -663,7 +663,7 @@ class XVPseudoWholeStore<Instruction instr, LMULInfo m, RegisterClass VRC>
 }
 
 multiclass XVPseudoWholeStoreN<bits<3> nf, LMULInfo m, RegisterClass VRC> {
-  foreach l = [8, 16, 32, 64] in {
+  foreach l = EEWList in {
     defvar sw = !cast<SchedWrite>("WriteVST" # !add(nf, 1) # "R");
     defvar sr = !cast<SchedRead>("ReadVST" # !add(nf, 1) # "R");
 
