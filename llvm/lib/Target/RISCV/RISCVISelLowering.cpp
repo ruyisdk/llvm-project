@@ -14652,9 +14652,8 @@ static MachineBasicBlock *emitXWholeLoadStore(MachineInstr &MI,
   // From GCC: `vl<LMUL>re<SEW>.v vd, (rs)` -> `vle.v vd, (rs), vm`
   // From GCC: `vs<LMUL>r.v       vd, (rs)` -> `vse.v vs, (rs), vm`
   BuildMI(*BB, MI, DL, TII->get(Opcode))
-      .add(MI.getOperand(0))      // vd or vs
-      .add(MI.getOperand(1))      // rs, the load/store address
-      .addReg(RISCV::NoRegister); // vmask, currently no mask
+      .add(MI.getOperand(0))  // vd or vs
+      .add(MI.getOperand(1)); // rs, the load/store address
 
   // Restore vl, vtype with `vsetvl x0, SavedVL, SavedVType`
   BuildMI(*BB, MI, DL, TII->get(RISCV::XVSETVL))
@@ -14850,7 +14849,7 @@ RISCVTargetLowering::EmitInstrWithCustomInserter(MachineInstr &MI,
 #define PseudoXVL_CASE_SEW_LMUL(SEW_val, LMUL_val)                             \
   case RISCV::PseudoXVL##LMUL_val##RE##SEW_val##_V:                            \
     return emitXWholeLoad(MI, BB, SEW_val, LMUL_val,                           \
-                          RISCV::XVLE_M##LMUL_val##_V);
+                          RISCV::PseudoXVLE_V_M##LMUL_val);
 
 #define PseudoXVL_CASE_SEW(SEW_val)                                            \
   PseudoXVL_CASE_SEW_LMUL(SEW_val, 1);                                         \
@@ -14867,7 +14866,7 @@ RISCVTargetLowering::EmitInstrWithCustomInserter(MachineInstr &MI,
 #define PseudoXVS_CASE_SEW_LMUL(SEW_val, LMUL_val)                             \
   case RISCV::PseudoXVS##LMUL_val##RE##SEW_val##_V:                            \
   return emitXWholeStore(MI, BB, SEW_val, LMUL_val,                            \
-                         RISCV::XVSE_M##LMUL_val##_V);
+                         RISCV::PseudoXVSE_V_M##LMUL_val);
 
 #define PseudoXVS_CASE_SEW(SEW_val)                                            \
   PseudoXVS_CASE_SEW_LMUL(SEW_val, 1);                                         \

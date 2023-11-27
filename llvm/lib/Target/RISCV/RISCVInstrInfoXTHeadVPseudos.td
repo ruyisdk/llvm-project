@@ -602,49 +602,57 @@ let Predicates = [HasVendorXTHeadV] in {
 // for emulating Vector Load/Store Whole Register Instructions in RVV 1.0
 //===----------------------------------------------------------------------===//
 
-// This part redefines `vle.v` and `vse.v`, with the type of operands
-// being VRM2, VRM4 and VRM8, but generates the same MC instructions.
-// That is, only to make the lowered whole load/store well-typed.
-// See: https://github.com/ruyisdk/llvm-project/pull/23#issuecomment-1816071060
-// TODO: consider using `PseudoXVLE_V_E*_M*` and `PseudoXVSE_V_E*_M*` defined above.
+// This part defines the pseudo `PseudoXVLE_V_M*` and `PseudoXVSE_V_M*`,
+// with the type of operands being VRM2, VRM4 and VRM8.
+// We cannot directly convert `PseudoXVL<nr>R` or `PseudoXVS<nr>R` to `XVLE_V` or `XVSE_V`,
+// which will be reported as ill-typed program by the type checker.
+// See https://github.com/ruyisdk/llvm-project/pull/23#issuecomment-1816071060 for details.
 
-let hasSideEffects = 0, mayLoad = 1, mayStore = 0, RVVConstraint = VMConstraint in {
-  class XVLxU_VRC<bits<3> nf, bits<3> width, string opcodestr, RegisterClass VRC>
-      : XVLoadStore<nf, OPC_LOAD_FP, 0b000, width, (outs VRC:$rd),
-                    (ins GPRMemZeroOffset:$rs1, VMaskOp:$vm),
-                    opcodestr, "$rd, ${rs1}$vm"> {
-    let rs2 = 0b00000;
+// In the following, we define such pseudos only to make the type checker happy.
+// As the types in these pseudos are always erased when lowering to MCInst.
+// TODO: consider using `PseudoXVLE_V_E*_M*` and `PseudoXVSE_V_E*_M*` defined above,
+//   but these pseudos seems to require more operands like `AVL:$vl, ixlenimm:$sew`,
+//   some of which are not available in the original `PseudoXVL<nr>R` and `PseudoXVS<nr>R`.
+
+multiclass XVPseudoWellTypedUSLoadStore_VLE {
+  foreach lmul = MxListXTHeadV in {
+    defvar LInfo = lmul.MX;
+    defvar vreg = lmul.vrclass;
+
+    let hasSideEffects = 0, mayLoad = 1, mayStore = 0 in {
+      def "_" # LInfo : Pseudo<(outs vreg:$vd), (ins GPRMemZeroOffset:$rs1), []>,
+                        RISCVVPseudo;
+    }
   }
 }
-let hasSideEffects = 0, mayLoad = 0, mayStore = 1 in {
-  class XVSx_VRC<bits<3> nf, bits<3> width, string opcodestr, RegisterClass VRC>
-      : XVLoadStore<nf, OPC_STORE_FP, 0b000, width, (outs),
-                    (ins VRC:$rd, GPRMemZeroOffset:$rs1, VMaskOp:$vm),
-                    opcodestr, "$rd, ${rs1}$vm"> {
-    let rs2 = 0b00000;
+
+multiclass XVPseudoWellTypedUSLoadStore_VSE {
+  foreach lmul = MxListXTHeadV in {
+    defvar LInfo = lmul.MX;
+    defvar vreg = lmul.vrclass;
+
+    let hasSideEffects = 0, mayLoad = 0, mayStore = 1 in {
+      def "_" # LInfo : Pseudo<(outs), (ins vreg:$vs, GPRMemZeroOffset:$rs1), []>,
+                        RISCVVPseudo;
+    }
   }
 }
 
 // Set `isCodeGenOnly = 1` to hide them from the tablegened assembly parser,
 // to avoid decoding conflict with the original `vle.v` and `vse.v` in RISCVInstraInfoXTHeadV.td
 let Predicates = [HasVendorXTHeadV], isCodeGenOnly = 1 in {
-  def XVLE_M1_V : XVLxU_VRC<0b000, 0b111, "vle.v", VR>;
-  def XVLE_M2_V : XVLxU_VRC<0b000, 0b111, "vle.v", VRM2>;
-  def XVLE_M4_V : XVLxU_VRC<0b000, 0b111, "vle.v", VRM4>;
-  def XVLE_M8_V : XVLxU_VRC<0b000, 0b111, "vle.v", VRM8>;
-
-  def XVSE_M1_V : XVSx_VRC<0b000, 0b111, "vse.v", VR>;
-  def XVSE_M2_V : XVSx_VRC<0b000, 0b111, "vse.v", VRM2>;
-  def XVSE_M4_V : XVSx_VRC<0b000, 0b111, "vse.v", VRM4>;
-  def XVSE_M8_V : XVSx_VRC<0b000, 0b111, "vse.v", VRM8>;
+  defm PseudoXVLE_V : XVPseudoWellTypedUSLoadStore_VLE;
+  defm PseudoXVSE_V : XVPseudoWellTypedUSLoadStore_VSE;
 } // Predicates = [HasVendorXTHeadV], isCodeGenOnly = 1
 
-// This part defines the pseudo version of vl<n>r.v and vs<n>r.v,
+// This part defines the pseudo version of `vl<n>r.v` and `vs<n>r.v`,
+// that is, `PseudoXVL<nr>R` and `PseudoXVS<nr>R`,
 // and explcitly binds them to LLVM IR `load`/`store` intrinsic calls
 // in the instruction selection process, which enables directly
 // loading/storing a vector register in LLVM IR with builtin `load`/`store`,
 // without the need of remembering the RISCV-V intrinsic name and type.
 // See: llvm/test/CodeGen/RISCV/rvv0p71/whole-load-store-*.ll
+
 class XVPseudoWholeLoad<Instruction instr, LMULInfo m, RegisterClass VRC>
   : VPseudo<instr, m, (outs VRC:$vd), (ins GPRMemZeroOffset:$rs1)> {
 }
@@ -672,7 +680,8 @@ multiclass XVPseudoWholeStoreN<bits<3> nf, LMULInfo m, RegisterClass VRC> {
   }
 }
 
-// Set `usesCustomInserter = 1` to lower these manually to `XVLE_M*_V` defined above.
+// Set `usesCustomInserter = 1` to lower these manually
+// to `PseudoXVLE_V_M*` or `PseudoXVSE_V_M*` defined above.
 // See: RISCVISelLowering.cpp, function `RISCVTargetLowering::EmitInstrWithCustomInserter`
 // and `emitXWholeLoadStore`.
 let Predicates = [HasVendorXTHeadV] in {
