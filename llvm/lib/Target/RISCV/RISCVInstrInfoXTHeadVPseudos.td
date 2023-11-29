@@ -144,7 +144,7 @@ def XTHeadVVSTable : GenericTable {
 //
 // Some intrinsics may be lowered manually (for example, `RSICVISelDAGToDAG.cpp`).
 // Patterns are not needed for these instructions, like
-// `int_riscv_xvsetvl` and `int_riscv_xvsetvlmax` in `IntrinsicRISCVXTHeadV.td`.
+// `int_riscv_th_vsetvl` and `int_riscv_th_vsetvlmax` in `IntrinsicRISCVXTHeadV.td`.
 //===----------------------------------------------------------------------===//
 
 //===----------------------------------------------------------------------===//
@@ -939,15 +939,15 @@ multiclass XVPatAMOV_WD<string intrinsic,
 }
 
 let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA] in {
-  defm : XVPatAMOV_WD<"int_riscv_xvamoswap", "PseudoTH_VAMOSWAP", AllIntegerXVectors>;
-  defm : XVPatAMOV_WD<"int_riscv_xvamoadd", "PseudoTH_VAMOADD", AllIntegerXVectors>;
-  defm : XVPatAMOV_WD<"int_riscv_xvamoxor", "PseudoTH_VAMOXOR", AllIntegerXVectors>;
-  defm : XVPatAMOV_WD<"int_riscv_xvamoand", "PseudoTH_VAMOAND", AllIntegerXVectors>;
-  defm : XVPatAMOV_WD<"int_riscv_xvamoor", "PseudoTH_VAMOOR", AllIntegerXVectors>;
-  defm : XVPatAMOV_WD<"int_riscv_xvamomin", "PseudoTH_VAMOMIN", AllIntegerXVectors>;
-  defm : XVPatAMOV_WD<"int_riscv_xvamomax", "PseudoTH_VAMOMAX", AllIntegerXVectors>;
-  defm : XVPatAMOV_WD<"int_riscv_xvamominu", "PseudoTH_VAMOMINU", AllIntegerXVectors>;
-  defm : XVPatAMOV_WD<"int_riscv_xvamomaxu", "PseudoTH_VAMOMAXU", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_th_vamoswap", "PseudoTH_VAMOSWAP", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_th_vamoadd", "PseudoTH_VAMOADD", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_th_vamoxor", "PseudoTH_VAMOXOR", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_th_vamoand", "PseudoTH_VAMOAND", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_th_vamoor", "PseudoTH_VAMOOR", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_th_vamomin", "PseudoTH_VAMOMIN", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_th_vamomax", "PseudoTH_VAMOMAX", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_th_vamominu", "PseudoTH_VAMOMINU", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_th_vamomaxu", "PseudoTH_VAMOMAXU", AllIntegerXVectors>;
 } // Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA]
 
 //===----------------------------------------------------------------------===//
@@ -976,7 +976,7 @@ let Predicates = [HasVendorXTHeadV] in {
 } // Predicates = [HasVendorXTHeadV]
 
 let Predicates = [HasVendorXTHeadV] in {
-  defm : VPatBinaryV_VV_VX_VI<"int_riscv_xvadd", "PseudoTH_VADD", AllIntegerXVectors>;
+  defm : VPatBinaryV_VV_VX_VI<"int_riscv_th_vadd", "PseudoTH_VADD", AllIntegerXVectors>;
 } // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
@@ -1012,9 +1012,9 @@ let Predicates = [HasVendorXTHeadV] in {
 foreach vti = AllXVectors in {
   let Predicates = GetXVTypePredicates<vti>.Predicates in {
     // vmv.v.v
-    def : Pat<(vti.Vector (int_riscv_xvmv_v_v (vti.Vector vti.RegClass:$passthru),
-                                              (vti.Vector vti.RegClass:$rs1),
-                                              VLOpFrag)),
+    def : Pat<(vti.Vector (int_riscv_th_vmv_v_v (vti.Vector vti.RegClass:$passthru),
+                                                (vti.Vector vti.RegClass:$rs1),
+                                                 VLOpFrag)),
               (!cast<Instruction>("PseudoTH_VMV_V_V_"#vti.LMul.MX)
                $passthru, $rs1, GPR:$vl, vti.Log2SEW, TU_MU)>;
 

@@ -3,7 +3,7 @@
 ; RUN: sed 's/iXLen/i64/g' %s | llc -mtriple=riscv64 -mattr=+xtheadvector \
 ; RUN:   -verify-machineinstrs | FileCheck %s --check-prefixes=CHECK,CHECK-LABEL,CHECK-NEXT
 
-declare <vscale x 8 x i8> @llvm.riscv.xvlbu.nxv8i8.nxv8i8(
+declare <vscale x 8 x i8> @llvm.riscv.th.vlbu.nxv8i8.nxv8i8(
   <vscale x 8 x i8>,
   <vscale x 8 x i8>*,
   iXLen);
@@ -16,7 +16,7 @@ define <vscale x 8 x i8> @intrinsic_xvlbu_v_nxv8i8_nxv8i8(<vscale x 8 x i8>* %0,
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 8 x i8> @llvm.riscv.xvlbu.nxv8i8.nxv8i8(
+  %a = call <vscale x 8 x i8> @llvm.riscv.th.vlbu.nxv8i8.nxv8i8(
     <vscale x 8 x i8> undef,
     <vscale x 8 x i8>* %0,
     iXLen %1)
@@ -24,7 +24,7 @@ entry:
   ret <vscale x 8 x i8> %a
 }
 
-declare <vscale x 8 x i8> @llvm.riscv.xvlbu.mask.nxv8i8.nxv8i8(
+declare <vscale x 8 x i8> @llvm.riscv.th.vlbu.mask.nxv8i8.nxv8i8(
   <vscale x 8 x i8>,
   <vscale x 8 x i8>*,
   <vscale x 8 x i1>,
@@ -38,7 +38,7 @@ define <vscale x 8 x i8> @intrinsic_xvlbu_mask_v_nxv8i8_nxv8i8(<vscale x 8 x i8>
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 8 x i8> @llvm.riscv.xvlbu.mask.nxv8i8.nxv8i8(
+  %a = call <vscale x 8 x i8> @llvm.riscv.th.vlbu.mask.nxv8i8.nxv8i8(
     <vscale x 8 x i8> %0,
     <vscale x 8 x i8>* %1,
     <vscale x 8 x i1> %2,
@@ -47,7 +47,7 @@ entry:
   ret <vscale x 8 x i8> %a
 }
 
-declare <vscale x 16 x i8> @llvm.riscv.xvlbu.nxv16i8.nxv16i8(
+declare <vscale x 16 x i8> @llvm.riscv.th.vlbu.nxv16i8.nxv16i8(
   <vscale x 16 x i8>,
   <vscale x 16 x i8>*,
   iXLen);
@@ -60,7 +60,7 @@ define <vscale x 16 x i8> @intrinsic_xvlbu_v_nxv16i8_nxv16i8(<vscale x 16 x i8>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 16 x i8> @llvm.riscv.xvlbu.nxv16i8.nxv16i8(
+  %a = call <vscale x 16 x i8> @llvm.riscv.th.vlbu.nxv16i8.nxv16i8(
     <vscale x 16 x i8> undef,
     <vscale x 16 x i8>* %0,
     iXLen %1)
@@ -68,7 +68,7 @@ entry:
   ret <vscale x 16 x i8> %a
 }
 
-declare <vscale x 16 x i8> @llvm.riscv.xvlbu.mask.nxv16i8.nxv16i8(
+declare <vscale x 16 x i8> @llvm.riscv.th.vlbu.mask.nxv16i8.nxv16i8(
   <vscale x 16 x i8>,
   <vscale x 16 x i8>*,
   <vscale x 16 x i1>,
@@ -82,7 +82,7 @@ define <vscale x 16 x i8> @intrinsic_xvlbu_mask_v_nxv16i8_nxv16i8(<vscale x 16 x
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 16 x i8> @llvm.riscv.xvlbu.mask.nxv16i8.nxv16i8(
+  %a = call <vscale x 16 x i8> @llvm.riscv.th.vlbu.mask.nxv16i8.nxv16i8(
     <vscale x 16 x i8> %0,
     <vscale x 16 x i8>* %1,
     <vscale x 16 x i1> %2,
@@ -91,7 +91,7 @@ entry:
   ret <vscale x 16 x i8> %a
 }
 
-declare <vscale x 32 x i8> @llvm.riscv.xvlbu.nxv32i8.nxv32i8(
+declare <vscale x 32 x i8> @llvm.riscv.th.vlbu.nxv32i8.nxv32i8(
   <vscale x 32 x i8>,
   <vscale x 32 x i8>*,
   iXLen);
@@ -104,7 +104,7 @@ define <vscale x 32 x i8> @intrinsic_xvlbu_v_nxv32i8_nxv32i8(<vscale x 32 x i8>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 32 x i8> @llvm.riscv.xvlbu.nxv32i8.nxv32i8(
+  %a = call <vscale x 32 x i8> @llvm.riscv.th.vlbu.nxv32i8.nxv32i8(
     <vscale x 32 x i8> undef,
     <vscale x 32 x i8>* %0,
     iXLen %1)
@@ -112,7 +112,7 @@ entry:
   ret <vscale x 32 x i8> %a
 }
 
-declare <vscale x 32 x i8> @llvm.riscv.xvlbu.mask.nxv32i8.nxv32i8(
+declare <vscale x 32 x i8> @llvm.riscv.th.vlbu.mask.nxv32i8.nxv32i8(
   <vscale x 32 x i8>,
   <vscale x 32 x i8>*,
   <vscale x 32 x i1>,
@@ -126,7 +126,7 @@ define <vscale x 32 x i8> @intrinsic_xvlbu_mask_v_nxv32i8_nxv32i8(<vscale x 32 x
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 32 x i8> @llvm.riscv.xvlbu.mask.nxv32i8.nxv32i8(
+  %a = call <vscale x 32 x i8> @llvm.riscv.th.vlbu.mask.nxv32i8.nxv32i8(
     <vscale x 32 x i8> %0,
     <vscale x 32 x i8>* %1,
     <vscale x 32 x i1> %2,
@@ -135,7 +135,7 @@ entry:
   ret <vscale x 32 x i8> %a
 }
 
-declare <vscale x 64 x i8> @llvm.riscv.xvlbu.nxv64i8.nxv64i8(
+declare <vscale x 64 x i8> @llvm.riscv.th.vlbu.nxv64i8.nxv64i8(
   <vscale x 64 x i8>,
   <vscale x 64 x i8>*,
   iXLen);
@@ -148,7 +148,7 @@ define <vscale x 64 x i8> @intrinsic_xvlbu_v_nxv64i8_nxv64i8(<vscale x 64 x i8>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 64 x i8> @llvm.riscv.xvlbu.nxv64i8.nxv64i8(
+  %a = call <vscale x 64 x i8> @llvm.riscv.th.vlbu.nxv64i8.nxv64i8(
     <vscale x 64 x i8> undef,
     <vscale x 64 x i8>* %0,
     iXLen %1)
@@ -156,7 +156,7 @@ entry:
   ret <vscale x 64 x i8> %a
 }
 
-declare <vscale x 64 x i8> @llvm.riscv.xvlbu.mask.nxv64i8.nxv64i8(
+declare <vscale x 64 x i8> @llvm.riscv.th.vlbu.mask.nxv64i8.nxv64i8(
   <vscale x 64 x i8>,
   <vscale x 64 x i8>*,
   <vscale x 64 x i1>,
@@ -170,7 +170,7 @@ define <vscale x 64 x i8> @intrinsic_xvlbu_mask_v_nxv64i8_nxv64i8(<vscale x 64 x
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 64 x i8> @llvm.riscv.xvlbu.mask.nxv64i8.nxv64i8(
+  %a = call <vscale x 64 x i8> @llvm.riscv.th.vlbu.mask.nxv64i8.nxv64i8(
     <vscale x 64 x i8> %0,
     <vscale x 64 x i8>* %1,
     <vscale x 64 x i1> %2,
@@ -179,7 +179,7 @@ entry:
   ret <vscale x 64 x i8> %a
 }
 
-declare <vscale x 4 x i16> @llvm.riscv.xvlbu.nxv4i16.nxv4i16(
+declare <vscale x 4 x i16> @llvm.riscv.th.vlbu.nxv4i16.nxv4i16(
   <vscale x 4 x i16>,
   <vscale x 4 x i16>*,
   iXLen);
@@ -192,7 +192,7 @@ define <vscale x 4 x i16> @intrinsic_xvlbu_v_nxv4i16_nxv4i16(<vscale x 4 x i16>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 4 x i16> @llvm.riscv.xvlbu.nxv4i16.nxv4i16(
+  %a = call <vscale x 4 x i16> @llvm.riscv.th.vlbu.nxv4i16.nxv4i16(
     <vscale x 4 x i16> undef,
     <vscale x 4 x i16>* %0,
     iXLen %1)
@@ -200,7 +200,7 @@ entry:
   ret <vscale x 4 x i16> %a
 }
 
-declare <vscale x 4 x i16> @llvm.riscv.xvlbu.mask.nxv4i16.nxv4i16(
+declare <vscale x 4 x i16> @llvm.riscv.th.vlbu.mask.nxv4i16.nxv4i16(
   <vscale x 4 x i16>,
   <vscale x 4 x i16>*,
   <vscale x 4 x i1>,
@@ -214,7 +214,7 @@ define <vscale x 4 x i16> @intrinsic_xvlbu_mask_v_nxv4i16_nxv4i16(<vscale x 4 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 4 x i16> @llvm.riscv.xvlbu.mask.nxv4i16.nxv4i16(
+  %a = call <vscale x 4 x i16> @llvm.riscv.th.vlbu.mask.nxv4i16.nxv4i16(
     <vscale x 4 x i16> %0,
     <vscale x 4 x i16>* %1,
     <vscale x 4 x i1> %2,
@@ -223,7 +223,7 @@ entry:
   ret <vscale x 4 x i16> %a
 }
 
-declare <vscale x 8 x i16> @llvm.riscv.xvlbu.nxv8i16.nxv8i16(
+declare <vscale x 8 x i16> @llvm.riscv.th.vlbu.nxv8i16.nxv8i16(
   <vscale x 8 x i16>,
   <vscale x 8 x i16>*,
   iXLen);
@@ -236,7 +236,7 @@ define <vscale x 8 x i16> @intrinsic_xvlbu_v_nxv8i16_nxv8i16(<vscale x 8 x i16>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 8 x i16> @llvm.riscv.xvlbu.nxv8i16.nxv8i16(
+  %a = call <vscale x 8 x i16> @llvm.riscv.th.vlbu.nxv8i16.nxv8i16(
     <vscale x 8 x i16> undef,
     <vscale x 8 x i16>* %0,
     iXLen %1)
@@ -244,7 +244,7 @@ entry:
   ret <vscale x 8 x i16> %a
 }
 
-declare <vscale x 8 x i16> @llvm.riscv.xvlbu.mask.nxv8i16.nxv8i16(
+declare <vscale x 8 x i16> @llvm.riscv.th.vlbu.mask.nxv8i16.nxv8i16(
   <vscale x 8 x i16>,
   <vscale x 8 x i16>*,
   <vscale x 8 x i1>,
@@ -258,7 +258,7 @@ define <vscale x 8 x i16> @intrinsic_xvlbu_mask_v_nxv8i16_nxv8i16(<vscale x 8 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 8 x i16> @llvm.riscv.xvlbu.mask.nxv8i16.nxv8i16(
+  %a = call <vscale x 8 x i16> @llvm.riscv.th.vlbu.mask.nxv8i16.nxv8i16(
     <vscale x 8 x i16> %0,
     <vscale x 8 x i16>* %1,
     <vscale x 8 x i1> %2,
@@ -267,7 +267,7 @@ entry:
   ret <vscale x 8 x i16> %a
 }
 
-declare <vscale x 16 x i16> @llvm.riscv.xvlbu.nxv16i16.nxv16i16(
+declare <vscale x 16 x i16> @llvm.riscv.th.vlbu.nxv16i16.nxv16i16(
   <vscale x 16 x i16>,
   <vscale x 16 x i16>*,
   iXLen);
@@ -280,7 +280,7 @@ define <vscale x 16 x i16> @intrinsic_xvlbu_v_nxv16i16_nxv16i16(<vscale x 16 x i
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 16 x i16> @llvm.riscv.xvlbu.nxv16i16.nxv16i16(
+  %a = call <vscale x 16 x i16> @llvm.riscv.th.vlbu.nxv16i16.nxv16i16(
     <vscale x 16 x i16> undef,
     <vscale x 16 x i16>* %0,
     iXLen %1)
@@ -288,7 +288,7 @@ entry:
   ret <vscale x 16 x i16> %a
 }
 
-declare <vscale x 16 x i16> @llvm.riscv.xvlbu.mask.nxv16i16.nxv16i16(
+declare <vscale x 16 x i16> @llvm.riscv.th.vlbu.mask.nxv16i16.nxv16i16(
   <vscale x 16 x i16>,
   <vscale x 16 x i16>*,
   <vscale x 16 x i1>,
@@ -302,7 +302,7 @@ define <vscale x 16 x i16> @intrinsic_xvlbu_mask_v_nxv16i16_nxv16i16(<vscale x 1
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 16 x i16> @llvm.riscv.xvlbu.mask.nxv16i16.nxv16i16(
+  %a = call <vscale x 16 x i16> @llvm.riscv.th.vlbu.mask.nxv16i16.nxv16i16(
     <vscale x 16 x i16> %0,
     <vscale x 16 x i16>* %1,
     <vscale x 16 x i1> %2,
@@ -311,7 +311,7 @@ entry:
   ret <vscale x 16 x i16> %a
 }
 
-declare <vscale x 32 x i16> @llvm.riscv.xvlbu.nxv32i16.nxv32i16(
+declare <vscale x 32 x i16> @llvm.riscv.th.vlbu.nxv32i16.nxv32i16(
   <vscale x 32 x i16>,
   <vscale x 32 x i16>*,
   iXLen);
@@ -324,7 +324,7 @@ define <vscale x 32 x i16> @intrinsic_xvlbu_v_nxv32i16_nxv32i16(<vscale x 32 x i
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 32 x i16> @llvm.riscv.xvlbu.nxv32i16.nxv32i16(
+  %a = call <vscale x 32 x i16> @llvm.riscv.th.vlbu.nxv32i16.nxv32i16(
     <vscale x 32 x i16> undef,
     <vscale x 32 x i16>* %0,
     iXLen %1)
@@ -332,7 +332,7 @@ entry:
   ret <vscale x 32 x i16> %a
 }
 
-declare <vscale x 32 x i16> @llvm.riscv.xvlbu.mask.nxv32i16.nxv32i16(
+declare <vscale x 32 x i16> @llvm.riscv.th.vlbu.mask.nxv32i16.nxv32i16(
   <vscale x 32 x i16>,
   <vscale x 32 x i16>*,
   <vscale x 32 x i1>,
@@ -346,7 +346,7 @@ define <vscale x 32 x i16> @intrinsic_xvlbu_mask_v_nxv32i16_nxv32i16(<vscale x 3
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 32 x i16> @llvm.riscv.xvlbu.mask.nxv32i16.nxv32i16(
+  %a = call <vscale x 32 x i16> @llvm.riscv.th.vlbu.mask.nxv32i16.nxv32i16(
     <vscale x 32 x i16> %0,
     <vscale x 32 x i16>* %1,
     <vscale x 32 x i1> %2,
@@ -355,7 +355,7 @@ entry:
   ret <vscale x 32 x i16> %a
 }
 
-declare <vscale x 2 x i32> @llvm.riscv.xvlbu.nxv2i32.nxv2i32(
+declare <vscale x 2 x i32> @llvm.riscv.th.vlbu.nxv2i32.nxv2i32(
   <vscale x 2 x i32>,
   <vscale x 2 x i32>*,
   iXLen);
@@ -368,7 +368,7 @@ define <vscale x 2 x i32> @intrinsic_xvlbu_v_nxv2i32_nxv2i32(<vscale x 2 x i32>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 2 x i32> @llvm.riscv.xvlbu.nxv2i32.nxv2i32(
+  %a = call <vscale x 2 x i32> @llvm.riscv.th.vlbu.nxv2i32.nxv2i32(
     <vscale x 2 x i32> undef,
     <vscale x 2 x i32>* %0,
     iXLen %1)
@@ -376,7 +376,7 @@ entry:
   ret <vscale x 2 x i32> %a
 }
 
-declare <vscale x 2 x i32> @llvm.riscv.xvlbu.mask.nxv2i32.nxv2i32(
+declare <vscale x 2 x i32> @llvm.riscv.th.vlbu.mask.nxv2i32.nxv2i32(
   <vscale x 2 x i32>,
   <vscale x 2 x i32>*,
   <vscale x 2 x i1>,
@@ -390,7 +390,7 @@ define <vscale x 2 x i32> @intrinsic_xvlbu_mask_v_nxv2i32_nxv2i32(<vscale x 2 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 2 x i32> @llvm.riscv.xvlbu.mask.nxv2i32.nxv2i32(
+  %a = call <vscale x 2 x i32> @llvm.riscv.th.vlbu.mask.nxv2i32.nxv2i32(
     <vscale x 2 x i32> %0,
     <vscale x 2 x i32>* %1,
     <vscale x 2 x i1> %2,
@@ -399,7 +399,7 @@ entry:
   ret <vscale x 2 x i32> %a
 }
 
-declare <vscale x 4 x i32> @llvm.riscv.xvlbu.nxv4i32.nxv4i32(
+declare <vscale x 4 x i32> @llvm.riscv.th.vlbu.nxv4i32.nxv4i32(
   <vscale x 4 x i32>,
   <vscale x 4 x i32>*,
   iXLen);
@@ -412,7 +412,7 @@ define <vscale x 4 x i32> @intrinsic_xvlbu_v_nxv4i32_nxv4i32(<vscale x 4 x i32>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 4 x i32> @llvm.riscv.xvlbu.nxv4i32.nxv4i32(
+  %a = call <vscale x 4 x i32> @llvm.riscv.th.vlbu.nxv4i32.nxv4i32(
     <vscale x 4 x i32> undef,
     <vscale x 4 x i32>* %0,
     iXLen %1)
@@ -420,7 +420,7 @@ entry:
   ret <vscale x 4 x i32> %a
 }
 
-declare <vscale x 4 x i32> @llvm.riscv.xvlbu.mask.nxv4i32.nxv4i32(
+declare <vscale x 4 x i32> @llvm.riscv.th.vlbu.mask.nxv4i32.nxv4i32(
   <vscale x 4 x i32>,
   <vscale x 4 x i32>*,
   <vscale x 4 x i1>,
@@ -434,7 +434,7 @@ define <vscale x 4 x i32> @intrinsic_xvlbu_mask_v_nxv4i32_nxv4i32(<vscale x 4 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 4 x i32> @llvm.riscv.xvlbu.mask.nxv4i32.nxv4i32(
+  %a = call <vscale x 4 x i32> @llvm.riscv.th.vlbu.mask.nxv4i32.nxv4i32(
     <vscale x 4 x i32> %0,
     <vscale x 4 x i32>* %1,
     <vscale x 4 x i1> %2,
@@ -443,7 +443,7 @@ entry:
   ret <vscale x 4 x i32> %a
 }
 
-declare <vscale x 8 x i32> @llvm.riscv.xvlbu.nxv8i32.nxv8i32(
+declare <vscale x 8 x i32> @llvm.riscv.th.vlbu.nxv8i32.nxv8i32(
   <vscale x 8 x i32>,
   <vscale x 8 x i32>*,
   iXLen);
@@ -456,7 +456,7 @@ define <vscale x 8 x i32> @intrinsic_xvlbu_v_nxv8i32_nxv8i32(<vscale x 8 x i32>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 8 x i32> @llvm.riscv.xvlbu.nxv8i32.nxv8i32(
+  %a = call <vscale x 8 x i32> @llvm.riscv.th.vlbu.nxv8i32.nxv8i32(
     <vscale x 8 x i32> undef,
     <vscale x 8 x i32>* %0,
     iXLen %1)
@@ -464,7 +464,7 @@ entry:
   ret <vscale x 8 x i32> %a
 }
 
-declare <vscale x 8 x i32> @llvm.riscv.xvlbu.mask.nxv8i32.nxv8i32(
+declare <vscale x 8 x i32> @llvm.riscv.th.vlbu.mask.nxv8i32.nxv8i32(
   <vscale x 8 x i32>,
   <vscale x 8 x i32>*,
   <vscale x 8 x i1>,
@@ -478,7 +478,7 @@ define <vscale x 8 x i32> @intrinsic_xvlbu_mask_v_nxv8i32_nxv8i32(<vscale x 8 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 8 x i32> @llvm.riscv.xvlbu.mask.nxv8i32.nxv8i32(
+  %a = call <vscale x 8 x i32> @llvm.riscv.th.vlbu.mask.nxv8i32.nxv8i32(
     <vscale x 8 x i32> %0,
     <vscale x 8 x i32>* %1,
     <vscale x 8 x i1> %2,
@@ -487,7 +487,7 @@ entry:
   ret <vscale x 8 x i32> %a
 }
 
-declare <vscale x 16 x i32> @llvm.riscv.xvlbu.nxv16i32.nxv16i32(
+declare <vscale x 16 x i32> @llvm.riscv.th.vlbu.nxv16i32.nxv16i32(
   <vscale x 16 x i32>,
   <vscale x 16 x i32>*,
   iXLen);
@@ -500,7 +500,7 @@ define <vscale x 16 x i32> @intrinsic_xvlbu_v_nxv16i32_nxv16i32(<vscale x 16 x i
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 16 x i32> @llvm.riscv.xvlbu.nxv16i32.nxv16i32(
+  %a = call <vscale x 16 x i32> @llvm.riscv.th.vlbu.nxv16i32.nxv16i32(
     <vscale x 16 x i32> undef,
     <vscale x 16 x i32>* %0,
     iXLen %1)
@@ -508,7 +508,7 @@ entry:
   ret <vscale x 16 x i32> %a
 }
 
-declare <vscale x 16 x i32> @llvm.riscv.xvlbu.mask.nxv16i32.nxv16i32(
+declare <vscale x 16 x i32> @llvm.riscv.th.vlbu.mask.nxv16i32.nxv16i32(
   <vscale x 16 x i32>,
   <vscale x 16 x i32>*,
   <vscale x 16 x i1>,
@@ -522,7 +522,7 @@ define <vscale x 16 x i32> @intrinsic_xvlbu_mask_v_nxv16i32_nxv16i32(<vscale x 1
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 16 x i32> @llvm.riscv.xvlbu.mask.nxv16i32.nxv16i32(
+  %a = call <vscale x 16 x i32> @llvm.riscv.th.vlbu.mask.nxv16i32.nxv16i32(
     <vscale x 16 x i32> %0,
     <vscale x 16 x i32>* %1,
     <vscale x 16 x i1> %2,
@@ -531,7 +531,7 @@ entry:
   ret <vscale x 16 x i32> %a
 }
 
-declare <vscale x 1 x i64> @llvm.riscv.xvlbu.nxv1i64.nxv1i64(
+declare <vscale x 1 x i64> @llvm.riscv.th.vlbu.nxv1i64.nxv1i64(
   <vscale x 1 x i64>,
   <vscale x 1 x i64>*,
   iXLen);
@@ -544,7 +544,7 @@ define <vscale x 1 x i64> @intrinsic_xvlbu_v_nxv1i64_nxv1i64(<vscale x 1 x i64>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 1 x i64> @llvm.riscv.xvlbu.nxv1i64.nxv1i64(
+  %a = call <vscale x 1 x i64> @llvm.riscv.th.vlbu.nxv1i64.nxv1i64(
     <vscale x 1 x i64> undef,
     <vscale x 1 x i64>* %0,
     iXLen %1)
@@ -552,7 +552,7 @@ entry:
   ret <vscale x 1 x i64> %a
 }
 
-declare <vscale x 1 x i64> @llvm.riscv.xvlbu.mask.nxv1i64.nxv1i64(
+declare <vscale x 1 x i64> @llvm.riscv.th.vlbu.mask.nxv1i64.nxv1i64(
   <vscale x 1 x i64>,
   <vscale x 1 x i64>*,
   <vscale x 1 x i1>,
@@ -566,7 +566,7 @@ define <vscale x 1 x i64> @intrinsic_xvlbu_mask_v_nxv1i64_nxv1i64(<vscale x 1 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 1 x i64> @llvm.riscv.xvlbu.mask.nxv1i64.nxv1i64(
+  %a = call <vscale x 1 x i64> @llvm.riscv.th.vlbu.mask.nxv1i64.nxv1i64(
     <vscale x 1 x i64> %0,
     <vscale x 1 x i64>* %1,
     <vscale x 1 x i1> %2,
@@ -575,7 +575,7 @@ entry:
   ret <vscale x 1 x i64> %a
 }
 
-declare <vscale x 2 x i64> @llvm.riscv.xvlbu.nxv2i64.nxv2i64(
+declare <vscale x 2 x i64> @llvm.riscv.th.vlbu.nxv2i64.nxv2i64(
   <vscale x 2 x i64>,
   <vscale x 2 x i64>*,
   iXLen);
@@ -588,7 +588,7 @@ define <vscale x 2 x i64> @intrinsic_xvlbu_v_nxv2i64_nxv2i64(<vscale x 2 x i64>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 2 x i64> @llvm.riscv.xvlbu.nxv2i64.nxv2i64(
+  %a = call <vscale x 2 x i64> @llvm.riscv.th.vlbu.nxv2i64.nxv2i64(
     <vscale x 2 x i64> undef,
     <vscale x 2 x i64>* %0,
     iXLen %1)
@@ -596,7 +596,7 @@ entry:
   ret <vscale x 2 x i64> %a
 }
 
-declare <vscale x 2 x i64> @llvm.riscv.xvlbu.mask.nxv2i64.nxv2i64(
+declare <vscale x 2 x i64> @llvm.riscv.th.vlbu.mask.nxv2i64.nxv2i64(
   <vscale x 2 x i64>,
   <vscale x 2 x i64>*,
   <vscale x 2 x i1>,
@@ -610,7 +610,7 @@ define <vscale x 2 x i64> @intrinsic_xvlbu_mask_v_nxv2i64_nxv2i64(<vscale x 2 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 2 x i64> @llvm.riscv.xvlbu.mask.nxv2i64.nxv2i64(
+  %a = call <vscale x 2 x i64> @llvm.riscv.th.vlbu.mask.nxv2i64.nxv2i64(
     <vscale x 2 x i64> %0,
     <vscale x 2 x i64>* %1,
     <vscale x 2 x i1> %2,
@@ -619,7 +619,7 @@ entry:
   ret <vscale x 2 x i64> %a
 }
 
-declare <vscale x 4 x i64> @llvm.riscv.xvlbu.nxv4i64.nxv4i64(
+declare <vscale x 4 x i64> @llvm.riscv.th.vlbu.nxv4i64.nxv4i64(
   <vscale x 4 x i64>,
   <vscale x 4 x i64>*,
   iXLen);
@@ -632,7 +632,7 @@ define <vscale x 4 x i64> @intrinsic_xvlbu_v_nxv4i64_nxv4i64(<vscale x 4 x i64>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 4 x i64> @llvm.riscv.xvlbu.nxv4i64.nxv4i64(
+  %a = call <vscale x 4 x i64> @llvm.riscv.th.vlbu.nxv4i64.nxv4i64(
     <vscale x 4 x i64> undef,
     <vscale x 4 x i64>* %0,
     iXLen %1)
@@ -640,7 +640,7 @@ entry:
   ret <vscale x 4 x i64> %a
 }
 
-declare <vscale x 4 x i64> @llvm.riscv.xvlbu.mask.nxv4i64.nxv4i64(
+declare <vscale x 4 x i64> @llvm.riscv.th.vlbu.mask.nxv4i64.nxv4i64(
   <vscale x 4 x i64>,
   <vscale x 4 x i64>*,
   <vscale x 4 x i1>,
@@ -654,7 +654,7 @@ define <vscale x 4 x i64> @intrinsic_xvlbu_mask_v_nxv4i64_nxv4i64(<vscale x 4 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 4 x i64> @llvm.riscv.xvlbu.mask.nxv4i64.nxv4i64(
+  %a = call <vscale x 4 x i64> @llvm.riscv.th.vlbu.mask.nxv4i64.nxv4i64(
     <vscale x 4 x i64> %0,
     <vscale x 4 x i64>* %1,
     <vscale x 4 x i1> %2,
@@ -663,7 +663,7 @@ entry:
   ret <vscale x 4 x i64> %a
 }
 
-declare <vscale x 8 x i64> @llvm.riscv.xvlbu.nxv8i64.nxv8i64(
+declare <vscale x 8 x i64> @llvm.riscv.th.vlbu.nxv8i64.nxv8i64(
   <vscale x 8 x i64>,
   <vscale x 8 x i64>*,
   iXLen);
@@ -676,7 +676,7 @@ define <vscale x 8 x i64> @intrinsic_xvlbu_v_nxv8i64_nxv8i64(<vscale x 8 x i64>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 8 x i64> @llvm.riscv.xvlbu.nxv8i64.nxv8i64(
+  %a = call <vscale x 8 x i64> @llvm.riscv.th.vlbu.nxv8i64.nxv8i64(
     <vscale x 8 x i64> undef,
     <vscale x 8 x i64>* %0,
     iXLen %1)
@@ -684,7 +684,7 @@ entry:
   ret <vscale x 8 x i64> %a
 }
 
-declare <vscale x 8 x i64> @llvm.riscv.xvlbu.mask.nxv8i64.nxv8i64(
+declare <vscale x 8 x i64> @llvm.riscv.th.vlbu.mask.nxv8i64.nxv8i64(
   <vscale x 8 x i64>,
   <vscale x 8 x i64>*,
   <vscale x 8 x i1>,
@@ -698,7 +698,7 @@ define <vscale x 8 x i64> @intrinsic_xvlbu_mask_v_nxv8i64_nxv8i64(<vscale x 8 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 8 x i64> @llvm.riscv.xvlbu.mask.nxv8i64.nxv8i64(
+  %a = call <vscale x 8 x i64> @llvm.riscv.th.vlbu.mask.nxv8i64.nxv8i64(
     <vscale x 8 x i64> %0,
     <vscale x 8 x i64>* %1,
     <vscale x 8 x i1> %2,
@@ -707,7 +707,7 @@ entry:
   ret <vscale x 8 x i64> %a
 }
 
-declare <vscale x 4 x i16> @llvm.riscv.xvlhu.nxv4i16.nxv4i16(
+declare <vscale x 4 x i16> @llvm.riscv.th.vlhu.nxv4i16.nxv4i16(
   <vscale x 4 x i16>,
   <vscale x 4 x i16>*,
   iXLen);
@@ -720,7 +720,7 @@ define <vscale x 4 x i16> @intrinsic_xvlhu_v_nxv4i16_nxv4i16(<vscale x 4 x i16>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 4 x i16> @llvm.riscv.xvlhu.nxv4i16.nxv4i16(
+  %a = call <vscale x 4 x i16> @llvm.riscv.th.vlhu.nxv4i16.nxv4i16(
     <vscale x 4 x i16> undef,
     <vscale x 4 x i16>* %0,
     iXLen %1)
@@ -728,7 +728,7 @@ entry:
   ret <vscale x 4 x i16> %a
 }
 
-declare <vscale x 4 x i16> @llvm.riscv.xvlhu.mask.nxv4i16.nxv4i16(
+declare <vscale x 4 x i16> @llvm.riscv.th.vlhu.mask.nxv4i16.nxv4i16(
   <vscale x 4 x i16>,
   <vscale x 4 x i16>*,
   <vscale x 4 x i1>,
@@ -742,7 +742,7 @@ define <vscale x 4 x i16> @intrinsic_xvlhu_mask_v_nxv4i16_nxv4i16(<vscale x 4 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 4 x i16> @llvm.riscv.xvlhu.mask.nxv4i16.nxv4i16(
+  %a = call <vscale x 4 x i16> @llvm.riscv.th.vlhu.mask.nxv4i16.nxv4i16(
     <vscale x 4 x i16> %0,
     <vscale x 4 x i16>* %1,
     <vscale x 4 x i1> %2,
@@ -751,7 +751,7 @@ entry:
   ret <vscale x 4 x i16> %a
 }
 
-declare <vscale x 8 x i16> @llvm.riscv.xvlhu.nxv8i16.nxv8i16(
+declare <vscale x 8 x i16> @llvm.riscv.th.vlhu.nxv8i16.nxv8i16(
   <vscale x 8 x i16>,
   <vscale x 8 x i16>*,
   iXLen);
@@ -764,7 +764,7 @@ define <vscale x 8 x i16> @intrinsic_xvlhu_v_nxv8i16_nxv8i16(<vscale x 8 x i16>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 8 x i16> @llvm.riscv.xvlhu.nxv8i16.nxv8i16(
+  %a = call <vscale x 8 x i16> @llvm.riscv.th.vlhu.nxv8i16.nxv8i16(
     <vscale x 8 x i16> undef,
     <vscale x 8 x i16>* %0,
     iXLen %1)
@@ -772,7 +772,7 @@ entry:
   ret <vscale x 8 x i16> %a
 }
 
-declare <vscale x 8 x i16> @llvm.riscv.xvlhu.mask.nxv8i16.nxv8i16(
+declare <vscale x 8 x i16> @llvm.riscv.th.vlhu.mask.nxv8i16.nxv8i16(
   <vscale x 8 x i16>,
   <vscale x 8 x i16>*,
   <vscale x 8 x i1>,
@@ -786,7 +786,7 @@ define <vscale x 8 x i16> @intrinsic_xvlhu_mask_v_nxv8i16_nxv8i16(<vscale x 8 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 8 x i16> @llvm.riscv.xvlhu.mask.nxv8i16.nxv8i16(
+  %a = call <vscale x 8 x i16> @llvm.riscv.th.vlhu.mask.nxv8i16.nxv8i16(
     <vscale x 8 x i16> %0,
     <vscale x 8 x i16>* %1,
     <vscale x 8 x i1> %2,
@@ -795,7 +795,7 @@ entry:
   ret <vscale x 8 x i16> %a
 }
 
-declare <vscale x 16 x i16> @llvm.riscv.xvlhu.nxv16i16.nxv16i16(
+declare <vscale x 16 x i16> @llvm.riscv.th.vlhu.nxv16i16.nxv16i16(
   <vscale x 16 x i16>,
   <vscale x 16 x i16>*,
   iXLen);
@@ -808,7 +808,7 @@ define <vscale x 16 x i16> @intrinsic_xvlhu_v_nxv16i16_nxv16i16(<vscale x 16 x i
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 16 x i16> @llvm.riscv.xvlhu.nxv16i16.nxv16i16(
+  %a = call <vscale x 16 x i16> @llvm.riscv.th.vlhu.nxv16i16.nxv16i16(
     <vscale x 16 x i16> undef,
     <vscale x 16 x i16>* %0,
     iXLen %1)
@@ -816,7 +816,7 @@ entry:
   ret <vscale x 16 x i16> %a
 }
 
-declare <vscale x 16 x i16> @llvm.riscv.xvlhu.mask.nxv16i16.nxv16i16(
+declare <vscale x 16 x i16> @llvm.riscv.th.vlhu.mask.nxv16i16.nxv16i16(
   <vscale x 16 x i16>,
   <vscale x 16 x i16>*,
   <vscale x 16 x i1>,
@@ -830,7 +830,7 @@ define <vscale x 16 x i16> @intrinsic_xvlhu_mask_v_nxv16i16_nxv16i16(<vscale x 1
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 16 x i16> @llvm.riscv.xvlhu.mask.nxv16i16.nxv16i16(
+  %a = call <vscale x 16 x i16> @llvm.riscv.th.vlhu.mask.nxv16i16.nxv16i16(
     <vscale x 16 x i16> %0,
     <vscale x 16 x i16>* %1,
     <vscale x 16 x i1> %2,
@@ -839,7 +839,7 @@ entry:
   ret <vscale x 16 x i16> %a
 }
 
-declare <vscale x 32 x i16> @llvm.riscv.xvlhu.nxv32i16.nxv32i16(
+declare <vscale x 32 x i16> @llvm.riscv.th.vlhu.nxv32i16.nxv32i16(
   <vscale x 32 x i16>,
   <vscale x 32 x i16>*,
   iXLen);
@@ -852,7 +852,7 @@ define <vscale x 32 x i16> @intrinsic_xvlhu_v_nxv32i16_nxv32i16(<vscale x 32 x i
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 32 x i16> @llvm.riscv.xvlhu.nxv32i16.nxv32i16(
+  %a = call <vscale x 32 x i16> @llvm.riscv.th.vlhu.nxv32i16.nxv32i16(
     <vscale x 32 x i16> undef,
     <vscale x 32 x i16>* %0,
     iXLen %1)
@@ -860,7 +860,7 @@ entry:
   ret <vscale x 32 x i16> %a
 }
 
-declare <vscale x 32 x i16> @llvm.riscv.xvlhu.mask.nxv32i16.nxv32i16(
+declare <vscale x 32 x i16> @llvm.riscv.th.vlhu.mask.nxv32i16.nxv32i16(
   <vscale x 32 x i16>,
   <vscale x 32 x i16>*,
   <vscale x 32 x i1>,
@@ -874,7 +874,7 @@ define <vscale x 32 x i16> @intrinsic_xvlhu_mask_v_nxv32i16_nxv32i16(<vscale x 3
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 32 x i16> @llvm.riscv.xvlhu.mask.nxv32i16.nxv32i16(
+  %a = call <vscale x 32 x i16> @llvm.riscv.th.vlhu.mask.nxv32i16.nxv32i16(
     <vscale x 32 x i16> %0,
     <vscale x 32 x i16>* %1,
     <vscale x 32 x i1> %2,
@@ -883,7 +883,7 @@ entry:
   ret <vscale x 32 x i16> %a
 }
 
-declare <vscale x 2 x i32> @llvm.riscv.xvlhu.nxv2i32.nxv2i32(
+declare <vscale x 2 x i32> @llvm.riscv.th.vlhu.nxv2i32.nxv2i32(
   <vscale x 2 x i32>,
   <vscale x 2 x i32>*,
   iXLen);
@@ -896,7 +896,7 @@ define <vscale x 2 x i32> @intrinsic_xvlhu_v_nxv2i32_nxv2i32(<vscale x 2 x i32>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 2 x i32> @llvm.riscv.xvlhu.nxv2i32.nxv2i32(
+  %a = call <vscale x 2 x i32> @llvm.riscv.th.vlhu.nxv2i32.nxv2i32(
     <vscale x 2 x i32> undef,
     <vscale x 2 x i32>* %0,
     iXLen %1)
@@ -904,7 +904,7 @@ entry:
   ret <vscale x 2 x i32> %a
 }
 
-declare <vscale x 2 x i32> @llvm.riscv.xvlhu.mask.nxv2i32.nxv2i32(
+declare <vscale x 2 x i32> @llvm.riscv.th.vlhu.mask.nxv2i32.nxv2i32(
   <vscale x 2 x i32>,
   <vscale x 2 x i32>*,
   <vscale x 2 x i1>,
@@ -918,7 +918,7 @@ define <vscale x 2 x i32> @intrinsic_xvlhu_mask_v_nxv2i32_nxv2i32(<vscale x 2 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 2 x i32> @llvm.riscv.xvlhu.mask.nxv2i32.nxv2i32(
+  %a = call <vscale x 2 x i32> @llvm.riscv.th.vlhu.mask.nxv2i32.nxv2i32(
     <vscale x 2 x i32> %0,
     <vscale x 2 x i32>* %1,
     <vscale x 2 x i1> %2,
@@ -927,7 +927,7 @@ entry:
   ret <vscale x 2 x i32> %a
 }
 
-declare <vscale x 4 x i32> @llvm.riscv.xvlhu.nxv4i32.nxv4i32(
+declare <vscale x 4 x i32> @llvm.riscv.th.vlhu.nxv4i32.nxv4i32(
   <vscale x 4 x i32>,
   <vscale x 4 x i32>*,
   iXLen);
@@ -940,7 +940,7 @@ define <vscale x 4 x i32> @intrinsic_xvlhu_v_nxv4i32_nxv4i32(<vscale x 4 x i32>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 4 x i32> @llvm.riscv.xvlhu.nxv4i32.nxv4i32(
+  %a = call <vscale x 4 x i32> @llvm.riscv.th.vlhu.nxv4i32.nxv4i32(
     <vscale x 4 x i32> undef,
     <vscale x 4 x i32>* %0,
     iXLen %1)
@@ -948,7 +948,7 @@ entry:
   ret <vscale x 4 x i32> %a
 }
 
-declare <vscale x 4 x i32> @llvm.riscv.xvlhu.mask.nxv4i32.nxv4i32(
+declare <vscale x 4 x i32> @llvm.riscv.th.vlhu.mask.nxv4i32.nxv4i32(
   <vscale x 4 x i32>,
   <vscale x 4 x i32>*,
   <vscale x 4 x i1>,
@@ -962,7 +962,7 @@ define <vscale x 4 x i32> @intrinsic_xvlhu_mask_v_nxv4i32_nxv4i32(<vscale x 4 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 4 x i32> @llvm.riscv.xvlhu.mask.nxv4i32.nxv4i32(
+  %a = call <vscale x 4 x i32> @llvm.riscv.th.vlhu.mask.nxv4i32.nxv4i32(
     <vscale x 4 x i32> %0,
     <vscale x 4 x i32>* %1,
     <vscale x 4 x i1> %2,
@@ -971,7 +971,7 @@ entry:
   ret <vscale x 4 x i32> %a
 }
 
-declare <vscale x 8 x i32> @llvm.riscv.xvlhu.nxv8i32.nxv8i32(
+declare <vscale x 8 x i32> @llvm.riscv.th.vlhu.nxv8i32.nxv8i32(
   <vscale x 8 x i32>,
   <vscale x 8 x i32>*,
   iXLen);
@@ -984,7 +984,7 @@ define <vscale x 8 x i32> @intrinsic_xvlhu_v_nxv8i32_nxv8i32(<vscale x 8 x i32>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 8 x i32> @llvm.riscv.xvlhu.nxv8i32.nxv8i32(
+  %a = call <vscale x 8 x i32> @llvm.riscv.th.vlhu.nxv8i32.nxv8i32(
     <vscale x 8 x i32> undef,
     <vscale x 8 x i32>* %0,
     iXLen %1)
@@ -992,7 +992,7 @@ entry:
   ret <vscale x 8 x i32> %a
 }
 
-declare <vscale x 8 x i32> @llvm.riscv.xvlhu.mask.nxv8i32.nxv8i32(
+declare <vscale x 8 x i32> @llvm.riscv.th.vlhu.mask.nxv8i32.nxv8i32(
   <vscale x 8 x i32>,
   <vscale x 8 x i32>*,
   <vscale x 8 x i1>,
@@ -1006,7 +1006,7 @@ define <vscale x 8 x i32> @intrinsic_xvlhu_mask_v_nxv8i32_nxv8i32(<vscale x 8 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 8 x i32> @llvm.riscv.xvlhu.mask.nxv8i32.nxv8i32(
+  %a = call <vscale x 8 x i32> @llvm.riscv.th.vlhu.mask.nxv8i32.nxv8i32(
     <vscale x 8 x i32> %0,
     <vscale x 8 x i32>* %1,
     <vscale x 8 x i1> %2,
@@ -1015,7 +1015,7 @@ entry:
   ret <vscale x 8 x i32> %a
 }
 
-declare <vscale x 16 x i32> @llvm.riscv.xvlhu.nxv16i32.nxv16i32(
+declare <vscale x 16 x i32> @llvm.riscv.th.vlhu.nxv16i32.nxv16i32(
   <vscale x 16 x i32>,
   <vscale x 16 x i32>*,
   iXLen);
@@ -1028,7 +1028,7 @@ define <vscale x 16 x i32> @intrinsic_xvlhu_v_nxv16i32_nxv16i32(<vscale x 16 x i
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 16 x i32> @llvm.riscv.xvlhu.nxv16i32.nxv16i32(
+  %a = call <vscale x 16 x i32> @llvm.riscv.th.vlhu.nxv16i32.nxv16i32(
     <vscale x 16 x i32> undef,
     <vscale x 16 x i32>* %0,
     iXLen %1)
@@ -1036,7 +1036,7 @@ entry:
   ret <vscale x 16 x i32> %a
 }
 
-declare <vscale x 16 x i32> @llvm.riscv.xvlhu.mask.nxv16i32.nxv16i32(
+declare <vscale x 16 x i32> @llvm.riscv.th.vlhu.mask.nxv16i32.nxv16i32(
   <vscale x 16 x i32>,
   <vscale x 16 x i32>*,
   <vscale x 16 x i1>,
@@ -1050,7 +1050,7 @@ define <vscale x 16 x i32> @intrinsic_xvlhu_mask_v_nxv16i32_nxv16i32(<vscale x 1
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 16 x i32> @llvm.riscv.xvlhu.mask.nxv16i32.nxv16i32(
+  %a = call <vscale x 16 x i32> @llvm.riscv.th.vlhu.mask.nxv16i32.nxv16i32(
     <vscale x 16 x i32> %0,
     <vscale x 16 x i32>* %1,
     <vscale x 16 x i1> %2,
@@ -1059,7 +1059,7 @@ entry:
   ret <vscale x 16 x i32> %a
 }
 
-declare <vscale x 1 x i64> @llvm.riscv.xvlhu.nxv1i64.nxv1i64(
+declare <vscale x 1 x i64> @llvm.riscv.th.vlhu.nxv1i64.nxv1i64(
   <vscale x 1 x i64>,
   <vscale x 1 x i64>*,
   iXLen);
@@ -1072,7 +1072,7 @@ define <vscale x 1 x i64> @intrinsic_xvlhu_v_nxv1i64_nxv1i64(<vscale x 1 x i64>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 1 x i64> @llvm.riscv.xvlhu.nxv1i64.nxv1i64(
+  %a = call <vscale x 1 x i64> @llvm.riscv.th.vlhu.nxv1i64.nxv1i64(
     <vscale x 1 x i64> undef,
     <vscale x 1 x i64>* %0,
     iXLen %1)
@@ -1080,7 +1080,7 @@ entry:
   ret <vscale x 1 x i64> %a
 }
 
-declare <vscale x 1 x i64> @llvm.riscv.xvlhu.mask.nxv1i64.nxv1i64(
+declare <vscale x 1 x i64> @llvm.riscv.th.vlhu.mask.nxv1i64.nxv1i64(
   <vscale x 1 x i64>,
   <vscale x 1 x i64>*,
   <vscale x 1 x i1>,
@@ -1094,7 +1094,7 @@ define <vscale x 1 x i64> @intrinsic_xvlhu_mask_v_nxv1i64_nxv1i64(<vscale x 1 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 1 x i64> @llvm.riscv.xvlhu.mask.nxv1i64.nxv1i64(
+  %a = call <vscale x 1 x i64> @llvm.riscv.th.vlhu.mask.nxv1i64.nxv1i64(
     <vscale x 1 x i64> %0,
     <vscale x 1 x i64>* %1,
     <vscale x 1 x i1> %2,
@@ -1103,7 +1103,7 @@ entry:
   ret <vscale x 1 x i64> %a
 }
 
-declare <vscale x 2 x i64> @llvm.riscv.xvlhu.nxv2i64.nxv2i64(
+declare <vscale x 2 x i64> @llvm.riscv.th.vlhu.nxv2i64.nxv2i64(
   <vscale x 2 x i64>,
   <vscale x 2 x i64>*,
   iXLen);
@@ -1116,7 +1116,7 @@ define <vscale x 2 x i64> @intrinsic_xvlhu_v_nxv2i64_nxv2i64(<vscale x 2 x i64>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 2 x i64> @llvm.riscv.xvlhu.nxv2i64.nxv2i64(
+  %a = call <vscale x 2 x i64> @llvm.riscv.th.vlhu.nxv2i64.nxv2i64(
     <vscale x 2 x i64> undef,
     <vscale x 2 x i64>* %0,
     iXLen %1)
@@ -1124,7 +1124,7 @@ entry:
   ret <vscale x 2 x i64> %a
 }
 
-declare <vscale x 2 x i64> @llvm.riscv.xvlhu.mask.nxv2i64.nxv2i64(
+declare <vscale x 2 x i64> @llvm.riscv.th.vlhu.mask.nxv2i64.nxv2i64(
   <vscale x 2 x i64>,
   <vscale x 2 x i64>*,
   <vscale x 2 x i1>,
@@ -1138,7 +1138,7 @@ define <vscale x 2 x i64> @intrinsic_xvlhu_mask_v_nxv2i64_nxv2i64(<vscale x 2 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 2 x i64> @llvm.riscv.xvlhu.mask.nxv2i64.nxv2i64(
+  %a = call <vscale x 2 x i64> @llvm.riscv.th.vlhu.mask.nxv2i64.nxv2i64(
     <vscale x 2 x i64> %0,
     <vscale x 2 x i64>* %1,
     <vscale x 2 x i1> %2,
@@ -1147,7 +1147,7 @@ entry:
   ret <vscale x 2 x i64> %a
 }
 
-declare <vscale x 4 x i64> @llvm.riscv.xvlhu.nxv4i64.nxv4i64(
+declare <vscale x 4 x i64> @llvm.riscv.th.vlhu.nxv4i64.nxv4i64(
   <vscale x 4 x i64>,
   <vscale x 4 x i64>*,
   iXLen);
@@ -1160,7 +1160,7 @@ define <vscale x 4 x i64> @intrinsic_xvlhu_v_nxv4i64_nxv4i64(<vscale x 4 x i64>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 4 x i64> @llvm.riscv.xvlhu.nxv4i64.nxv4i64(
+  %a = call <vscale x 4 x i64> @llvm.riscv.th.vlhu.nxv4i64.nxv4i64(
     <vscale x 4 x i64> undef,
     <vscale x 4 x i64>* %0,
     iXLen %1)
@@ -1168,7 +1168,7 @@ entry:
   ret <vscale x 4 x i64> %a
 }
 
-declare <vscale x 4 x i64> @llvm.riscv.xvlhu.mask.nxv4i64.nxv4i64(
+declare <vscale x 4 x i64> @llvm.riscv.th.vlhu.mask.nxv4i64.nxv4i64(
   <vscale x 4 x i64>,
   <vscale x 4 x i64>*,
   <vscale x 4 x i1>,
@@ -1182,7 +1182,7 @@ define <vscale x 4 x i64> @intrinsic_xvlhu_mask_v_nxv4i64_nxv4i64(<vscale x 4 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 4 x i64> @llvm.riscv.xvlhu.mask.nxv4i64.nxv4i64(
+  %a = call <vscale x 4 x i64> @llvm.riscv.th.vlhu.mask.nxv4i64.nxv4i64(
     <vscale x 4 x i64> %0,
     <vscale x 4 x i64>* %1,
     <vscale x 4 x i1> %2,
@@ -1191,7 +1191,7 @@ entry:
   ret <vscale x 4 x i64> %a
 }
 
-declare <vscale x 8 x i64> @llvm.riscv.xvlhu.nxv8i64.nxv8i64(
+declare <vscale x 8 x i64> @llvm.riscv.th.vlhu.nxv8i64.nxv8i64(
   <vscale x 8 x i64>,
   <vscale x 8 x i64>*,
   iXLen);
@@ -1204,7 +1204,7 @@ define <vscale x 8 x i64> @intrinsic_xvlhu_v_nxv8i64_nxv8i64(<vscale x 8 x i64>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 8 x i64> @llvm.riscv.xvlhu.nxv8i64.nxv8i64(
+  %a = call <vscale x 8 x i64> @llvm.riscv.th.vlhu.nxv8i64.nxv8i64(
     <vscale x 8 x i64> undef,
     <vscale x 8 x i64>* %0,
     iXLen %1)
@@ -1212,7 +1212,7 @@ entry:
   ret <vscale x 8 x i64> %a
 }
 
-declare <vscale x 8 x i64> @llvm.riscv.xvlhu.mask.nxv8i64.nxv8i64(
+declare <vscale x 8 x i64> @llvm.riscv.th.vlhu.mask.nxv8i64.nxv8i64(
   <vscale x 8 x i64>,
   <vscale x 8 x i64>*,
   <vscale x 8 x i1>,
@@ -1226,7 +1226,7 @@ define <vscale x 8 x i64> @intrinsic_xvlhu_mask_v_nxv8i64_nxv8i64(<vscale x 8 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 8 x i64> @llvm.riscv.xvlhu.mask.nxv8i64.nxv8i64(
+  %a = call <vscale x 8 x i64> @llvm.riscv.th.vlhu.mask.nxv8i64.nxv8i64(
     <vscale x 8 x i64> %0,
     <vscale x 8 x i64>* %1,
     <vscale x 8 x i1> %2,
@@ -1235,7 +1235,7 @@ entry:
   ret <vscale x 8 x i64> %a
 }
 
-declare <vscale x 2 x i32> @llvm.riscv.xvlwu.nxv2i32.nxv2i32(
+declare <vscale x 2 x i32> @llvm.riscv.th.vlwu.nxv2i32.nxv2i32(
   <vscale x 2 x i32>,
   <vscale x 2 x i32>*,
   iXLen);
@@ -1248,7 +1248,7 @@ define <vscale x 2 x i32> @intrinsic_xvlwu_v_nxv2i32_nxv2i32(<vscale x 2 x i32>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 2 x i32> @llvm.riscv.xvlwu.nxv2i32.nxv2i32(
+  %a = call <vscale x 2 x i32> @llvm.riscv.th.vlwu.nxv2i32.nxv2i32(
     <vscale x 2 x i32> undef,
     <vscale x 2 x i32>* %0,
     iXLen %1)
@@ -1256,7 +1256,7 @@ entry:
   ret <vscale x 2 x i32> %a
 }
 
-declare <vscale x 2 x i32> @llvm.riscv.xvlwu.mask.nxv2i32.nxv2i32(
+declare <vscale x 2 x i32> @llvm.riscv.th.vlwu.mask.nxv2i32.nxv2i32(
   <vscale x 2 x i32>,
   <vscale x 2 x i32>*,
   <vscale x 2 x i1>,
@@ -1270,7 +1270,7 @@ define <vscale x 2 x i32> @intrinsic_xvlwu_mask_v_nxv2i32_nxv2i32(<vscale x 2 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 2 x i32> @llvm.riscv.xvlwu.mask.nxv2i32.nxv2i32(
+  %a = call <vscale x 2 x i32> @llvm.riscv.th.vlwu.mask.nxv2i32.nxv2i32(
     <vscale x 2 x i32> %0,
     <vscale x 2 x i32>* %1,
     <vscale x 2 x i1> %2,
@@ -1279,7 +1279,7 @@ entry:
   ret <vscale x 2 x i32> %a
 }
 
-declare <vscale x 4 x i32> @llvm.riscv.xvlwu.nxv4i32.nxv4i32(
+declare <vscale x 4 x i32> @llvm.riscv.th.vlwu.nxv4i32.nxv4i32(
   <vscale x 4 x i32>,
   <vscale x 4 x i32>*,
   iXLen);
@@ -1292,7 +1292,7 @@ define <vscale x 4 x i32> @intrinsic_xvlwu_v_nxv4i32_nxv4i32(<vscale x 4 x i32>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 4 x i32> @llvm.riscv.xvlwu.nxv4i32.nxv4i32(
+  %a = call <vscale x 4 x i32> @llvm.riscv.th.vlwu.nxv4i32.nxv4i32(
     <vscale x 4 x i32> undef,
     <vscale x 4 x i32>* %0,
     iXLen %1)
@@ -1300,7 +1300,7 @@ entry:
   ret <vscale x 4 x i32> %a
 }
 
-declare <vscale x 4 x i32> @llvm.riscv.xvlwu.mask.nxv4i32.nxv4i32(
+declare <vscale x 4 x i32> @llvm.riscv.th.vlwu.mask.nxv4i32.nxv4i32(
   <vscale x 4 x i32>,
   <vscale x 4 x i32>*,
   <vscale x 4 x i1>,
@@ -1314,7 +1314,7 @@ define <vscale x 4 x i32> @intrinsic_xvlwu_mask_v_nxv4i32_nxv4i32(<vscale x 4 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 4 x i32> @llvm.riscv.xvlwu.mask.nxv4i32.nxv4i32(
+  %a = call <vscale x 4 x i32> @llvm.riscv.th.vlwu.mask.nxv4i32.nxv4i32(
     <vscale x 4 x i32> %0,
     <vscale x 4 x i32>* %1,
     <vscale x 4 x i1> %2,
@@ -1323,7 +1323,7 @@ entry:
   ret <vscale x 4 x i32> %a
 }
 
-declare <vscale x 8 x i32> @llvm.riscv.xvlwu.nxv8i32.nxv8i32(
+declare <vscale x 8 x i32> @llvm.riscv.th.vlwu.nxv8i32.nxv8i32(
   <vscale x 8 x i32>,
   <vscale x 8 x i32>*,
   iXLen);
@@ -1336,7 +1336,7 @@ define <vscale x 8 x i32> @intrinsic_xvlwu_v_nxv8i32_nxv8i32(<vscale x 8 x i32>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 8 x i32> @llvm.riscv.xvlwu.nxv8i32.nxv8i32(
+  %a = call <vscale x 8 x i32> @llvm.riscv.th.vlwu.nxv8i32.nxv8i32(
     <vscale x 8 x i32> undef,
     <vscale x 8 x i32>* %0,
     iXLen %1)
@@ -1344,7 +1344,7 @@ entry:
   ret <vscale x 8 x i32> %a
 }
 
-declare <vscale x 8 x i32> @llvm.riscv.xvlwu.mask.nxv8i32.nxv8i32(
+declare <vscale x 8 x i32> @llvm.riscv.th.vlwu.mask.nxv8i32.nxv8i32(
   <vscale x 8 x i32>,
   <vscale x 8 x i32>*,
   <vscale x 8 x i1>,
@@ -1358,7 +1358,7 @@ define <vscale x 8 x i32> @intrinsic_xvlwu_mask_v_nxv8i32_nxv8i32(<vscale x 8 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 8 x i32> @llvm.riscv.xvlwu.mask.nxv8i32.nxv8i32(
+  %a = call <vscale x 8 x i32> @llvm.riscv.th.vlwu.mask.nxv8i32.nxv8i32(
     <vscale x 8 x i32> %0,
     <vscale x 8 x i32>* %1,
     <vscale x 8 x i1> %2,
@@ -1367,7 +1367,7 @@ entry:
   ret <vscale x 8 x i32> %a
 }
 
-declare <vscale x 16 x i32> @llvm.riscv.xvlwu.nxv16i32.nxv16i32(
+declare <vscale x 16 x i32> @llvm.riscv.th.vlwu.nxv16i32.nxv16i32(
   <vscale x 16 x i32>,
   <vscale x 16 x i32>*,
   iXLen);
@@ -1380,7 +1380,7 @@ define <vscale x 16 x i32> @intrinsic_xvlwu_v_nxv16i32_nxv16i32(<vscale x 16 x i
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 16 x i32> @llvm.riscv.xvlwu.nxv16i32.nxv16i32(
+  %a = call <vscale x 16 x i32> @llvm.riscv.th.vlwu.nxv16i32.nxv16i32(
     <vscale x 16 x i32> undef,
     <vscale x 16 x i32>* %0,
     iXLen %1)
@@ -1388,7 +1388,7 @@ entry:
   ret <vscale x 16 x i32> %a
 }
 
-declare <vscale x 16 x i32> @llvm.riscv.xvlwu.mask.nxv16i32.nxv16i32(
+declare <vscale x 16 x i32> @llvm.riscv.th.vlwu.mask.nxv16i32.nxv16i32(
   <vscale x 16 x i32>,
   <vscale x 16 x i32>*,
   <vscale x 16 x i1>,
@@ -1402,7 +1402,7 @@ define <vscale x 16 x i32> @intrinsic_xvlwu_mask_v_nxv16i32_nxv16i32(<vscale x 1
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 16 x i32> @llvm.riscv.xvlwu.mask.nxv16i32.nxv16i32(
+  %a = call <vscale x 16 x i32> @llvm.riscv.th.vlwu.mask.nxv16i32.nxv16i32(
     <vscale x 16 x i32> %0,
     <vscale x 16 x i32>* %1,
     <vscale x 16 x i1> %2,
@@ -1411,7 +1411,7 @@ entry:
   ret <vscale x 16 x i32> %a
 }
 
-declare <vscale x 1 x i64> @llvm.riscv.xvlwu.nxv1i64.nxv1i64(
+declare <vscale x 1 x i64> @llvm.riscv.th.vlwu.nxv1i64.nxv1i64(
   <vscale x 1 x i64>,
   <vscale x 1 x i64>*,
   iXLen);
@@ -1424,7 +1424,7 @@ define <vscale x 1 x i64> @intrinsic_xvlwu_v_nxv1i64_nxv1i64(<vscale x 1 x i64>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 1 x i64> @llvm.riscv.xvlwu.nxv1i64.nxv1i64(
+  %a = call <vscale x 1 x i64> @llvm.riscv.th.vlwu.nxv1i64.nxv1i64(
     <vscale x 1 x i64> undef,
     <vscale x 1 x i64>* %0,
     iXLen %1)
@@ -1432,7 +1432,7 @@ entry:
   ret <vscale x 1 x i64> %a
 }
 
-declare <vscale x 1 x i64> @llvm.riscv.xvlwu.mask.nxv1i64.nxv1i64(
+declare <vscale x 1 x i64> @llvm.riscv.th.vlwu.mask.nxv1i64.nxv1i64(
   <vscale x 1 x i64>,
   <vscale x 1 x i64>*,
   <vscale x 1 x i1>,
@@ -1446,7 +1446,7 @@ define <vscale x 1 x i64> @intrinsic_xvlwu_mask_v_nxv1i64_nxv1i64(<vscale x 1 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 1 x i64> @llvm.riscv.xvlwu.mask.nxv1i64.nxv1i64(
+  %a = call <vscale x 1 x i64> @llvm.riscv.th.vlwu.mask.nxv1i64.nxv1i64(
     <vscale x 1 x i64> %0,
     <vscale x 1 x i64>* %1,
     <vscale x 1 x i1> %2,
@@ -1455,7 +1455,7 @@ entry:
   ret <vscale x 1 x i64> %a
 }
 
-declare <vscale x 2 x i64> @llvm.riscv.xvlwu.nxv2i64.nxv2i64(
+declare <vscale x 2 x i64> @llvm.riscv.th.vlwu.nxv2i64.nxv2i64(
   <vscale x 2 x i64>,
   <vscale x 2 x i64>*,
   iXLen);
@@ -1468,7 +1468,7 @@ define <vscale x 2 x i64> @intrinsic_xvlwu_v_nxv2i64_nxv2i64(<vscale x 2 x i64>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 2 x i64> @llvm.riscv.xvlwu.nxv2i64.nxv2i64(
+  %a = call <vscale x 2 x i64> @llvm.riscv.th.vlwu.nxv2i64.nxv2i64(
     <vscale x 2 x i64> undef,
     <vscale x 2 x i64>* %0,
     iXLen %1)
@@ -1476,7 +1476,7 @@ entry:
   ret <vscale x 2 x i64> %a
 }
 
-declare <vscale x 2 x i64> @llvm.riscv.xvlwu.mask.nxv2i64.nxv2i64(
+declare <vscale x 2 x i64> @llvm.riscv.th.vlwu.mask.nxv2i64.nxv2i64(
   <vscale x 2 x i64>,
   <vscale x 2 x i64>*,
   <vscale x 2 x i1>,
@@ -1490,7 +1490,7 @@ define <vscale x 2 x i64> @intrinsic_xvlwu_mask_v_nxv2i64_nxv2i64(<vscale x 2 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 2 x i64> @llvm.riscv.xvlwu.mask.nxv2i64.nxv2i64(
+  %a = call <vscale x 2 x i64> @llvm.riscv.th.vlwu.mask.nxv2i64.nxv2i64(
     <vscale x 2 x i64> %0,
     <vscale x 2 x i64>* %1,
     <vscale x 2 x i1> %2,
@@ -1499,7 +1499,7 @@ entry:
   ret <vscale x 2 x i64> %a
 }
 
-declare <vscale x 4 x i64> @llvm.riscv.xvlwu.nxv4i64.nxv4i64(
+declare <vscale x 4 x i64> @llvm.riscv.th.vlwu.nxv4i64.nxv4i64(
   <vscale x 4 x i64>,
   <vscale x 4 x i64>*,
   iXLen);
@@ -1512,7 +1512,7 @@ define <vscale x 4 x i64> @intrinsic_xvlwu_v_nxv4i64_nxv4i64(<vscale x 4 x i64>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 4 x i64> @llvm.riscv.xvlwu.nxv4i64.nxv4i64(
+  %a = call <vscale x 4 x i64> @llvm.riscv.th.vlwu.nxv4i64.nxv4i64(
     <vscale x 4 x i64> undef,
     <vscale x 4 x i64>* %0,
     iXLen %1)
@@ -1520,7 +1520,7 @@ entry:
   ret <vscale x 4 x i64> %a
 }
 
-declare <vscale x 4 x i64> @llvm.riscv.xvlwu.mask.nxv4i64.nxv4i64(
+declare <vscale x 4 x i64> @llvm.riscv.th.vlwu.mask.nxv4i64.nxv4i64(
   <vscale x 4 x i64>,
   <vscale x 4 x i64>*,
   <vscale x 4 x i1>,
@@ -1534,7 +1534,7 @@ define <vscale x 4 x i64> @intrinsic_xvlwu_mask_v_nxv4i64_nxv4i64(<vscale x 4 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 4 x i64> @llvm.riscv.xvlwu.mask.nxv4i64.nxv4i64(
+  %a = call <vscale x 4 x i64> @llvm.riscv.th.vlwu.mask.nxv4i64.nxv4i64(
     <vscale x 4 x i64> %0,
     <vscale x 4 x i64>* %1,
     <vscale x 4 x i1> %2,
@@ -1543,7 +1543,7 @@ entry:
   ret <vscale x 4 x i64> %a
 }
 
-declare <vscale x 8 x i64> @llvm.riscv.xvlwu.nxv8i64.nxv8i64(
+declare <vscale x 8 x i64> @llvm.riscv.th.vlwu.nxv8i64.nxv8i64(
   <vscale x 8 x i64>,
   <vscale x 8 x i64>*,
   iXLen);
@@ -1556,7 +1556,7 @@ define <vscale x 8 x i64> @intrinsic_xvlwu_v_nxv8i64_nxv8i64(<vscale x 8 x i64>*
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 8 x i64> @llvm.riscv.xvlwu.nxv8i64.nxv8i64(
+  %a = call <vscale x 8 x i64> @llvm.riscv.th.vlwu.nxv8i64.nxv8i64(
     <vscale x 8 x i64> undef,
     <vscale x 8 x i64>* %0,
     iXLen %1)
@@ -1564,7 +1564,7 @@ entry:
   ret <vscale x 8 x i64> %a
 }
 
-declare <vscale x 8 x i64> @llvm.riscv.xvlwu.mask.nxv8i64.nxv8i64(
+declare <vscale x 8 x i64> @llvm.riscv.th.vlwu.mask.nxv8i64.nxv8i64(
   <vscale x 8 x i64>,
   <vscale x 8 x i64>*,
   <vscale x 8 x i1>,
@@ -1578,7 +1578,7 @@ define <vscale x 8 x i64> @intrinsic_xvlwu_mask_v_nxv8i64_nxv8i64(<vscale x 8 x 
 ; CHECK-NEXT:    ret
 
 entry:
-  %a = call <vscale x 8 x i64> @llvm.riscv.xvlwu.mask.nxv8i64.nxv8i64(
+  %a = call <vscale x 8 x i64> @llvm.riscv.th.vlwu.mask.nxv8i64.nxv8i64(
     <vscale x 8 x i64> %0,
     <vscale x 8 x i64>* %1,
     <vscale x 8 x i1> %2,

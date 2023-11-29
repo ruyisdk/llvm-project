@@ -4,7 +4,7 @@
 ; RUN: sed 's/iXLen/i64/g' %s | llc -mtriple=riscv64 -mattr=+xtheadvector \
 ; RUN:   -verify-machineinstrs | FileCheck %s --check-prefixes=CHECK
 
-declare <vscale x 8 x i8> @llvm.riscv.xvadd.nxv8i8.nxv8i8(
+declare <vscale x 8 x i8> @llvm.riscv.th.vadd.nxv8i8.nxv8i8(
   <vscale x 8 x i8>,
   <vscale x 8 x i8>,
   <vscale x 8 x i8>,
@@ -17,7 +17,7 @@ define <vscale x 8 x i8> @intrinsic_xvadd_vv_nxv8i8_nxv8i8_nxv8i8(<vscale x 8 x 
 ; CHECK-NEXT:    th.vadd.vv v8, v8, v9
 ; CHECK-NEXT:    ret
 entry:
-  %a = call <vscale x 8 x i8> @llvm.riscv.xvadd.nxv8i8.nxv8i8(
+  %a = call <vscale x 8 x i8> @llvm.riscv.th.vadd.nxv8i8.nxv8i8(
     <vscale x 8 x i8> undef,
     <vscale x 8 x i8> %0,
     <vscale x 8 x i8> %1,
@@ -26,7 +26,7 @@ entry:
   ret <vscale x 8 x i8> %a
 }
 
-declare <vscale x 8 x i8> @llvm.riscv.xvadd.mask.nxv8i8.nxv8i8(
+declare <vscale x 8 x i8> @llvm.riscv.th.vadd.mask.nxv8i8.nxv8i8(
   <vscale x 8 x i8>,
   <vscale x 8 x i8>,
   <vscale x 8 x i8>,
@@ -40,7 +40,7 @@ define <vscale x 8 x i8> @intrinsic_xvadd_mask_vv_nxv8i8_nxv8i8_nxv8i8(<vscale x
 ; CHECK-NEXT:    th.vadd.vv v8, v9, v10, v0.t
 ; CHECK-NEXT:    ret
 entry:
-  %a = call <vscale x 8 x i8> @llvm.riscv.xvadd.mask.nxv8i8.nxv8i8(
+  %a = call <vscale x 8 x i8> @llvm.riscv.th.vadd.mask.nxv8i8.nxv8i8(
     <vscale x 8 x i8> %0,
     <vscale x 8 x i8> %1,
     <vscale x 8 x i8> %2,

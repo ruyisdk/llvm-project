@@ -16,15 +16,15 @@
 ; -----------------------------------
 ; In intrinsic, ediv is always 0 for ASM name `d1`
 
-declare iXLen @llvm.riscv.xvsetvl.iXLen   (iXLen %avl, iXLen %sew, iXLen %lmul);
-declare iXLen @llvm.riscv.xvsetvlmax.iXLen(            iXLen %sew, iXLen %lmul);
+declare iXLen @llvm.riscv.th.vsetvl.iXLen   (iXLen %avl, iXLen %sew, iXLen %lmul);
+declare iXLen @llvm.riscv.th.vsetvlmax.iXLen(            iXLen %sew, iXLen %lmul);
 
 
 define iXLen @intrinsic_xvsetvlmax_e8m1() {
 entry:
 ; CHECK-LABEL: intrinsic_xvsetvlmax_e8m1
 ; CHECK: vsetvli a0, zero, e8, m1, d1
-  %v = call iXLen @llvm.riscv.xvsetvlmax.iXLen(iXLen 0, iXLen 0)
+  %v = call iXLen @llvm.riscv.th.vsetvlmax.iXLen(iXLen 0, iXLen 0)
   ret iXLen %v
 }
 
@@ -33,7 +33,7 @@ define iXLen @intrinsic_xvsetvlmax_e8m2() {
 entry:
 ; CHECK-LABEL: intrinsic_xvsetvlmax_e8m2
 ; CHECK: vsetvli a0, zero, e8, m2, d1
-  %v = call iXLen @llvm.riscv.xvsetvlmax.iXLen(iXLen 0, iXLen 1)
+  %v = call iXLen @llvm.riscv.th.vsetvlmax.iXLen(iXLen 0, iXLen 1)
   ret iXLen %v
 }
 
@@ -42,7 +42,7 @@ define iXLen @intrinsic_xvsetvlmax_e8m4() {
 entry:
 ; CHECK-LABEL: intrinsic_xvsetvlmax_e8m4
 ; CHECK: vsetvli a0, zero, e8, m4, d1
-  %v = call iXLen @llvm.riscv.xvsetvlmax.iXLen(iXLen 0, iXLen 2)
+  %v = call iXLen @llvm.riscv.th.vsetvlmax.iXLen(iXLen 0, iXLen 2)
   ret iXLen %v
 }
 
@@ -51,7 +51,7 @@ define iXLen @intrinsic_xvsetvlmax_e8m8() {
 entry:
 ; CHECK-LABEL: intrinsic_xvsetvlmax_e8m8
 ; CHECK: vsetvli a0, zero, e8, m8, d1
-  %v = call iXLen @llvm.riscv.xvsetvlmax.iXLen(iXLen 0, iXLen 3)
+  %v = call iXLen @llvm.riscv.th.vsetvlmax.iXLen(iXLen 0, iXLen 3)
   ret iXLen %v
 }
 
@@ -60,7 +60,7 @@ define iXLen @intrinsic_xvsetvlmax_e16m1() {
 entry:
 ; CHECK-LABEL: intrinsic_xvsetvlmax_e16m1
 ; CHECK: vsetvli a0, zero, e16, m1, d1
-  %v = call iXLen @llvm.riscv.xvsetvlmax.iXLen(iXLen 1, iXLen 0)
+  %v = call iXLen @llvm.riscv.th.vsetvlmax.iXLen(iXLen 1, iXLen 0)
   ret iXLen %v
 }
 
@@ -69,7 +69,7 @@ define iXLen @intrinsic_xvsetvlmax_e16m2() {
 entry:
 ; CHECK-LABEL: intrinsic_xvsetvlmax_e16m2
 ; CHECK: vsetvli a0, zero, e16, m2, d1
-  %v = call iXLen @llvm.riscv.xvsetvlmax.iXLen(iXLen 1, iXLen 1)
+  %v = call iXLen @llvm.riscv.th.vsetvlmax.iXLen(iXLen 1, iXLen 1)
   ret iXLen %v
 }
 
@@ -78,7 +78,7 @@ define iXLen @intrinsic_xvsetvlmax_e16m4() {
 entry:
 ; CHECK-LABEL: intrinsic_xvsetvlmax_e16m4
 ; CHECK: vsetvli a0, zero, e16, m4, d1
-  %v = call iXLen @llvm.riscv.xvsetvlmax.iXLen(iXLen 1, iXLen 2)
+  %v = call iXLen @llvm.riscv.th.vsetvlmax.iXLen(iXLen 1, iXLen 2)
   ret iXLen %v
 }
 
@@ -87,7 +87,7 @@ define iXLen @intrinsic_xvsetvlmax_e16m8() {
 entry:
 ; CHECK-LABEL: intrinsic_xvsetvlmax_e16m8
 ; CHECK: vsetvli a0, zero, e16, m8, d1
-  %v = call iXLen @llvm.riscv.xvsetvlmax.iXLen(iXLen 1, iXLen 3)
+  %v = call iXLen @llvm.riscv.th.vsetvlmax.iXLen(iXLen 1, iXLen 3)
   ret iXLen %v
 }
 
@@ -96,7 +96,7 @@ define iXLen @intrinsic_xvsetvlmax_e32m1() {
 entry:
 ; CHECK-LABEL: intrinsic_xvsetvlmax_e32m1
 ; CHECK: vsetvli a0, zero, e32, m1, d1
-  %v = call iXLen @llvm.riscv.xvsetvlmax.iXLen(iXLen 2, iXLen 0)
+  %v = call iXLen @llvm.riscv.th.vsetvlmax.iXLen(iXLen 2, iXLen 0)
   ret iXLen %v
 }
 
@@ -105,7 +105,7 @@ define iXLen @intrinsic_xvsetvlmax_e32m2() {
 entry:
 ; CHECK-LABEL: intrinsic_xvsetvlmax_e32m2
 ; CHECK: vsetvli a0, zero, e32, m2, d1
-  %v = call iXLen @llvm.riscv.xvsetvlmax.iXLen(iXLen 2, iXLen 1)
+  %v = call iXLen @llvm.riscv.th.vsetvlmax.iXLen(iXLen 2, iXLen 1)
   ret iXLen %v
 }
 
@@ -114,7 +114,7 @@ define iXLen @intrinsic_xvsetvlmax_e32m4() {
 entry:
 ; CHECK-LABEL: intrinsic_xvsetvlmax_e32m4
 ; CHECK: vsetvli a0, zero, e32, m4, d1
-  %v = call iXLen @llvm.riscv.xvsetvlmax.iXLen(iXLen 2, iXLen 2)
+  %v = call iXLen @llvm.riscv.th.vsetvlmax.iXLen(iXLen 2, iXLen 2)
   ret iXLen %v
 }
 
@@ -123,7 +123,7 @@ define iXLen @intrinsic_xvsetvlmax_e32m8() {
 entry:
 ; CHECK-LABEL: intrinsic_xvsetvlmax_e32m8
 ; CHECK: vsetvli a0, zero, e32, m8, d1
-  %v = call iXLen @llvm.riscv.xvsetvlmax.iXLen(iXLen 2, iXLen 3)
+  %v = call iXLen @llvm.riscv.th.vsetvlmax.iXLen(iXLen 2, iXLen 3)
   ret iXLen %v
 }
 
@@ -132,7 +132,7 @@ define iXLen @intrinsic_xvsetvlmax_e64m1() {
 entry:
 ; CHECK-LABEL: intrinsic_xvsetvlmax_e64m1
 ; CHECK: vsetvli a0, zero, e64, m1, d1
-  %v = call iXLen @llvm.riscv.xvsetvlmax.iXLen(iXLen 3, iXLen 0)
+  %v = call iXLen @llvm.riscv.th.vsetvlmax.iXLen(iXLen 3, iXLen 0)
   ret iXLen %v
 }
 
@@ -141,7 +141,7 @@ define iXLen @intrinsic_xvsetvlmax_e64m2() {
 entry:
 ; CHECK-LABEL: intrinsic_xvsetvlmax_e64m2
 ; CHECK: vsetvli a0, zero, e64, m2, d1
-  %v = call iXLen @llvm.riscv.xvsetvlmax.iXLen(iXLen 3, iXLen 1)
+  %v = call iXLen @llvm.riscv.th.vsetvlmax.iXLen(iXLen 3, iXLen 1)
   ret iXLen %v
 }
 
@@ -150,7 +150,7 @@ define iXLen @intrinsic_xvsetvlmax_e64m4() {
 entry:
 ; CHECK-LABEL: intrinsic_xvsetvlmax_e64m4
 ; CHECK: vsetvli a0, zero, e64, m4, d1
-  %v = call iXLen @llvm.riscv.xvsetvlmax.iXLen(iXLen 3, iXLen 2)
+  %v = call iXLen @llvm.riscv.th.vsetvlmax.iXLen(iXLen 3, iXLen 2)
   ret iXLen %v
 }
 
@@ -159,6 +159,6 @@ define iXLen @intrinsic_xvsetvlmax_e64m8() {
 entry:
 ; CHECK-LABEL: intrinsic_xvsetvlmax_e64m8
 ; CHECK: vsetvli a0, zero, e64, m8, d1
-  %v = call iXLen @llvm.riscv.xvsetvlmax.iXLen(iXLen 3, iXLen 3)
+  %v = call iXLen @llvm.riscv.th.vsetvlmax.iXLen(iXLen 3, iXLen 3)
   ret iXLen %v
 }

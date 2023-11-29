@@ -3,7 +3,7 @@
 ; RUN: sed 's/iXLen/i64/g' %s | llc -mtriple=riscv64 -mattr=+xtheadvector \
 ; RUN:   -verify-machineinstrs | FileCheck %s --check-prefixes=CHECK,CHECK-LABEL,CHECK-NEXT
 
-declare <vscale x 4 x i16> @llvm.riscv.xvadd.nxv4i16.nxv4i16(
+declare <vscale x 4 x i16> @llvm.riscv.th.vadd.nxv4i16.nxv4i16(
   <vscale x 4 x i16>,
   <vscale x 4 x i16>,
   <vscale x 4 x i16>,
@@ -36,9 +36,9 @@ define void @vadd_vint16m1(<vscale x 4 x i16> *%pc, <vscale x 4 x i16> *%pa, <vs
 ; CHECK-NEXT:    ret
   %va = load <vscale x 4 x i16>, <vscale x 4 x i16>* %pa
   %vb = load <vscale x 4 x i16>, <vscale x 4 x i16>* %pb
-  ; TODO: support select `add` to `llvm.riscv.xvadd`
+  ; TODO: support select `add` to `llvm.riscv.th.vadd`
   ; %vc = add <vscale x 4 x i16> %va, %vb
-  %vc = call <vscale x 4 x i16> @llvm.riscv.xvadd.nxv4i16.nxv4i16(
+  %vc = call <vscale x 4 x i16> @llvm.riscv.th.vadd.nxv4i16.nxv4i16(
     <vscale x 4 x i16> undef,
     <vscale x 4 x i16> %va,
     <vscale x 4 x i16> %vb,
@@ -47,7 +47,7 @@ define void @vadd_vint16m1(<vscale x 4 x i16> *%pc, <vscale x 4 x i16> *%pa, <vs
   ret void
 }
 
-declare <vscale x 8 x i16> @llvm.riscv.xvadd.nxv8i16.nxv8i16(
+declare <vscale x 8 x i16> @llvm.riscv.th.vadd.nxv8i16.nxv8i16(
   <vscale x 8 x i16>,
   <vscale x 8 x i16>,
   <vscale x 8 x i16>,
@@ -80,9 +80,9 @@ define void @vadd_vint16m2(<vscale x 8 x i16> *%pc, <vscale x 8 x i16> *%pa, <vs
 ; CHECK-NEXT:    ret
   %va = load <vscale x 8 x i16>, <vscale x 8 x i16>* %pa
   %vb = load <vscale x 8 x i16>, <vscale x 8 x i16>* %pb
-  ; TODO: support select `add` to `llvm.riscv.xvadd`
+  ; TODO: support select `add` to `llvm.riscv.th.vadd`
   ; %vc = add <vscale x 8 x i16> %va, %vb
-  %vc = call <vscale x 8 x i16> @llvm.riscv.xvadd.nxv8i16.nxv8i16(
+  %vc = call <vscale x 8 x i16> @llvm.riscv.th.vadd.nxv8i16.nxv8i16(
     <vscale x 8 x i16> undef,
     <vscale x 8 x i16> %va,
     <vscale x 8 x i16> %vb,
@@ -91,7 +91,7 @@ define void @vadd_vint16m2(<vscale x 8 x i16> *%pc, <vscale x 8 x i16> *%pa, <vs
   ret void
 }
 
-declare <vscale x 16 x i16> @llvm.riscv.xvadd.nxv16i16.nxv16i16(
+declare <vscale x 16 x i16> @llvm.riscv.th.vadd.nxv16i16.nxv16i16(
   <vscale x 16 x i16>,
   <vscale x 16 x i16>,
   <vscale x 16 x i16>,
@@ -124,9 +124,9 @@ define void @vadd_vint16m4(<vscale x 16 x i16> *%pc, <vscale x 16 x i16> *%pa, <
 ; CHECK-NEXT:    ret
   %va = load <vscale x 16 x i16>, <vscale x 16 x i16>* %pa
   %vb = load <vscale x 16 x i16>, <vscale x 16 x i16>* %pb
-  ; TODO: support select `add` to `llvm.riscv.xvadd`
+  ; TODO: support select `add` to `llvm.riscv.th.vadd`
   ; %vc = add <vscale x 16 x i16> %va, %vb
-  %vc = call <vscale x 16 x i16> @llvm.riscv.xvadd.nxv16i16.nxv16i16(
+  %vc = call <vscale x 16 x i16> @llvm.riscv.th.vadd.nxv16i16.nxv16i16(
     <vscale x 16 x i16> undef,
     <vscale x 16 x i16> %va,
     <vscale x 16 x i16> %vb,
@@ -135,7 +135,7 @@ define void @vadd_vint16m4(<vscale x 16 x i16> *%pc, <vscale x 16 x i16> *%pa, <
   ret void
 }
 
-declare <vscale x 32 x i16> @llvm.riscv.xvadd.nxv32i16.nxv32i16(
+declare <vscale x 32 x i16> @llvm.riscv.th.vadd.nxv32i16.nxv32i16(
   <vscale x 32 x i16>,
   <vscale x 32 x i16>,
   <vscale x 32 x i16>,
@@ -168,9 +168,9 @@ define void @vadd_vint16m8(<vscale x 32 x i16> *%pc, <vscale x 32 x i16> *%pa, <
 ; CHECK-NEXT:    ret
   %va = load <vscale x 32 x i16>, <vscale x 32 x i16>* %pa
   %vb = load <vscale x 32 x i16>, <vscale x 32 x i16>* %pb
-  ; TODO: support select `add` to `llvm.riscv.xvadd`
+  ; TODO: support select `add` to `llvm.riscv.th.vadd`
   ; %vc = add <vscale x 32 x i16> %va, %vb
-  %vc = call <vscale x 32 x i16> @llvm.riscv.xvadd.nxv32i16.nxv32i16(
+  %vc = call <vscale x 32 x i16> @llvm.riscv.th.vadd.nxv32i16.nxv32i16(
     <vscale x 32 x i16> undef,
     <vscale x 32 x i16> %va,
     <vscale x 32 x i16> %vb,

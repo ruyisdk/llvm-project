@@ -3,7 +3,7 @@
 ; RUN: sed 's/iXLen/i64/g' %s | llc -mtriple=riscv64 -mattr=+xtheadvector \
 ; RUN:   -verify-machineinstrs | FileCheck %s --check-prefixes=CHECK,CHECK-LABEL,CHECK-NEXT
 
-declare <vscale x 1 x i64> @llvm.riscv.xvadd.nxv1i64.nxv1i64(
+declare <vscale x 1 x i64> @llvm.riscv.th.vadd.nxv1i64.nxv1i64(
   <vscale x 1 x i64>,
   <vscale x 1 x i64>,
   <vscale x 1 x i64>,
@@ -36,9 +36,9 @@ define void @vadd_vint64m1(<vscale x 1 x i64> *%pc, <vscale x 1 x i64> *%pa, <vs
 ; CHECK-NEXT:    ret
   %va = load <vscale x 1 x i64>, <vscale x 1 x i64>* %pa
   %vb = load <vscale x 1 x i64>, <vscale x 1 x i64>* %pb
-  ; TODO: support select `add` to `llvm.riscv.xvadd`
+  ; TODO: support select `add` to `llvm.riscv.th.vadd`
   ; %vc = add <vscale x 1 x i64> %va, %vb
-  %vc = call <vscale x 1 x i64> @llvm.riscv.xvadd.nxv1i64.nxv1i64(
+  %vc = call <vscale x 1 x i64> @llvm.riscv.th.vadd.nxv1i64.nxv1i64(
     <vscale x 1 x i64> undef,
     <vscale x 1 x i64> %va,
     <vscale x 1 x i64> %vb,
@@ -47,7 +47,7 @@ define void @vadd_vint64m1(<vscale x 1 x i64> *%pc, <vscale x 1 x i64> *%pa, <vs
   ret void
 }
 
-declare <vscale x 2 x i64> @llvm.riscv.xvadd.nxv2i64.nxv2i64(
+declare <vscale x 2 x i64> @llvm.riscv.th.vadd.nxv2i64.nxv2i64(
   <vscale x 2 x i64>,
   <vscale x 2 x i64>,
   <vscale x 2 x i64>,
@@ -80,9 +80,9 @@ define void @vadd_vint32m2(<vscale x 2 x i64> *%pc, <vscale x 2 x i64> *%pa, <vs
 ; CHECK-NEXT:    ret
   %va = load <vscale x 2 x i64>, <vscale x 2 x i64>* %pa
   %vb = load <vscale x 2 x i64>, <vscale x 2 x i64>* %pb
-  ; TODO: support select `add` to `llvm.riscv.xvadd`
+  ; TODO: support select `add` to `llvm.riscv.th.vadd`
   ; %vc = add <vscale x 2 x i64> %va, %vb
-  %vc = call <vscale x 2 x i64> @llvm.riscv.xvadd.nxv2i64.nxv2i64(
+  %vc = call <vscale x 2 x i64> @llvm.riscv.th.vadd.nxv2i64.nxv2i64(
     <vscale x 2 x i64> undef,
     <vscale x 2 x i64> %va,
     <vscale x 2 x i64> %vb,
@@ -91,7 +91,7 @@ define void @vadd_vint32m2(<vscale x 2 x i64> *%pc, <vscale x 2 x i64> *%pa, <vs
   ret void
 }
 
-declare <vscale x 4 x i64> @llvm.riscv.xvadd.nxv4i64.nxv4i64(
+declare <vscale x 4 x i64> @llvm.riscv.th.vadd.nxv4i64.nxv4i64(
   <vscale x 4 x i64>,
   <vscale x 4 x i64>,
   <vscale x 4 x i64>,
@@ -124,9 +124,9 @@ define void @vadd_vint32m4(<vscale x 4 x i64> *%pc, <vscale x 4 x i64> *%pa, <vs
 ; CHECK-NEXT:    ret
   %va = load <vscale x 4 x i64>, <vscale x 4 x i64>* %pa
   %vb = load <vscale x 4 x i64>, <vscale x 4 x i64>* %pb
-  ; TODO: support select `add` to `llvm.riscv.xvadd`
+  ; TODO: support select `add` to `llvm.riscv.th.vadd`
   ; %vc = add <vscale x 4 x i64> %va, %vb
-  %vc = call <vscale x 4 x i64> @llvm.riscv.xvadd.nxv4i64.nxv4i64(
+  %vc = call <vscale x 4 x i64> @llvm.riscv.th.vadd.nxv4i64.nxv4i64(
     <vscale x 4 x i64> undef,
     <vscale x 4 x i64> %va,
     <vscale x 4 x i64> %vb,
@@ -135,7 +135,7 @@ define void @vadd_vint32m4(<vscale x 4 x i64> *%pc, <vscale x 4 x i64> *%pa, <vs
   ret void
 }
 
-declare <vscale x 8 x i64> @llvm.riscv.xvadd.nxv8i64.nxv8i64(
+declare <vscale x 8 x i64> @llvm.riscv.th.vadd.nxv8i64.nxv8i64(
   <vscale x 8 x i64>,
   <vscale x 8 x i64>,
   <vscale x 8 x i64>,
@@ -168,9 +168,9 @@ define void @vadd_vint32m8(<vscale x 8 x i64> *%pc, <vscale x 8 x i64> *%pa, <vs
 ; CHECK-NEXT:    ret
   %va = load <vscale x 8 x i64>, <vscale x 8 x i64>* %pa
   %vb = load <vscale x 8 x i64>, <vscale x 8 x i64>* %pb
-  ; TODO: support select `add` to `llvm.riscv.xvadd`
+  ; TODO: support select `add` to `llvm.riscv.th.vadd`
   ; %vc = add <vscale x 8 x i64> %va, %vb
-  %vc = call <vscale x 8 x i64> @llvm.riscv.xvadd.nxv8i64.nxv8i64(
+  %vc = call <vscale x 8 x i64> @llvm.riscv.th.vadd.nxv8i64.nxv8i64(
     <vscale x 8 x i64> undef,
     <vscale x 8 x i64> %va,
     <vscale x 8 x i64> %vb,
