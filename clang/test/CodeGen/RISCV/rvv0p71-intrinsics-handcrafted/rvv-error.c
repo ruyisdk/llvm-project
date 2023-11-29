@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple riscv64 -target-feature +xtheadv -disable-O0-optnone -emit-llvm %s -o - | opt -S -passes=mem2reg | FileCheck --check-prefix=CHECK-RV64V %s
+// RUN: %clang_cc1 -triple riscv64 -target-feature +xtheadvector -disable-O0-optnone -emit-llvm %s -o - | opt -S -passes=mem2reg | FileCheck --check-prefix=CHECK-RV64V %s
 // RUN: not %clang_cc1 -triple riscv64 -emit-llvm-only %s 2>&1 | FileCheck %s --check-prefix=CHECK-RV64-ERR
 
 // CHECK-RV64V-LABEL: @test(
@@ -8,7 +8,7 @@
 // CHECK-RV64V-NEXT:    ret i32 [[CONV]]
 //
 
-// CHECK-RV64-ERR: error: builtin requires at least one of the following extensions to be enabled: 'Xtheadv'
+// CHECK-RV64-ERR: error: builtin requires at least one of the following extensions to be enabled: 'Xtheadvector'
 
 #include <riscv_vector_xtheadv.h>
 

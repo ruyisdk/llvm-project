@@ -2,7 +2,7 @@
 # Golden value for this test: https://github.com/riscvarchive/riscv-binutils-gdb/blob/1aeeeab05f3c39e2bfc6e99384490d4c7f484ba0/gas/testsuite/gas/riscv/vector-insns.d
 # Generated using the script: https://gist.github.com/imkiva/05facf1a51ff8abfeeeea8fa7bc307ad#file-rvvtestgen-java
 
-# RUN: llvm-mc -triple=riscv64 -show-encoding --mattr=+f,+a,+xtheadv,+xtheadvlsseg,+xtheadvamo %s \
+# RUN: llvm-mc -triple=riscv64 -show-encoding --mattr=+f,+a,+xtheadvector,+xtheadvlsseg,+xtheadvamo %s \
 # RUN:        | FileCheck %s --check-prefixes=CHECK-ENCODING,CHECK-INST
 
 vsetvl a0, a1, a2

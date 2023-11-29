@@ -1,4 +1,4 @@
-; RUN: llc -mtriple=riscv64 -mattr=+xtheadv -verify-machineinstrs < %s | \
+; RUN: llc -mtriple=riscv64 -mattr=+xtheadvector -verify-machineinstrs < %s | \
 ; RUN: FileCheck %s --check-prefixes=CHECK,CHECK-LABEL,CHECK-NEXT
 
 declare <vscale x 1 x i64> @llvm.riscv.xvlxb.nxv1i64.nxv1i64(

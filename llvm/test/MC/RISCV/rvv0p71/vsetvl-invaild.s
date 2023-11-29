@@ -1,5 +1,5 @@
-# RUN: not llvm-mc -triple=riscv32 -show-encoding --mattr=+xtheadv %s 2>&1 | FileCheck %s
-# RUN: not llvm-mc -triple=riscv64 -show-encoding --mattr=+xtheadv %s 2>&1 | FileCheck %s
+# RUN: not llvm-mc -triple=riscv32 -show-encoding --mattr=+xtheadvector %s 2>&1 | FileCheck %s
+# RUN: not llvm-mc -triple=riscv64 -show-encoding --mattr=+xtheadvector %s 2>&1 | FileCheck %s
 
 vsetvli a2, a1, e8
 # CHECK: error: operand must be e[8|16|32|64|128|256|512|1024],m[1|2|4|8|f2|f4|f8],[ta|tu],[ma|mu]

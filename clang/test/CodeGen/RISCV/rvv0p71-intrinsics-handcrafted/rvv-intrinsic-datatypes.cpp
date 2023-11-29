@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 -triple riscv64 -target-feature +xtheadv \
+// RUN: %clang_cc1 -triple riscv64 -target-feature +xtheadvector \
 // RUN: -O0 -emit-llvm %s -o - | FileCheck %s
 
 #include <riscv_vector.h>

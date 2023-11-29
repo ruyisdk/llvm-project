@@ -1,6 +1,6 @@
-; RUN: sed 's/iXLen/i32/g' %s | llc -mtriple=riscv32 -mattr=+a,+xtheadv,+xtheadvamo \
+; RUN: sed 's/iXLen/i32/g' %s | llc -mtriple=riscv32 -mattr=+a,+xtheadvector,+xtheadvamo \
 ; RUN:   -verify-machineinstrs | FileCheck %s --check-prefixes=CHECK,CHECK-LABEL,CHECK-NEXT
-; RUN: sed 's/iXLen/i64/g' %s | llc -mtriple=riscv64 -mattr=+a,+xtheadv,+xtheadvamo \
+; RUN: sed 's/iXLen/i64/g' %s | llc -mtriple=riscv64 -mattr=+a,+xtheadvector,+xtheadvamo \
 ; RUN:   -verify-machineinstrs | FileCheck %s --check-prefixes=CHECK,CHECK-LABEL,CHECK-NEXT
 
 declare <vscale x 2 x i32> @llvm.riscv.xvamomaxu.nxv2i32.nxv2i32(

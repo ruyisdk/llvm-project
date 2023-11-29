@@ -291,15 +291,15 @@
 .attribute arch, "rv32i_xcvmac"
 # CHECK: attribute      5, "rv32i2p1_xcvmac1p0"
 
-.attribute arch, "rv32i_xtheadv"
-# CHECK: attribute      5, "rv32i2p1_xtheadv0p7"
+.attribute arch, "rv32i_xtheadvector"
+# CHECK: attribute      5, "rv32i2p1_xtheadvector0p7"
 
-.attribute arch, "rv32i_xtheadv_xtheadvamo_xtheadvediv_xtheadvlsseg"
-# CHECK: attribute      5, "rv32i2p1_a2p1_xtheadv0p7_xtheadvamo0p7_xtheadvediv0p7_xtheadvlsseg0p7"
+.attribute arch, "rv32i_xtheadvector_xtheadvamo_xtheadvediv_xtheadvlsseg"
+# CHECK: attribute      5, "rv32i2p1_a2p1_xtheadvamo0p7_xtheadvector0p7_xtheadvediv0p7_xtheadvlsseg0p7"
 
-.attribute arch, "rv32i_xtheadv"
-# CHECK: attribute      5, "rv32i2p1_xtheadv0p7"
+.attribute arch, "rv32i_xtheadvector"
+# CHECK: attribute      5, "rv32i2p1_xtheadvector0p7"
 
-.attribute arch, "rv64i_xtheadv_xtheadvamo_xtheadvediv_xtheadvlsseg"
-# CHECK: attribute      5, "rv64i2p1_a2p1_xtheadv0p7_xtheadvamo0p7_xtheadvediv0p7_xtheadvlsseg0p7"
+.attribute arch, "rv64i_xtheadvector_xtheadvamo_xtheadvediv_xtheadvlsseg"
+# CHECK: attribute      5, "rv64i2p1_a2p1_xtheadvamo0p7_xtheadvector0p7_xtheadvediv0p7_xtheadvlsseg0p7"
 

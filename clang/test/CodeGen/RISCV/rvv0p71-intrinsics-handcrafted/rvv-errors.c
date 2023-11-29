@@ -1,4 +1,4 @@
-// RUN: %clang_cc1 %s -triple=riscv64 -target-feature +xtheadv -fsyntax-only -verify
+// RUN: %clang_cc1 %s -triple=riscv64 -target-feature +xtheadvector -fsyntax-only -verify
 
 #include <riscv_vector.h>
 

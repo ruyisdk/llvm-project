@@ -1,4 +1,4 @@
-# RUN: not llvm-mc -triple=riscv64 --mattr=+xtheadv %s 2>&1 \
+# RUN: not llvm-mc -triple=riscv64 --mattr=+xtheadvector %s 2>&1 \
 # RUN:        | FileCheck %s --check-prefix=CHECK-ERROR
 
 vmsge.vx v2, v4, a0, v0.t, v0

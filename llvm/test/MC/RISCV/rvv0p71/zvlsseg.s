@@ -1,12 +1,12 @@
-# RUN: llvm-mc -triple=riscv64 -show-encoding --mattr=+xtheadv,+xtheadvlsseg %s \
+# RUN: llvm-mc -triple=riscv64 -show-encoding --mattr=+xtheadvector,+xtheadvlsseg %s \
 # RUN:   --riscv-no-aliases \
 # RUN:   | FileCheck %s --check-prefixes=CHECK-ENCODING,CHECK-INST
 # RUN: not llvm-mc -triple=riscv64 -show-encoding %s 2>&1 \
 # RUN:   | FileCheck %s --check-prefix=CHECK-ERROR
-# RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadv,+xtheadvlsseg %s \
-# RUN:   | llvm-objdump -d --mattr=+xtheadv,+xtheadvlsseg -M no-aliases - \
+# RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadvector,+xtheadvlsseg %s \
+# RUN:   | llvm-objdump -d --mattr=+xtheadvector,+xtheadvlsseg -M no-aliases - \
 # RUN:   | FileCheck %s --check-prefix=CHECK-INST
-# RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadv,+xtheadvlsseg %s \
+# RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadvector,+xtheadvlsseg %s \
 # RUN:   | llvm-objdump -d - | FileCheck %s --check-prefix=CHECK-UNKNOWN
 
 vlseg2b.v v8, (a0), v0.t

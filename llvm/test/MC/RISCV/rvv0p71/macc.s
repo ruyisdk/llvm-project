@@ -1,11 +1,11 @@
-# RUN: llvm-mc -triple=riscv64 -show-encoding --mattr=+xtheadv %s \
+# RUN: llvm-mc -triple=riscv64 -show-encoding --mattr=+xtheadvector %s \
 # RUN:        | FileCheck %s --check-prefixes=CHECK-ENCODING,CHECK-INST
 # RUN: not llvm-mc -triple=riscv64 -show-encoding %s 2>&1 \
 # RUN:        | FileCheck %s --check-prefix=CHECK-ERROR
-# RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadv %s \
-# RUN:        | llvm-objdump -d --mattr=+xtheadv - \
+# RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadvector %s \
+# RUN:        | llvm-objdump -d --mattr=+xtheadvector - \
 # RUN:        | FileCheck %s --check-prefix=CHECK-INST
-# RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadv %s \
+# RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadvector %s \
 # RUN:        | llvm-objdump -d - | FileCheck %s --check-prefix=CHECK-UNKNOWN
 
 vmacc.vv v8, v20, v4, v0.t

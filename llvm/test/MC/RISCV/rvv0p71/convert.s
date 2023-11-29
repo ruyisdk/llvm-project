@@ -1,13 +1,13 @@
-# RUN: llvm-mc -triple=riscv64 -show-encoding --mattr=+xtheadv %s \
+# RUN: llvm-mc -triple=riscv64 -show-encoding --mattr=+xtheadvector %s \
 # RUN:         --mattr=+f \
 # RUN:        | FileCheck %s --check-prefixes=CHECK-ENCODING,CHECK-INST
 # RUN: not llvm-mc -triple=riscv64 -show-encoding %s 2>&1 \
 # RUN:        | FileCheck %s --check-prefix=CHECK-ERROR
-# RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadv %s \
+# RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadvector %s \
 # RUN:         --mattr=+f \
-# RUN:        | llvm-objdump -d --mattr=+xtheadv --mattr=+f - \
+# RUN:        | llvm-objdump -d --mattr=+xtheadvector --mattr=+f - \
 # RUN:        | FileCheck %s --check-prefix=CHECK-INST
-# RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadv %s \
+# RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadvector %s \
 # RUN:         --mattr=+f \
 # RUN:        | llvm-objdump -d - | FileCheck %s --check-prefix=CHECK-UNKNOWN
 
