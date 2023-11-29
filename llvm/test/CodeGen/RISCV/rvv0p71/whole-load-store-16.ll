@@ -14,24 +14,24 @@ define void @vadd_vint16m1(<vscale x 4 x i16> *%pc, <vscale x 4 x i16> *%pa, <vs
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    csrr	a4, vl
 ; CHECK-NEXT:    csrr	a5, vtype
-; CHECK-NEXT:    vsetvli	zero, zero, e16, m1, d1
-; CHECK-NEXT:    vle.v	v8, (a1)
-; CHECK-NEXT:    vsetvl	zero, a4, a5
+; CHECK-NEXT:    th.vsetvli	zero, zero, e16, m1, d1
+; CHECK-NEXT:    th.vle.v	v8, (a1)
+; CHECK-NEXT:    th.vsetvl	zero, a4, a5
 
 ; CHECK-NEXT:    csrr	a1, vl
 ; CHECK-NEXT:    csrr	a4, vtype
-; CHECK-NEXT:    vsetvli	zero, zero, e16, m1, d1
-; CHECK-NEXT:    vle.v	v9, (a2)
-; CHECK-NEXT:    vsetvl	zero, a1, a4
+; CHECK-NEXT:    th.vsetvli	zero, zero, e16, m1, d1
+; CHECK-NEXT:    th.vle.v	v9, (a2)
+; CHECK-NEXT:    th.vsetvl	zero, a1, a4
 
-; CHECK-NEXT:    vsetvli zero, a3, e16, m1, d1
-; CHECK-NEXT:    vadd.vv v8, v8, v9
+; CHECK-NEXT:    th.vsetvli zero, a3, e16, m1, d1
+; CHECK-NEXT:    th.vadd.vv v8, v8, v9
 
 ; CHECK-NEXT:    csrr	a1, vl
 ; CHECK-NEXT:    csrr	a2, vtype
-; CHECK-NEXT:    vsetvli	zero, zero, e16, m1, d1
-; CHECK-NEXT:    vse.v	v8, (a0)
-; CHECK-NEXT:    vsetvl	zero, a1, a2
+; CHECK-NEXT:    th.vsetvli	zero, zero, e16, m1, d1
+; CHECK-NEXT:    th.vse.v	v8, (a0)
+; CHECK-NEXT:    th.vsetvl	zero, a1, a2
 
 ; CHECK-NEXT:    ret
   %va = load <vscale x 4 x i16>, <vscale x 4 x i16>* %pa
@@ -58,24 +58,24 @@ define void @vadd_vint16m2(<vscale x 8 x i16> *%pc, <vscale x 8 x i16> *%pa, <vs
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    csrr	a4, vl
 ; CHECK-NEXT:    csrr	a5, vtype
-; CHECK-NEXT:    vsetvli	zero, zero, e16, m2, d1
-; CHECK-NEXT:    vle.v	v8, (a1)
-; CHECK-NEXT:    vsetvl	zero, a4, a5
+; CHECK-NEXT:    th.vsetvli	zero, zero, e16, m2, d1
+; CHECK-NEXT:    th.vle.v	v8, (a1)
+; CHECK-NEXT:    th.vsetvl	zero, a4, a5
 
 ; CHECK-NEXT:    csrr	a1, vl
 ; CHECK-NEXT:    csrr	a4, vtype
-; CHECK-NEXT:    vsetvli	zero, zero, e16, m2, d1
-; CHECK-NEXT:    vle.v	v10, (a2)
-; CHECK-NEXT:    vsetvl	zero, a1, a4
+; CHECK-NEXT:    th.vsetvli	zero, zero, e16, m2, d1
+; CHECK-NEXT:    th.vle.v	v10, (a2)
+; CHECK-NEXT:    th.vsetvl	zero, a1, a4
 
-; CHECK-NEXT:    vsetvli zero, a3, e16, m2, d1
-; CHECK-NEXT:    vadd.vv v8, v8, v10
+; CHECK-NEXT:    th.vsetvli zero, a3, e16, m2, d1
+; CHECK-NEXT:    th.vadd.vv v8, v8, v10
 
 ; CHECK-NEXT:    csrr	a1, vl
 ; CHECK-NEXT:    csrr	a2, vtype
-; CHECK-NEXT:    vsetvli	zero, zero, e16, m2, d1
-; CHECK-NEXT:    vse.v	v8, (a0)
-; CHECK-NEXT:    vsetvl	zero, a1, a2
+; CHECK-NEXT:    th.vsetvli	zero, zero, e16, m2, d1
+; CHECK-NEXT:    th.vse.v	v8, (a0)
+; CHECK-NEXT:    th.vsetvl	zero, a1, a2
 
 ; CHECK-NEXT:    ret
   %va = load <vscale x 8 x i16>, <vscale x 8 x i16>* %pa
@@ -102,24 +102,24 @@ define void @vadd_vint16m4(<vscale x 16 x i16> *%pc, <vscale x 16 x i16> *%pa, <
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    csrr	a4, vl
 ; CHECK-NEXT:    csrr	a5, vtype
-; CHECK-NEXT:    vsetvli	zero, zero, e16, m4, d1
-; CHECK-NEXT:    vle.v	v8, (a1)
-; CHECK-NEXT:    vsetvl	zero, a4, a5
+; CHECK-NEXT:    th.vsetvli	zero, zero, e16, m4, d1
+; CHECK-NEXT:    th.vle.v	v8, (a1)
+; CHECK-NEXT:    th.vsetvl	zero, a4, a5
 
 ; CHECK-NEXT:    csrr	a1, vl
 ; CHECK-NEXT:    csrr	a4, vtype
-; CHECK-NEXT:    vsetvli	zero, zero, e16, m4, d1
-; CHECK-NEXT:    vle.v	v12, (a2)
-; CHECK-NEXT:    vsetvl	zero, a1, a4
+; CHECK-NEXT:    th.vsetvli	zero, zero, e16, m4, d1
+; CHECK-NEXT:    th.vle.v	v12, (a2)
+; CHECK-NEXT:    th.vsetvl	zero, a1, a4
 
-; CHECK-NEXT:    vsetvli zero, a3, e16, m4, d1
-; CHECK-NEXT:    vadd.vv v8, v8, v12
+; CHECK-NEXT:    th.vsetvli zero, a3, e16, m4, d1
+; CHECK-NEXT:    th.vadd.vv v8, v8, v12
 
 ; CHECK-NEXT:    csrr	a1, vl
 ; CHECK-NEXT:    csrr	a2, vtype
-; CHECK-NEXT:    vsetvli	zero, zero, e16, m4, d1
-; CHECK-NEXT:    vse.v	v8, (a0)
-; CHECK-NEXT:    vsetvl	zero, a1, a2
+; CHECK-NEXT:    th.vsetvli	zero, zero, e16, m4, d1
+; CHECK-NEXT:    th.vse.v	v8, (a0)
+; CHECK-NEXT:    th.vsetvl	zero, a1, a2
 
 ; CHECK-NEXT:    ret
   %va = load <vscale x 16 x i16>, <vscale x 16 x i16>* %pa
@@ -146,24 +146,24 @@ define void @vadd_vint16m8(<vscale x 32 x i16> *%pc, <vscale x 32 x i16> *%pa, <
 ; CHECK:       # %bb.0:
 ; CHECK-NEXT:    csrr	a4, vl
 ; CHECK-NEXT:    csrr	a5, vtype
-; CHECK-NEXT:    vsetvli	zero, zero, e16, m8, d1
-; CHECK-NEXT:    vle.v	v8, (a1)
-; CHECK-NEXT:    vsetvl	zero, a4, a5
+; CHECK-NEXT:    th.vsetvli	zero, zero, e16, m8, d1
+; CHECK-NEXT:    th.vle.v	v8, (a1)
+; CHECK-NEXT:    th.vsetvl	zero, a4, a5
 
 ; CHECK-NEXT:    csrr	a1, vl
 ; CHECK-NEXT:    csrr	a4, vtype
-; CHECK-NEXT:    vsetvli	zero, zero, e16, m8, d1
-; CHECK-NEXT:    vle.v	v16, (a2)
-; CHECK-NEXT:    vsetvl	zero, a1, a4
+; CHECK-NEXT:    th.vsetvli	zero, zero, e16, m8, d1
+; CHECK-NEXT:    th.vle.v	v16, (a2)
+; CHECK-NEXT:    th.vsetvl	zero, a1, a4
 
-; CHECK-NEXT:    vsetvli zero, a3, e16, m8, d1
-; CHECK-NEXT:    vadd.vv v8, v8, v16
+; CHECK-NEXT:    th.vsetvli zero, a3, e16, m8, d1
+; CHECK-NEXT:    th.vadd.vv v8, v8, v16
 
 ; CHECK-NEXT:    csrr	a1, vl
 ; CHECK-NEXT:    csrr	a2, vtype
-; CHECK-NEXT:    vsetvli	zero, zero, e16, m8, d1
-; CHECK-NEXT:    vse.v	v8, (a0)
-; CHECK-NEXT:    vsetvl	zero, a1, a2
+; CHECK-NEXT:    th.vsetvli	zero, zero, e16, m8, d1
+; CHECK-NEXT:    th.vse.v	v8, (a0)
+; CHECK-NEXT:    th.vsetvl	zero, a1, a2
 
 ; CHECK-NEXT:    ret
   %va = load <vscale x 32 x i16>, <vscale x 32 x i16>* %pa

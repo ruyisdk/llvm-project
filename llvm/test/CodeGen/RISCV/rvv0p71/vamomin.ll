@@ -12,9 +12,9 @@ declare <vscale x 2 x i32> @llvm.riscv.xvamomin.nxv2i32.nxv2i32(
 define <vscale x 2 x i32> @intrinsic_xvamomin_v_nxv2i32_nxv2i32(<vscale x 2 x i32>* %0, <vscale x 2 x i32> %1, <vscale x 2 x i32> %2, iXLen %3) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_v_nxv2i32_nxv2i32
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e32, m1, d1
-; CHECK-NEXT:    vamominw.v v9, v8, (a0), v9
-; CHECK-NEXT:    vmv.v.v v8, v9
+; CHECK-NEXT:    th.vsetvli zero, a1, e32, m1, d1
+; CHECK-NEXT:    th.vamominw.v v9, v8, (a0), v9
+; CHECK-NEXT:    th.vmv.v.v v8, v9
 ; CHECK-NEXT:    ret
 
 entry:
@@ -37,9 +37,9 @@ declare <vscale x 2 x i32> @llvm.riscv.xvamomin.mask.nxv2i32.nxv2i32(
 define <vscale x 2 x i32> @intrinsic_xvamomin_mask_v_nxv2i32_nxv2i32(<vscale x 2 x i32>* %0, <vscale x 2 x i32> %1, <vscale x 2 x i32> %2, <vscale x 2 x i1> %3, iXLen %4) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_mask_v_nxv2i32_nxv2i32
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e32, m1, d1
-; CHECK-NEXT:    vamominw.v v9, v8, (a0), v9, v0.t
-; CHECK-NEXT:    vmv.v.v v8, v9
+; CHECK-NEXT:    th.vsetvli zero, a1, e32, m1, d1
+; CHECK-NEXT:    th.vamominw.v v9, v8, (a0), v9, v0.t
+; CHECK-NEXT:    th.vmv.v.v v8, v9
 ; CHECK-NEXT:    ret
 
 entry:
@@ -62,9 +62,9 @@ declare <vscale x 4 x i32> @llvm.riscv.xvamomin.nxv4i32.nxv4i32(
 define <vscale x 4 x i32> @intrinsic_xvamomin_v_nxv4i32_nxv4i32(<vscale x 4 x i32>* %0, <vscale x 4 x i32> %1, <vscale x 4 x i32> %2, iXLen %3) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_v_nxv4i32_nxv4i32
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e32, m2, d1
-; CHECK-NEXT:    vamominw.v v10, v8, (a0), v10
-; CHECK-NEXT:    vmv.v.v v8, v10
+; CHECK-NEXT:    th.vsetvli zero, a1, e32, m2, d1
+; CHECK-NEXT:    th.vamominw.v v10, v8, (a0), v10
+; CHECK-NEXT:    th.vmv.v.v v8, v10
 ; CHECK-NEXT:    ret
 
 entry:
@@ -87,9 +87,9 @@ declare <vscale x 4 x i32> @llvm.riscv.xvamomin.mask.nxv4i32.nxv4i32(
 define <vscale x 4 x i32> @intrinsic_xvamomin_mask_v_nxv4i32_nxv4i32(<vscale x 4 x i32>* %0, <vscale x 4 x i32> %1, <vscale x 4 x i32> %2, <vscale x 4 x i1> %3, iXLen %4) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_mask_v_nxv4i32_nxv4i32
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e32, m2, d1
-; CHECK-NEXT:    vamominw.v v10, v8, (a0), v10, v0.t
-; CHECK-NEXT:    vmv.v.v v8, v10
+; CHECK-NEXT:    th.vsetvli zero, a1, e32, m2, d1
+; CHECK-NEXT:    th.vamominw.v v10, v8, (a0), v10, v0.t
+; CHECK-NEXT:    th.vmv.v.v v8, v10
 ; CHECK-NEXT:    ret
 
 entry:
@@ -112,9 +112,9 @@ declare <vscale x 8 x i32> @llvm.riscv.xvamomin.nxv8i32.nxv8i32(
 define <vscale x 8 x i32> @intrinsic_xvamomin_v_nxv8i32_nxv8i32(<vscale x 8 x i32>* %0, <vscale x 8 x i32> %1, <vscale x 8 x i32> %2, iXLen %3) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_v_nxv8i32_nxv8i32
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e32, m4, d1
-; CHECK-NEXT:    vamominw.v v12, v8, (a0), v12
-; CHECK-NEXT:    vmv.v.v v8, v12
+; CHECK-NEXT:    th.vsetvli zero, a1, e32, m4, d1
+; CHECK-NEXT:    th.vamominw.v v12, v8, (a0), v12
+; CHECK-NEXT:    th.vmv.v.v v8, v12
 ; CHECK-NEXT:    ret
 
 entry:
@@ -137,9 +137,9 @@ declare <vscale x 8 x i32> @llvm.riscv.xvamomin.mask.nxv8i32.nxv8i32(
 define <vscale x 8 x i32> @intrinsic_xvamomin_mask_v_nxv8i32_nxv8i32(<vscale x 8 x i32>* %0, <vscale x 8 x i32> %1, <vscale x 8 x i32> %2, <vscale x 8 x i1> %3, iXLen %4) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_mask_v_nxv8i32_nxv8i32
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e32, m4, d1
-; CHECK-NEXT:    vamominw.v v12, v8, (a0), v12, v0.t
-; CHECK-NEXT:    vmv.v.v v8, v12
+; CHECK-NEXT:    th.vsetvli zero, a1, e32, m4, d1
+; CHECK-NEXT:    th.vamominw.v v12, v8, (a0), v12, v0.t
+; CHECK-NEXT:    th.vmv.v.v v8, v12
 ; CHECK-NEXT:    ret
 
 entry:
@@ -162,9 +162,9 @@ declare <vscale x 16 x i32> @llvm.riscv.xvamomin.nxv16i32.nxv16i32(
 define <vscale x 16 x i32> @intrinsic_xvamomin_v_nxv16i32_nxv16i32(<vscale x 16 x i32>* %0, <vscale x 16 x i32> %1, <vscale x 16 x i32> %2, iXLen %3) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_v_nxv16i32_nxv16i32
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e32, m8, d1
-; CHECK-NEXT:    vamominw.v v16, v8, (a0), v16
-; CHECK-NEXT:    vmv.v.v v8, v16
+; CHECK-NEXT:    th.vsetvli zero, a1, e32, m8, d1
+; CHECK-NEXT:    th.vamominw.v v16, v8, (a0), v16
+; CHECK-NEXT:    th.vmv.v.v v8, v16
 ; CHECK-NEXT:    ret
 
 entry:
@@ -187,9 +187,9 @@ declare <vscale x 16 x i32> @llvm.riscv.xvamomin.mask.nxv16i32.nxv16i32(
 define <vscale x 16 x i32> @intrinsic_xvamomin_mask_v_nxv16i32_nxv16i32(<vscale x 16 x i32>* %0, <vscale x 16 x i32> %1, <vscale x 16 x i32> %2, <vscale x 16 x i1> %3, iXLen %4) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_mask_v_nxv16i32_nxv16i32
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e32, m8, d1
-; CHECK-NEXT:    vamominw.v v16, v8, (a0), v16, v0.t
-; CHECK-NEXT:    vmv.v.v v8, v16
+; CHECK-NEXT:    th.vsetvli zero, a1, e32, m8, d1
+; CHECK-NEXT:    th.vamominw.v v16, v8, (a0), v16, v0.t
+; CHECK-NEXT:    th.vmv.v.v v8, v16
 ; CHECK-NEXT:    ret
 
 entry:
@@ -212,9 +212,9 @@ declare <vscale x 2 x i64> @llvm.riscv.xvamomin.nxv2i64.nxv2i32(
 define <vscale x 2 x i64> @intrinsic_xvamomin_v_nxv2i64_nxv2i32(<vscale x 2 x i64>* %0, <vscale x 2 x i32> %1, <vscale x 2 x i64> %2, iXLen %3) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_v_nxv2i64_nxv2i32
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e64, m2, d1
-; CHECK-NEXT:    vamomind.v v10, v8, (a0), v10
-; CHECK-NEXT:    vmv.v.v v8, v10
+; CHECK-NEXT:    th.vsetvli zero, a1, e64, m2, d1
+; CHECK-NEXT:    th.vamomind.v v10, v8, (a0), v10
+; CHECK-NEXT:    th.vmv.v.v v8, v10
 ; CHECK-NEXT:    ret
 
 entry:
@@ -237,9 +237,9 @@ declare <vscale x 2 x i64> @llvm.riscv.xvamomin.mask.nxv2i64.nxv2i32(
 define <vscale x 2 x i64> @intrinsic_xvamomin_mask_v_nxv2i64_nxv2i32(<vscale x 2 x i64>* %0, <vscale x 2 x i32> %1, <vscale x 2 x i64> %2, <vscale x 2 x i1> %3, iXLen %4) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_mask_v_nxv2i64_nxv2i32
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e64, m2, d1
-; CHECK-NEXT:    vamomind.v v10, v8, (a0), v10, v0.t
-; CHECK-NEXT:    vmv.v.v v8, v10
+; CHECK-NEXT:    th.vsetvli zero, a1, e64, m2, d1
+; CHECK-NEXT:    th.vamomind.v v10, v8, (a0), v10, v0.t
+; CHECK-NEXT:    th.vmv.v.v v8, v10
 ; CHECK-NEXT:    ret
 
 entry:
@@ -262,9 +262,9 @@ declare <vscale x 4 x i64> @llvm.riscv.xvamomin.nxv4i64.nxv4i32(
 define <vscale x 4 x i64> @intrinsic_xvamomin_v_nxv4i64_nxv4i32(<vscale x 4 x i64>* %0, <vscale x 4 x i32> %1, <vscale x 4 x i64> %2, iXLen %3) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_v_nxv4i64_nxv4i32
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e64, m4, d1
-; CHECK-NEXT:    vamomind.v v12, v8, (a0), v12
-; CHECK-NEXT:    vmv.v.v v8, v12
+; CHECK-NEXT:    th.vsetvli zero, a1, e64, m4, d1
+; CHECK-NEXT:    th.vamomind.v v12, v8, (a0), v12
+; CHECK-NEXT:    th.vmv.v.v v8, v12
 ; CHECK-NEXT:    ret
 
 entry:
@@ -287,9 +287,9 @@ declare <vscale x 4 x i64> @llvm.riscv.xvamomin.mask.nxv4i64.nxv4i32(
 define <vscale x 4 x i64> @intrinsic_xvamomin_mask_v_nxv4i64_nxv4i32(<vscale x 4 x i64>* %0, <vscale x 4 x i32> %1, <vscale x 4 x i64> %2, <vscale x 4 x i1> %3, iXLen %4) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_mask_v_nxv4i64_nxv4i32
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e64, m4, d1
-; CHECK-NEXT:    vamomind.v v12, v8, (a0), v12, v0.t
-; CHECK-NEXT:    vmv.v.v v8, v12
+; CHECK-NEXT:    th.vsetvli zero, a1, e64, m4, d1
+; CHECK-NEXT:    th.vamomind.v v12, v8, (a0), v12, v0.t
+; CHECK-NEXT:    th.vmv.v.v v8, v12
 ; CHECK-NEXT:    ret
 
 entry:
@@ -312,9 +312,9 @@ declare <vscale x 8 x i64> @llvm.riscv.xvamomin.nxv8i64.nxv8i32(
 define <vscale x 8 x i64> @intrinsic_xvamomin_v_nxv8i64_nxv8i32(<vscale x 8 x i64>* %0, <vscale x 8 x i32> %1, <vscale x 8 x i64> %2, iXLen %3) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_v_nxv8i64_nxv8i32
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e64, m8, d1
-; CHECK-NEXT:    vamomind.v v16, v8, (a0), v16
-; CHECK-NEXT:    vmv.v.v v8, v16
+; CHECK-NEXT:    th.vsetvli zero, a1, e64, m8, d1
+; CHECK-NEXT:    th.vamomind.v v16, v8, (a0), v16
+; CHECK-NEXT:    th.vmv.v.v v8, v16
 ; CHECK-NEXT:    ret
 
 entry:
@@ -337,9 +337,9 @@ declare <vscale x 8 x i64> @llvm.riscv.xvamomin.mask.nxv8i64.nxv8i32(
 define <vscale x 8 x i64> @intrinsic_xvamomin_mask_v_nxv8i64_nxv8i32(<vscale x 8 x i64>* %0, <vscale x 8 x i32> %1, <vscale x 8 x i64> %2, <vscale x 8 x i1> %3, iXLen %4) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_mask_v_nxv8i64_nxv8i32
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e64, m8, d1
-; CHECK-NEXT:    vamomind.v v16, v8, (a0), v16, v0.t
-; CHECK-NEXT:    vmv.v.v v8, v16
+; CHECK-NEXT:    th.vsetvli zero, a1, e64, m8, d1
+; CHECK-NEXT:    th.vamomind.v v16, v8, (a0), v16, v0.t
+; CHECK-NEXT:    th.vmv.v.v v8, v16
 ; CHECK-NEXT:    ret
 
 entry:
@@ -362,9 +362,9 @@ declare <vscale x 2 x i32> @llvm.riscv.xvamomin.nxv2i32.nxv2i64(
 define <vscale x 2 x i32> @intrinsic_xvamomin_v_nxv2i32_nxv2i64(<vscale x 2 x i32>* %0, <vscale x 2 x i64> %1, <vscale x 2 x i32> %2, iXLen %3) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_v_nxv2i32_nxv2i64
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e32, m1, d1
-; CHECK-NEXT:    vamominw.v v10, v8, (a0), v10
-; CHECK-NEXT:    vmv.v.v v8, v10
+; CHECK-NEXT:    th.vsetvli zero, a1, e32, m1, d1
+; CHECK-NEXT:    th.vamominw.v v10, v8, (a0), v10
+; CHECK-NEXT:    th.vmv.v.v v8, v10
 ; CHECK-NEXT:    ret
 
 entry:
@@ -387,9 +387,9 @@ declare <vscale x 2 x i32> @llvm.riscv.xvamomin.mask.nxv2i32.nxv2i64(
 define <vscale x 2 x i32> @intrinsic_xvamomin_mask_v_nxv2i32_nxv2i64(<vscale x 2 x i32>* %0, <vscale x 2 x i64> %1, <vscale x 2 x i32> %2, <vscale x 2 x i1> %3, iXLen %4) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_mask_v_nxv2i32_nxv2i64
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e32, m1, d1
-; CHECK-NEXT:    vamominw.v v10, v8, (a0), v10, v0.t
-; CHECK-NEXT:    vmv.v.v v8, v10
+; CHECK-NEXT:    th.vsetvli zero, a1, e32, m1, d1
+; CHECK-NEXT:    th.vamominw.v v10, v8, (a0), v10, v0.t
+; CHECK-NEXT:    th.vmv.v.v v8, v10
 ; CHECK-NEXT:    ret
 
 entry:
@@ -412,9 +412,9 @@ declare <vscale x 4 x i32> @llvm.riscv.xvamomin.nxv4i32.nxv4i64(
 define <vscale x 4 x i32> @intrinsic_xvamomin_v_nxv4i32_nxv4i64(<vscale x 4 x i32>* %0, <vscale x 4 x i64> %1, <vscale x 4 x i32> %2, iXLen %3) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_v_nxv4i32_nxv4i64
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e32, m2, d1
-; CHECK-NEXT:    vamominw.v v12, v8, (a0), v12
-; CHECK-NEXT:    vmv.v.v v8, v12
+; CHECK-NEXT:    th.vsetvli zero, a1, e32, m2, d1
+; CHECK-NEXT:    th.vamominw.v v12, v8, (a0), v12
+; CHECK-NEXT:    th.vmv.v.v v8, v12
 ; CHECK-NEXT:    ret
 
 entry:
@@ -437,9 +437,9 @@ declare <vscale x 4 x i32> @llvm.riscv.xvamomin.mask.nxv4i32.nxv4i64(
 define <vscale x 4 x i32> @intrinsic_xvamomin_mask_v_nxv4i32_nxv4i64(<vscale x 4 x i32>* %0, <vscale x 4 x i64> %1, <vscale x 4 x i32> %2, <vscale x 4 x i1> %3, iXLen %4) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_mask_v_nxv4i32_nxv4i64
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e32, m2, d1
-; CHECK-NEXT:    vamominw.v v12, v8, (a0), v12, v0.t
-; CHECK-NEXT:    vmv.v.v v8, v12
+; CHECK-NEXT:    th.vsetvli zero, a1, e32, m2, d1
+; CHECK-NEXT:    th.vamominw.v v12, v8, (a0), v12, v0.t
+; CHECK-NEXT:    th.vmv.v.v v8, v12
 ; CHECK-NEXT:    ret
 
 entry:
@@ -462,9 +462,9 @@ declare <vscale x 8 x i32> @llvm.riscv.xvamomin.nxv8i32.nxv8i64(
 define <vscale x 8 x i32> @intrinsic_xvamomin_v_nxv8i32_nxv8i64(<vscale x 8 x i32>* %0, <vscale x 8 x i64> %1, <vscale x 8 x i32> %2, iXLen %3) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_v_nxv8i32_nxv8i64
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e32, m4, d1
-; CHECK-NEXT:    vamominw.v v16, v8, (a0), v16
-; CHECK-NEXT:    vmv.v.v v8, v16
+; CHECK-NEXT:    th.vsetvli zero, a1, e32, m4, d1
+; CHECK-NEXT:    th.vamominw.v v16, v8, (a0), v16
+; CHECK-NEXT:    th.vmv.v.v v8, v16
 ; CHECK-NEXT:    ret
 
 entry:
@@ -487,9 +487,9 @@ declare <vscale x 8 x i32> @llvm.riscv.xvamomin.mask.nxv8i32.nxv8i64(
 define <vscale x 8 x i32> @intrinsic_xvamomin_mask_v_nxv8i32_nxv8i64(<vscale x 8 x i32>* %0, <vscale x 8 x i64> %1, <vscale x 8 x i32> %2, <vscale x 8 x i1> %3, iXLen %4) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_mask_v_nxv8i32_nxv8i64
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e32, m4, d1
-; CHECK-NEXT:    vamominw.v v16, v8, (a0), v16, v0.t
-; CHECK-NEXT:    vmv.v.v v8, v16
+; CHECK-NEXT:    th.vsetvli zero, a1, e32, m4, d1
+; CHECK-NEXT:    th.vamominw.v v16, v8, (a0), v16, v0.t
+; CHECK-NEXT:    th.vmv.v.v v8, v16
 ; CHECK-NEXT:    ret
 
 entry:
@@ -512,9 +512,9 @@ declare <vscale x 1 x i64> @llvm.riscv.xvamomin.nxv1i64.nxv1i64(
 define <vscale x 1 x i64> @intrinsic_xvamomin_v_nxv1i64_nxv1i64(<vscale x 1 x i64>* %0, <vscale x 1 x i64> %1, <vscale x 1 x i64> %2, iXLen %3) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_v_nxv1i64_nxv1i64
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e64, m1, d1
-; CHECK-NEXT:    vamomind.v v9, v8, (a0), v9
-; CHECK-NEXT:    vmv.v.v v8, v9
+; CHECK-NEXT:    th.vsetvli zero, a1, e64, m1, d1
+; CHECK-NEXT:    th.vamomind.v v9, v8, (a0), v9
+; CHECK-NEXT:    th.vmv.v.v v8, v9
 ; CHECK-NEXT:    ret
 
 entry:
@@ -537,9 +537,9 @@ declare <vscale x 1 x i64> @llvm.riscv.xvamomin.mask.nxv1i64.nxv1i64(
 define <vscale x 1 x i64> @intrinsic_xvamomin_mask_v_nxv1i64_nxv1i64(<vscale x 1 x i64>* %0, <vscale x 1 x i64> %1, <vscale x 1 x i64> %2, <vscale x 1 x i1> %3, iXLen %4) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_mask_v_nxv1i64_nxv1i64
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e64, m1, d1
-; CHECK-NEXT:    vamomind.v v9, v8, (a0), v9, v0.t
-; CHECK-NEXT:    vmv.v.v v8, v9
+; CHECK-NEXT:    th.vsetvli zero, a1, e64, m1, d1
+; CHECK-NEXT:    th.vamomind.v v9, v8, (a0), v9, v0.t
+; CHECK-NEXT:    th.vmv.v.v v8, v9
 ; CHECK-NEXT:    ret
 
 entry:
@@ -562,9 +562,9 @@ declare <vscale x 2 x i64> @llvm.riscv.xvamomin.nxv2i64.nxv2i64(
 define <vscale x 2 x i64> @intrinsic_xvamomin_v_nxv2i64_nxv2i64(<vscale x 2 x i64>* %0, <vscale x 2 x i64> %1, <vscale x 2 x i64> %2, iXLen %3) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_v_nxv2i64_nxv2i64
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e64, m2, d1
-; CHECK-NEXT:    vamomind.v v10, v8, (a0), v10
-; CHECK-NEXT:    vmv.v.v v8, v10
+; CHECK-NEXT:    th.vsetvli zero, a1, e64, m2, d1
+; CHECK-NEXT:    th.vamomind.v v10, v8, (a0), v10
+; CHECK-NEXT:    th.vmv.v.v v8, v10
 ; CHECK-NEXT:    ret
 
 entry:
@@ -587,9 +587,9 @@ declare <vscale x 2 x i64> @llvm.riscv.xvamomin.mask.nxv2i64.nxv2i64(
 define <vscale x 2 x i64> @intrinsic_xvamomin_mask_v_nxv2i64_nxv2i64(<vscale x 2 x i64>* %0, <vscale x 2 x i64> %1, <vscale x 2 x i64> %2, <vscale x 2 x i1> %3, iXLen %4) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_mask_v_nxv2i64_nxv2i64
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e64, m2, d1
-; CHECK-NEXT:    vamomind.v v10, v8, (a0), v10, v0.t
-; CHECK-NEXT:    vmv.v.v v8, v10
+; CHECK-NEXT:    th.vsetvli zero, a1, e64, m2, d1
+; CHECK-NEXT:    th.vamomind.v v10, v8, (a0), v10, v0.t
+; CHECK-NEXT:    th.vmv.v.v v8, v10
 ; CHECK-NEXT:    ret
 
 entry:
@@ -612,9 +612,9 @@ declare <vscale x 4 x i64> @llvm.riscv.xvamomin.nxv4i64.nxv4i64(
 define <vscale x 4 x i64> @intrinsic_xvamomin_v_nxv4i64_nxv4i64(<vscale x 4 x i64>* %0, <vscale x 4 x i64> %1, <vscale x 4 x i64> %2, iXLen %3) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_v_nxv4i64_nxv4i64
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e64, m4, d1
-; CHECK-NEXT:    vamomind.v v12, v8, (a0), v12
-; CHECK-NEXT:    vmv.v.v v8, v12
+; CHECK-NEXT:    th.vsetvli zero, a1, e64, m4, d1
+; CHECK-NEXT:    th.vamomind.v v12, v8, (a0), v12
+; CHECK-NEXT:    th.vmv.v.v v8, v12
 ; CHECK-NEXT:    ret
 
 entry:
@@ -637,9 +637,9 @@ declare <vscale x 4 x i64> @llvm.riscv.xvamomin.mask.nxv4i64.nxv4i64(
 define <vscale x 4 x i64> @intrinsic_xvamomin_mask_v_nxv4i64_nxv4i64(<vscale x 4 x i64>* %0, <vscale x 4 x i64> %1, <vscale x 4 x i64> %2, <vscale x 4 x i1> %3, iXLen %4) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_mask_v_nxv4i64_nxv4i64
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e64, m4, d1
-; CHECK-NEXT:    vamomind.v v12, v8, (a0), v12, v0.t
-; CHECK-NEXT:    vmv.v.v v8, v12
+; CHECK-NEXT:    th.vsetvli zero, a1, e64, m4, d1
+; CHECK-NEXT:    th.vamomind.v v12, v8, (a0), v12, v0.t
+; CHECK-NEXT:    th.vmv.v.v v8, v12
 ; CHECK-NEXT:    ret
 
 entry:
@@ -662,9 +662,9 @@ declare <vscale x 8 x i64> @llvm.riscv.xvamomin.nxv8i64.nxv8i64(
 define <vscale x 8 x i64> @intrinsic_xvamomin_v_nxv8i64_nxv8i64(<vscale x 8 x i64>* %0, <vscale x 8 x i64> %1, <vscale x 8 x i64> %2, iXLen %3) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_v_nxv8i64_nxv8i64
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e64, m8, d1
-; CHECK-NEXT:    vamomind.v v16, v8, (a0), v16
-; CHECK-NEXT:    vmv.v.v v8, v16
+; CHECK-NEXT:    th.vsetvli zero, a1, e64, m8, d1
+; CHECK-NEXT:    th.vamomind.v v16, v8, (a0), v16
+; CHECK-NEXT:    th.vmv.v.v v8, v16
 ; CHECK-NEXT:    ret
 
 entry:
@@ -687,9 +687,9 @@ declare <vscale x 8 x i64> @llvm.riscv.xvamomin.mask.nxv8i64.nxv8i64(
 define <vscale x 8 x i64> @intrinsic_xvamomin_mask_v_nxv8i64_nxv8i64(<vscale x 8 x i64>* %0, <vscale x 8 x i64> %1, <vscale x 8 x i64> %2, <vscale x 8 x i1> %3, iXLen %4) nounwind {
 ; CHECK-LABEL: intrinsic_xvamomin_mask_v_nxv8i64_nxv8i64
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    vsetvli zero, a1, e64, m8, d1
-; CHECK-NEXT:    vamomind.v v16, v8, (a0), v16, v0.t
-; CHECK-NEXT:    vmv.v.v v8, v16
+; CHECK-NEXT:    th.vsetvli zero, a1, e64, m8, d1
+; CHECK-NEXT:    th.vamomind.v v16, v8, (a0), v16, v0.t
+; CHECK-NEXT:    th.vmv.v.v v8, v16
 ; CHECK-NEXT:    ret
 
 entry:
