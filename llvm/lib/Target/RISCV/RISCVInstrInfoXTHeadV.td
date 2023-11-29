@@ -815,7 +815,7 @@ let vs2 = 0 in
 def TH_VID_V : RVInstV<0b010110, 0b10001, OPMVV, (outs VR:$vd),
                        (ins VMaskOp:$vm),
                        "th.vid.v", "$vd$vm">,
-               Sched<[WriteVMIdTH_V_WorstCase, ReadVMask]>;
+               Sched<[WriteVMIdxV_WorstCase, ReadVMask]>;
 
 let vm = 1, RVVConstraint = NoConstraint in {
 // Integer Extract Instruction
@@ -829,7 +829,7 @@ let Constraints = "$vd = $vd_wb" in
 def TH_VMV_S_X : RVInstV2<0b001101, 0b00000, OPMVX, (outs VR:$vd_wb),
                           (ins VR:$vd, GPR:$rs1),
                           "th.vmv.s.x", "$vd, $rs1">,
-                 Sched<[WriteVIMovTH_V, ReadVIMovTH_V,  ReadVIMovXX]>;
+                 Sched<[WriteVIMovXV, ReadVIMovXV,  ReadVIMovXX]>;
 }
 } // hasSideEffects = 0, mayLoad = 0, mayStore = 0
 } // Predicates = [HasVendorXTHeadV]
