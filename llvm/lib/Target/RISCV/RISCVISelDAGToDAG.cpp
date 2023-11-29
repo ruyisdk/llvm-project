@@ -810,10 +810,10 @@ void RISCVDAGToDAGISel::selectXVSETVLI(SDNode *Node) {
   unsigned Opcode;
   if (IsMax) {
     // spec: if rs1 = x0, then use maximum vector length
-    Opcode = RISCV::PseudoXVSETVLIX0;
+    Opcode = RISCV::PseudoTH_VSETVLIX0;
     AVLOp = CurDAG->getRegister(RISCV::X0, XLenVT);
   } else {
-    Opcode = RISCV::PseudoXVSETVLI;
+    Opcode = RISCV::PseudoTH_VSETVLI;
     AVLOp = Node->getOperand(1);
   }
 

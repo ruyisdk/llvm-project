@@ -8,128 +8,128 @@
 # RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadvector %s \
 # RUN:        | llvm-objdump -d - | FileCheck %s --check-prefix=CHECK-UNKNOWN
 
-vredsum.vs v8, v4, v20, v0.t
-# CHECK-INST: vredsum.vs v8, v4, v20, v0.t
+th.vredsum.vs v8, v4, v20, v0.t
+# CHECK-INST: th.vredsum.vs v8, v4, v20, v0.t
 # CHECK-ENCODING: [0x57,0x24,0x4a,0x00]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 24 4a 00 <unknown>
 
-vredsum.vs v8, v4, v20
-# CHECK-INST: vredsum.vs v8, v4, v20
+th.vredsum.vs v8, v4, v20
+# CHECK-INST: th.vredsum.vs v8, v4, v20
 # CHECK-ENCODING: [0x57,0x24,0x4a,0x02]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 24 4a 02 <unknown>
 
-vredmaxu.vs v8, v4, v20, v0.t
-# CHECK-INST: vredmaxu.vs v8, v4, v20, v0.t
+th.vredmaxu.vs v8, v4, v20, v0.t
+# CHECK-INST: th.vredmaxu.vs v8, v4, v20, v0.t
 # CHECK-ENCODING: [0x57,0x24,0x4a,0x18]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 24 4a 18 <unknown>
 
-vredmaxu.vs v8, v4, v20
-# CHECK-INST: vredmaxu.vs v8, v4, v20
+th.vredmaxu.vs v8, v4, v20
+# CHECK-INST: th.vredmaxu.vs v8, v4, v20
 # CHECK-ENCODING: [0x57,0x24,0x4a,0x1a]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 24 4a 1a <unknown>
 
-vredmax.vs v8, v4, v20, v0.t
-# CHECK-INST: vredmax.vs v8, v4, v20, v0.t
+th.vredmax.vs v8, v4, v20, v0.t
+# CHECK-INST: th.vredmax.vs v8, v4, v20, v0.t
 # CHECK-ENCODING: [0x57,0x24,0x4a,0x1c]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 24 4a 1c <unknown>
 
-vredmax.vs v8, v4, v20
-# CHECK-INST: vredmax.vs v8, v4, v20
+th.vredmax.vs v8, v4, v20
+# CHECK-INST: th.vredmax.vs v8, v4, v20
 # CHECK-ENCODING: [0x57,0x24,0x4a,0x1e]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 24 4a 1e <unknown>
 
-vredminu.vs v8, v4, v20, v0.t
-# CHECK-INST: vredminu.vs v8, v4, v20, v0.t
+th.vredminu.vs v8, v4, v20, v0.t
+# CHECK-INST: th.vredminu.vs v8, v4, v20, v0.t
 # CHECK-ENCODING: [0x57,0x24,0x4a,0x10]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 24 4a 10 <unknown>
 
-vredminu.vs v8, v4, v20
-# CHECK-INST: vredminu.vs v8, v4, v20
+th.vredminu.vs v8, v4, v20
+# CHECK-INST: th.vredminu.vs v8, v4, v20
 # CHECK-ENCODING: [0x57,0x24,0x4a,0x12]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 24 4a 12 <unknown>
 
-vredmin.vs v8, v4, v20, v0.t
-# CHECK-INST: vredmin.vs v8, v4, v20, v0.t
+th.vredmin.vs v8, v4, v20, v0.t
+# CHECK-INST: th.vredmin.vs v8, v4, v20, v0.t
 # CHECK-ENCODING: [0x57,0x24,0x4a,0x14]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 24 4a 14 <unknown>
 
-vredmin.vs v8, v4, v20
-# CHECK-INST: vredmin.vs v8, v4, v20
+th.vredmin.vs v8, v4, v20
+# CHECK-INST: th.vredmin.vs v8, v4, v20
 # CHECK-ENCODING: [0x57,0x24,0x4a,0x16]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 24 4a 16 <unknown>
 
-vredand.vs v8, v4, v20, v0.t
-# CHECK-INST: vredand.vs v8, v4, v20, v0.t
+th.vredand.vs v8, v4, v20, v0.t
+# CHECK-INST: th.vredand.vs v8, v4, v20, v0.t
 # CHECK-ENCODING: [0x57,0x24,0x4a,0x04]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 24 4a 04 <unknown>
 
-vredand.vs v8, v4, v20
-# CHECK-INST: vredand.vs v8, v4, v20
+th.vredand.vs v8, v4, v20
+# CHECK-INST: th.vredand.vs v8, v4, v20
 # CHECK-ENCODING: [0x57,0x24,0x4a,0x06]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 24 4a 06 <unknown>
 
-vredor.vs v8, v4, v20, v0.t
-# CHECK-INST: vredor.vs v8, v4, v20, v0.t
+th.vredor.vs v8, v4, v20, v0.t
+# CHECK-INST: th.vredor.vs v8, v4, v20, v0.t
 # CHECK-ENCODING: [0x57,0x24,0x4a,0x08]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 24 4a 08 <unknown>
 
-vredor.vs v8, v4, v20
-# CHECK-INST: vredor.vs v8, v4, v20
+th.vredor.vs v8, v4, v20
+# CHECK-INST: th.vredor.vs v8, v4, v20
 # CHECK-ENCODING: [0x57,0x24,0x4a,0x0a]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 24 4a 0a <unknown>
 
-vredxor.vs v8, v4, v20, v0.t
-# CHECK-INST: vredxor.vs v8, v4, v20, v0.t
+th.vredxor.vs v8, v4, v20, v0.t
+# CHECK-INST: th.vredxor.vs v8, v4, v20, v0.t
 # CHECK-ENCODING: [0x57,0x24,0x4a,0x0c]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 24 4a 0c <unknown>
 
-vredxor.vs v8, v4, v20
-# CHECK-INST: vredxor.vs v8, v4, v20
+th.vredxor.vs v8, v4, v20
+# CHECK-INST: th.vredxor.vs v8, v4, v20
 # CHECK-ENCODING: [0x57,0x24,0x4a,0x0e]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 24 4a 0e <unknown>
 
-vwredsumu.vs v8, v4, v20, v0.t
-# CHECK-INST: vwredsumu.vs v8, v4, v20, v0.t
+th.vwredsumu.vs v8, v4, v20, v0.t
+# CHECK-INST: th.vwredsumu.vs v8, v4, v20, v0.t
 # CHECK-ENCODING: [0x57,0x04,0x4a,0xc0]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 04 4a c0 <unknown>
 
-vwredsumu.vs v8, v4, v20
-# CHECK-INST: vwredsumu.vs v8, v4, v20
+th.vwredsumu.vs v8, v4, v20
+# CHECK-INST: th.vwredsumu.vs v8, v4, v20
 # CHECK-ENCODING: [0x57,0x04,0x4a,0xc2]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 04 4a c2 <unknown>
 
-vwredsum.vs v8, v4, v20, v0.t
-# CHECK-INST: vwredsum.vs v8, v4, v20, v0.t
+th.vwredsum.vs v8, v4, v20, v0.t
+# CHECK-INST: th.vwredsum.vs v8, v4, v20, v0.t
 # CHECK-ENCODING: [0x57,0x04,0x4a,0xc4]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 04 4a c4 <unknown>
 
-vwredsum.vs v8, v4, v20
-# CHECK-INST: vwredsum.vs v8, v4, v20
+th.vwredsum.vs v8, v4, v20
+# CHECK-INST: th.vwredsum.vs v8, v4, v20
 # CHECK-ENCODING: [0x57,0x04,0x4a,0xc6]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 04 4a c6 <unknown>
 
-vredsum.vs v0, v4, v20, v0.t
-# CHECK-INST: vredsum.vs v0, v4, v20, v0.t
+th.vredsum.vs v0, v4, v20, v0.t
+# CHECK-INST: th.vredsum.vs v0, v4, v20, v0.t
 # CHECK-ENCODING: [0x57,0x20,0x4a,0x00]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 20 4a 00 <unknown>

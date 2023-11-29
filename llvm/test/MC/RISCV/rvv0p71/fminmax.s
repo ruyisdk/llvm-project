@@ -11,50 +11,50 @@
 # RUN:         --mattr=+f \
 # RUN:        | llvm-objdump -d - | FileCheck %s --check-prefix=CHECK-UNKNOWN
 
-vfmin.vv v8, v4, v20, v0.t
-# CHECK-INST: vfmin.vv v8, v4, v20, v0.t
+th.vfmin.vv v8, v4, v20, v0.t
+# CHECK-INST: th.vfmin.vv v8, v4, v20, v0.t
 # CHECK-ENCODING: [0x57,0x14,0x4a,0x10]
 # CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 14 4a 10 <unknown>
 
-vfmin.vv v8, v4, v20
-# CHECK-INST: vfmin.vv v8, v4, v20
+th.vfmin.vv v8, v4, v20
+# CHECK-INST: th.vfmin.vv v8, v4, v20
 # CHECK-ENCODING: [0x57,0x14,0x4a,0x12]
 # CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 14 4a 12 <unknown>
 
-vfmin.vf v8, v4, fa0, v0.t
-# CHECK-INST: vfmin.vf v8, v4, fa0, v0.t
+th.vfmin.vf v8, v4, fa0, v0.t
+# CHECK-INST: th.vfmin.vf v8, v4, fa0, v0.t
 # CHECK-ENCODING: [0x57,0x54,0x45,0x10]
 # CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 54 45 10 <unknown>
 
-vfmin.vf v8, v4, fa0
-# CHECK-INST: vfmin.vf v8, v4, fa0
+th.vfmin.vf v8, v4, fa0
+# CHECK-INST: th.vfmin.vf v8, v4, fa0
 # CHECK-ENCODING: [0x57,0x54,0x45,0x12]
 # CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 54 45 12 <unknown>
 
-vfmax.vv v8, v4, v20, v0.t
-# CHECK-INST: vfmax.vv v8, v4, v20, v0.t
+th.vfmax.vv v8, v4, v20, v0.t
+# CHECK-INST: th.vfmax.vv v8, v4, v20, v0.t
 # CHECK-ENCODING: [0x57,0x14,0x4a,0x18]
 # CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 14 4a 18 <unknown>
 
-vfmax.vv v8, v4, v20
-# CHECK-INST: vfmax.vv v8, v4, v20
+th.vfmax.vv v8, v4, v20
+# CHECK-INST: th.vfmax.vv v8, v4, v20
 # CHECK-ENCODING: [0x57,0x14,0x4a,0x1a]
 # CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 14 4a 1a <unknown>
 
-vfmax.vf v8, v4, fa0, v0.t
-# CHECK-INST: vfmax.vf v8, v4, fa0, v0.t
+th.vfmax.vf v8, v4, fa0, v0.t
+# CHECK-INST: th.vfmax.vf v8, v4, fa0, v0.t
 # CHECK-ENCODING: [0x57,0x54,0x45,0x18]
 # CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 54 45 18 <unknown>
 
-vfmax.vf v8, v4, fa0
-# CHECK-INST: vfmax.vf v8, v4, fa0
+th.vfmax.vf v8, v4, fa0
+# CHECK-INST: th.vfmax.vf v8, v4, fa0
 # CHECK-ENCODING: [0x57,0x54,0x45,0x1a]
 # CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 54 45 1a <unknown>

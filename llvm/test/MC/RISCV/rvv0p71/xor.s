@@ -8,38 +8,38 @@
 # RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadvector %s \
 # RUN:        | llvm-objdump -d - | FileCheck %s --check-prefix=CHECK-UNKNOWN
 
-vxor.vv v8, v4, v20, v0.t
-# CHECK-INST: vxor.vv v8, v4, v20, v0.t
+th.vxor.vv v8, v4, v20, v0.t
+# CHECK-INST: th.vxor.vv v8, v4, v20, v0.t
 # CHECK-ENCODING: [0x57,0x04,0x4a,0x2c]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 04 4a 2c <unknown>
 
-vxor.vv v8, v4, v20
-# CHECK-INST: vxor.vv v8, v4, v20
+th.vxor.vv v8, v4, v20
+# CHECK-INST: th.vxor.vv v8, v4, v20
 # CHECK-ENCODING: [0x57,0x04,0x4a,0x2e]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 04 4a 2e <unknown>
 
-vxor.vx v8, v4, a0, v0.t
-# CHECK-INST: vxor.vx v8, v4, a0, v0.t
+th.vxor.vx v8, v4, a0, v0.t
+# CHECK-INST: th.vxor.vx v8, v4, a0, v0.t
 # CHECK-ENCODING: [0x57,0x44,0x45,0x2c]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 44 45 2c <unknown>
 
-vxor.vx v8, v4, a0
-# CHECK-INST: vxor.vx v8, v4, a0
+th.vxor.vx v8, v4, a0
+# CHECK-INST: th.vxor.vx v8, v4, a0
 # CHECK-ENCODING: [0x57,0x44,0x45,0x2e]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 44 45 2e <unknown>
 
-vxor.vi v8, v4, 15, v0.t
-# CHECK-INST: vxor.vi v8, v4, 15, v0.t
+th.vxor.vi v8, v4, 15, v0.t
+# CHECK-INST: th.vxor.vi v8, v4, 15, v0.t
 # CHECK-ENCODING: [0x57,0xb4,0x47,0x2c]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 b4 47 2c <unknown>
 
-vxor.vi v8, v4, 15
-# CHECK-INST: vxor.vi v8, v4, 15
+th.vxor.vi v8, v4, 15
+# CHECK-INST: th.vxor.vi v8, v4, 15
 # CHECK-ENCODING: [0x57,0xb4,0x47,0x2e]
 # CHECK-ERROR: instruction requires the following: 'V' (Vector Extension for Application Processors), 'Zve32x' or 'Zve64x' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 b4 47 2e <unknown>

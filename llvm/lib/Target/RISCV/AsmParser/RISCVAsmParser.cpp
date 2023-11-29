@@ -3343,7 +3343,7 @@ void RISCVAsmParser::emitXVMSGE(MCInst &Inst, unsigned Opcode, SMLoc IDLoc,
                             .addOperand(Inst.getOperand(1))
                             .addOperand(Inst.getOperand(2))
                             .addReg(RISCV::NoRegister));
-    emitToStreamer(Out, MCInstBuilder(RISCV::XVMNAND_MM)
+    emitToStreamer(Out, MCInstBuilder(RISCV::TH_VMNAND_MM)
                             .addOperand(Inst.getOperand(0))
                             .addOperand(Inst.getOperand(0))
                             .addOperand(Inst.getOperand(0)));
@@ -3359,7 +3359,7 @@ void RISCVAsmParser::emitXVMSGE(MCInst &Inst, unsigned Opcode, SMLoc IDLoc,
                             .addOperand(Inst.getOperand(1))
                             .addOperand(Inst.getOperand(2))
                             .addOperand(Inst.getOperand(3)));
-    emitToStreamer(Out, MCInstBuilder(RISCV::XVMXOR_MM)
+    emitToStreamer(Out, MCInstBuilder(RISCV::TH_VMXOR_MM)
                             .addOperand(Inst.getOperand(0))
                             .addOperand(Inst.getOperand(0))
                             .addReg(RISCV::V0));
@@ -3375,7 +3375,7 @@ void RISCVAsmParser::emitXVMSGE(MCInst &Inst, unsigned Opcode, SMLoc IDLoc,
                             .addOperand(Inst.getOperand(2))
                             .addOperand(Inst.getOperand(3))
                             .addReg(RISCV::NoRegister));
-    emitToStreamer(Out, MCInstBuilder(RISCV::XVMANDN_MM)
+    emitToStreamer(Out, MCInstBuilder(RISCV::TH_VMANDN_MM)
                             .addOperand(Inst.getOperand(0))
                             .addOperand(Inst.getOperand(0))
                             .addOperand(Inst.getOperand(1)));
@@ -3444,8 +3444,8 @@ bool RISCVAsmParser::validateInstruction(MCInst &Inst,
 
   if (Opcode == RISCV::PseudoVMSGEU_VX_M_T ||
       Opcode == RISCV::PseudoVMSGE_VX_M_T ||
-      Opcode == RISCV::PseudoXVMSGEU_VX_M_T ||
-      Opcode == RISCV::PseudoXVMSGE_VX_M_T) {
+      Opcode == RISCV::PseudoTH_VMSGEU_VX_M_T ||
+      Opcode == RISCV::PseudoTH_VMSGE_VX_M_T) {
     unsigned DestReg = Inst.getOperand(0).getReg();
     unsigned TempReg = Inst.getOperand(1).getReg();
     if (DestReg == TempReg) {
@@ -3711,27 +3711,27 @@ bool RISCVAsmParser::processInstruction(MCInst &Inst, SMLoc IDLoc,
     emitVMSGE_VI(Inst, RISCV::VMSLEU_VI, RISCV::VMSNE_VV, IDLoc, Out, false);
     return false;
   // for XTHeadV Extension
-  case RISCV::PseudoXVMSGEU_VX:
-  case RISCV::PseudoXVMSGEU_VX_M:
-  case RISCV::PseudoXVMSGEU_VX_M_T:
-    emitXVMSGE(Inst, RISCV::XVMSLTU_VX, IDLoc, Out);
+  case RISCV::PseudoTH_VMSGEU_VX:
+  case RISCV::PseudoTH_VMSGEU_VX_M:
+  case RISCV::PseudoTH_VMSGEU_VX_M_T:
+    emitXVMSGE(Inst, RISCV::TH_VMSLTU_VX, IDLoc, Out);
     return false;
-  case RISCV::PseudoXVMSGE_VX:
-  case RISCV::PseudoXVMSGE_VX_M:
-  case RISCV::PseudoXVMSGE_VX_M_T:
-    emitXVMSGE(Inst, RISCV::XVMSLT_VX, IDLoc, Out);
+  case RISCV::PseudoTH_VMSGE_VX:
+  case RISCV::PseudoTH_VMSGE_VX_M:
+  case RISCV::PseudoTH_VMSGE_VX_M_T:
+    emitXVMSGE(Inst, RISCV::TH_VMSLT_VX, IDLoc, Out);
     return false;
-  case RISCV::PseudoXVMSGE_VI:
-    emitVMSGE_VI(Inst, RISCV::XVMSGT_VI, RISCV::XVMSGT_VI, IDLoc, Out, true);
+  case RISCV::PseudoTH_VMSGE_VI:
+    emitVMSGE_VI(Inst, RISCV::TH_VMSGT_VI, RISCV::TH_VMSGT_VI, IDLoc, Out, true);
     return false;
-  case RISCV::PseudoXVMSLT_VI:
-    emitVMSGE_VI(Inst, RISCV::XVMSLE_VI, RISCV::XVMSLE_VI, IDLoc, Out, true);
+  case RISCV::PseudoTH_VMSLT_VI:
+    emitVMSGE_VI(Inst, RISCV::TH_VMSLE_VI, RISCV::TH_VMSLE_VI, IDLoc, Out, true);
     return false;
-  case RISCV::PseudoXVMSGEU_VI:
-    emitVMSGE_VI(Inst, RISCV::XVMSGTU_VI, RISCV::XVMSEQ_VV, IDLoc, Out, false);
+  case RISCV::PseudoTH_VMSGEU_VI:
+    emitVMSGE_VI(Inst, RISCV::TH_VMSGTU_VI, RISCV::TH_VMSEQ_VV, IDLoc, Out, false);
     return false;
-  case RISCV::PseudoXVMSLTU_VI:
-    emitVMSGE_VI(Inst, RISCV::XVMSLEU_VI, RISCV::XVMSNE_VV, IDLoc, Out, false);
+  case RISCV::PseudoTH_VMSLTU_VI:
+    emitVMSGE_VI(Inst, RISCV::TH_VMSLEU_VI, RISCV::TH_VMSNE_VV, IDLoc, Out, false);
     return false;
   }
 

@@ -14644,7 +14644,7 @@ static MachineBasicBlock *emitXWholeLoadStore(MachineInstr &MI,
 
   // Generate `vsetvli x0, x0, e<SEW>, m<LMUL>`
   auto VTypeI = RISCVVType::encodeXTHeadVTYPE(SEW, LMUL, 1);
-  BuildMI(*BB, MI, DL, TII->get(RISCV::XVSETVLI))
+  BuildMI(*BB, MI, DL, TII->get(RISCV::TH_VSETVLI))
       .addReg(RISCV::X0, RegState::Define | RegState::Dead)
       .addReg(RISCV::X0)
       .addImm(VTypeI)
@@ -14658,7 +14658,7 @@ static MachineBasicBlock *emitXWholeLoadStore(MachineInstr &MI,
       .add(MI.getOperand(1)); // rs, the load/store address
 
   // Restore vl, vtype with `vsetvl x0, SavedVL, SavedVType`
-  BuildMI(*BB, MI, DL, TII->get(RISCV::XVSETVL))
+  BuildMI(*BB, MI, DL, TII->get(RISCV::TH_VSETVL))
       .addReg(RISCV::X0, RegState::Define | RegState::Dead)
       .addReg(SavedVL, RegState::Kill)
       .addReg(SavedVType, RegState::Kill);
@@ -14710,7 +14710,7 @@ static MachineBasicBlock *emitXWholeMove(MachineInstr &MI,
   for (unsigned I = 0; I < NREGS; ++I) {
     auto DstReg = TRI->getSubReg(DstRegNo, RISCV::sub_vrm1_0 + I);
     auto SrcReg = TRI->getSubReg(SrcRegNo, RISCV::sub_vrm1_0 + I);
-    BuildMI(*BB, MI, DL, TII->get(RISCV::XVMV_V_V), DstReg)
+    BuildMI(*BB, MI, DL, TII->get(RISCV::TH_VMV_V_V), DstReg)
         .addReg(SrcReg);
   }
 
@@ -14839,19 +14839,19 @@ RISCVTargetLowering::EmitInstrWithCustomInserter(MachineInstr &MI,
     return emitFROUND(MI, BB, Subtarget);
 
   // Emulated whole move instructions for RVV 0.7
-  case RISCV::PseudoXVMV1R_V:
+  case RISCV::PseudoTH_VMV1R_V:
     return emitXWholeMove(MI, BB, 1);
-  case RISCV::PseudoXVMV2R_V:
+  case RISCV::PseudoTH_VMV2R_V:
     return emitXWholeMove(MI, BB, 2);
-  case RISCV::PseudoXVMV4R_V:
+  case RISCV::PseudoTH_VMV4R_V:
     return emitXWholeMove(MI, BB, 4);
-  case RISCV::PseudoXVMV8R_V:
+  case RISCV::PseudoTH_VMV8R_V:
     return emitXWholeMove(MI, BB, 8);
 
 #define PseudoXVL_CASE_SEW_LMUL(SEW_val, LMUL_val)                             \
-  case RISCV::PseudoXVL##LMUL_val##RE##SEW_val##_V:                            \
+  case RISCV::PseudoTH_VL##LMUL_val##RE##SEW_val##_V:                            \
     return emitXWholeLoad(MI, BB, SEW_val, LMUL_val,                           \
-                          RISCV::PseudoXVLE_V_M##LMUL_val);
+                          RISCV::PseudoTH_VLE_V_M##LMUL_val);
 
 #define PseudoXVL_CASE_SEW(SEW_val)                                            \
   PseudoXVL_CASE_SEW_LMUL(SEW_val, 1);                                         \
@@ -14866,9 +14866,9 @@ RISCVTargetLowering::EmitInstrWithCustomInserter(MachineInstr &MI,
   PseudoXVL_CASE_SEW(64);
 
 #define PseudoXVS_CASE_SEW_LMUL(SEW_val, LMUL_val)                             \
-  case RISCV::PseudoXVS##LMUL_val##RE##SEW_val##_V:                            \
+  case RISCV::PseudoTH_VS##LMUL_val##RE##SEW_val##_V:                            \
   return emitXWholeStore(MI, BB, SEW_val, LMUL_val,                            \
-                         RISCV::PseudoXVSE_V_M##LMUL_val);
+                         RISCV::PseudoTH_VSE_V_M##LMUL_val);
 
 #define PseudoXVS_CASE_SEW(SEW_val)                                            \
   PseudoXVS_CASE_SEW_LMUL(SEW_val, 1);                                         \

@@ -187,8 +187,8 @@ static bool isConvertibleToVMV_V_V(const RISCVSubtarget &STI,
     if (MBBI->getOpcode() == RISCV::PseudoVSETVLI ||
         MBBI->getOpcode() == RISCV::PseudoVSETVLIX0 ||
         MBBI->getOpcode() == RISCV::PseudoVSETIVLI ||
-        MBBI->getOpcode() == RISCV::PseudoXVSETVLI ||
-        MBBI->getOpcode() == RISCV::PseudoXVSETVLIX0) {
+        MBBI->getOpcode() == RISCV::PseudoTH_VSETVLI ||
+        MBBI->getOpcode() == RISCV::PseudoTH_VSETVLIX0) {
       // There is a vsetvli between COPY and source define instruction.
       // vy = def_vop ...  (producing instruction)
       // ...
@@ -359,16 +359,16 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
     Opc = RISCV::FSGNJ_D;
     IsScalableVector = false;
   } else if (RISCV::VRRegClass.contains(DstReg, SrcReg)) {
-    Opc = XTHeadV ? RISCV::PseudoXVMV1R_V : RISCV::VMV1R_V;
+    Opc = XTHeadV ? RISCV::PseudoTH_VMV1R_V : RISCV::VMV1R_V;
     LMul = RISCVII::LMUL_1;
   } else if (RISCV::VRM2RegClass.contains(DstReg, SrcReg)) {
-    Opc = XTHeadV ? RISCV::PseudoXVMV2R_V : RISCV::VMV2R_V;
+    Opc = XTHeadV ? RISCV::PseudoTH_VMV2R_V : RISCV::VMV2R_V;
     LMul = RISCVII::LMUL_2;
   } else if (RISCV::VRM4RegClass.contains(DstReg, SrcReg)) {
-    Opc = XTHeadV ? RISCV::PseudoXVMV4R_V : RISCV::VMV4R_V;
+    Opc = XTHeadV ? RISCV::PseudoTH_VMV4R_V : RISCV::VMV4R_V;
     LMul = RISCVII::LMUL_4;
   } else if (RISCV::VRM8RegClass.contains(DstReg, SrcReg)) {
-    Opc = XTHeadV ? RISCV::PseudoXVMV8R_V : RISCV::VMV8R_V;
+    Opc = XTHeadV ? RISCV::PseudoTH_VMV8R_V : RISCV::VMV8R_V;
     LMul = RISCVII::LMUL_8;
   } else if (RISCV::VRN2M1RegClass.contains(DstReg, SrcReg)) {
     Opc = RISCV::VMV1R_V;
@@ -443,20 +443,20 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
       default:
         llvm_unreachable("Impossible LMUL for vector register copy.");
       case RISCVII::LMUL_1:
-        Opc = XTHeadV ? RISCV::PseudoXVMV_V_V_M1 : RISCV::PseudoVMV_V_V_M1;
-        VIOpc = XTHeadV ? RISCV::PseudoXVMV_V_I_M1 : RISCV::PseudoVMV_V_I_M1;
+        Opc = XTHeadV ? RISCV::PseudoTH_VMV_V_V_M1 : RISCV::PseudoVMV_V_V_M1;
+        VIOpc = XTHeadV ? RISCV::PseudoTH_VMV_V_I_M1 : RISCV::PseudoVMV_V_I_M1;
         break;
       case RISCVII::LMUL_2:
-        Opc = XTHeadV ? RISCV::PseudoXVMV_V_V_M2 : RISCV::PseudoVMV_V_V_M2;
-        VIOpc = XTHeadV ? RISCV::PseudoXVMV_V_I_M2 : RISCV::PseudoVMV_V_I_M2;
+        Opc = XTHeadV ? RISCV::PseudoTH_VMV_V_V_M2 : RISCV::PseudoVMV_V_V_M2;
+        VIOpc = XTHeadV ? RISCV::PseudoTH_VMV_V_I_M2 : RISCV::PseudoVMV_V_I_M2;
         break;
       case RISCVII::LMUL_4:
-        Opc = XTHeadV ? RISCV::PseudoXVMV_V_V_M4 : RISCV::PseudoVMV_V_V_M4;
-        VIOpc = XTHeadV ? RISCV::PseudoXVMV_V_I_M4 : RISCV::PseudoVMV_V_I_M4;
+        Opc = XTHeadV ? RISCV::PseudoTH_VMV_V_V_M4 : RISCV::PseudoVMV_V_V_M4;
+        VIOpc = XTHeadV ? RISCV::PseudoTH_VMV_V_I_M4 : RISCV::PseudoVMV_V_I_M4;
         break;
       case RISCVII::LMUL_8:
-        Opc = XTHeadV ? RISCV::PseudoXVMV_V_V_M8 : RISCV::PseudoVMV_V_V_M8;
-        VIOpc = XTHeadV ? RISCV::PseudoXVMV_V_I_M8 : RISCV::PseudoVMV_V_I_M8;
+        Opc = XTHeadV ? RISCV::PseudoTH_VMV_V_V_M8 : RISCV::PseudoVMV_V_V_M8;
+        VIOpc = XTHeadV ? RISCV::PseudoTH_VMV_V_I_M8 : RISCV::PseudoVMV_V_I_M8;
         break;
       }
 
@@ -562,13 +562,13 @@ void RISCVInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
     // The vector whole register store instructions are encoded
     // similar to unmasked unit-stride store of elements with EEW=8.
     // Same for the following similar cases.
-    Opcode = XTHeadV ? RISCV::PseudoXVS1RE8_V : RISCV::VS1R_V;
+    Opcode = XTHeadV ? RISCV::PseudoTH_VS1RE8_V : RISCV::VS1R_V;
   } else if (RISCV::VRM2RegClass.hasSubClassEq(RC)) {
-    Opcode = XTHeadV ? RISCV::PseudoXVS2RE8_V : RISCV::VS2R_V;
+    Opcode = XTHeadV ? RISCV::PseudoTH_VS2RE8_V : RISCV::VS2R_V;
   } else if (RISCV::VRM4RegClass.hasSubClassEq(RC)) {
-    Opcode = XTHeadV ? RISCV::PseudoXVS4RE8_V : RISCV::VS4R_V;
+    Opcode = XTHeadV ? RISCV::PseudoTH_VS4RE8_V : RISCV::VS4R_V;
   } else if (RISCV::VRM8RegClass.hasSubClassEq(RC)) {
-    Opcode = XTHeadV ? RISCV::PseudoXVS8RE8_V : RISCV::VS8R_V;
+    Opcode = XTHeadV ? RISCV::PseudoTH_VS8RE8_V : RISCV::VS8R_V;
   } else if (RISCV::VRN2M1RegClass.hasSubClassEq(RC))
     Opcode = RISCV::PseudoVSPILL2_M1;
   else if (RISCV::VRN2M2RegClass.hasSubClassEq(RC))
@@ -650,13 +650,13 @@ void RISCVInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
     Opcode = RISCV::FLD;
     IsScalableVector = false;
   } else if (RISCV::VRRegClass.hasSubClassEq(RC)) {
-    Opcode = XTHeadV ? RISCV::PseudoXVL1RE8_V : RISCV::VL1RE8_V;
+    Opcode = XTHeadV ? RISCV::PseudoTH_VL1RE8_V : RISCV::VL1RE8_V;
   } else if (RISCV::VRM2RegClass.hasSubClassEq(RC)) {
-    Opcode = XTHeadV ? RISCV::PseudoXVL2RE8_V : RISCV::VL2RE8_V;
+    Opcode = XTHeadV ? RISCV::PseudoTH_VL2RE8_V : RISCV::VL2RE8_V;
   } else if (RISCV::VRM4RegClass.hasSubClassEq(RC)) {
-    Opcode = XTHeadV ? RISCV::PseudoXVL4RE8_V : RISCV::VL4RE8_V;
+    Opcode = XTHeadV ? RISCV::PseudoTH_VL4RE8_V : RISCV::VL4RE8_V;
   } else if (RISCV::VRM8RegClass.hasSubClassEq(RC)) {
-    Opcode = XTHeadV ? RISCV::PseudoXVL8RE8_V : RISCV::VL8RE8_V;
+    Opcode = XTHeadV ? RISCV::PseudoTH_VL8RE8_V : RISCV::VL8RE8_V;
   } else if (RISCV::VRN2M1RegClass.hasSubClassEq(RC))
     Opcode = RISCV::PseudoVRELOAD2_M1;
   else if (RISCV::VRN2M2RegClass.hasSubClassEq(RC))

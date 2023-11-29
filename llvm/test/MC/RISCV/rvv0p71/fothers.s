@@ -9,32 +9,32 @@
 # RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadvector %s \
 # RUN:   --mattr=+f | llvm-objdump -d - | FileCheck %s --check-prefix=CHECK-UNKNOWN
 
-vfsqrt.v v8, v4, v0.t
-# CHECK-INST: vfsqrt.v v8, v4, v0.t
+th.vfsqrt.v v8, v4, v0.t
+# CHECK-INST: th.vfsqrt.v v8, v4, v0.t
 # CHECK-ENCODING: [0x57,0x14,0x40,0x8c]
 # CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 14 40 8c <unknown>
 
-vfsqrt.v v8, v4
-# CHECK-INST: vfsqrt.v v8, v4
+th.vfsqrt.v v8, v4
+# CHECK-INST: th.vfsqrt.v v8, v4
 # CHECK-ENCODING: [0x57,0x14,0x40,0x8e]
 # CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 14 40 8e <unknown>
 
-vfclass.v v8, v4, v0.t
-# CHECK-INST: vfclass.v v8, v4, v0.t
+th.vfclass.v v8, v4, v0.t
+# CHECK-INST: th.vfclass.v v8, v4, v0.t
 # CHECK-ENCODING: [0x57,0x14,0x48,0x8c]
 # CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 14 48 8c <unknown>
 
-vfclass.v v8, v4
-# CHECK-INST: vfclass.v v8, v4
+th.vfclass.v v8, v4
+# CHECK-INST: th.vfclass.v v8, v4
 # CHECK-ENCODING: [0x57,0x14,0x48,0x8e]
 # CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 14 48 8e <unknown>
 
-vfmerge.vfm v8, v4, fa0, v0
-# CHECK-INST: vfmerge.vfm v8, v4, fa0, v0
+th.vfmerge.vfm v8, v4, fa0, v0
+# CHECK-INST: th.vfmerge.vfm v8, v4, fa0, v0
 # CHECK-ENCODING: [0x57,0x54,0x45,0x5c]
 # CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
 # CHECK-UNKNOWN: 57 54 45 5c <unknown>
