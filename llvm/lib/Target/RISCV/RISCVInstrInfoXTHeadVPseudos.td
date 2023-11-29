@@ -154,10 +154,10 @@ def XTHeadVVSTable : GenericTable {
 // These can't be reused, since the vtypei in rvv 0.7 differs from the one in rvv 1.0
 let Predicates = [HasVendorXTHeadV] in {
   let hasSideEffects = 1, mayLoad = 0, mayStore = 0, Defs = [VL, VTYPE] in {
-    def PseudoXVSETVLI : Pseudo<(outs GPR:$rd), (ins GPRNoX0:$rs1, XTHeadVTypeI:$vtypei), []>,
-                         Sched<[WriteVSETVLI, ReadVSETVLI]>;
-    def PseudoXVSETVLIX0 : Pseudo<(outs GPR:$rd), (ins GPRX0:$rs1, XTHeadVTypeI:$vtypei), []>,
+    def PseudoTH_VSETVLI : Pseudo<(outs GPR:$rd), (ins GPRNoX0:$rs1, XTHeadVTypeI:$vtypei), []>,
                            Sched<[WriteVSETVLI, ReadVSETVLI]>;
+    def PseudoTH_VSETVLIX0 : Pseudo<(outs GPR:$rd), (ins GPRX0:$rs1, XTHeadVTypeI:$vtypei), []>,
+                             Sched<[WriteVSETVLI, ReadVSETVLI]>;
   }
 } // Predicates = [HasVendorXTHeadV]
 
@@ -640,12 +640,12 @@ multiclass XVPseudoFFLoad {
 }
 
 let Predicates = [HasVendorXTHeadV] in {
-  defm PseudoXVL : XVPseudoUSLoad;
-  defm PseudoXVS : XVPseudoUSStore;
-  defm PseudoXVL : XVPseudoSLoad;
-  defm PseudoXVS : XVPseudoSStore;
-  defm PseudoXVL : XVPseudoILoad;
-  defm PseudoXVS : XVPseudoIStore;
+  defm PseudoTH_VL : XVPseudoUSLoad;
+  defm PseudoTH_VS : XVPseudoUSStore;
+  defm PseudoTH_VL : XVPseudoSLoad;
+  defm PseudoTH_VS : XVPseudoSStore;
+  defm PseudoTH_VL : XVPseudoILoad;
+  defm PseudoTH_VS : XVPseudoIStore;
 
   let hasSideEffects = 1, Defs = [VL] in
   defm PseudoXVL : XVPseudoFFLoad;
@@ -656,17 +656,17 @@ let Predicates = [HasVendorXTHeadV] in {
 // for emulating Vector Load/Store Whole Register Instructions in RVV 1.0
 //===----------------------------------------------------------------------===//
 
-// This part defines the pseudo `PseudoXVLE_V_M*` and `PseudoXVSE_V_M*`,
+// This part defines the pseudo `PseudoTH_VLE_V_M*` and `PseudoTH_VSE_V_M*`,
 // with the type of operands being VRM2, VRM4 and VRM8.
-// We cannot directly convert `PseudoXVL<nr>R` or `PseudoXVS<nr>R` to `XVLE_V` or `XVSE_V`,
+// We cannot directly convert `PseudoTH_VL<nr>R` or `PseudoTH_VS<nr>R` to `TH_VLE_V` or `TH_VSE_V`,
 // which will be reported as ill-typed program by the type checker.
 // See https://github.com/ruyisdk/llvm-project/pull/23#issuecomment-1816071060 for details.
 
 // In the following, we define such pseudos only to make the type checker happy.
 // As the types in these pseudos are always erased when lowering to MCInst.
-// TODO: consider using `PseudoXVLE_V_E*_M*` and `PseudoXVSE_V_E*_M*` defined above,
+// TODO: consider using `PseudoTH_VLE_V_E*_M*` and `PseudoTH_VSE_V_E*_M*` defined above,
 //   but these pseudos seems to require more operands like `AVL:$vl, ixlenimm:$sew`,
-//   some of which are not available in the original `PseudoXVL<nr>R` and `PseudoXVS<nr>R`.
+//   some of which are not available in the original `PseudoTH_VL<nr>R` and `PseudoTH_VS<nr>R`.
 
 multiclass XVPseudoWellTypedUSLoadStore_VLE {
   foreach lmul = MxListXTHeadV in {
@@ -695,12 +695,12 @@ multiclass XVPseudoWellTypedUSLoadStore_VSE {
 // Set `isCodeGenOnly = 1` to hide them from the tablegened assembly parser,
 // to avoid decoding conflict with the original `vle.v` and `vse.v` in RISCVInstraInfoXTHeadV.td
 let Predicates = [HasVendorXTHeadV], isCodeGenOnly = 1 in {
-  defm PseudoXVLE_V : XVPseudoWellTypedUSLoadStore_VLE;
-  defm PseudoXVSE_V : XVPseudoWellTypedUSLoadStore_VSE;
+  defm PseudoTH_VLE_V : XVPseudoWellTypedUSLoadStore_VLE;
+  defm PseudoTH_VSE_V : XVPseudoWellTypedUSLoadStore_VSE;
 } // Predicates = [HasVendorXTHeadV], isCodeGenOnly = 1
 
 // This part defines the pseudo version of `vl<n>r.v` and `vs<n>r.v`,
-// that is, `PseudoXVL<nr>R` and `PseudoXVS<nr>R`,
+// that is, `PseudoTH_VL<nr>R` and `PseudoTH_VS<nr>R`,
 // and explcitly binds them to LLVM IR `load`/`store` intrinsic calls
 // in the instruction selection process, which enables directly
 // loading/storing a vector register in LLVM IR with builtin `load`/`store`,
@@ -715,7 +715,7 @@ multiclass XVPseudoWholeLoadN<bits<3> nf, LMULInfo m, RegisterClass VRC> {
   foreach l = EEWList in {
     defvar s = !cast<SchedWrite>("WriteVLD" # !add(nf, 1) # "R");
 
-    def E # l # _V : XVPseudoWholeLoad<XVLE_V, m, VRC>,
+    def E # l # _V : XVPseudoWholeLoad<TH_VLE_V, m, VRC>,
                      Sched<[s, ReadVLDX]>;
   }
 }
@@ -729,29 +729,29 @@ multiclass XVPseudoWholeStoreN<bits<3> nf, LMULInfo m, RegisterClass VRC> {
     defvar sw = !cast<SchedWrite>("WriteVST" # !add(nf, 1) # "R");
     defvar sr = !cast<SchedRead>("ReadVST" # !add(nf, 1) # "R");
 
-    def E # l # _V : XVPseudoWholeStore<XVSE_V, m, VRC>,
+    def E # l # _V : XVPseudoWholeStore<TH_VSE_V, m, VRC>,
                      Sched<[sw, sr, ReadVSTX]>;
   }
 }
 
 // Set `usesCustomInserter = 1` to lower these manually
-// to `PseudoXVLE_V_M*` or `PseudoXVSE_V_M*` defined above.
+// to `PseudoTH_VLE_V_M*` or `PseudoTH_VSE_V_M*` defined above.
 // See: RISCVISelLowering.cpp, function `RISCVTargetLowering::EmitInstrWithCustomInserter`
 // and `emitXWholeLoadStore`.
 let Predicates = [HasVendorXTHeadV] in {
   // Whole register load
   let hasSideEffects = 0, mayLoad = 1, mayStore = 0, isCodeGenOnly = 1, usesCustomInserter = 1 in {
-    defm PseudoXVL1R : XVPseudoWholeLoadN<0, V_M1, VR>;
-    defm PseudoXVL2R : XVPseudoWholeLoadN<1, V_M2, VRM2>;
-    defm PseudoXVL4R : XVPseudoWholeLoadN<3, V_M4, VRM4>;
-    defm PseudoXVL8R : XVPseudoWholeLoadN<7, V_M8, VRM8>;
+    defm PseudoTH_VL1R : XVPseudoWholeLoadN<0, V_M1, VR>;
+    defm PseudoTH_VL2R : XVPseudoWholeLoadN<1, V_M2, VRM2>;
+    defm PseudoTH_VL4R : XVPseudoWholeLoadN<3, V_M4, VRM4>;
+    defm PseudoTH_VL8R : XVPseudoWholeLoadN<7, V_M8, VRM8>;
   }
   // Whole register store
   let hasSideEffects = 0, mayLoad = 0, mayStore = 1, isCodeGenOnly = 1, usesCustomInserter = 1 in {
-    defm PseudoXVS1R : XVPseudoWholeStoreN<0, V_M1, VR>;
-    defm PseudoXVS2R : XVPseudoWholeStoreN<1, V_M2, VRM2>;
-    defm PseudoXVS4R : XVPseudoWholeStoreN<3, V_M4, VRM4>;
-    defm PseudoXVS8R : XVPseudoWholeStoreN<7, V_M8, VRM8>;
+    defm PseudoTH_VS1R : XVPseudoWholeStoreN<0, V_M1, VR>;
+    defm PseudoTH_VS2R : XVPseudoWholeStoreN<1, V_M2, VRM2>;
+    defm PseudoTH_VS4R : XVPseudoWholeStoreN<3, V_M4, VRM4>;
+    defm PseudoTH_VS8R : XVPseudoWholeStoreN<7, V_M8, VRM8>;
   }
 } // Predicates = [HasVendorXTHeadV]
 
@@ -762,9 +762,9 @@ multiclass XVPatUSLoadStoreWholeVRSDNode<ValueType type,
                                          VReg reg_class,
                                          int sew = !shl(1, log2sew)> {
   defvar load_instr =
-    !cast<Instruction>("PseudoXVL"#!substr(vlmul.MX, 1)#"RE"#sew#"_V");
+    !cast<Instruction>("PseudoTH_VL"#!substr(vlmul.MX, 1)#"RE"#sew#"_V");
   defvar store_instr =
-    !cast<Instruction>("PseudoXVS"#!substr(vlmul.MX, 1)#"RE"#sew#"_V");
+    !cast<Instruction>("PseudoTH_VS"#!substr(vlmul.MX, 1)#"RE"#sew#"_V");
 
   // Load
   def : Pat<(type (load GPR:$rs1)),
@@ -851,15 +851,15 @@ multiclass XVPseudoAMO {
 }
 
 let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA] in {
-  defm PseudoXVAMOSWAP : XVPseudoAMO;
-  defm PseudoXVAMOADD  : XVPseudoAMO;
-  defm PseudoXVAMOXOR  : XVPseudoAMO;
-  defm PseudoXVAMOAND  : XVPseudoAMO;
-  defm PseudoXVAMOOR   : XVPseudoAMO;
-  defm PseudoXVAMOMIN  : XVPseudoAMO;
-  defm PseudoXVAMOMAX  : XVPseudoAMO;
-  defm PseudoXVAMOMINU : XVPseudoAMO;
-  defm PseudoXVAMOMAXU : XVPseudoAMO;
+  defm PseudoTH_VAMOSWAP : XVPseudoAMO;
+  defm PseudoTH_VAMOADD  : XVPseudoAMO;
+  defm PseudoTH_VAMOXOR  : XVPseudoAMO;
+  defm PseudoTH_VAMOAND  : XVPseudoAMO;
+  defm PseudoTH_VAMOOR   : XVPseudoAMO;
+  defm PseudoTH_VAMOMIN  : XVPseudoAMO;
+  defm PseudoTH_VAMOMAX  : XVPseudoAMO;
+  defm PseudoTH_VAMOMINU : XVPseudoAMO;
+  defm PseudoTH_VAMOMAXU : XVPseudoAMO;
 } // Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA]
 
 // Patterns for vamo intrinsics.
@@ -939,15 +939,15 @@ multiclass XVPatAMOV_WD<string intrinsic,
 }
 
 let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA] in {
-  defm : XVPatAMOV_WD<"int_riscv_xvamoswap", "PseudoXVAMOSWAP", AllIntegerXVectors>;
-  defm : XVPatAMOV_WD<"int_riscv_xvamoadd", "PseudoXVAMOADD", AllIntegerXVectors>;
-  defm : XVPatAMOV_WD<"int_riscv_xvamoxor", "PseudoXVAMOXOR", AllIntegerXVectors>;
-  defm : XVPatAMOV_WD<"int_riscv_xvamoand", "PseudoXVAMOAND", AllIntegerXVectors>;
-  defm : XVPatAMOV_WD<"int_riscv_xvamoor", "PseudoXVAMOOR", AllIntegerXVectors>;
-  defm : XVPatAMOV_WD<"int_riscv_xvamomin", "PseudoXVAMOMIN", AllIntegerXVectors>;
-  defm : XVPatAMOV_WD<"int_riscv_xvamomax", "PseudoXVAMOMAX", AllIntegerXVectors>;
-  defm : XVPatAMOV_WD<"int_riscv_xvamominu", "PseudoXVAMOMINU", AllIntegerXVectors>;
-  defm : XVPatAMOV_WD<"int_riscv_xvamomaxu", "PseudoXVAMOMAXU", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_xvamoswap", "PseudoTH_VAMOSWAP", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_xvamoadd", "PseudoTH_VAMOADD", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_xvamoxor", "PseudoTH_VAMOXOR", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_xvamoand", "PseudoTH_VAMOAND", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_xvamoor", "PseudoTH_VAMOOR", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_xvamomin", "PseudoTH_VAMOMIN", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_xvamomax", "PseudoTH_VAMOMAX", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_xvamominu", "PseudoTH_VAMOMINU", AllIntegerXVectors>;
+  defm : XVPatAMOV_WD<"int_riscv_xvamomaxu", "PseudoTH_VAMOMAXU", AllIntegerXVectors>;
 } // Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA]
 
 //===----------------------------------------------------------------------===//
@@ -972,11 +972,11 @@ multiclass XVPseudoVALU_VV_VX_VI<Operand ImmType = simm5, string Constraint = ""
 }
 
 let Predicates = [HasVendorXTHeadV] in {
-  defm PseudoXVADD   : XVPseudoVALU_VV_VX_VI;
+  defm PseudoTH_VADD   : XVPseudoVALU_VV_VX_VI;
 } // Predicates = [HasVendorXTHeadV]
 
 let Predicates = [HasVendorXTHeadV] in {
-  defm : VPatBinaryV_VV_VX_VI<"int_riscv_xvadd", "PseudoXVADD", AllIntegerXVectors>;
+  defm : VPatBinaryV_VV_VX_VI<"int_riscv_xvadd", "PseudoTH_VADD", AllIntegerXVectors>;
 } // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
@@ -1005,17 +1005,17 @@ multiclass XVPseudoUnaryVMV_V_X_I {
 }
 
 let Predicates = [HasVendorXTHeadV] in {
-  defm PseudoXVMV_V : XVPseudoUnaryVMV_V_X_I;
+  defm PseudoTH_VMV_V : XVPseudoUnaryVMV_V_X_I;
 } // Predicates = [HasVendorXTHeadV]
 
-// Patterns for `int_riscv_vmv_v_v` -> `PseudoXVMV_V_V_<LMUL>`
+// Patterns for `int_riscv_vmv_v_v` -> `PseudoTH_VMV_V_V_<LMUL>`
 foreach vti = AllXVectors in {
   let Predicates = GetXVTypePredicates<vti>.Predicates in {
     // vmv.v.v
     def : Pat<(vti.Vector (int_riscv_xvmv_v_v (vti.Vector vti.RegClass:$passthru),
                                               (vti.Vector vti.RegClass:$rs1),
                                               VLOpFrag)),
-              (!cast<Instruction>("PseudoXVMV_V_V_"#vti.LMul.MX)
+              (!cast<Instruction>("PseudoTH_VMV_V_V_"#vti.LMul.MX)
                $passthru, $rs1, GPR:$vl, vti.Log2SEW, TU_MU)>;
 
     // TODO: vmv.v.x, vmv.v.i
@@ -1038,9 +1038,9 @@ let Predicates = [HasVendorXTHeadV] in {
     // shuffle vector registers without needing to know or change vl or vtype."
     // The 1, 2, 4, 8 in suffixes are "the number of individual vector registers, NREG, to copy",
     // rather than LMUL.
-    def PseudoXVMV1R_V : XVPseudoWholeMove<XVMV_V_V, V_M1, VR>;
-    def PseudoXVMV2R_V : XVPseudoWholeMove<XVMV_V_V, V_M1, VR>;
-    def PseudoXVMV4R_V : XVPseudoWholeMove<XVMV_V_V, V_M1, VR>;
-    def PseudoXVMV8R_V : XVPseudoWholeMove<XVMV_V_V, V_M1, VR>;
+    def PseudoTH_VMV1R_V : XVPseudoWholeMove<TH_VMV_V_V, V_M1, VR>;
+    def PseudoTH_VMV2R_V : XVPseudoWholeMove<TH_VMV_V_V, V_M1, VR>;
+    def PseudoTH_VMV4R_V : XVPseudoWholeMove<TH_VMV_V_V, V_M1, VR>;
+    def PseudoTH_VMV8R_V : XVPseudoWholeMove<TH_VMV_V_V, V_M1, VR>;
   }
 } // Predicates = [HasVendorXTHeadV]
