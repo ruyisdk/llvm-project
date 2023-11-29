@@ -259,7 +259,7 @@ multiclass TH_VAMO<bits<5> amoop, bits<3> width, string opcodestr> {
 // Instructions
 //===----------------------------------------------------------------------===//
 
-let AsmVariantName = "RVV0p71", DecoderNamespace = "RVV0p71" in {
+let DecoderNamespace = "RVV0p71" in {
 let Predicates = [HasVendorXTHeadV] in {
 // Configuration-Setting Instructions
 let hasSideEffects = 1, mayLoad = 0, mayStore = 0 in {
@@ -870,10 +870,9 @@ let Constraints = "@earlyclobber $vd", RVVConstraint = Vcompress in {
 defm TH_VCOMPRESS_V : VCPR_MV_Mask<"th.vcompress", 0b010111>;
 } // Constraints = "@earlyclobber $vd", RVVConstraint = Vcompress
 } // Predicates = [HasVendorXTHeadV]
-} // AsmVariantName = "RVV0p71", DecoderNamespace = "RVV0p71"
+} // DecoderNamespace = "RVV0p71"
 
 // Pseudo instructions
-let AsmVariantName = "RVV0p71" in {
 let Predicates = [HasVendorXTHeadV] in {
 // Vector Integer Comparison Instructions
 def : InstAlias<"th.vmsgtu.vv $vd, $va, $vb$vm",
@@ -970,6 +969,5 @@ def : InstAlias<"th.vmnot.m $vd, $vs",
                 (TH_VMNAND_MM VR:$vd, VR:$vs, VR:$vs)>;
 
 } // Predicates = [HasVendorXTHeadV]
-} // AsmVariantName = "RVV0p71"
 
 include "RISCVInstrInfoXTHeadVPseudos.td"

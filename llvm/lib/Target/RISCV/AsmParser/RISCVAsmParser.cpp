@@ -1328,10 +1328,9 @@ bool RISCVAsmParser::MatchAndEmitInstruction(SMLoc IDLoc, unsigned &Opcode,
                                              bool MatchingInlineAsm) {
   MCInst Inst;
   FeatureBitset MissingFeatures;
-  bool IsRVV0p71 = getSTI().hasFeature(RISCV::FeatureVendorXTHeadV);
 
   auto Result = MatchInstructionImpl(Operands, Inst, ErrorInfo, MissingFeatures,
-                                     MatchingInlineAsm, IsRVV0p71 ? 1 : 0);
+                                     MatchingInlineAsm);
   switch (Result) {
   default:
     break;

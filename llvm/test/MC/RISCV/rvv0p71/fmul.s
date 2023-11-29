@@ -14,47 +14,47 @@
 th.vfmul.vv v8, v4, v20, v0.t
 # CHECK-INST: th.vfmul.vv v8, v4, v20, v0.t
 # CHECK-ENCODING: [0x57,0x14,0x4a,0x90]
-# CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
+# CHECK-ERROR: instruction requires the following: 'F' (Single-Precision Floating-Point), 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 57 14 4a 90 <unknown>
 
 th.vfmul.vv v8, v4, v20
 # CHECK-INST: th.vfmul.vv v8, v4, v20
 # CHECK-ENCODING: [0x57,0x14,0x4a,0x92]
-# CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
+# CHECK-ERROR: instruction requires the following: 'F' (Single-Precision Floating-Point), 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 57 14 4a 92 <unknown>
 
 th.vfmul.vf v8, v4, fa0, v0.t
 # CHECK-INST: th.vfmul.vf v8, v4, fa0, v0.t
 # CHECK-ENCODING: [0x57,0x54,0x45,0x90]
-# CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
+# CHECK-ERROR: instruction requires the following: 'F' (Single-Precision Floating-Point), 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 57 54 45 90 <unknown>
 
 th.vfmul.vf v8, v4, fa0
 # CHECK-INST: th.vfmul.vf v8, v4, fa0
 # CHECK-ENCODING: [0x57,0x54,0x45,0x92]
-# CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
+# CHECK-ERROR: instruction requires the following: 'F' (Single-Precision Floating-Point), 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 57 54 45 92 <unknown>
 
 th.vfwmul.vv v8, v4, v20, v0.t
 # CHECK-INST: th.vfwmul.vv v8, v4, v20, v0.t
 # CHECK-ENCODING: [0x57,0x14,0x4a,0xe0]
-# CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
+# CHECK-ERROR: instruction requires the following: 'F' (Single-Precision Floating-Point), 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 57 14 4a e0 <unknown>
 
 th.vfwmul.vv v8, v4, v20
 # CHECK-INST: th.vfwmul.vv v8, v4, v20
 # CHECK-ENCODING: [0x57,0x14,0x4a,0xe2]
-# CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
+# CHECK-ERROR: instruction requires the following: 'F' (Single-Precision Floating-Point), 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 57 14 4a e2 <unknown>
 
 th.vfwmul.vf v8, v4, fa0, v0.t
 # CHECK-INST: th.vfwmul.vf v8, v4, fa0, v0.t
 # CHECK-ENCODING: [0x57,0x54,0x45,0xe0]
-# CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
+# CHECK-ERROR: instruction requires the following: 'F' (Single-Precision Floating-Point), 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 57 54 45 e0 <unknown>
 
 th.vfwmul.vf v8, v4, fa0
 # CHECK-INST: th.vfwmul.vf v8, v4, fa0
 # CHECK-ENCODING: [0x57,0x54,0x45,0xe2]
-# CHECK-ERROR: instruction requires the following: 'V'{{.*}}'Zve32f', 'Zve64f' or 'Zve64d' (Vector Extensions for Embedded Processors){{$}}
+# CHECK-ERROR: instruction requires the following: 'F' (Single-Precision Floating-Point), 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 57 54 45 e2 <unknown>
