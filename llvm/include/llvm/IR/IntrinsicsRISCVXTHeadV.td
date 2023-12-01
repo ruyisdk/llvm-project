@@ -236,37 +236,6 @@ let TargetPrefix = "riscv" in {
   def int_riscv_xvsxh_mask : XVIStoreMasked;
   def int_riscv_xvsxw_mask : XVIStoreMasked;
   def int_riscv_xvsxe_mask : XVIStoreMasked;
-
-  // 7.7 Unit-Stride Fault-only-first Loads
-  // For unit stride fault-only-first load without mask
-  // Input: (passthru, pointer, vl)
-  // Output: (data, vl)
-  // NOTE: We model this with default memory properties since we model writing
-  // VL as a side effect. IntrReadMem, IntrHasSideEffects does not work.
-  class XVUSLoadFF
-        : DefaultAttrsIntrinsic<[llvm_anyvector_ty, llvm_anyint_ty],
-                    [LLVMMatchType<0>, llvm_ptr_ty, LLVMMatchType<1>],
-                    [NoCapture<ArgIndex<1>>]>,
-                    RISCVVIntrinsic {
-    let VLOperand = 2;
-  }
-
-  // For unit stride fault-only-first load with mask
-  // Input: (maskedoff, pointer, mask, vl)
-  // Output: (data, vl)
-  // NOTE: We model this with default memory properties since we model writing
-  // VL as a side effect. IntrReadMem, IntrHasSideEffects does not work.
-  class XVUSLoadFFMasked
-        : DefaultAttrsIntrinsic<[llvm_anyvector_ty, llvm_anyint_ty],
-                    [LLVMMatchType<0>, llvm_ptr_ty,
-                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>,
-                     LLVMMatchType<1>],
-                    [NoCapture<ArgIndex<1>>]>, RISCVVIntrinsic {
-    let VLOperand = 3;
-  }
-
-  def int_riscv_th_vleff : XVUSLoadFF;
-  def int_riscv_th_vleff_mask : XVUSLoadFFMasked;
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
