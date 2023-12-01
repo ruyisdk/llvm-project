@@ -6189,15 +6189,14 @@ let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCodeGenOnly = 1 in {
                         Sched<[WriteRdVLENB]>;
 }
 
-} // Predicates = [HasStdVOrXTHeadV]
-
-let Predicates = [HasVInstructions] in {
-
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCodeGenOnly = 1,
     Uses = [VL] in
 def PseudoReadVL : Pseudo<(outs GPR:$rd), (ins), []>,
                    PseudoInstExpansion<(CSRRS GPR:$rd, SysRegVL.Encoding, X0)>;
 
+} // Predicates = [HasStdVOrXTHeadV]
+
+let Predicates = [HasVInstructions] in {
 foreach lmul = MxList in {
   foreach nf = NFSet<lmul>.L in {
     defvar vreg = SegRegClass<lmul, nf>.RC;
