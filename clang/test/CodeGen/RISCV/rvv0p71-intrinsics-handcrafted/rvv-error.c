@@ -10,7 +10,7 @@
 
 // CHECK-RV64-ERR: error: builtin requires at least one of the following extensions to be enabled: 'Xtheadvector'
 
-#include <riscv_vector_xtheadv.h>
+#include <riscv_th_vector.h>
 
 int test() {
   return __builtin_rvv_vsetvli(1, 0, 0); // e8m1
