@@ -3,7 +3,7 @@
 
 // CHECK-RV64V-LABEL: @test(
 // CHECK-RV64V-NEXT:  entry:
-// CHECK-RV64V-NEXT:    [[TMP0:%.*]] = call i64 @llvm.riscv.xvsetvl.i64(i64 1, i64 0, i64 0)
+// CHECK-RV64V-NEXT:    [[TMP0:%.*]] = call i64 @llvm.riscv.th.vsetvl.i64(i64 1, i64 0, i64 0)
 // CHECK-RV64V-NEXT:    [[CONV:%.*]] = trunc i64 [[TMP0]] to i32
 // CHECK-RV64V-NEXT:    ret i32 [[CONV]]
 //
