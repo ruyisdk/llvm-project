@@ -152,7 +152,7 @@ public:
                                   SmallVectorImpl<SDValue> &Operands, MVT *IndexVT = nullptr);
 
   void selectXVL(SDNode *Node, const SDLoc& DL, unsigned IntNo, bool IsUnsigned,
-                 bool IsMasked, bool IsStrided, bool IsIndexed, bool IsE);
+                 bool IsMasked, bool IsStrided, bool IsIndexed, bool IsFF, bool IsE);
   void selectXVS(SDNode *Node, const SDLoc& DL, unsigned IntNo,
                  bool IsMasked, bool IsStrided, bool IsIndexed, bool IsE);
   void selectVLSEG(SDNode *Node, bool IsMasked, bool IsStrided);
@@ -250,6 +250,7 @@ struct XVLPseudo {
   uint16_t Masked : 1;
   uint16_t Strided : 1;
   uint16_t Indexed : 1;
+  uint16_t FF : 1;
   uint16_t Unsigned : 1;
   uint16_t IsE : 1;
   uint16_t Log2MEM : 3;

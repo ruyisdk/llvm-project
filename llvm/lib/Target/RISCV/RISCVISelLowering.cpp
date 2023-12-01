@@ -1337,6 +1337,8 @@ bool RISCVTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
   case Intrinsic::riscv_vle_mask:
   case Intrinsic::riscv_vleff:
   case Intrinsic::riscv_vleff_mask:
+  case Intrinsic::riscv_th_vleff:
+  case Intrinsic::riscv_th_vleff_mask:
     return SetRVVLoadStoreInfo(/*PtrOp*/ 1,
                                /*IsStore*/ false,
                                /*IsUnitStrided*/ true);
