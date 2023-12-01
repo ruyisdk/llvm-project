@@ -648,7 +648,7 @@ let Predicates = [HasVendorXTHeadV] in {
   defm PseudoTH_VS : XVPseudoIStore;
 
   let hasSideEffects = 1, Defs = [VL] in
-  defm PseudoXVL : XVPseudoFFLoad;
+  defm PseudoTH_VL : XVPseudoFFLoad;
 } // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
