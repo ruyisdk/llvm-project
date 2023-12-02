@@ -422,8 +422,8 @@ void RISCVDAGToDAGISel::selectXVL(
   }
 
   unsigned Log2MEM = IsE ? Log2SEW : Tag2Log2MEM(IntNo);
-  const RISCV::XVLPseudo *P =
-    RISCV::getXVLPseudo(IsMasked, IsStrided, IsIndexed, IsFF, IsUnsigned, IsE,
+  const RISCV::TH_VLPseudo *P =
+    RISCV::getTH_VLPseudo(IsMasked, IsStrided, IsIndexed, IsFF, IsUnsigned, IsE,
                         Log2MEM, Log2SEW, static_cast<unsigned>(LMUL));
   MachineSDNode *Load =
     CurDAG->getMachineNode(P->Pseudo, DL, Node->getVTList(), Operands);
@@ -488,8 +488,8 @@ void RISCVDAGToDAGISel::selectXVS(
   }
 
   unsigned Log2MEM = IsE ? Log2SEW : Tag2Log2MEM(IntNo);
-  const RISCV::XVSPseudo *P =
-    RISCV::getXVSPseudo(IsMasked, IsStrided, IsIndexed, IsE,
+  const RISCV::TH_VSPseudo *P =
+    RISCV::getTH_VSPseudo(IsMasked, IsStrided, IsIndexed, IsE,
                         Log2MEM, Log2SEW, static_cast<unsigned>(LMUL));
   MachineSDNode *Store =
     CurDAG->getMachineNode(P->Pseudo, DL, Node->getVTList(), Operands);

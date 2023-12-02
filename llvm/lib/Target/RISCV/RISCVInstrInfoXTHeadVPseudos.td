@@ -104,12 +104,12 @@ class XTHeadVVL<bit M, bit ST, bit I, bit F, bit U, bit E,
 
 def XTHeadVVLTable : GenericTable {
   let FilterClass = "XTHeadVVL";
-  let CppTypeName = "XVLPseudo";
+  let CppTypeName = "TH_VLPseudo";
   let Fields = ["Masked", "Strided", "Indexed", "FF", "Unsigned",
                 "IsE", "Log2MEM", "Log2SEW", "LMUL", "Pseudo"];
   let PrimaryKey = ["Masked", "Strided", "Indexed", "FF", "Unsigned",
                     "IsE", "Log2MEM", "Log2SEW", "LMUL"];
-  let PrimaryKeyName = "getXVLPseudo";
+  let PrimaryKeyName = "getTH_VLPseudo";
 }
 
 class XTHeadVVS<bit M, bit ST, bit I, bit E, bits<3> ME, bits<3> S, bits<3> L> {
@@ -125,12 +125,12 @@ class XTHeadVVS<bit M, bit ST, bit I, bit E, bits<3> ME, bits<3> S, bits<3> L> {
 
 def XTHeadVVSTable : GenericTable {
   let FilterClass = "XTHeadVVS";
-  let CppTypeName = "XVSPseudo";
+  let CppTypeName = "TH_VSPseudo";
   let Fields = ["Masked", "Strided", "Indexed", "IsE",
                 "Log2MEM", "Log2SEW", "LMUL", "Pseudo"];
   let PrimaryKey = ["Masked", "Strided", "Indexed", "IsE",
                     "Log2MEM", "Log2SEW", "LMUL"];
-  let PrimaryKeyName = "getXVSPseudo";
+  let PrimaryKeyName = "getTH_VSPseudo";
 }
 
 //===----------------------------------------------------------------------===//

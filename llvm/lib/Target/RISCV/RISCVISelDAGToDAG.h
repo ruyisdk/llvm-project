@@ -246,7 +246,7 @@ struct VLEPseudo {
   uint16_t Pseudo;
 };
 
-struct XVLPseudo {
+struct TH_VLPseudo {
   uint16_t Masked : 1;
   uint16_t Strided : 1;
   uint16_t Indexed : 1;
@@ -267,7 +267,7 @@ struct VSEPseudo {
   uint16_t Pseudo;
 };
 
-struct XVSPseudo {
+struct TH_VSPseudo {
   uint16_t Masked : 1;
   uint16_t Strided : 1;
   uint16_t Indexed : 1;
