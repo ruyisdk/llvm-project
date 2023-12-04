@@ -80,11 +80,11 @@ static const RISCVSupportedExtension SupportedExtensions[] = {
     {"xtheadmemidx", RISCVExtensionVersion{1, 0}},
     {"xtheadmempair", RISCVExtensionVersion{1, 0}},
     {"xtheadsync", RISCVExtensionVersion{1, 0}},
-    // T-Head vector extension (namely Vector extension 0.7.1) series.
-    {"xtheadv", RISCVExtensionVersion{0, 7}},
     // T-Head vector extension series: Zvamo
     {"xtheadvamo", RISCVExtensionVersion{0, 7}},
     {"xtheadvdot", RISCVExtensionVersion{1, 0}},
+    // T-Head vector extension (namely Vector extension 0.7.1) series.
+    {"xtheadvector", RISCVExtensionVersion{0, 7}},
     // T-Head vector extension series: Zvediv
     {"xtheadvediv", RISCVExtensionVersion{0, 7}},
     // T-Head vector extension series: Zvlsseg
@@ -965,10 +965,10 @@ Error RISCVISAInfo::checkDependency() {
         errc::invalid_argument,
         "'xtheadvamo' requires 'a' extension to also be specified");
 
-  if (Exts.count("xtheadv") && HasVector)
+  if (Exts.count("xtheadvector") && HasVector)
     return createStringError(
         errc::invalid_argument,
-        "'xtheadv' extension is incompatible with 'v' or 'zve*' extension");
+        "'xtheadvector' extension is incompatible with 'v' or 'zve*' extension");
 
   // Additional dependency checks.
   // TODO: The 'q' extension requires rv64.

@@ -27,7 +27,7 @@ namespace clang {
 // Decide whether to emit header code
 // `#pragma clang riscv intrinsic vector` for RVV 1.0 (the `RVV`),
 // or
-// `#pragma clang riscv intrinsic xtheadv_vector` for RVV 0.7.1 (the
+// `#pragma clang riscv intrinsic thead_vector` for RVV 0.7.1 (the
 // `XTHEADV_VECTOR`).
 enum RVVHeaderType : uint8_t { RVV, XTHEADV_VECTOR };
 

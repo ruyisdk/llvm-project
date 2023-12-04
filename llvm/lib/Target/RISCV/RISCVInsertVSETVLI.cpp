@@ -56,15 +56,15 @@ static bool isVectorConfigInstr(const MachineInstr &MI) {
   return MI.getOpcode() == RISCV::PseudoVSETVLI ||
          MI.getOpcode() == RISCV::PseudoVSETVLIX0 ||
          MI.getOpcode() == RISCV::PseudoVSETIVLI ||
-         MI.getOpcode() == RISCV::PseudoXVSETVLI ||
-         MI.getOpcode() == RISCV::PseudoXVSETVLIX0;
+         MI.getOpcode() == RISCV::PseudoTH_VSETVLI ||
+         MI.getOpcode() == RISCV::PseudoTH_VSETVLIX0;
 }
 
 /// Return true if this is 'vsetvli x0, x0, vtype' which preserves
 /// VL and only sets VTYPE.
 static bool isVLPreservingConfig(const MachineInstr &MI) {
   if (MI.getOpcode() != RISCV::PseudoVSETVLIX0 &&
-      MI.getOpcode() != RISCV::PseudoXVSETVLIX0)
+      MI.getOpcode() != RISCV::PseudoTH_VSETVLIX0)
     return false;
   assert(RISCV::X0 == MI.getOperand(1).getReg());
   return RISCV::X0 == MI.getOperand(0).getReg();
@@ -839,8 +839,8 @@ static VSETVLIInfo getInfoForVSETVLI(const MachineInstr &MI, bool XTHeadV) {
   } else {
     assert(MI.getOpcode() == RISCV::PseudoVSETVLI ||
            MI.getOpcode() == RISCV::PseudoVSETVLIX0 ||
-           MI.getOpcode() == RISCV::PseudoXVSETVLI ||
-           MI.getOpcode() == RISCV::PseudoXVSETVLIX0);
+           MI.getOpcode() == RISCV::PseudoTH_VSETVLI ||
+           MI.getOpcode() == RISCV::PseudoTH_VSETVLIX0);
     Register AVLReg = MI.getOperand(1).getReg();
     assert((AVLReg != RISCV::X0 || MI.getOperand(0).getReg() != RISCV::X0) &&
            "Can't handle X0, X0 vsetvli yet");
@@ -863,7 +863,7 @@ void RISCVInsertVSETVLI::insertVSETVLI(MachineBasicBlock &MBB,
     // VLMAX.
     if (Info.hasSameAVL(PrevInfo) && Info.hasSameVLMAX(PrevInfo)) {
       auto Opcode =
-          HasVendorXTHeadV ? RISCV::PseudoXVSETVLIX0 : RISCV::PseudoVSETVLIX0;
+          HasVendorXTHeadV ? RISCV::PseudoTH_VSETVLIX0 : RISCV::PseudoVSETVLIX0;
       auto TypeI =
           HasVendorXTHeadV ? Info.encodeXTHeadVTYPE() : Info.encodeVTYPE();
       BuildMI(MBB, InsertPt, DL, TII->get(Opcode))
@@ -883,7 +883,7 @@ void RISCVInsertVSETVLI::insertVSETVLI(MachineBasicBlock &MBB,
         if (isVectorConfigInstr(*DefMI)) {
           VSETVLIInfo DefInfo = getInfoForVSETVLI(*DefMI, HasVendorXTHeadV);
           if (DefInfo.hasSameAVL(PrevInfo) && DefInfo.hasSameVLMAX(PrevInfo)) {
-            auto Opcode = HasVendorXTHeadV ? RISCV::PseudoXVSETVLIX0
+            auto Opcode = HasVendorXTHeadV ? RISCV::PseudoTH_VSETVLIX0
                                            : RISCV::PseudoVSETVLIX0;
             auto TypeI = HasVendorXTHeadV ? Info.encodeXTHeadVTYPE()
                                           : Info.encodeVTYPE();
@@ -915,7 +915,7 @@ void RISCVInsertVSETVLI::insertVSETVLI(MachineBasicBlock &MBB,
     if (PrevInfo.isValid() && !PrevInfo.isUnknown() &&
         Info.hasSameVLMAX(PrevInfo)) {
       auto Opcode =
-          HasVendorXTHeadV ? RISCV::PseudoXVSETVLIX0 : RISCV::PseudoVSETVLIX0;
+          HasVendorXTHeadV ? RISCV::PseudoTH_VSETVLIX0 : RISCV::PseudoVSETVLIX0;
       auto TypeI =
           HasVendorXTHeadV ? Info.encodeXTHeadVTYPE() : Info.encodeVTYPE();
       BuildMI(MBB, InsertPt, DL, TII->get(Opcode))
@@ -932,7 +932,7 @@ void RISCVInsertVSETVLI::insertVSETVLI(MachineBasicBlock &MBB,
       BuildMI(MBB, InsertPt, DL, TII->get(RISCV::PseudoLI))
           .addReg(UImmR, RegState::Define)
           .addImm(0);
-      BuildMI(MBB, InsertPt, DL, TII->get(RISCV::PseudoXVSETVLI))
+      BuildMI(MBB, InsertPt, DL, TII->get(RISCV::PseudoTH_VSETVLI))
           .addReg(RISCV::X0, RegState::Define | RegState::Dead)
           .addReg(UImmR, RegState::Kill)
           .addImm(Info.encodeXTHeadVTYPE());
@@ -952,11 +952,11 @@ void RISCVInsertVSETVLI::insertVSETVLI(MachineBasicBlock &MBB,
   // opcode if the AVLReg is X0 as they have different register classes for
   // the AVL operand.
   Register DestReg = RISCV::X0;
-  unsigned Opcode = HasVendorXTHeadV ? RISCV::PseudoXVSETVLI : RISCV::PseudoVSETVLI;
+  unsigned Opcode = HasVendorXTHeadV ? RISCV::PseudoTH_VSETVLI : RISCV::PseudoVSETVLI;
   auto TypeI = HasVendorXTHeadV ? Info.encodeXTHeadVTYPE() : Info.encodeVTYPE();
   if (AVLReg == RISCV::X0) {
     DestReg = MRI->createVirtualRegister(&RISCV::GPRRegClass);
-    Opcode = HasVendorXTHeadV ? RISCV::PseudoXVSETVLIX0 : RISCV::PseudoVSETVLIX0;
+    Opcode = HasVendorXTHeadV ? RISCV::PseudoTH_VSETVLIX0 : RISCV::PseudoVSETVLIX0;
   }
   BuildMI(MBB, InsertPt, DL, TII->get(Opcode))
       .addReg(DestReg, RegState::Define | RegState::Dead)
@@ -1627,7 +1627,7 @@ bool RISCVInsertVSETVLI::runOnMachineFunction(MachineFunction &MF) {
     for (MachineInstr &MI : MBB) {
       if (MI.getOpcode() == RISCV::PseudoVSETVLI ||
           MI.getOpcode() == RISCV::PseudoVSETIVLI ||
-          MI.getOpcode() == RISCV::PseudoXVSETVLI) {
+          MI.getOpcode() == RISCV::PseudoTH_VSETVLI) {
         Register VRegDef = MI.getOperand(0).getReg();
         if (VRegDef != RISCV::X0 && MRI->use_nodbg_empty(VRegDef))
           MI.getOperand(0).setReg(RISCV::X0);
