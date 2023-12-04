@@ -4608,10 +4608,10 @@ bool Sema::CheckRISCVBuiltinFunctionCall(const TargetInfo &TI,
   case RISCVVector::BI__builtin_rvv_vsetvlimax:
     return SemaBuiltinConstantArgRange(TheCall, 0, 0, 3) ||
            CheckRISCVLMUL(TheCall, 1, true);
-  case RISCVVector::BI__builtin_rvv_xvsetvl:
+  case RISCVVector::BI__builtin_rvv_th_vsetvl:
     return SemaBuiltinConstantArgRange(TheCall, 1, 0, 3) ||
            CheckRISCVLMUL(TheCall, 2, false);
-  case RISCVVector::BI__builtin_rvv_xvsetvlmax:
+  case RISCVVector::BI__builtin_rvv_th_vsetvlmax:
     return SemaBuiltinConstantArgRange(TheCall, 0, 0, 3) ||
            CheckRISCVLMUL(TheCall, 1, false);
   case RISCVVector::BI__builtin_rvv_vget_v: {
@@ -5419,20 +5419,20 @@ void Sema::checkRVVTypeSupport(QualType Ty, SourceLocation Loc, ValueDecl *D) {
   if ((Ty->isRVVType(/* Bitwidth */ 64, /* IsFloat */ false) ||
        Ty->isRVVType(/* ElementCount */ 1)) &&
       (!TI.hasFeature("zve64x") &&
-       !TI.hasFeature("xtheadv")))
+       !TI.hasFeature("xtheadvector")))
     Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve64x";
   if (Ty->isRVVType(/* Bitwidth */ 16, /* IsFloat */ true) &&
-      (!TI.hasFeature("zvfh") && !TI.hasFeature("xtheadv")))
+      (!TI.hasFeature("zvfh") && !TI.hasFeature("xtheadvector")))
     Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zvfh";
   if (Ty->isRVVType(/* Bitwidth */ 32, /* IsFloat */ true) &&
-      (!TI.hasFeature("zve32f") && !TI.hasFeature("xtheadv")))
+      (!TI.hasFeature("zve32f") && !TI.hasFeature("xtheadvector")))
     Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve32f";
   if (Ty->isRVVType(/* Bitwidth */ 64, /* IsFloat */ true) &&
-      (!TI.hasFeature("zve64d") && !TI.hasFeature("xtheadv")))
+      (!TI.hasFeature("zve64d") && !TI.hasFeature("xtheadvector")))
     Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve64d";
   // Given that caller already checked isRVVType() before calling this function,
   // if we don't have at least zve32x supported, then we need to emit error.
-  if (!TI.hasFeature("zve32x") && !TI.hasFeature("xtheadv"))
+  if (!TI.hasFeature("zve32x") && !TI.hasFeature("xtheadvector"))
     Diag(Loc, diag::err_riscv_type_requires_extension, D) << Ty << "zve32x";
 }
 

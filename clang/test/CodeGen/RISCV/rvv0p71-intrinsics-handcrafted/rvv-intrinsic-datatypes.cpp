@@ -1,9 +1,9 @@
-// RUN: %clang_cc1 -triple riscv64 -target-feature +xtheadv \
+// RUN: %clang_cc1 -triple riscv64 -target-feature +xtheadvector \
 // RUN: -O0 -emit-llvm %s -o - | FileCheck %s
 
 #include <riscv_vector.h>
 
-// This test case tests the typedef generated under riscv_vector_xtheadv.h
+// This test case tests the typedef generated under riscv_th_vector.h
 
 // CHECK-LABEL: define dso_local void @_Z3foov
 // CHECK-SAME: () #[[ATTR0:[0-9]+]] {

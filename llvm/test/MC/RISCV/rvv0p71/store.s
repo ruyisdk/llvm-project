@@ -1,201 +1,201 @@
-# RUN: llvm-mc -triple=riscv64 -show-encoding --mattr=+xtheadv %s \
+# RUN: llvm-mc -triple=riscv64 -show-encoding --mattr=+xtheadvector %s \
 # RUN:   --riscv-no-aliases | FileCheck %s --check-prefixes=CHECK-ENCODING,CHECK-INST
 # RUN: not llvm-mc -triple=riscv64 -show-encoding %s 2>&1 \
 # RUN:   | FileCheck %s --check-prefix=CHECK-ERROR
-# RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadv %s \
-# RUN:   | llvm-objdump -d --mattr=+xtheadv -M no-aliases - \
+# RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadvector %s \
+# RUN:   | llvm-objdump -d --mattr=+xtheadvector -M no-aliases - \
 # RUN:   | FileCheck %s --check-prefix=CHECK-INST
-# RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadv %s \
+# RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadvector %s \
 # RUN:   | llvm-objdump -d - | FileCheck %s --check-prefix=CHECK-UNKNOWN
 
-vsb.v v8, (a0), v0.t
-# CHECK-INST: vsb.v v8, (a0), v0.t
+th.vsb.v v8, (a0), v0.t
+# CHECK-INST: th.vsb.v v8, (a0), v0.t
 # CHECK-ENCODING: [0x27,0x04,0x05,0x00]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 04 05 00 <unknown>
 
-vsb.v v8, (a0)
-# CHECK-INST: vsb.v v8, (a0)
+th.vsb.v v8, (a0)
+# CHECK-INST: th.vsb.v v8, (a0)
 # CHECK-ENCODING: [0x27,0x04,0x05,0x02]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 04 05 02 <unknown>
 
-vsh.v v8, (a0), v0.t
-# CHECK-INST: vsh.v v8, (a0), v0.t
+th.vsh.v v8, (a0), v0.t
+# CHECK-INST: th.vsh.v v8, (a0), v0.t
 # CHECK-ENCODING: [0x27,0x54,0x05,0x00]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 54 05 00 <unknown>
 
-vsh.v v8, (a0)
-# CHECK-INST: vsh.v v8, (a0)
+th.vsh.v v8, (a0)
+# CHECK-INST: th.vsh.v v8, (a0)
 # CHECK-ENCODING: [0x27,0x54,0x05,0x02]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 54 05 02 <unknown>
 
-vsw.v v8, (a0), v0.t
-# CHECK-INST: vsw.v v8, (a0), v0.t
+th.vsw.v v8, (a0), v0.t
+# CHECK-INST: th.vsw.v v8, (a0), v0.t
 # CHECK-ENCODING: [0x27,0x64,0x05,0x00]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 64 05 00 <unknown>
 
-vsw.v v8, (a0)
-# CHECK-INST: vsw.v v8, (a0)
+th.vsw.v v8, (a0)
+# CHECK-INST: th.vsw.v v8, (a0)
 # CHECK-ENCODING: [0x27,0x64,0x05,0x02]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 64 05 02 <unknown>
 
-vse.v v8, (a0), v0.t
-# CHECK-INST: vse.v v8, (a0), v0.t
+th.vse.v v8, (a0), v0.t
+# CHECK-INST: th.vse.v v8, (a0), v0.t
 # CHECK-ENCODING: [0x27,0x74,0x05,0x00]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 74 05 00 <unknown>
 
-vse.v v8, (a0)
-# CHECK-INST: vse.v v8, (a0)
+th.vse.v v8, (a0)
+# CHECK-INST: th.vse.v v8, (a0)
 # CHECK-ENCODING: [0x27,0x74,0x05,0x02]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 74 05 02 <unknown>
 
-vssb.v	v8, (a0), a1
-# CHECK-INST: vssb.v	v8, (a0), a1
+th.vssb.v	v8, (a0), a1
+# CHECK-INST: th.vssb.v	v8, (a0), a1
 # CHECK-ENCODING: [0x27,0x04,0xb5,0x0a]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 04 b5 0a <unknown>
 
-vssb.v	v8, (a0), a1, v0.t
-# CHECK-INST: vssb.v	v8, (a0), a1, v0.t
+th.vssb.v	v8, (a0), a1, v0.t
+# CHECK-INST: th.vssb.v	v8, (a0), a1, v0.t
 # CHECK-ENCODING: [0x27,0x04,0xb5,0x08]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 04 b5 08 <unknown>
 
-vssh.v	v8, (a0), a1
-# CHECK-INST: vssh.v	v8, (a0), a1
+th.vssh.v	v8, (a0), a1
+# CHECK-INST: th.vssh.v	v8, (a0), a1
 # CHECK-ENCODING: [0x27,0x54,0xb5,0x0a]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 54 b5 0a <unknown>
 
-vssh.v	v8, (a0), a1, v0.t
-# CHECK-INST: vssh.v	v8, (a0), a1, v0.t
+th.vssh.v	v8, (a0), a1, v0.t
+# CHECK-INST: th.vssh.v	v8, (a0), a1, v0.t
 # CHECK-ENCODING: [0x27,0x54,0xb5,0x08]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 54 b5 08 <unknown>
 
-vssw.v	v8, (a0), a1
-# CHECK-INST: vssw.v	v8, (a0), a1
+th.vssw.v	v8, (a0), a1
+# CHECK-INST: th.vssw.v	v8, (a0), a1
 # CHECK-ENCODING: [0x27,0x64,0xb5,0x0a]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 64 b5 0a <unknown>
 
-vssw.v	v8, (a0), a1, v0.t
-# CHECK-INST: vssw.v	v8, (a0), a1, v0.t
+th.vssw.v	v8, (a0), a1, v0.t
+# CHECK-INST: th.vssw.v	v8, (a0), a1, v0.t
 # CHECK-ENCODING: [0x27,0x64,0xb5,0x08]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 64 b5 08 <unknown>
 
-vsse.v	v8, (a0), a1
-# CHECK-INST: vsse.v	v8, (a0), a1
+th.vsse.v	v8, (a0), a1
+# CHECK-INST: th.vsse.v	v8, (a0), a1
 # CHECK-ENCODING: [0x27,0x74,0xb5,0x0a]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 74 b5 0a <unknown>
 
-vsse.v	v8, (a0), a1, v0.t
-# CHECK-INST: vsse.v	v8, (a0), a1, v0.t
+th.vsse.v	v8, (a0), a1, v0.t
+# CHECK-INST: th.vsse.v	v8, (a0), a1, v0.t
 # CHECK-ENCODING: [0x27,0x74,0xb5,0x08]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 74 b5 08 <unknown>
 
-vsxb.v	v8, (a0), v4
-# CHECK-INST: vsxb.v	v8, (a0), v4
+th.vsxb.v	v8, (a0), v4
+# CHECK-INST: th.vsxb.v	v8, (a0), v4
 # CHECK-ENCODING: [0x27,0x04,0x45,0x0e]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 04 45 0e <unknown>
 
-vsxb.v	v8, (a0), v4, v0.t
-# CHECK-INST: vsxb.v	v8, (a0), v4, v0.t
+th.vsxb.v	v8, (a0), v4, v0.t
+# CHECK-INST: th.vsxb.v	v8, (a0), v4, v0.t
 # CHECK-ENCODING: [0x27,0x04,0x45,0x0c]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 04 45 0c <unknown>
 
-vsxh.v	v8, (a0), v4
-# CHECK-INST: vsxh.v	v8, (a0), v4
+th.vsxh.v	v8, (a0), v4
+# CHECK-INST: th.vsxh.v	v8, (a0), v4
 # CHECK-ENCODING: [0x27,0x54,0x45,0x0e]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 54 45 0e <unknown>
 
-vsxh.v	v8, (a0), v4, v0.t
-# CHECK-INST: vsxh.v	v8, (a0), v4, v0.t
+th.vsxh.v	v8, (a0), v4, v0.t
+# CHECK-INST: th.vsxh.v	v8, (a0), v4, v0.t
 # CHECK-ENCODING: [0x27,0x54,0x45,0x0c]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 54 45 0c <unknown>
 
-vsxw.v	v8, (a0), v4
-# CHECK-INST: vsxw.v	v8, (a0), v4
+th.vsxw.v	v8, (a0), v4
+# CHECK-INST: th.vsxw.v	v8, (a0), v4
 # CHECK-ENCODING: [0x27,0x64,0x45,0x0e]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 64 45 0e <unknown>
 
-vsxw.v	v8, (a0), v4, v0.t
-# CHECK-INST: vsxw.v	v8, (a0), v4, v0.t
+th.vsxw.v	v8, (a0), v4, v0.t
+# CHECK-INST: th.vsxw.v	v8, (a0), v4, v0.t
 # CHECK-ENCODING: [0x27,0x64,0x45,0x0c]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 64 45 0c <unknown>
 
-vsxe.v	v8, (a0), v4
-# CHECK-INST: vsxe.v	v8, (a0), v4
+th.vsxe.v	v8, (a0), v4
+# CHECK-INST: th.vsxe.v	v8, (a0), v4
 # CHECK-ENCODING: [0x27,0x74,0x45,0x0e]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 74 45 0e <unknown>
 
-vsxe.v	v8, (a0), v4, v0.t
-# CHECK-INST: vsxe.v	v8, (a0), v4, v0.t
+th.vsxe.v	v8, (a0), v4, v0.t
+# CHECK-INST: th.vsxe.v	v8, (a0), v4, v0.t
 # CHECK-ENCODING: [0x27,0x74,0x45,0x0c]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 74 45 0c <unknown>
 
-vsuxb.v	v8, (a0), v4
-# CHECK-INST: vsuxb.v	v8, (a0), v4
+th.vsuxb.v	v8, (a0), v4
+# CHECK-INST: th.vsuxb.v	v8, (a0), v4
 # CHECK-ENCODING: [0x27,0x04,0x45,0x1e]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 04 45 1e <unknown>
 
-vsuxb.v	v8, (a0), v4, v0.t
-# CHECK-INST: vsuxb.v	v8, (a0), v4, v0.t
+th.vsuxb.v	v8, (a0), v4, v0.t
+# CHECK-INST: th.vsuxb.v	v8, (a0), v4, v0.t
 # CHECK-ENCODING: [0x27,0x04,0x45,0x1c]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 04 45 1c <unknown>
 
-vsuxh.v	v8, (a0), v4
-# CHECK-INST: vsuxh.v	v8, (a0), v4
+th.vsuxh.v	v8, (a0), v4
+# CHECK-INST: th.vsuxh.v	v8, (a0), v4
 # CHECK-ENCODING: [0x27,0x54,0x45,0x1e]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 54 45 1e <unknown>
 
-vsuxh.v	v8, (a0), v4, v0.t
-# CHECK-INST: vsuxh.v	v8, (a0), v4, v0.t
+th.vsuxh.v	v8, (a0), v4, v0.t
+# CHECK-INST: th.vsuxh.v	v8, (a0), v4, v0.t
 # CHECK-ENCODING: [0x27,0x54,0x45,0x1c]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 54 45 1c <unknown>
 
-vsuxw.v	v8, (a0), v4
-# CHECK-INST: vsuxw.v	v8, (a0), v4
+th.vsuxw.v	v8, (a0), v4
+# CHECK-INST: th.vsuxw.v	v8, (a0), v4
 # CHECK-ENCODING: [0x27,0x64,0x45,0x1e]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 64 45 1e <unknown>
 
-vsuxw.v	v8, (a0), v4, v0.t
-# CHECK-INST: vsuxw.v	v8, (a0), v4, v0.t
+th.vsuxw.v	v8, (a0), v4, v0.t
+# CHECK-INST: th.vsuxw.v	v8, (a0), v4, v0.t
 # CHECK-ENCODING: [0x27,0x64,0x45,0x1c]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 64 45 1c <unknown>
 
-vsuxe.v	v8, (a0), v4
-# CHECK-INST: vsuxe.v	v8, (a0), v4
+th.vsuxe.v	v8, (a0), v4
+# CHECK-INST: th.vsuxe.v	v8, (a0), v4
 # CHECK-ENCODING: [0x27,0x74,0x45,0x1e]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 74 45 1e <unknown>
 
-vsuxe.v	v8, (a0), v4, v0.t
-# CHECK-INST: vsuxe.v	v8, (a0), v4, v0.t
+th.vsuxe.v	v8, (a0), v4, v0.t
+# CHECK-INST: th.vsuxe.v	v8, (a0), v4, v0.t
 # CHECK-ENCODING: [0x27,0x74,0x45,0x1c]
-# CHECK-ERROR: unrecognized instruction mnemonic
+# CHECK-ERROR: instruction requires the following: 'xtheadvector' (T-Head Base Vector Instructions){{$}}
 # CHECK-UNKNOWN: 27 74 45 1c <unknown>
