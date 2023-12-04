@@ -80,15 +80,13 @@ static const RISCVSupportedExtension SupportedExtensions[] = {
     {"xtheadmemidx", RISCVExtensionVersion{1, 0}},
     {"xtheadmempair", RISCVExtensionVersion{1, 0}},
     {"xtheadsync", RISCVExtensionVersion{1, 0}},
-    // T-Head vector extension series: Zvamo
-    {"xtheadvamo", RISCVExtensionVersion{0, 7}},
     {"xtheadvdot", RISCVExtensionVersion{1, 0}},
-    // T-Head vector extension (namely Vector extension 0.7.1) series.
-    {"xtheadvector", RISCVExtensionVersion{0, 7}},
-    // T-Head vector extension series: Zvediv
-    {"xtheadvediv", RISCVExtensionVersion{0, 7}},
-    // T-Head vector extension series: Zvlsseg
-    {"xtheadvlsseg", RISCVExtensionVersion{0, 7}},
+    // T-Head vector extension series, note:
+    // 1. The extension `Zvlsseg` (chapter 7.8) is not a subextension but a mandatory part of `XTheadVector`.
+    // 2. The `Chapter 19. Divided Element Extension ('Zvediv')` is not part of `XTheadVector`.
+    {"xtheadvector", RISCVExtensionVersion{1, 0}},
+    // 3. The extension `Zvamo` is renamed to `XTheadZvamo`.
+    {"xtheadzvamo", RISCVExtensionVersion{1, 0}},
     {"xventanacondops", RISCVExtensionVersion{1, 0}},
 
     {"zawrs", RISCVExtensionVersion{1, 0}},
@@ -960,10 +958,10 @@ Error RISCVISAInfo::checkDependency() {
     return createStringError(errc::invalid_argument,
                              "'zcf' is only supported for 'rv32'");
 
-  if (Exts.count("xtheadvamo") && !Exts.count("a"))
+  if (Exts.count("xtheadzvamo") && !Exts.count("a"))
     return createStringError(
         errc::invalid_argument,
-        "'xtheadvamo' requires 'a' extension to also be specified");
+        "'xtheadzvamo' requires 'a' extension to also be specified");
 
   if (Exts.count("xtheadvector") && HasVector)
     return createStringError(
@@ -980,7 +978,7 @@ Error RISCVISAInfo::checkDependency() {
 static const char *ImpliedExtsD[] = {"f"};
 static const char *ImpliedExtsF[] = {"zicsr"};
 static const char *ImpliedExtsV[] = {"zvl128b", "zve64d"};
-static const char *ImpliedExtsXTHeadVamo[] = {"a"};
+static const char *ImpliedExtsXTHeadZvamo[] = {"a"};
 static const char *ImpliedExtsXTHeadVdot[] = {"v"};
 static const char *ImpliedExtsXsfvcp[] = {"zve32x"};
 static const char *ImpliedExtsZacas[] = {"a"};
@@ -1048,8 +1046,8 @@ static constexpr ImpliedExtsEntry ImpliedExts[] = {
     {{"f"}, {ImpliedExtsF}},
     {{"v"}, {ImpliedExtsV}},
     {{"xsfvcp"}, {ImpliedExtsXsfvcp}},
-    {{"xtheadvamo"}, {ImpliedExtsXTHeadVamo}},
     {{"xtheadvdot"}, {ImpliedExtsXTHeadVdot}},
+    {{"xtheadzvamo"}, {ImpliedExtsXTHeadZvamo}},
     {{"zacas"}, {ImpliedExtsZacas}},
     {{"zcb"}, {ImpliedExtsZcb}},
     {{"zcd"}, {ImpliedExtsZcd}},
