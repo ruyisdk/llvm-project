@@ -14687,7 +14687,6 @@ static MachineBasicBlock *emitXWholeMove(MachineInstr &MI,
   DebugLoc DL = MI.getDebugLoc();
 
   auto *TII = BB->getParent()->getSubtarget().getInstrInfo();
-  auto *MRI = &BB->getParent()->getRegInfo();
   auto *TRI = BB->getParent()->getSubtarget().getRegisterInfo();
 
   // From RVV Spec 1.0:
