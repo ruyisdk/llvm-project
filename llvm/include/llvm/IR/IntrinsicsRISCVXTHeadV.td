@@ -17,23 +17,23 @@
 
 let TargetPrefix = "riscv" in {
   // 6. Configuration-Setting and Utility
-  def int_riscv_xvsetvl    : Intrinsic<[llvm_anyint_ty],
-                                       [/* AVL */ LLVMMatchType<0>,
-                                        /* SEW */ LLVMMatchType<0>,
-                                        /* LMUL */ LLVMMatchType<0>
-                                       ],
-                                       [IntrNoMem,
-                                        ImmArg<ArgIndex<1>>,
-                                        ImmArg<ArgIndex<2>>
-                                       ]>;
-  def int_riscv_xvsetvlmax : Intrinsic<[llvm_anyint_ty],
-                                       [/* SEW */ LLVMMatchType<0>,
-                                        /* LMUL */ LLVMMatchType<0>
-                                       ],
-                                       [IntrNoMem,
-                                        ImmArg<ArgIndex<0>>,
-                                        ImmArg<ArgIndex<1>>
-                                       ]>;
+  def int_riscv_th_vsetvl    : Intrinsic<[llvm_anyint_ty],
+                                         [/* AVL */ LLVMMatchType<0>,
+                                          /* SEW */ LLVMMatchType<0>,
+                                          /* LMUL */ LLVMMatchType<0>
+                                         ],
+                                         [IntrNoMem,
+                                          ImmArg<ArgIndex<1>>,
+                                          ImmArg<ArgIndex<2>>
+                                         ]>;
+  def int_riscv_th_vsetvlmax : Intrinsic<[llvm_anyint_ty],
+                                         [/* SEW */ LLVMMatchType<0>,
+                                          /* LMUL */ LLVMMatchType<0>
+                                         ],
+                                         [IntrNoMem,
+                                          ImmArg<ArgIndex<0>>,
+                                          ImmArg<ArgIndex<1>>
+                                         ]>;
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
@@ -84,29 +84,29 @@ let TargetPrefix = "riscv" in {
   // We define vlx (e.g. vlb), vlxu (e.g. vlbu) and vle
   // seperately here because otherwise we cannot distinguish
   // which intrinsic the user actually calls when lowering pseudos.
-  def int_riscv_xvlb : XVUSLoad;
-  def int_riscv_xvlh : XVUSLoad;
-  def int_riscv_xvlw : XVUSLoad;
-  def int_riscv_xvle : XVUSLoad;
-  def int_riscv_xvlbu : XVUSLoad;
-  def int_riscv_xvlhu : XVUSLoad;
-  def int_riscv_xvlwu : XVUSLoad;
-  def int_riscv_xvlb_mask : XVUSLoadMasked;
-  def int_riscv_xvlh_mask : XVUSLoadMasked;
-  def int_riscv_xvlw_mask : XVUSLoadMasked;
-  def int_riscv_xvle_mask : XVUSLoadMasked;
-  def int_riscv_xvlbu_mask : XVUSLoadMasked;
-  def int_riscv_xvlhu_mask : XVUSLoadMasked;
-  def int_riscv_xvlwu_mask : XVUSLoadMasked;
+  def int_riscv_th_vlb : XVUSLoad;
+  def int_riscv_th_vlh : XVUSLoad;
+  def int_riscv_th_vlw : XVUSLoad;
+  def int_riscv_th_vle : XVUSLoad;
+  def int_riscv_th_vlbu : XVUSLoad;
+  def int_riscv_th_vlhu : XVUSLoad;
+  def int_riscv_th_vlwu : XVUSLoad;
+  def int_riscv_th_vlb_mask : XVUSLoadMasked;
+  def int_riscv_th_vlh_mask : XVUSLoadMasked;
+  def int_riscv_th_vlw_mask : XVUSLoadMasked;
+  def int_riscv_th_vle_mask : XVUSLoadMasked;
+  def int_riscv_th_vlbu_mask : XVUSLoadMasked;
+  def int_riscv_th_vlhu_mask : XVUSLoadMasked;
+  def int_riscv_th_vlwu_mask : XVUSLoadMasked;
 
-  def int_riscv_xvsb : XVUSStore;
-  def int_riscv_xvsh : XVUSStore;
-  def int_riscv_xvsw : XVUSStore;
-  def int_riscv_xvse : XVUSStore;
-  def int_riscv_xvsb_mask : XVUSStoreMasked;
-  def int_riscv_xvsh_mask : XVUSStoreMasked;
-  def int_riscv_xvsw_mask : XVUSStoreMasked;
-  def int_riscv_xvse_mask : XVUSStoreMasked;
+  def int_riscv_th_vsb : XVUSStore;
+  def int_riscv_th_vsh : XVUSStore;
+  def int_riscv_th_vsw : XVUSStore;
+  def int_riscv_th_vse : XVUSStore;
+  def int_riscv_th_vsb_mask : XVUSStoreMasked;
+  def int_riscv_th_vsh_mask : XVUSStoreMasked;
+  def int_riscv_th_vsw_mask : XVUSStoreMasked;
+  def int_riscv_th_vse_mask : XVUSStoreMasked;
 
   // 7.5 Vector Strided Instructions
   // For strided load with passthru operand
@@ -149,29 +149,29 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 4;
   }
 
-  def int_riscv_xvlsb : XVSLoad;
-  def int_riscv_xvlsh : XVSLoad;
-  def int_riscv_xvlsw : XVSLoad;
-  def int_riscv_xvlse : XVSLoad;
-  def int_riscv_xvlsbu : XVSLoad;
-  def int_riscv_xvlshu : XVSLoad;
-  def int_riscv_xvlswu : XVSLoad;
-  def int_riscv_xvlsb_mask : XVSLoadMasked;
-  def int_riscv_xvlsh_mask : XVSLoadMasked;
-  def int_riscv_xvlsw_mask : XVSLoadMasked;
-  def int_riscv_xvlse_mask : XVSLoadMasked;
-  def int_riscv_xvlsbu_mask : XVSLoadMasked;
-  def int_riscv_xvlshu_mask : XVSLoadMasked;
-  def int_riscv_xvlswu_mask : XVSLoadMasked;
+  def int_riscv_th_vlsb : XVSLoad;
+  def int_riscv_th_vlsh : XVSLoad;
+  def int_riscv_th_vlsw : XVSLoad;
+  def int_riscv_th_vlse : XVSLoad;
+  def int_riscv_th_vlsbu : XVSLoad;
+  def int_riscv_th_vlshu : XVSLoad;
+  def int_riscv_th_vlswu : XVSLoad;
+  def int_riscv_th_vlsb_mask : XVSLoadMasked;
+  def int_riscv_th_vlsh_mask : XVSLoadMasked;
+  def int_riscv_th_vlsw_mask : XVSLoadMasked;
+  def int_riscv_th_vlse_mask : XVSLoadMasked;
+  def int_riscv_th_vlsbu_mask : XVSLoadMasked;
+  def int_riscv_th_vlshu_mask : XVSLoadMasked;
+  def int_riscv_th_vlswu_mask : XVSLoadMasked;
 
-  def int_riscv_xvssb : XVSStore;
-  def int_riscv_xvssh : XVSStore;
-  def int_riscv_xvssw : XVSStore;
-  def int_riscv_xvsse : XVSStore;
-  def int_riscv_xvssb_mask : XVSStoreMasked;
-  def int_riscv_xvssh_mask : XVSStoreMasked;
-  def int_riscv_xvssw_mask : XVSStoreMasked;
-  def int_riscv_xvsse_mask : XVSStoreMasked;
+  def int_riscv_th_vssb : XVSStore;
+  def int_riscv_th_vssh : XVSStore;
+  def int_riscv_th_vssw : XVSStore;
+  def int_riscv_th_vsse : XVSStore;
+  def int_riscv_th_vssb_mask : XVSStoreMasked;
+  def int_riscv_th_vssh_mask : XVSStoreMasked;
+  def int_riscv_th_vssw_mask : XVSStoreMasked;
+  def int_riscv_th_vsse_mask : XVSStoreMasked;
 
   // 7.6. Vector Indexed Instructions
   // For indexed load with passthru operand
@@ -213,29 +213,29 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 4;
   }
 
-  def int_riscv_xvlxb : XVILoad;
-  def int_riscv_xvlxh : XVILoad;
-  def int_riscv_xvlxw : XVILoad;
-  def int_riscv_xvlxe : XVILoad;
-  def int_riscv_xvlxbu : XVILoad;
-  def int_riscv_xvlxhu : XVILoad;
-  def int_riscv_xvlxwu : XVILoad;
-  def int_riscv_xvlxb_mask : XVILoadMasked;
-  def int_riscv_xvlxh_mask : XVILoadMasked;
-  def int_riscv_xvlxw_mask : XVILoadMasked;
-  def int_riscv_xvlxe_mask : XVILoadMasked;
-  def int_riscv_xvlxbu_mask : XVILoadMasked;
-  def int_riscv_xvlxhu_mask : XVILoadMasked;
-  def int_riscv_xvlxwu_mask : XVILoadMasked;
+  def int_riscv_th_vlxb : XVILoad;
+  def int_riscv_th_vlxh : XVILoad;
+  def int_riscv_th_vlxw : XVILoad;
+  def int_riscv_th_vlxe : XVILoad;
+  def int_riscv_th_vlxbu : XVILoad;
+  def int_riscv_th_vlxhu : XVILoad;
+  def int_riscv_th_vlxwu : XVILoad;
+  def int_riscv_th_vlxb_mask : XVILoadMasked;
+  def int_riscv_th_vlxh_mask : XVILoadMasked;
+  def int_riscv_th_vlxw_mask : XVILoadMasked;
+  def int_riscv_th_vlxe_mask : XVILoadMasked;
+  def int_riscv_th_vlxbu_mask : XVILoadMasked;
+  def int_riscv_th_vlxhu_mask : XVILoadMasked;
+  def int_riscv_th_vlxwu_mask : XVILoadMasked;
 
-  def int_riscv_xvsxb : XVIStore;
-  def int_riscv_xvsxh : XVIStore;
-  def int_riscv_xvsxw : XVIStore;
-  def int_riscv_xvsxe : XVIStore;
-  def int_riscv_xvsxb_mask : XVIStoreMasked;
-  def int_riscv_xvsxh_mask : XVIStoreMasked;
-  def int_riscv_xvsxw_mask : XVIStoreMasked;
-  def int_riscv_xvsxe_mask : XVIStoreMasked;
+  def int_riscv_th_vsxb : XVIStore;
+  def int_riscv_th_vsxh : XVIStore;
+  def int_riscv_th_vsxw : XVIStore;
+  def int_riscv_th_vsxe : XVIStore;
+  def int_riscv_th_vsxb_mask : XVIStoreMasked;
+  def int_riscv_th_vsxh_mask : XVIStoreMasked;
+  def int_riscv_th_vsxw_mask : XVIStoreMasked;
+  def int_riscv_th_vsxe_mask : XVIStoreMasked;
 
   // 7.7 Unit-Stride Fault-only-first Loads
   // For unit stride fault-only-first load without mask
@@ -292,31 +292,31 @@ let TargetPrefix = "riscv" in {
     def "int_riscv_" # NAME # "_mask" : XVAMOMask;
   }
 
-  defm xvamoswap : XIntrinsicVAMO;
-  defm xvamoadd  : XIntrinsicVAMO;
-  defm xvamoxor  : XIntrinsicVAMO;
-  defm xvamoand  : XIntrinsicVAMO;
-  defm xvamoor   : XIntrinsicVAMO;
-  defm xvamomin  : XIntrinsicVAMO;
-  defm xvamomax  : XIntrinsicVAMO;
-  defm xvamominu : XIntrinsicVAMO;
-  defm xvamomaxu : XIntrinsicVAMO;
+  defm th_vamoswap : XIntrinsicVAMO;
+  defm th_vamoadd  : XIntrinsicVAMO;
+  defm th_vamoxor  : XIntrinsicVAMO;
+  defm th_vamoand  : XIntrinsicVAMO;
+  defm th_vamoor   : XIntrinsicVAMO;
+  defm th_vamomin  : XIntrinsicVAMO;
+  defm th_vamomax  : XIntrinsicVAMO;
+  defm th_vamominu : XIntrinsicVAMO;
+  defm th_vamomaxu : XIntrinsicVAMO;
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
   // 12. Vector Integer Arithmetic Instructions
-  defm xvadd : RISCVBinaryAAX;
+  defm th_vadd : RISCVBinaryAAX;
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
   // 12.14. Vector Integer Merge and Move Instructions
   // Output: (vector)
   // Input: (passthru, vector_in, vl)
-  def int_riscv_xvmv_v_v : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
-                                                 [LLVMMatchType<0>,
-                                                  LLVMMatchType<0>,
-                                                  llvm_anyint_ty],
-                                                 [IntrNoMem]>, RISCVVIntrinsic {
+  def int_riscv_th_vmv_v_v : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                                                   [LLVMMatchType<0>,
+                                                    LLVMMatchType<0>,
+                                                    llvm_anyint_ty],
+                                                   [IntrNoMem]>, RISCVVIntrinsic {
     let VLOperand = 2;
   }
 } // TargetPrefix = "riscv"

@@ -656,10 +656,10 @@ bool SemaRISCV::CheckBuiltinFunctionCall(const TargetInfo &TI,
   case RISCVVector::BI__builtin_rvv_vsetvlimax:
     return SemaRef.BuiltinConstantArgRange(TheCall, 0, 0, 3) ||
            CheckLMUL(TheCall, 1, true);
-  case RISCVVector::BI__builtin_rvv_xvsetvl:
+  case RISCVVector::BI__builtin_rvv_th_vsetvl:
     return SemaRef.BuiltinConstantArgRange(TheCall, 1, 0, 3) ||
            CheckLMUL(TheCall, 2, false);
-  case RISCVVector::BI__builtin_rvv_xvsetvlmax:
+  case RISCVVector::BI__builtin_rvv_th_vsetvlmax:
     return SemaRef.BuiltinConstantArgRange(TheCall, 0, 0, 3) ||
            CheckLMUL(TheCall, 1, false);
   case RISCVVector::BI__builtin_rvv_vget_v: {

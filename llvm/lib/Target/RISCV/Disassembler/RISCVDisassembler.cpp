@@ -584,7 +584,7 @@ DecodeStatus RISCVDisassembler::getInstruction32(MCInst &MI, uint64_t &Size,
                         DecoderTableXTHeadVdot32,
                         "XTHeadVdot custom opcode table");
   TRY_TO_DECODE_FEATURE(RISCV::FeatureVendorXTHeadV, DecoderTableRVV0p7132,
-                          "XTHeadV custom opcode table");
+                          "XTHeadVector custom opcode table");
   TRY_TO_DECODE_FEATURE(RISCV::FeatureVendorXSfvcp, DecoderTableXSfvcp32,
                         "SiFive VCIX custom opcode table");
   TRY_TO_DECODE_FEATURE(
