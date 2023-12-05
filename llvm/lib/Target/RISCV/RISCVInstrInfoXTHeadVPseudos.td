@@ -850,7 +850,7 @@ multiclass XVPseudoAMO {
   defm "D" : XVPseudoAMOMem<64>;
 }
 
-let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA] in {
+let Predicates = [HasVendorXTHeadV, HasVendorXTHeadZvamo, HasStdExtA] in {
   defm PseudoTH_VAMOSWAP : XVPseudoAMO;
   defm PseudoTH_VAMOADD  : XVPseudoAMO;
   defm PseudoTH_VAMOXOR  : XVPseudoAMO;
@@ -860,7 +860,7 @@ let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA] in {
   defm PseudoTH_VAMOMAX  : XVPseudoAMO;
   defm PseudoTH_VAMOMINU : XVPseudoAMO;
   defm PseudoTH_VAMOMAXU : XVPseudoAMO;
-} // Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA]
+} // Predicates = [HasVendorXTHeadV, HasVendorXTHeadZvamo, HasStdExtA]
 
 // Patterns for vamo intrinsics.
 class XVPatAMOWDNoMask<string intrinsic_name,
@@ -938,7 +938,7 @@ multiclass XVPatAMOV_WD<string intrinsic,
   }
 }
 
-let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA] in {
+let Predicates = [HasVendorXTHeadV, HasVendorXTHeadZvamo, HasStdExtA] in {
   defm : XVPatAMOV_WD<"int_riscv_th_vamoswap", "PseudoTH_VAMOSWAP", AllIntegerXVectors>;
   defm : XVPatAMOV_WD<"int_riscv_th_vamoadd", "PseudoTH_VAMOADD", AllIntegerXVectors>;
   defm : XVPatAMOV_WD<"int_riscv_th_vamoxor", "PseudoTH_VAMOXOR", AllIntegerXVectors>;
@@ -948,7 +948,7 @@ let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA] in {
   defm : XVPatAMOV_WD<"int_riscv_th_vamomax", "PseudoTH_VAMOMAX", AllIntegerXVectors>;
   defm : XVPatAMOV_WD<"int_riscv_th_vamominu", "PseudoTH_VAMOMINU", AllIntegerXVectors>;
   defm : XVPatAMOV_WD<"int_riscv_th_vamomaxu", "PseudoTH_VAMOMAXU", AllIntegerXVectors>;
-} // Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA]
+} // Predicates = [HasVendorXTHeadV, HasVendorXTHeadZvamo, HasStdExtA]
 
 //===----------------------------------------------------------------------===//
 // 12. Vector Integer Arithmetic Instructions
