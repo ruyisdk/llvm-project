@@ -324,7 +324,8 @@ def TH_VLWUFF_V : TH_VLxUFF<0b000, 0b110, "th.vlwuff.v">;
 def TH_VLEFF_V : TH_VLxUFF<0b000, 0b111, "th.vleff.v">;
 } // Predicates = [HasVendorXTHeadV]
 
-let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVlsseg] in {
+// The extension `Zvlsseg (chapter 7.8)` is not a subextension but a mandatory part of `XTheadVector`.
+let Predicates = [HasVendorXTHeadV] in {
 foreach nf=2-8 in {
   // Vector Unit-Stride Segment Loads and Stores
   def TH_VLSEG#nf#B_V : TH_VLx<!add(nf, -1), 0b000, "th.vlseg"#nf#"b.v">;
@@ -372,9 +373,10 @@ foreach nf=2-8 in {
   def TH_VSXSEG#nf#W_V : TH_VSXx<!add(nf, -1), 0b110, "th.vsxseg"#nf#"w.v">;
   def TH_VSXSEG#nf#E_V : TH_VSXx<!add(nf, -1), 0b111, "th.vsxseg"#nf#"e.v">;
 }
-} // Predicates = [HasVendorXTHeadV, HasVendorXTHeadVlsseg]
+} // Predicates = [HasVendorXTHeadV]
 
-let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA] in {
+// The extension `Zvamo` is renamed to `XTheadZvamo`.
+let Predicates = [HasVendorXTHeadV, HasVendorXTHeadZvamo, HasStdExtA] in {
   // Vector AMO Instruction
   defm TH_VAMOSWAPW : TH_VAMO<0b00001, 0b110, "th.vamoswapw.v">;
   defm TH_VAMOADDW : TH_VAMO<0b00000, 0b110, "th.vamoaddw.v">;
@@ -405,7 +407,7 @@ let Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA] in {
   defm TH_VAMOMAXQ : TH_VAMO<0b10100, 0b000, "th.vamomaxq.v">;
   defm TH_VAMOMINUQ : TH_VAMO<0b11000, 0b000, "th.vamominuq.v">;
   defm TH_VAMOMAXUQ : TH_VAMO<0b11100, 0b000, "th.vamomaxuq.v">;
-} // Predicates = [HasVendorXTHeadV, HasVendorXTHeadVamo, HasStdExtA]
+} // Predicates = [HasVendorXTHeadV, HasVendorXTHeadZvamo, HasStdExtA]
 
 let Predicates = [HasVendorXTHeadV] in {
 // Vector Single-Width Integer Add and Subtract

@@ -788,10 +788,10 @@ Error RISCVISAInfo::checkDependency() {
       return getError("'Xwchc' and 'Zcb' extensions are incompatible");
   }
 
-  if (Exts.count("xtheadvamo") && !Exts.count("a"))
+  if (Exts.count("xtheadzvamo") && !Exts.count("a"))
     return createStringError(
         errc::invalid_argument,
-        "'xtheadvamo' requires 'a' extension to also be specified");
+        "'xtheadzvamo' requires 'a' extension to also be specified");
 
   if (Exts.count("xtheadvector") && HasVector)
     return createStringError(
