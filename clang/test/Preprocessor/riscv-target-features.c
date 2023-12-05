@@ -229,7 +229,7 @@
 // RUN: -march=rv64i_xtheadvector -x c -E -dM %s \
 // RUN: -o - | FileCheck --check-prefix=CHECK-V0P7-EXT %s
 // CHECK-V0P7-EXT: __riscv_th_v_intrinsic 11000{{$}}
-// CHECK-V0P7-EXT: __riscv_xtheadvector 7000{{$}}
+// CHECK-V0P7-EXT: __riscv_xtheadvector 1000000{{$}}
 
 // RUN: %clang -target riscv32-unknown-linux-gnu \
 // RUN: -march=rv32izfhmin1p0 -x c -E -dM %s \

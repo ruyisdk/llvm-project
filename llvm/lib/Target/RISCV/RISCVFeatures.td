@@ -893,7 +893,7 @@ def FeatureTaggedGlobals : SubtargetFeature<"tagged-globals",
     "that allows a memory tag in the upper address bits">;
 
 //===----------------------------------------------------------------------===//
-// T-Head in RuyiSDK specific features and extensions (mostly rvv 0.7.1)
+// T-Head Vector in RuyiSDK specific features and extensions
 //===----------------------------------------------------------------------===//
 
 def FeatureVendorXTHeadV
@@ -903,27 +903,13 @@ def HasVendorXTHeadV : Predicate<"Subtarget->hasVendorXTHeadV()">,
                                   AssemblerPredicate<(all_of FeatureVendorXTHeadV),
                                   "'xtheadvector' (T-Head Base Vector Instructions)">;
 
-def FeatureVendorXTHeadVlsseg
-    : SubtargetFeature<"xtheadvlsseg", "HasVendorXTHeadVlsseg", "true",
-                       "'xtheadvlsseg' (T-Head Vector Load/Store Segment Instructions)">;
-def HasVendorXTHeadVlsseg : Predicate<"Subtarget->hasVendorXTHeadVlsseg()">,
-                                      AssemblerPredicate<(all_of FeatureVendorXTHeadVlsseg),
-                                      "'xtheadvlsseg' (T-Head Vector Load/Store Segment Instructions)">;
-
-def FeatureVendorXTHeadVamo
-    : SubtargetFeature<"xtheadvamo", "HasVendorXTHeadVamo", "true",
-                       "'xtheadvamo' (T-Head Vector AMO Operations)",
+def FeatureVendorXTHeadZvamo
+    : SubtargetFeature<"xtheadzvamo", "HasVendorXTHeadZvamo", "true",
+                       "'xtheadzvamo' (T-Head Vector AMO Operations)",
                        [FeatureStdExtA]>;
-def HasVendorXTHeadVamo : Predicate<"Subtarget->hasVendorXTHeadVamo()">,
-                                    AssemblerPredicate<(all_of FeatureVendorXTHeadVamo),
-                                    "'xtheadvamo' (T-Head Vector AMO Operations)">;
-
-def FeatureVendorXTHeadVediv
-    : SubtargetFeature<"xtheadvediv", "HasVendorXTHeadVediv", "true",
-                       "'xtheadvediv' (T-Head Divided Element Extension)">;
-def HasVendorXTHeadVediv : Predicate<"Subtarget->hasVendorXTHeadVediv()">,
-                                     AssemblerPredicate<(all_of FeatureVendorXTHeadVediv),
-                                     "'xtheadvediv' (T-Head Divided Element Extension)">;
+def HasVendorXTHeadZvamo : Predicate<"Subtarget->hasVendorXTHeadZvamo()">,
+                                     AssemblerPredicate<(all_of FeatureVendorXTHeadZvamo),
+                                     "'xtheadzvamo' (T-Head Vector AMO Operations)">;
 
 // Predicates for reusing instructions/intrinsics in both RVV 1.0 and 0.7
 def HasStdVOrXTHeadV    : Predicate<"Subtarget->hasStdVOrXTHeadV()">,
