@@ -177,8 +177,8 @@ let SupportOverloading = false,
     UnMaskedPolicyScheme = HasPassthruOperand in {
   multiclass RVVVLEBuiltin<list<string> types> {
     let Name = NAME # "_v",
-        IRName = "vle",
-        MaskedIRName ="vle_mask" in {
+        IRName = "th_vle",
+        MaskedIRName ="th_vle_mask" in {
       foreach type = types in {
         // `vPCe` is type `const T * -> VectorType`
         def : RVVOutBuiltin<"v", "vPCe", type>;
@@ -209,8 +209,8 @@ let HasMaskedOffOperand = false,
     }] in {
   multiclass RVVVSEBuiltin<list<string> types> {
     let Name = NAME # "_v",
-        IRName = "vse",
-        MaskedIRName = "vse_mask" in {
+        IRName = "th_vse",
+        MaskedIRName = "th_vse_mask" in {
       foreach type = types in {
         // `0Pev` is type `T * -> VectorType -> void`
         def : RVVBuiltin<"v", "0Pev", type>;
