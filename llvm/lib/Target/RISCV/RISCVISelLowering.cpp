@@ -1270,6 +1270,15 @@ bool RISCVTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
 
   Info.flags |= RISCVTargetLowering::getTargetMMOFlags(I);
   switch (Intrinsic) {
+#define CASE_TAG_TO_THVLSEG_INTRINSIC(tag)  \
+  case Intrinsic::riscv_th_vlseg2##tag:     \
+  case Intrinsic::riscv_th_vlseg3##tag:     \
+  case Intrinsic::riscv_th_vlseg4##tag:     \
+  case Intrinsic::riscv_th_vlseg5##tag:     \
+  case Intrinsic::riscv_th_vlseg6##tag:     \
+  case Intrinsic::riscv_th_vlseg7##tag:     \
+  case Intrinsic::riscv_th_vlseg8##tag:
+
   default:
     return false;
   case Intrinsic::riscv_masked_atomicrmw_xchg_i32:
@@ -1447,6 +1456,13 @@ bool RISCVTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
   case Intrinsic::riscv_vlseg6ff:
   case Intrinsic::riscv_vlseg7ff:
   case Intrinsic::riscv_vlseg8ff:
+  CASE_TAG_TO_THVLSEG_INTRINSIC(b)
+  CASE_TAG_TO_THVLSEG_INTRINSIC(bu)
+  CASE_TAG_TO_THVLSEG_INTRINSIC(h)
+  CASE_TAG_TO_THVLSEG_INTRINSIC(hu)
+  CASE_TAG_TO_THVLSEG_INTRINSIC(w)
+  CASE_TAG_TO_THVLSEG_INTRINSIC(wu)
+  CASE_TAG_TO_THVLSEG_INTRINSIC(e)
     return SetRVVLoadStoreInfo(/*PtrOp*/ I.arg_size() - 2,
                                /*IsStore*/ false,
                                /*IsUnitStrided*/ false);
@@ -1465,6 +1481,16 @@ bool RISCVTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
   case Intrinsic::riscv_vlseg7ff_mask:
   case Intrinsic::riscv_vlseg8ff_mask:
     return SetRVVLoadStoreInfo(/*PtrOp*/ I.arg_size() - 4,
+                               /*IsStore*/ false,
+                               /*IsUnitStrided*/ false);
+  CASE_TAG_TO_THVLSEG_INTRINSIC(b_mask)
+  CASE_TAG_TO_THVLSEG_INTRINSIC(bu_mask)
+  CASE_TAG_TO_THVLSEG_INTRINSIC(h_mask)
+  CASE_TAG_TO_THVLSEG_INTRINSIC(hu_mask)
+  CASE_TAG_TO_THVLSEG_INTRINSIC(w_mask)
+  CASE_TAG_TO_THVLSEG_INTRINSIC(wu_mask)
+  CASE_TAG_TO_THVLSEG_INTRINSIC(e_mask)
+    return SetRVVLoadStoreInfo(/*PtrOp*/ I.arg_size() - 3,
                                /*IsStore*/ false,
                                /*IsUnitStrided*/ false);
   case Intrinsic::riscv_vlsseg2:
