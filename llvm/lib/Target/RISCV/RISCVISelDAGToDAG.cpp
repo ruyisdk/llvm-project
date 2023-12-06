@@ -41,6 +41,7 @@ namespace llvm::RISCV {
 #define GET_RISCVMaskedPseudosTable_IMPL
 #define GET_XTHeadVVLTable_IMPL
 #define GET_XTHeadVVSTable_IMPL
+#define GET_XTHeadVVLSEGTable_IMPL
 #include "RISCVGenSearchableTables.inc"
 } // namespace llvm::RISCV
 
@@ -499,6 +500,79 @@ void RISCVDAGToDAGISel::selectXVS(
 
   ReplaceNode(Node, Store);
   return;
+}
+
+#define CASE_TAG_TO_THVLSEG_INTRINSIC(tag)  \
+  case Intrinsic::riscv_th_vlseg2##tag:     \
+  case Intrinsic::riscv_th_vlseg3##tag:     \
+  case Intrinsic::riscv_th_vlseg4##tag:     \
+  case Intrinsic::riscv_th_vlseg5##tag:     \
+  case Intrinsic::riscv_th_vlseg6##tag:     \
+  case Intrinsic::riscv_th_vlseg7##tag:     \
+  case Intrinsic::riscv_th_vlseg8##tag:
+
+void RISCVDAGToDAGISel::selectXVLSEG(SDNode *Node, unsigned IntNo, bool IsMasked,
+                                     bool IsUnsigned, bool IsE) {
+  auto Tag2Log2MEM = [] (unsigned no) {
+    switch (no) {
+    CASE_TAG_TO_THVLSEG_INTRINSIC(b)
+    CASE_TAG_TO_THVLSEG_INTRINSIC(bu)
+    CASE_TAG_TO_THVLSEG_INTRINSIC(b_mask)
+    CASE_TAG_TO_THVLSEG_INTRINSIC(bu_mask)
+      return 3;
+    CASE_TAG_TO_THVLSEG_INTRINSIC(h)
+    CASE_TAG_TO_THVLSEG_INTRINSIC(hu)
+    CASE_TAG_TO_THVLSEG_INTRINSIC(h_mask)
+    CASE_TAG_TO_THVLSEG_INTRINSIC(hu_mask)
+      return 4;
+    CASE_TAG_TO_THVLSEG_INTRINSIC(w)
+    CASE_TAG_TO_THVLSEG_INTRINSIC(wu)
+    CASE_TAG_TO_THVLSEG_INTRINSIC(w_mask)
+    CASE_TAG_TO_THVLSEG_INTRINSIC(wu_mask)
+      return 5;
+    }
+    llvm_unreachable("Impossible intrinsic tag");
+  };
+
+  SDLoc DL(Node);
+  unsigned NF = Node->getNumValues() - 1;
+
+  MVT VT = Node->getSimpleValueType(0);
+  unsigned Log2SEW = Log2_32(VT.getScalarSizeInBits());
+  RISCVII::VLMUL LMUL = RISCVTargetLowering::getLMUL(VT);
+
+  unsigned CurOp = 2;
+  SmallVector<SDValue, 8> Operands;
+
+  SmallVector<SDValue, 8> Regs(Node->op_begin() + CurOp,
+                               Node->op_begin() + CurOp + NF);
+  SDValue Merge = createTuple(*CurDAG, Regs, NF, LMUL);
+  Operands.push_back(Merge);
+  CurOp += NF;
+
+  addXTHeadVLoadStoreOperands(Node, Log2SEW, DL, CurOp, IsMasked,
+                              /*IsStridedOrIndexed*/ false, Operands);
+
+  unsigned Log2MEM = IsE ? Log2SEW : Tag2Log2MEM(IntNo);
+  const RISCV::TH_VLSEGPseudo *P =
+      RISCV::getTH_VLSEGPseudo(NF, IsMasked, IsUnsigned, IsE,
+                               Log2MEM, Log2SEW, static_cast<unsigned>(LMUL));
+
+  MachineSDNode *Load =
+    CurDAG->getMachineNode(P->Pseudo, DL, MVT::Untyped, MVT::Other, Operands);
+
+  if (auto *MemOp = dyn_cast<MemSDNode>(Node))
+    CurDAG->setNodeMemRefs(Load, {MemOp->getMemOperand()});
+
+  SDValue SuperReg = SDValue(Load, 0);
+  for (unsigned I = 0; I < NF; ++I) {
+    unsigned SubRegIdx = RISCVTargetLowering::getSubregIndexByMVT(VT, I);
+    ReplaceUses(SDValue(Node, I),
+                CurDAG->getTargetExtractSubreg(SubRegIdx, DL, VT, SuperReg));
+  }
+
+  ReplaceUses(SDValue(Node, NF), SDValue(Load, 1));
+  CurDAG->RemoveDeadNode(Node);
 }
 
 void RISCVDAGToDAGISel::selectVLSEG(SDNode *Node, bool IsMasked,
@@ -1826,6 +1900,44 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
     case Intrinsic::riscv_vlseg7_mask:
     case Intrinsic::riscv_vlseg8_mask: {
       selectVLSEG(Node, /*IsMasked*/ true, /*IsStrided*/ false);
+      return;
+    }
+    CASE_TAG_TO_THVLSEG_INTRINSIC(b)
+    CASE_TAG_TO_THVLSEG_INTRINSIC(h)
+    CASE_TAG_TO_THVLSEG_INTRINSIC(w) {
+      selectXVLSEG(Node, IntNo, /*IsMask*/ false,
+                   /*IsUnsigned*/ false, /*IsE*/ false);
+      return;
+    }
+    CASE_TAG_TO_THVLSEG_INTRINSIC(bu)
+    CASE_TAG_TO_THVLSEG_INTRINSIC(hu)
+    CASE_TAG_TO_THVLSEG_INTRINSIC(wu) {
+      selectXVLSEG(Node, IntNo, /*IsMask*/ false,
+                   /*IsUnsigned*/ true, /*IsE*/ false);
+      return;
+    }
+    CASE_TAG_TO_THVLSEG_INTRINSIC(b_mask)
+    CASE_TAG_TO_THVLSEG_INTRINSIC(h_mask)
+    CASE_TAG_TO_THVLSEG_INTRINSIC(w_mask) {
+      selectXVLSEG(Node, IntNo, /*IsMask*/ true,
+                   /*IsUnsigned*/ false, /*IsE*/ false);
+      return;
+    }
+    CASE_TAG_TO_THVLSEG_INTRINSIC(bu_mask)
+    CASE_TAG_TO_THVLSEG_INTRINSIC(hu_mask)
+    CASE_TAG_TO_THVLSEG_INTRINSIC(wu_mask) {
+      selectXVLSEG(Node, IntNo, /*IsMask*/ true,
+                   /*IsUnsigned*/ true, /*IsE*/ false);
+      return;
+    }
+    CASE_TAG_TO_THVLSEG_INTRINSIC(e) {
+      selectXVLSEG(Node, IntNo, /*IsMask*/ false,
+                   /*IsUnsigned*/ false, /*IsE*/ true);
+      return;
+    }
+    CASE_TAG_TO_THVLSEG_INTRINSIC(e_mask) {
+      selectXVLSEG(Node, IntNo, /*IsMask*/ true,
+                   /*IsUnsigned*/ false, /*IsE*/ true);
       return;
     }
     case Intrinsic::riscv_vlsseg2:
