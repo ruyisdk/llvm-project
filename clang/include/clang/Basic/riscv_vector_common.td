@@ -711,3 +711,7 @@ multiclass RVVFloatingWidenOp0BinBuiltinSetRoundingMode
     : RVVWidenWOp0BuiltinSet<NAME # "_w", "xf",
                              [["wv", "w", "wwvu"],
                               ["wf", "w", "wweu"]]>;
+
+class IsFloat<string type> {
+  bit val = !or(!eq(type, "x"), !eq(type, "f"), !eq(type, "d"), !eq(type, "y"));
+}

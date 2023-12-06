@@ -20,10 +20,6 @@ defvar EEWList = [["8", "(Log2EEW:3)"],
                   ["32", "(Log2EEW:5)"],
                   ["64", "(Log2EEW:6)"]];
 
-class IsFloat<string type> {
-  bit val = !or(!eq(type, "x"), !eq(type, "f"), !eq(type, "d"), !eq(type, "y"));
-}
-
 let SupportOverloading = false,
     MaskedPolicyScheme = NonePolicy in {
   class RVVVLEMaskBuiltin : RVVOutBuiltin<"m", "mPCUe", "c"> {
