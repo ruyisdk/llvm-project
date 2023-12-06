@@ -133,6 +133,26 @@ def XTHeadVVSTable : GenericTable {
   let PrimaryKeyName = "getTH_VSPseudo";
 }
 
+class XTHeadVVLSEG<bits<4> N, bit M, bit U, bit E,
+                   bits<3> ME, bits<3> S, bits<3> L> {
+  bits<4> NF = N;
+  bits<1> Masked = M;
+  bits<1> Unsigned = U;
+  bits<1> IsE = E;
+  bits<3> Log2MEM = ME;
+  bits<3> Log2SEW = S;
+  bits<3> LMUL = L;
+  Pseudo Pseudo = !cast<Pseudo>(NAME);
+}
+
+def XTHeadVVLSEGTable : GenericTable {
+  let FilterClass = "XTHeadVVLSEG";
+  let CppTypeName = "TH_VLSEGPseudo";
+  let Fields = ["NF", "Masked", "Unsigned", "IsE", "Log2MEM", "Log2SEW", "LMUL", "Pseudo"];
+  let PrimaryKey = ["NF", "Masked", "Unsigned", "IsE", "Log2MEM", "Log2SEW", "LMUL"];
+  let PrimaryKeyName = "getTH_VLSEGPseudo";
+}
+
 //===----------------------------------------------------------------------===//
 // The following code defines the pseudo instructions and their patterns.
 // 1. "Pseudos" are defined in the same way as normal instructions, except they
