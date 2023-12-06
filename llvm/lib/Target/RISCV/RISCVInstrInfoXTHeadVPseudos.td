@@ -659,6 +659,88 @@ multiclass XVPseudoFFLoad {
   }
 }
 
+// 7.8. Vector Load/Store Segment Instructions
+// 7.8.1. Vector Unit-Stride Segment Loads and Stores
+class XVPseudoUSSegLoadNoMask<VReg RetClass, int MEM, int REG,
+                              bits<4> NF, bit unsigned, bit e> :
+      Pseudo<(outs RetClass:$rd),
+             (ins RetClass:$dest, GPRMem:$rs1, AVL:$vl, ixlenimm:$sew),[]>,
+      RISCVVPseudo,
+      XTHeadVVLSEG<NF, /*Masked*/0, unsigned, e,
+                   !logtwo(MEM), !logtwo(REG), VLMul> {
+  let mayLoad = 1;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+  let Constraints = "$rd = $dest";
+}
+
+class XVPseudoUSSegLoadMask<VReg RetClass, int MEM, int REG,
+                            bits<4> NF, bit unsigned, bit e> :
+      Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd),
+              (ins GetVRegNoV0<RetClass>.R:$merge,
+                   GPRMem:$rs1,
+                   VMaskOp:$vm, AVL:$vl, ixlenimm:$sew),[]>,
+      RISCVVPseudo,
+      XTHeadVVLSEG<NF, /*Masked*/1, unsigned, e,
+                   !logtwo(MEM), !logtwo(REG), VLMul> {
+  let mayLoad = 1;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let Constraints = "$rd = $merge";
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+}
+
+multiclass XVPseudoUSSegLoad {
+  foreach mem = [8, 16, 32] in {
+    foreach lmul = MxListXTHeadV in {
+      defvar LInfo = lmul.MX;
+      defvar tag = MemBitsToTag<mem>.ret;
+      foreach reg = EEWList in {
+        if !ge(reg, mem) then {
+          let VLMul = lmul.value, SEW = mem in {
+            foreach nf = NFSet<lmul>.L in {
+              defvar vreg = SegRegClass<lmul, nf>.RC;
+              def nf # tag # "_V_E" # reg # "_" # LInfo :
+                XVPseudoUSSegLoadNoMask<vreg, mem, reg, nf, 0, 0>,
+                VLSEGSched<nf, mem, LInfo>;
+              def nf # tag # "U_V_E" # reg # "_" # LInfo :
+                XVPseudoUSSegLoadNoMask<vreg, mem, reg, nf, 1, 0>,
+                VLSEGSched<nf, mem, LInfo>;
+              def nf # tag # "_V_E" # reg # "_" # LInfo # "_MASK" :
+                XVPseudoUSSegLoadMask<vreg, mem, reg, nf, 0, 0>,
+                RISCVMaskedPseudo<MaskIdx=2>,
+                VLSEGSched<nf, mem, LInfo>;
+              def nf # tag # "U_V_E" # reg # "_" # LInfo # "_MASK" :
+                XVPseudoUSSegLoadMask<vreg, mem, reg, nf, 1, 0>,
+                RISCVMaskedPseudo<MaskIdx=2>,
+                VLSEGSched<nf, mem, LInfo>;
+            }
+          }
+        }
+      }
+    }
+  }
+  foreach eew = EEWList in {
+    foreach lmul = MxListXTHeadV in {
+      defvar LInfo = lmul.MX;
+      let VLMul = lmul.value, SEW = eew in {
+        foreach nf = NFSet<lmul>.L in {
+          defvar vreg = SegRegClass<lmul, nf>.RC;
+          def nf # "E_E" # eew # "_V_" # LInfo :
+            XVPseudoUSSegLoadNoMask<vreg, eew, eew, nf, 0, 1>,
+            VLSEGSched<nf, eew, LInfo>;
+          def nf # "E_E" # eew # "_V_" # LInfo # "_MASK" :
+            XVPseudoUSSegLoadMask<vreg, eew, eew, nf, 0, 1>,
+            VLSEGSched<nf, eew, LInfo>;
+        }
+      }
+    }
+  }
+}
+
 let Predicates = [HasVendorXTHeadV] in {
   defm PseudoTH_VL : XVPseudoUSLoad;
   defm PseudoTH_VS : XVPseudoUSStore;
@@ -669,6 +751,8 @@ let Predicates = [HasVendorXTHeadV] in {
 
   let hasSideEffects = 1, Defs = [VL] in
   defm PseudoTH_VL : XVPseudoFFLoad;
+
+  defm PseudoTH_VLSEG : XVPseudoUSSegLoad;
 } // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
