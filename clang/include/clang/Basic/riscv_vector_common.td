@@ -244,3 +244,7 @@ class RVVBuiltin<string suffix, string prototype, string type_range,
 class RVVHeader {
   code HeaderCode;
 }
+
+class IsFloat<string type> {
+  bit val = !or(!eq(type, "x"), !eq(type, "f"), !eq(type, "d"));
+}

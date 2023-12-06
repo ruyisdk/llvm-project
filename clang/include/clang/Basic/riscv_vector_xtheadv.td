@@ -14,9 +14,9 @@
 
 include "riscv_vector_common.td"
 
-class XRVVBuiltin<string suffix, string prototype, string type_range,
-                  string overloaded_suffix = "">
-    : RVVBuiltin<suffix, prototype, type_range, overloaded_suffix> {
+class RVVOutBuiltin<string suffix, string prototype, string type_range>
+    : RVVBuiltin<suffix, prototype, type_range> {
+  let IntrinsicTypes = [-1];
 }
 
 multiclass RVVBuiltinSet<string intrinsic_name, string type_range,
@@ -28,7 +28,7 @@ multiclass RVVBuiltinSet<string intrinsic_name, string type_range,
       let Name = NAME # "_" # s_p[0] in {
         defvar suffix = s_p[1];
         defvar prototype = s_p[2];
-        def : XRVVBuiltin<suffix, prototype, type_range>;
+        def : RVVBuiltin<suffix, prototype, type_range>;
       }
     }
   }
@@ -55,7 +55,7 @@ multiclass RVVIntBinBuiltinSet
 
 
 //===----------------------------------------------------------------------===//
-// 6. Configuration-Setting Instructions
+// 6. Configuration-Setting and Utility
 //===----------------------------------------------------------------------===//
 
 // Define vread_csr&vwrite_csr described in RVV intrinsics doc.
@@ -170,7 +170,73 @@ let HasBuiltinAlias = false,
 }
 
 //===----------------------------------------------------------------------===//
-// 12. Vector Integer Arithmetic Instructions
+// 7. Vector Loads and Stores
+//===----------------------------------------------------------------------===//
+
+let SupportOverloading = false,
+    UnMaskedPolicyScheme = HasPassthruOperand in {
+  multiclass RVVVLEBuiltin<list<string> types> {
+    let Name = NAME # "_v",
+        IRName = "th_vle",
+        MaskedIRName ="th_vle_mask" in {
+      foreach type = types in {
+        // `vPCe` is type `const T * -> VectorType`
+        def : RVVOutBuiltin<"v", "vPCe", type>;
+        if !not(IsFloat<type>.val) then {
+          // `UvPCUe` is type `const unsigned T * -> unsigned VectorType`
+          def : RVVOutBuiltin<"Uv", "UvPCUe", type>;
+        }
+      }
+    }
+  }
+}
+
+let HasMaskedOffOperand = false,
+    MaskedPolicyScheme = NonePolicy,
+    ManualCodegen = [{
+      if (IsMasked) {
+        // Builtin: (mask, ptr, value, vl). Intrinsic: (value, ptr, mask, vl)
+        std::swap(Ops[0], Ops[2]);
+      } else {
+        // Builtin: (ptr, value, vl). Intrinsic: (value, ptr, vl)
+        std::swap(Ops[0], Ops[1]);
+      }
+      Ops[1] = Builder.CreateBitCast(Ops[1], Ops[0]->getType()->getPointerTo());
+      if (IsMasked)
+        IntrinsicTypes = {Ops[0]->getType(), Ops[3]->getType()};
+      else
+        IntrinsicTypes = {Ops[0]->getType(), Ops[2]->getType()};
+    }] in {
+  multiclass RVVVSEBuiltin<list<string> types> {
+    let Name = NAME # "_v",
+        IRName = "th_vse",
+        MaskedIRName = "th_vse_mask" in {
+      foreach type = types in {
+        // `0Pev` is type `T * -> VectorType -> void`
+        def : RVVBuiltin<"v", "0Pev", type>;
+        if !not(IsFloat<type>.val) then {
+          // `0PUeUv` is type `unsigned T * -> unsigned VectorType -> void`
+          def : RVVBuiltin<"Uv", "0PUeUv", type>;
+        }
+      }
+    }
+  }
+}
+
+// 7.1. Vector Unit-Stride Operations
+// TODO: vlb, vlh, vlw
+defm th_vle8: RVVVLEBuiltin<["c"]>;
+defm th_vle16: RVVVLEBuiltin<["s","x"]>;
+defm th_vle32: RVVVLEBuiltin<["i","f"]>;
+defm th_vle64: RVVVLEBuiltin<["l","d"]>;
+// TODO: vsb, vsh, vsw
+defm th_vse8 : RVVVSEBuiltin<["c"]>;
+defm th_vse16: RVVVSEBuiltin<["s","x"]>;
+defm th_vse32: RVVVSEBuiltin<["i","f"]>;
+defm th_vse64: RVVVSEBuiltin<["l","d"]>;
+
+//===----------------------------------------------------------------------===//
+// 12. Vector Integer Arithmetic Operations
 //===----------------------------------------------------------------------===//
 
 let UnMaskedPolicyScheme = HasPassthruOperand in {
