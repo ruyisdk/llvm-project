@@ -5,7 +5,7 @@ on:
   push:
     ignore-forks: true
     branches:
-      - 'rvv0.7.1'
+      - 'xtheadvector'
     paths:
       - 'llvm/**'
       - 'clang/**'
@@ -14,7 +14,7 @@ on:
   pull_request:
     ignore-forks: true
     branches:
-      - 'rvv0.7.1'
+      - 'xtheadvector'
     paths:
       - 'llvm/**'
       - 'clang/**'
