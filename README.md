@@ -1,3 +1,107 @@
+# The XTHeadVector extension in LLVM
+
+This repository is a fork of the LLVM project, with the addition of the [T-Head Vector (`XTHeadVector`) extension](https://github.com/T-head-Semi/thead-extension-spec/blob/master/xtheadvector.adoc).
+
+Currently, the work is still in progress.
+We listed features that have been implemented or are being worked on in the following itemized table,
+as of the date of this commit.
+An item marked as `(Done)` means that it has been fully implemented and tested according to the specification,
+while the one marked as `(WIP)` means that only part of it has been implemented and may not be fully tested.
+Any feature not listed below but present in the specification should be considered as a `(TODO)`.
+
+- (Done) LLVM MC instruction definitions, assembly and disassembly.
+- (WIP) LLVM intrinsics related to the `XTHeadVector` extension:
+  - (WIP) `6. Configuration-Setting and Utility`
+    - (Done) `6.1. Set vl and vtype`
+    - (Done) `6.2. Set vl to VLMAX with specific vtype`
+    - (Done) `6.6. Read/Write URW vector CSRs`
+  - (WIP) `7. Vector Load/Store`
+    - (Done) `7.1. Vector Unit-Stride Operations`
+    - (Done) `7.2. Vector Strided Load/Store Operations`
+    - (Done) `7.3. Vector Indexed Load/Store Operations`
+    - (Done) `7.4. Unit-stride Fault-Only-First Loads Operations`
+  - (Done) `8. Vector AMO Operations (Zvamo)`, which is `XTHeadZvamo` [regarding the `XTHeadVector` extension](https://github.com/T-head-Semi/thead-extension-spec/blob/24349e6df223e8b268ba9672297018f508670acb/xtheadvector.adoc?plain=1#L27).
+  - (WIP) `12. Vector Integer Arithmetic Operations`
+    - (WIP) `12.1. Vector Single-Width Integer Add and Subtract`
+      - (Done) `vadd.{vv,vx,vi}`
+- (WIP) Clang intrinsics related to the `XTHeadVector` extension:
+  - (WIP) `6. Configuration-Setting and Utility`
+    - (Done) `6.1. Set vl and vtype`
+    - (Done) `6.2. Set vl to VLMAX with specific vtype`
+  - (WIP) `7. Vector Load/Store`
+    - (Done) `7.1. Vector Unit-Stride Operations`
+
+## Q & A
+
+#### How to build LLVM with the `XTHeadVector` extension?
+
+Build it as you are building the official LLVM project, but remember to enable the `RISCV` target.
+
+### How to use the `XTHeadVector` extension?
+
+This is an example of how to use the `XTHeadVector` extension in C code:
+
+```c
+// memcpy_v.c
+#include <riscv_vector.h>
+#include <stdint.h>
+#include <stdio.h>
+
+void memcpy_v(uint8_t *dst, const uint8_t *src, size_t n) {
+  for (size_t vl; n > 0; n -= vl, src += vl, dst += vl) {
+    vl = __riscv_vsetvl_e8m4(n);
+    vuint8m4_t vec_src = __riscv_th_vle8_v_u8m4(src, vl);
+    __riscv_th_vse8_v_u8m4(dst, vec_src, vl);
+  }
+}
+
+/* main() function omitted */
+```
+
+The code implements a vectorized version of `memcpy()`. To compile it:
+
+```bash
+clang -march=rv64gc_xtheadvector memcpy_v.c -o memcpy_v
+```
+
+To inspect the LLVM IR generated, use the `-S` option:
+
+```bash
+clang -march=rv64gc_xtheadvector memcpy_v.c -o memcpy_v.ll -S -emit-llvm
+```
+
+To compile the LLVM IR to an executable binary, use the `llc` tool:
+
+```bash
+llc -mtriple=riscv64 -mattr=+xtheadvector memcpy_v.ll
+```
+
+### I would like to contribute to this project. How can I help?
+
+Sure! Please feel free to open an issue or a pull request for any questions or suggestions.
+
+We prioritize work based on "easiest to see results" and "most frequently used" by the compiler,
+but **any kind of contribution** is always welcomed.
+
+### Any plan to merge this project into the official LLVM project?
+
+Yes! We are working on it. 
+We will start to submit pull requests to the official LLVM project once one of the following conditions is met:
+
+1. The `XTHeadVector` extension is fully implemented and tested, and the code is clean and well-documented.
+   Currently, the code in this repo is still far from "elegant."
+   There are copy-pasted functions, duplicated code segments, or hard-coded values,
+   which are not acceptable in the upstream project.
+   We also have a plan about reusing the existing RVV 1.0 implementation in LLVM, 
+   but it takes time to figure out the correct way, as our priority is to make the compiler work first.
+2. There are people in the GCC community who are also working on the same extension.
+   We plan to reach out to the LLVM community once GCC has merged their first patch.
+3. The `XTHeadVector` extension is still supported and used by T-Head boards when any of the above conditions is met.
+
+-----
+
+Here's the original README.md from the LLVM project:
+
 # The LLVM Compiler Infrastructure
 
 Welcome to the LLVM project!
