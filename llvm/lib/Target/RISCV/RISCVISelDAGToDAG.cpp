@@ -42,6 +42,7 @@ namespace llvm::RISCV {
 #define GET_XTHeadVVLTable_IMPL
 #define GET_XTHeadVVSTable_IMPL
 #define GET_XTHeadVVLSEGTable_IMPL
+#define GET_XTHeadVVSSEGTable_IMPL
 #include "RISCVGenSearchableTables.inc"
 } // namespace llvm::RISCV
 
@@ -573,6 +574,64 @@ void RISCVDAGToDAGISel::selectXVLSEG(SDNode *Node, unsigned IntNo, bool IsMasked
 
   ReplaceUses(SDValue(Node, NF), SDValue(Load, 1));
   CurDAG->RemoveDeadNode(Node);
+}
+
+#define CASE_TAG_TO_THVSSEG_INTRINSIC(tag)  \
+  case Intrinsic::riscv_th_vsseg2##tag:     \
+  case Intrinsic::riscv_th_vsseg3##tag:     \
+  case Intrinsic::riscv_th_vsseg4##tag:     \
+  case Intrinsic::riscv_th_vsseg5##tag:     \
+  case Intrinsic::riscv_th_vsseg6##tag:     \
+  case Intrinsic::riscv_th_vsseg7##tag:     \
+  case Intrinsic::riscv_th_vsseg8##tag:
+
+void RISCVDAGToDAGISel::selectXVSSEG(SDNode *Node, unsigned IntNo,
+                                     bool IsMasked, bool IsE) {
+  auto Tag2Log2MEM = [] (unsigned no) {
+    switch (no) {
+    CASE_TAG_TO_THVSSEG_INTRINSIC(b)
+    CASE_TAG_TO_THVSSEG_INTRINSIC(b_mask)
+      return 3;
+    CASE_TAG_TO_THVSSEG_INTRINSIC(h)
+    CASE_TAG_TO_THVSSEG_INTRINSIC(h_mask)
+      return 4;
+    CASE_TAG_TO_THVSSEG_INTRINSIC(w)
+    CASE_TAG_TO_THVSSEG_INTRINSIC(w_mask)
+      return 5;
+    }
+    llvm_unreachable("Impossible intrinsic tag");
+  };
+
+  SDLoc DL(Node);
+  unsigned NF = Node->getNumOperands() - 4;
+  if (IsMasked)
+    NF--;
+
+  MVT VT = Node->getOperand(2)->getSimpleValueType(0);
+
+  unsigned Log2SEW = Log2_32(VT.getScalarSizeInBits());
+  unsigned Log2MEM = IsE ? Log2SEW : Tag2Log2MEM(IntNo);
+
+  RISCVII::VLMUL LMUL = RISCVTargetLowering::getLMUL(VT);
+  SmallVector<SDValue, 8> Regs(Node->op_begin() + 2, Node->op_begin() + 2 + NF);
+  SDValue StoreVal = createTuple(*CurDAG, Regs, NF, LMUL);
+
+  SmallVector<SDValue, 8> Operands;
+  Operands.push_back(StoreVal);
+  unsigned CurOp = 2 + NF;
+
+  addXTHeadVLoadStoreOperands(Node, Log2SEW, DL, CurOp,
+                              IsMasked, /*IsStrided*/ false, Operands);
+
+  const RISCV::TH_VSSEGPseudo *P = RISCV::getTH_VSSEGPseudo(
+      NF, IsMasked, IsE, Log2MEM, Log2SEW, static_cast<unsigned>(LMUL));
+  MachineSDNode *Store =
+      CurDAG->getMachineNode(P->Pseudo, DL, Node->getValueType(0), Operands);
+
+  if (auto *MemOp = dyn_cast<MemSDNode>(Node))
+    CurDAG->setNodeMemRefs(Store, {MemOp->getMemOperand()});
+
+  ReplaceNode(Node, Store);
 }
 
 void RISCVDAGToDAGISel::selectVLSEG(SDNode *Node, bool IsMasked,
@@ -2292,6 +2351,26 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
     case Intrinsic::riscv_vsseg7_mask:
     case Intrinsic::riscv_vsseg8_mask: {
       selectVSSEG(Node, /*IsMasked*/ true, /*IsStrided*/ false);
+      return;
+    }
+    CASE_TAG_TO_THVSSEG_INTRINSIC(b)
+    CASE_TAG_TO_THVSSEG_INTRINSIC(h)
+    CASE_TAG_TO_THVSSEG_INTRINSIC(w) {
+      selectXVSSEG(Node, IntNo, /*IsMasked*/ false, /*IsE*/ false);
+      return;
+    }
+    CASE_TAG_TO_THVSSEG_INTRINSIC(e) {
+      selectXVSSEG(Node, IntNo, /*IsMasked*/ false, /*IsE*/ true);
+      return;
+    }
+    CASE_TAG_TO_THVSSEG_INTRINSIC(b_mask)
+    CASE_TAG_TO_THVSSEG_INTRINSIC(h_mask)
+    CASE_TAG_TO_THVSSEG_INTRINSIC(w_mask) {
+      selectXVSSEG(Node, IntNo, /*IsMasked*/ true, /*IsE*/ false);
+      return;
+    }
+    CASE_TAG_TO_THVSSEG_INTRINSIC(e_mask) {
+      selectXVSSEG(Node, IntNo, /*IsMasked*/ true, /*IsE*/ true);
       return;
     }
     case Intrinsic::riscv_vssseg2:
