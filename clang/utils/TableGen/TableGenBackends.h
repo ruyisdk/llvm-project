@@ -29,7 +29,7 @@ namespace clang {
 // or
 // `#pragma clang riscv intrinsic thead_vector` for RVV 0.7.1 (the
 // `XTHEADV_VECTOR`).
-enum RVVHeaderType : uint8_t { RVV, XTHEADV_VECTOR };
+enum RVVHeaderType { RVV, XTHEADV_VECTOR };
 
 void EmitClangDeclContext(llvm::RecordKeeper &RK, llvm::raw_ostream &OS);
 void EmitClangASTNodes(llvm::RecordKeeper &RK, llvm::raw_ostream &OS,
