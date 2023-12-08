@@ -2735,6 +2735,40 @@ RISCVInstrInfo::getSerializableMachineMemOperandTargetFlags() const {
   return ArrayRef(TargetFlags);
 }
 
+MachineBasicBlock *RISCVInstrInfo::expandXWholeMove(
+    MachineInstr &MI, MachineBasicBlock *BB, unsigned NREGS) const {
+  auto *TRI = STI.getRegisterInfo();
+  auto *TII = STI.getInstrInfo();
+  DebugLoc DL = MI.getDebugLoc();
+
+  // From RVV Spec 1.0:
+  // vmv<nr>r.v vd,  vs2  # General form
+  // vmv1r.v    v1,  v2   # Copy v1=v2
+  // vmv2r.v    v10, v12  # Copy v10=v12; v11=v13
+  // vmv4r.v    v4,  v8   # Copy v4=v8; v5=v9; v6=v10; v7=v11
+  // vmv8r.v    v0,  v8   # Copy v0=v8; v1=v9; ...; v7=v15
+
+  // We decide to emulate these instructions by "expanding" them to a sequence
+  // of individual `vmv.v` instructions, where vector-ness is not preserved.
+  // But I suppose this is fine since `RISCVInstrInfo::copyPhysReg` also expands
+  // suitable `vmv<nr>r.v` instructions to `vmv.v` sequence
+  // when `NF` (much like the `NREGS` here) is not 1.
+  // TODO[RVV 0.7.1]: be like vector operations?
+
+  auto DstRegNo = MI.getOperand(0).getReg();
+  auto SrcRegNo = MI.getOperand(1).getReg();
+
+  for (unsigned I = 0; I < NREGS; ++I) {
+    auto DstReg = TRI->getSubReg(DstRegNo, RISCV::sub_vrm1_0 + I);
+    auto SrcReg = TRI->getSubReg(SrcRegNo, RISCV::sub_vrm1_0 + I);
+    BuildMI(*BB, MI, DL, TII->get(RISCV::TH_VMV_V_V), DstReg)
+        .addReg(SrcReg);
+  }
+
+  MI.eraseFromParent();
+  return BB;
+}
+
 // Returns true if this is the sext.w pattern, addiw rd, rs1, 0.
 bool RISCV::isSEXT_W(const MachineInstr &MI) {
   return MI.getOpcode() == RISCV::ADDIW && MI.getOperand(1).isReg() &&

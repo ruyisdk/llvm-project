@@ -235,6 +235,9 @@ public:
   ArrayRef<std::pair<MachineMemOperand::Flags, const char *>>
   getSerializableMachineMemOperandTargetFlags() const override;
 
+  MachineBasicBlock *expandXWholeMove(MachineInstr &MI,
+                                      MachineBasicBlock *BB, unsigned NREGS) const;
+
 protected:
   const RISCVSubtarget &STI;
 
