@@ -160,6 +160,8 @@ public:
                  bool IsMasked, bool IsStrided, bool IsIndexed, bool IsFF, bool IsE);
   void selectXVS(SDNode *Node, const SDLoc& DL, unsigned IntNo,
                  bool IsMasked, bool IsStrided, bool IsIndexed, bool IsE);
+  void selectXVLSEG(SDNode *Node, unsigned IntNo, bool IsMasked, bool IsUnsigned, bool IsE);
+  void selectXVSSEG(SDNode *Node, unsigned IntNo, bool IsMasked, bool IsE);
   void selectVLSEG(SDNode *Node, bool IsMasked, bool IsStrided);
   void selectVLSEGFF(SDNode *Node, bool IsMasked);
   void selectVLXSEG(SDNode *Node, bool IsMasked, bool IsOrdered);
@@ -241,6 +243,16 @@ struct VSSEGPseudo {
   uint16_t Pseudo;
 };
 
+struct TH_VSSEGPseudo {
+  uint16_t NF : 4;
+  uint16_t Masked : 1;
+  uint16_t IsE : 1;
+  uint16_t Log2MEM : 3;
+  uint16_t Log2SEW : 3;
+  uint16_t LMUL : 3;
+  uint16_t Pseudo;
+};
+
 struct VSXSEGPseudo {
   uint16_t NF : 4;
   uint16_t Masked : 1;
@@ -248,6 +260,17 @@ struct VSXSEGPseudo {
   uint16_t Log2SEW : 3;
   uint16_t LMUL : 3;
   uint16_t IndexLMUL : 3;
+  uint16_t Pseudo;
+};
+
+struct TH_VLSEGPseudo {
+  uint16_t NF : 4;
+  uint16_t Masked : 1;
+  uint16_t Unsigned : 1;
+  uint16_t IsE : 1;
+  uint16_t Log2MEM : 3;
+  uint16_t Log2SEW : 3;
+  uint16_t LMUL : 3;
   uint16_t Pseudo;
 };
 
@@ -260,7 +283,7 @@ struct VLEPseudo {
   uint16_t Pseudo;
 };
 
-struct XVLPseudo {
+struct TH_VLPseudo {
   uint16_t Masked : 1;
   uint16_t Strided : 1;
   uint16_t Indexed : 1;
@@ -281,7 +304,7 @@ struct VSEPseudo {
   uint16_t Pseudo;
 };
 
-struct XVSPseudo {
+struct TH_VSPseudo {
   uint16_t Masked : 1;
   uint16_t Strided : 1;
   uint16_t Indexed : 1;
@@ -311,6 +334,8 @@ struct VLX_VSXPseudo {
 #define GET_RISCVVSXTable_DECL
 #define GET_XTHeadVVLTable_DECL
 #define GET_XTHeadVVSTable_DECL
+#define GET_XTHeadVVLSEGTable_DECL
+#define GET_XTHeadVVSSEGTable_DECL
 } // namespace RISCV
 
 } // namespace llvm
