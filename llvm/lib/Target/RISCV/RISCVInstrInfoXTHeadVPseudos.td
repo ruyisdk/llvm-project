@@ -751,10 +751,10 @@ multiclass XVPseudoUSSegLoad {
       let VLMul = lmul.value, SEW = eew in {
         foreach nf = NFSet<lmul>.L in {
           defvar vreg = SegRegClass<lmul, nf>.RC;
-          def nf # "E_E" # eew # "_V_" # LInfo :
+          def nf # "E_V_E" # eew # "_" # LInfo :
             XVPseudoUSSegLoadNoMask<vreg, eew, eew, nf, 0, 1>,
             VLSEGSched<nf, eew, LInfo>;
-          def nf # "E_E" # eew # "_V_" # LInfo # "_MASK" :
+          def nf # "E_V_E" # eew # "_" # LInfo # "_MASK" :
             XVPseudoUSSegLoadMask<vreg, eew, eew, nf, 0, 1>,
             VLSEGSched<nf, eew, LInfo>;
         }
