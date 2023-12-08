@@ -80,6 +80,8 @@ public:
                             const TargetRegisterInfo *TRI,
                             Register VReg) const override;
 
+  bool expandPostRAPseudo(MachineInstr &MI) const override;
+
   using TargetInstrInfo::foldMemoryOperandImpl;
   MachineInstr *foldMemoryOperandImpl(MachineFunction &MF, MachineInstr &MI,
                                       ArrayRef<unsigned> Ops,

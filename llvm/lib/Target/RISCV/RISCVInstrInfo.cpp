@@ -703,6 +703,37 @@ void RISCVInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
   }
 }
 
+// We need to use custom logic to lower copy node here when the
+// `+xtheadvector' attribute is set.
+// The lowerCopy method called in the ExpandPostRAPseudo pass may
+// generate PseudoVMV<n>R_V node and our only chance to expand it
+// is in this method.
+bool RISCVInstrInfo::expandPostRAPseudo(MachineInstr &MI) const {
+  if (!(MI.getOpcode() == TargetOpcode::COPY && STI.hasVendorXTHeadV()))
+    return false;
+
+  auto MBB = MI.getParent();
+  lowerCopy(&MI, STI.getRegisterInfo());
+
+  for (auto& I : *MBB) {
+    switch (I.getOpcode()) {
+    case RISCV::PseudoTH_VMV1R_V:
+      expandXWholeMove(I, MBB, 1);
+      return true;
+    case RISCV::PseudoTH_VMV2R_V:
+      expandXWholeMove(I, MBB, 2);
+      return true;
+    case RISCV::PseudoTH_VMV4R_V:
+      expandXWholeMove(I, MBB, 4);
+      return true;
+    case RISCV::PseudoTH_VMV8R_V:
+      expandXWholeMove(I, MBB, 8);
+      return true;
+    }
+  }
+  return true;
+}
+
 MachineInstr *RISCVInstrInfo::foldMemoryOperandImpl(
     MachineFunction &MF, MachineInstr &MI, ArrayRef<unsigned> Ops,
     MachineBasicBlock::iterator InsertPt, int FrameIndex, LiveIntervals *LIS,
