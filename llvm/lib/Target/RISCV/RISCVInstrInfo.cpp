@@ -2758,11 +2758,19 @@ MachineBasicBlock *RISCVInstrInfo::expandXWholeMove(
   auto DstRegNo = MI.getOperand(0).getReg();
   auto SrcRegNo = MI.getOperand(1).getReg();
 
-  for (unsigned I = 0; I < NREGS; ++I) {
-    auto DstReg = TRI->getSubReg(DstRegNo, RISCV::sub_vrm1_0 + I);
-    auto SrcReg = TRI->getSubReg(SrcRegNo, RISCV::sub_vrm1_0 + I);
-    BuildMI(*BB, MI, DL, TII->get(RISCV::TH_VMV_V_V), DstReg)
-        .addReg(SrcReg);
+  // We need to treat the case where NREGS is one specially,
+  // because in that case the arguments of the VMV<n>R pseudo
+  // will be `VR' and we cannot get subreg of them.
+  if (NREGS == 1) {
+    BuildMI(*BB, MI, DL, TII->get(RISCV::TH_VMV_V_V), DstRegNo)
+        .addReg(SrcRegNo);
+  } else {
+    for (unsigned I = 0; I < NREGS; ++I) {
+      auto DstReg = TRI->getSubReg(DstRegNo, RISCV::sub_vrm1_0 + I);
+      auto SrcReg = TRI->getSubReg(SrcRegNo, RISCV::sub_vrm1_0 + I);
+      BuildMI(*BB, MI, DL, TII->get(RISCV::TH_VMV_V_V), DstReg)
+          .addReg(SrcReg);
+    }
   }
 
   MI.eraseFromParent();
