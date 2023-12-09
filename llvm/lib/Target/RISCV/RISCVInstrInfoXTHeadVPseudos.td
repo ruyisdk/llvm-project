@@ -133,10 +133,11 @@ def XTHeadVVSTable : GenericTable {
   let PrimaryKeyName = "getTH_VSPseudo";
 }
 
-class XTHeadVVLSEG<bits<4> N, bit M, bit U, bit E,
+class XTHeadVVLSEG<bits<4> N, bit M, bit F, bit U, bit E,
                    bits<3> ME, bits<3> S, bits<3> L> {
   bits<4> NF = N;
   bits<1> Masked = M;
+  bits<1> FF = F;
   bits<1> Unsigned = U;
   bits<1> IsE = E;
   bits<3> Log2MEM = ME;
@@ -148,8 +149,10 @@ class XTHeadVVLSEG<bits<4> N, bit M, bit U, bit E,
 def XTHeadVVLSEGTable : GenericTable {
   let FilterClass = "XTHeadVVLSEG";
   let CppTypeName = "TH_VLSEGPseudo";
-  let Fields = ["NF", "Masked", "Unsigned", "IsE", "Log2MEM", "Log2SEW", "LMUL", "Pseudo"];
-  let PrimaryKey = ["NF", "Masked", "Unsigned", "IsE", "Log2MEM", "Log2SEW", "LMUL"];
+  let Fields = ["NF", "Masked", "FF", "Unsigned", "IsE",
+                "Log2MEM", "Log2SEW", "LMUL", "Pseudo"];
+  let PrimaryKey = ["NF", "Masked", "FF", "Unsigned", "IsE",
+                    "Log2MEM", "Log2SEW", "LMUL"];
   let PrimaryKeyName = "getTH_VLSEGPseudo";
 }
 
@@ -685,7 +688,7 @@ class XVPseudoUSSegLoadNoMask<VReg RetClass, int MEM, int REG,
       Pseudo<(outs RetClass:$rd),
              (ins RetClass:$dest, GPRMem:$rs1, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
-      XTHeadVVLSEG<NF, /*Masked*/0, unsigned, e,
+      XTHeadVVLSEG<NF, /*Masked*/0, /*FF*/0, unsigned, e,
                    !logtwo(MEM), !logtwo(REG), VLMul> {
   let mayLoad = 1;
   let mayStore = 0;
@@ -702,7 +705,7 @@ class XVPseudoUSSegLoadMask<VReg RetClass, int MEM, int REG,
                    GPRMem:$rs1,
                    VMaskOp:$vm, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
-      XTHeadVVLSEG<NF, /*Masked*/1, unsigned, e,
+      XTHeadVVLSEG<NF, /*Masked*/1, /*FF*/0, unsigned, e,
                    !logtwo(MEM), !logtwo(REG), VLMul> {
   let mayLoad = 1;
   let mayStore = 0;
@@ -826,6 +829,56 @@ multiclass XVPseudoUSSegStore {
   }
 }
 
+// 7.8. Vector Load/Store Segment Instructions
+// 7.8.1. Vector Unit-Stride Falut-only-first Segment Loads
+class XVPseudoUSSegLoadFFNoMask<VReg RetClass, int EEW, bits<4> NF> :
+      Pseudo<(outs RetClass:$rd, GPR:$vl),
+             (ins RetClass:$dest, GPRMem:$rs1, AVL:$avl, ixlenimm:$sew),[]>,
+      RISCVVPseudo,
+      XTHeadVVLSEG<NF, /*Masked*/0, /*FF*/1, /*Unsigned*/0, /*IsE*/1,
+                   !logtwo(EEW), !logtwo(EEW), VLMul> {
+  let mayLoad = 1;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+  let Constraints = "$rd = $dest";
+}
+
+class XVPseudoUSSegLoadFFMask<VReg RetClass, int EEW, bits<4> NF> :
+      Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd, GPR:$vl),
+             (ins GetVRegNoV0<RetClass>.R:$merge, GPRMem:$rs1,
+                  VMaskOp:$vm, AVL:$avl, ixlenimm:$sew),[]>,
+      RISCVVPseudo,
+      XTHeadVVLSEG<NF, /*Masked*/1, /*FF*/1, /*Unsigned*/0, /*IsE*/1,
+                   !logtwo(EEW), !logtwo(EEW), VLMul>{
+  let mayLoad = 1;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let Constraints = "$rd = $merge";
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+}
+
+multiclass XVPseudoSegLoadFF {
+  foreach eew = EEWList in {
+    foreach lmul = MxListXTHeadV in {
+      defvar LInfo = lmul.MX;
+      let VLMul = lmul.value, SEW = eew in {
+        foreach nf = NFSet<lmul>.L in {
+          defvar vreg = SegRegClass<lmul, nf>.RC;
+          def nf # "EFF_V_E" # eew # "_" # LInfo :
+            XVPseudoUSSegLoadFFNoMask<vreg, eew, nf>,
+            VLSEGFFSched<nf, eew, LInfo>;
+          def nf # "EFF_V_E" # eew # "_" # LInfo # "_MASK" :
+            XVPseudoUSSegLoadFFMask<vreg, eew, nf>,
+            VLSEGFFSched<nf, eew, LInfo>;
+        }
+      }
+    }
+  }
+}
+
 let Predicates = [HasVendorXTHeadV] in {
   defm PseudoTH_VL : XVPseudoUSLoad;
   defm PseudoTH_VS : XVPseudoUSStore;
@@ -839,6 +892,9 @@ let Predicates = [HasVendorXTHeadV] in {
 
   defm PseudoTH_VLSEG : XVPseudoUSSegLoad;
   defm PseudoTH_VSSEG : XVPseudoUSSegStore;
+
+  let hasSideEffects = 1, Defs = [VL] in
+  defm PseudoTH_VLSEG : XVPseudoSegLoadFF;
 } // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
