@@ -133,10 +133,11 @@ def XTHeadVVSTable : GenericTable {
   let PrimaryKeyName = "getTH_VSPseudo";
 }
 
-class XTHeadVVLSEG<bits<4> N, bit M, bit U, bit E,
+class XTHeadVVLSEG<bits<4> N, bit M, bit F, bit U, bit E,
                    bits<3> ME, bits<3> S, bits<3> L> {
   bits<4> NF = N;
   bits<1> Masked = M;
+  bits<1> FF = F;
   bits<1> Unsigned = U;
   bits<1> IsE = E;
   bits<3> Log2MEM = ME;
@@ -148,8 +149,10 @@ class XTHeadVVLSEG<bits<4> N, bit M, bit U, bit E,
 def XTHeadVVLSEGTable : GenericTable {
   let FilterClass = "XTHeadVVLSEG";
   let CppTypeName = "TH_VLSEGPseudo";
-  let Fields = ["NF", "Masked", "Unsigned", "IsE", "Log2MEM", "Log2SEW", "LMUL", "Pseudo"];
-  let PrimaryKey = ["NF", "Masked", "Unsigned", "IsE", "Log2MEM", "Log2SEW", "LMUL"];
+  let Fields = ["NF", "Masked", "FF", "Unsigned", "IsE",
+                "Log2MEM", "Log2SEW", "LMUL", "Pseudo"];
+  let PrimaryKey = ["NF", "Masked", "FF", "Unsigned", "IsE",
+                    "Log2MEM", "Log2SEW", "LMUL"];
   let PrimaryKeyName = "getTH_VLSEGPseudo";
 }
 
@@ -214,7 +217,7 @@ class MemBitsToTag<int mem> {
 // 7.4 Vector Unit-Stride Instructions
 class XVPseudoUSLoadNoMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e> :
       Pseudo<(outs RetClass:$rd),
-             (ins RetClass:$dest, GPRMem:$rs1, AVL:$vl, ixlenimm:$sew),[]>,
+             (ins RetClass:$dest, GPRMemZeroOffset:$rs1, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
       XTHeadVVL</*Masked*/0, /*Strided*/0, /*Indexed*/0, /*FF*/0,
                 unsigned, e, !logtwo(MEM), !logtwo(REG), VLMul> {
@@ -229,7 +232,7 @@ class XVPseudoUSLoadNoMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e>
 class XVPseudoUSLoadMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e> :
       Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd),
               (ins GetVRegNoV0<RetClass>.R:$merge,
-                   GPRMem:$rs1,
+                   GPRMemZeroOffset:$rs1,
                    VMaskOp:$vm, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
       XTHeadVVL</*Masked*/1, /*Strided*/0, /*Indexed*/0, /*FF*/0, unsigned, e,
@@ -244,7 +247,7 @@ class XVPseudoUSLoadMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e> :
 
 class XVPseudoUSStoreNoMask<VReg StClass, int MEM, int REG, bit e>:
       Pseudo<(outs),
-              (ins StClass:$rd, GPRMem:$rs1, AVL:$vl, ixlenimm:$sew),[]>,
+              (ins StClass:$rd, GPRMemZeroOffset:$rs1, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
       XTHeadVVS</*Masked*/0, /*Strided*/0, /*Indexed*/0, e,
                 !logtwo(MEM), !logtwo(REG), VLMul> {
@@ -257,7 +260,7 @@ class XVPseudoUSStoreNoMask<VReg StClass, int MEM, int REG, bit e>:
 
 class XVPseudoUSStoreMask<VReg StClass, int MEM, int REG, int e>:
       Pseudo<(outs),
-              (ins StClass:$rd, GPRMem:$rs1, VMaskOp:$vm, AVL:$vl, ixlenimm:$sew),[]>,
+              (ins StClass:$rd, GPRMemZeroOffset:$rs1, VMaskOp:$vm, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
       XTHeadVVS</*Masked*/1, /*Strided*/0, /*Indexed*/0, e,
                 !logtwo(MEM), !logtwo(REG), VLMul> {
@@ -355,7 +358,7 @@ multiclass XVPseudoUSStore {
 // 7.5 Vector Strided Instructions
 class XVPseudoSLoadNoMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e>:
       Pseudo<(outs RetClass:$rd),
-             (ins RetClass:$dest, GPRMem:$rs1, GPR:$rs2, AVL:$vl,
+             (ins RetClass:$dest, GPRMemZeroOffset:$rs1, GPR:$rs2, AVL:$vl,
                   ixlenimm:$sew),[]>,
       RISCVVPseudo,
       XTHeadVVL</*Masked*/0, /*Strided*/1, /*Indexed*/0, /*FF*/0,
@@ -371,7 +374,7 @@ class XVPseudoSLoadNoMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e>:
 class XVPseudoSLoadMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e>:
       Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd),
               (ins GetVRegNoV0<RetClass>.R:$merge,
-                   GPRMem:$rs1, GPR:$rs2,
+                   GPRMemZeroOffset:$rs1, GPR:$rs2,
                    VMaskOp:$vm, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
       XTHeadVVL</*Masked*/1, /*Strided*/1, /*Indexed*/0, /*FF*/0,
@@ -386,7 +389,7 @@ class XVPseudoSLoadMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e>:
 
 class XVPseudoSStoreNoMask<VReg StClass, int MEM, int REG, bit e>:
       Pseudo<(outs),
-              (ins StClass:$rd, GPRMem:$rs1, GPR:$rs2, AVL:$vl, ixlenimm:$sew),[]>,
+              (ins StClass:$rd, GPRMemZeroOffset:$rs1, GPR:$rs2, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
       XTHeadVVS</*Masked*/0, /*Strided*/1, /*Indexed*/0, e,
                 !logtwo(MEM), !logtwo(REG), VLMul> {
@@ -399,7 +402,7 @@ class XVPseudoSStoreNoMask<VReg StClass, int MEM, int REG, bit e>:
 
 class XVPseudoSStoreMask<VReg StClass, int MEM, int REG, int e>:
       Pseudo<(outs),
-              (ins StClass:$rd, GPRMem:$rs1, GPR:$rs2, VMaskOp:$vm, AVL:$vl, ixlenimm:$sew),[]>,
+              (ins StClass:$rd, GPRMemZeroOffset:$rs1, GPR:$rs2, VMaskOp:$vm, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
       XTHeadVVS</*Masked*/1, /*Strided*/1, /*Indexed*/0, e,
                 !logtwo(MEM), !logtwo(REG), VLMul> {
@@ -492,7 +495,7 @@ multiclass XVPseudoSStore {
 // 7.6 Vector Indexed Instructions
 class XVPseudoILoadNoMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e>:
       Pseudo<(outs RetClass:$rd),
-             (ins RetClass:$dest, GPRMem:$rs1, RetClass:$rs2,
+             (ins RetClass:$dest, GPRMemZeroOffset:$rs1, RetClass:$rs2,
               AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
       XTHeadVVL</*Masked*/0, /*Strided*/0, /*Indexed*/1, /*FF*/0,
@@ -508,7 +511,7 @@ class XVPseudoILoadNoMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e>:
 class XVPseudoILoadMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e>:
       Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd),
               (ins GetVRegNoV0<RetClass>.R:$merge,
-                   GPRMem:$rs1, RetClass:$rs2,
+                   GPRMemZeroOffset:$rs1, RetClass:$rs2,
                    VMaskOp:$vm, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
       XTHeadVVL</*Masked*/1, /*Strided*/0, /*Indexed*/1, /*FF*/0,
@@ -568,7 +571,7 @@ multiclass XVPseudoILoad {
 
 class XVPseudoIStoreNoMask<VReg StClass, int MEM, int REG, bit e>:
       Pseudo<(outs),
-             (ins StClass:$rd, GPRMem:$rs1, StClass:$rs2,
+             (ins StClass:$rd, GPRMemZeroOffset:$rs1, StClass:$rs2,
               AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
       XTHeadVVS</*Masked*/0, /*Strided*/0, /*Indexed*/1, e,
@@ -582,7 +585,7 @@ class XVPseudoIStoreNoMask<VReg StClass, int MEM, int REG, bit e>:
 
 class XVPseudoIStoreMask<VReg StClass, int MEM, int REG, bit e>:
       Pseudo<(outs),
-             (ins StClass:$rd, GPRMem:$rs1, StClass:$rs2, VMaskOp:$vm,
+             (ins StClass:$rd, GPRMemZeroOffset:$rs1, StClass:$rs2, VMaskOp:$vm,
               AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
       XTHeadVVS</*Masked*/1, /*Strided*/0, /*Indexed*/1, e,
@@ -631,7 +634,7 @@ multiclass XVPseudoIStore {
 // 7.7. Unit-stride Fault-Only-First Loads
 class XVPseudoUSLoadFFNoMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e> :
       Pseudo<(outs RetClass:$rd, GPR:$vl),
-             (ins RetClass:$dest, GPRMem:$rs1, AVL:$avl,
+             (ins RetClass:$dest, GPRMemZeroOffset:$rs1, AVL:$avl,
                   ixlenimm:$sew),[]>,
       RISCVVPseudo,
       XTHeadVVL</*Masked*/0, /*Strided*/0, /*Indexed*/0, /*FF*/1,
@@ -647,7 +650,7 @@ class XVPseudoUSLoadFFNoMask<VReg RetClass, int MEM, int REG, bit unsigned, bit 
 class XVPseudoUSLoadFFMask<VReg RetClass, int MEM, int REG, bit unsigned, bit e> :
       Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd, GPR:$vl),
              (ins GetVRegNoV0<RetClass>.R:$merge,
-                  GPRMem:$rs1,
+                  GPRMemZeroOffset:$rs1,
                   VMaskOp:$vm, AVL:$avl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
       XTHeadVVL</*Masked*/1, /*Strided*/0, /*Indexed*/0, /*FF*/1,
@@ -683,9 +686,9 @@ multiclass XVPseudoFFLoad {
 class XVPseudoUSSegLoadNoMask<VReg RetClass, int MEM, int REG,
                               bits<4> NF, bit unsigned, bit e> :
       Pseudo<(outs RetClass:$rd),
-             (ins RetClass:$dest, GPRMem:$rs1, AVL:$vl, ixlenimm:$sew),[]>,
+             (ins RetClass:$dest, GPRMemZeroOffset:$rs1, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
-      XTHeadVVLSEG<NF, /*Masked*/0, unsigned, e,
+      XTHeadVVLSEG<NF, /*Masked*/0, /*FF*/0, unsigned, e,
                    !logtwo(MEM), !logtwo(REG), VLMul> {
   let mayLoad = 1;
   let mayStore = 0;
@@ -699,10 +702,10 @@ class XVPseudoUSSegLoadMask<VReg RetClass, int MEM, int REG,
                             bits<4> NF, bit unsigned, bit e> :
       Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd),
               (ins GetVRegNoV0<RetClass>.R:$merge,
-                   GPRMem:$rs1,
+                   GPRMemZeroOffset:$rs1,
                    VMaskOp:$vm, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
-      XTHeadVVLSEG<NF, /*Masked*/1, unsigned, e,
+      XTHeadVVLSEG<NF, /*Masked*/1, /*FF*/0, unsigned, e,
                    !logtwo(MEM), !logtwo(REG), VLMul> {
   let mayLoad = 1;
   let mayStore = 0;
@@ -762,7 +765,7 @@ multiclass XVPseudoUSSegLoad {
 
 class XVPseudoUSSegStoreNoMask<VReg ValClass, int MEM, int REG, bits<4> NF, bit e>:
       Pseudo<(outs),
-             (ins ValClass:$rd, GPRMem:$rs1, AVL:$vl, ixlenimm:$sew),[]>,
+             (ins ValClass:$rd, GPRMemZeroOffset:$rs1, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
       XTHeadVVSSEG<NF, /*Masked*/0, e, !logtwo(MEM), !logtwo(REG), VLMul> {
   let mayLoad = 0;
@@ -774,7 +777,7 @@ class XVPseudoUSSegStoreNoMask<VReg ValClass, int MEM, int REG, bits<4> NF, bit 
 
 class XVPseudoUSSegStoreMask<VReg ValClass, int MEM, int REG, bits<4> NF, bit e>:
       Pseudo<(outs),
-             (ins ValClass:$rd, GPRMem:$rs1,
+             (ins ValClass:$rd, GPRMemZeroOffset:$rs1,
                   VMaskOp:$vm, AVL:$vl, ixlenimm:$sew),[]>,
       RISCVVPseudo,
       XTHeadVVSSEG<NF, /*Masked*/1, e, !logtwo(MEM), !logtwo(REG), VLMul> {
@@ -826,6 +829,56 @@ multiclass XVPseudoUSSegStore {
   }
 }
 
+// 7.8. Vector Load/Store Segment Instructions
+// 7.8.1. Vector Unit-Stride Falut-only-first Segment Loads
+class XVPseudoUSSegLoadFFNoMask<VReg RetClass, int EEW, bits<4> NF> :
+      Pseudo<(outs RetClass:$rd, GPR:$vl),
+             (ins RetClass:$dest, GPRMemZeroOffset:$rs1, AVL:$avl, ixlenimm:$sew),[]>,
+      RISCVVPseudo,
+      XTHeadVVLSEG<NF, /*Masked*/0, /*FF*/1, /*Unsigned*/0, /*IsE*/1,
+                   !logtwo(EEW), !logtwo(EEW), VLMul> {
+  let mayLoad = 1;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+  let Constraints = "$rd = $dest";
+}
+
+class XVPseudoUSSegLoadFFMask<VReg RetClass, int EEW, bits<4> NF> :
+      Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd, GPR:$vl),
+             (ins GetVRegNoV0<RetClass>.R:$merge, GPRMemZeroOffset:$rs1,
+                  VMaskOp:$vm, AVL:$avl, ixlenimm:$sew),[]>,
+      RISCVVPseudo,
+      XTHeadVVLSEG<NF, /*Masked*/1, /*FF*/1, /*Unsigned*/0, /*IsE*/1,
+                   !logtwo(EEW), !logtwo(EEW), VLMul>{
+  let mayLoad = 1;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let Constraints = "$rd = $merge";
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+}
+
+multiclass XVPseudoSegLoadFF {
+  foreach eew = EEWList in {
+    foreach lmul = MxListXTHeadV in {
+      defvar LInfo = lmul.MX;
+      let VLMul = lmul.value, SEW = eew in {
+        foreach nf = NFSet<lmul>.L in {
+          defvar vreg = SegRegClass<lmul, nf>.RC;
+          def nf # "EFF_V_E" # eew # "_" # LInfo :
+            XVPseudoUSSegLoadFFNoMask<vreg, eew, nf>,
+            VLSEGFFSched<nf, eew, LInfo>;
+          def nf # "EFF_V_E" # eew # "_" # LInfo # "_MASK" :
+            XVPseudoUSSegLoadFFMask<vreg, eew, nf>,
+            VLSEGFFSched<nf, eew, LInfo>;
+        }
+      }
+    }
+  }
+}
+
 let Predicates = [HasVendorXTHeadV] in {
   defm PseudoTH_VL : XVPseudoUSLoad;
   defm PseudoTH_VS : XVPseudoUSStore;
@@ -839,6 +892,9 @@ let Predicates = [HasVendorXTHeadV] in {
 
   defm PseudoTH_VLSEG : XVPseudoUSSegLoad;
   defm PseudoTH_VSSEG : XVPseudoUSSegStore;
+
+  let hasSideEffects = 1, Defs = [VL] in
+  defm PseudoTH_VLSEG : XVPseudoSegLoadFF;
 } // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
