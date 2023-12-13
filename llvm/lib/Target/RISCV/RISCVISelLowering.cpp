@@ -1489,6 +1489,7 @@ bool RISCVTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
   CASE_TAG_TO_THVLSEG_INTRINSIC(w)
   CASE_TAG_TO_THVLSEG_INTRINSIC(wu)
   CASE_TAG_TO_THVLSEG_INTRINSIC(e)
+  CASE_TAG_TO_THVLSEG_INTRINSIC(eff)
     return SetRVVLoadStoreInfo(/*PtrOp*/ I.arg_size() - 2,
                                /*IsStore*/ false,
                                /*IsUnitStrided*/ false);
@@ -1516,6 +1517,7 @@ bool RISCVTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
   CASE_TAG_TO_THVLSEG_INTRINSIC(w_mask)
   CASE_TAG_TO_THVLSEG_INTRINSIC(wu_mask)
   CASE_TAG_TO_THVLSEG_INTRINSIC(e_mask)
+  CASE_TAG_TO_THVLSEG_INTRINSIC(eff_mask)
     return SetRVVLoadStoreInfo(/*PtrOp*/ I.arg_size() - 3,
                                /*IsStore*/ false,
                                /*IsUnitStrided*/ false);

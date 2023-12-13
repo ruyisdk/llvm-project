@@ -336,6 +336,45 @@ let TargetPrefix = "riscv" in {
     defm "vsseg" # nf # "w" : XVUSSegStore<nf>;
     defm "vsseg" # nf # "e" : XVUSSegStore<nf>;
   }
+
+  // 7.8 Unit-Stride Segment Fault-only-first Loads
+  // Input: (passthru, pointer, vl)
+  // Output: (data, vl)
+  // NOTE: We model this with default memory properties since we model writing
+  // VL as a side effect. IntrReadMem, IntrHasSideEffects does not work.
+  class XVUSSegLoadFF<int nf>
+        : DefaultAttrsIntrinsic<!listconcat([llvm_anyvector_ty], !listsplat(LLVMMatchType<0>,
+                                !add(nf, -1)), [llvm_anyint_ty]),
+                    !listconcat(!listsplat(LLVMMatchType<0>, nf),
+                    [llvm_ptr_ty, LLVMMatchType<1>]),
+                    [NoCapture<ArgIndex<nf>>]>, RISCVVIntrinsic {
+    let VLOperand = !add(nf, 1);
+  }
+  // For unit stride fault-only-first segment load with mask
+  // Input: (maskedoff, pointer, mask, vl)
+  // Output: (data, vl)
+  // NOTE: We model this with default memory properties since we model writing
+  // VL as a side effect. IntrReadMem, IntrHasSideEffects does not work.
+  class XVUSSegLoadFFMasked<int nf>
+        : DefaultAttrsIntrinsic<!listconcat([llvm_anyvector_ty], !listsplat(LLVMMatchType<0>,
+                                !add(nf, -1)), [llvm_anyint_ty]),
+                    !listconcat(!listsplat(LLVMMatchType<0>, nf),
+                     [llvm_ptr_ty,
+                      LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>,
+                      LLVMMatchType<1>]),
+                    [NoCapture<ArgIndex<nf>>]>,
+                    RISCVVIntrinsic {
+    let VLOperand = !add(nf, 2);
+  }
+
+  multiclass XVUSSegLoadFF<int nf> {
+    def "int_riscv_th_" # NAME : XVUSSegLoadFF<nf>;
+    def "int_riscv_th_" # NAME # "_mask" : XVUSSegLoadFFMasked<nf>;
+  }
+
+  foreach nf = [2, 3, 4, 5, 6, 7, 8] in {
+    defm vlseg # nf # eff : XVUSSegLoadFF<nf>;
+  }
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
