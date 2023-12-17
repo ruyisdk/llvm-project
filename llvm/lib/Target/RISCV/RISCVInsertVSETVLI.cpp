@@ -705,7 +705,7 @@ struct BlockData {
 };
 
 class RISCVInsertVSETVLI : public MachineFunctionPass {
-  const TargetInstrInfo *TII;
+  const RISCVInstrInfo *TII;
   MachineRegisterInfo *MRI;
   bool HasVendorXTHeadV;
 
@@ -737,6 +737,7 @@ private:
   void insertVSETVLI(MachineBasicBlock &MBB,
                      MachineBasicBlock::iterator InsertPt, DebugLoc DL,
                      const VSETVLIInfo &Info, const VSETVLIInfo &PrevInfo);
+  void insertVSETVLIForCOPY(MachineBasicBlock &MBB);
 
   void transferBefore(VSETVLIInfo &Info, const MachineInstr &MI);
   void transferAfter(VSETVLIInfo &Info, const MachineInstr &MI);
@@ -962,6 +963,66 @@ void RISCVInsertVSETVLI::insertVSETVLI(MachineBasicBlock &MBB,
       .addReg(DestReg, RegState::Define | RegState::Dead)
       .addReg(AVLReg)
       .addImm(TypeI);
+}
+
+void RISCVInsertVSETVLI::insertVSETVLIForCOPY(MachineBasicBlock &MBB) {
+  auto findRegSequence = [] (const MachineBasicBlock& BB,
+                             MachineBasicBlock::iterator I,
+                             Register DstReg) {
+    for (; I != BB.end(); ++I)
+      if (I->getOpcode() == TargetOpcode::REG_SEQUENCE &&
+          I->getOperand(1).getReg() == DstReg)
+        break;
+    return I;
+  };
+
+  for (auto MII = MBB.begin(); MII != MBB.end(); ++MII) {
+    MachineInstr &MI = *MII;
+    // Check if the COPY node will be converted to PseudoTH_VMV<n>R
+    // later. Set VTYPE and VL for the pseudo node if so.
+    if (!(MI.isCopy() && TII->needVSETVLIForCOPY(MBB, MI)))
+      continue;
+
+    auto DL = MI.getDebugLoc();
+
+    // Always set SEW to 8. Actually no matter what the SEW is the VMV
+    // instruction will behave correctly because it does not do sign
+    // extension and we always set VL to VLMAX.
+    // (It's an ugly solution, though. Maybe we can simulate GCC later.)
+    unsigned SEW = 8;
+
+    auto SavedVL = MRI->createVirtualRegister(&RISCV::GPRRegClass);
+    auto SavedVType = MRI->createVirtualRegister(&RISCV::GPRRegClass);
+    BuildMI(MBB, MI, DL, TII->get(RISCV::CSRRS), SavedVL)
+        .addImm(RISCVSysReg::lookupSysRegByName("VL")->Encoding)
+        .addReg(RISCV::X0);
+    BuildMI(MBB, MI, DL, TII->get(RISCV::CSRRS), SavedVType)
+        .addImm(RISCVSysReg::lookupSysRegByName("VTYPE")->Encoding)
+        .addReg(RISCV::X0);
+
+    auto NewVType = RISCVVType::encodeXTHeadVTYPE(SEW, 1, 1);
+    BuildMI(MBB, MI, DL, TII->get(RISCV::PseudoTH_VSETVLIX0))
+        .addReg(RISCV::X0, RegState::Define | RegState::Dead)
+        .addReg(RISCV::X0)
+        .addImm(NewVType);
+
+    // Restore vtype and vl after we done copy. Note that if there
+    // is a REG_SEQUENCE instruction, we must place the vsetvli for
+    // restoring VL and VTYPE after it, otherwise it may occur in
+    // the middle of a VMV_V_V group.
+    auto InsertPt = findRegSequence(MBB, MI, MI.getOperand(0).getReg());
+    if (InsertPt == MBB.end()) // Not found
+      InsertPt = MI;
+    if (!InsertPt->getNextNode())
+      InsertPt = MBB.end();
+    else
+      InsertPt = InsertPt->getNextNode();
+
+    BuildMI(MBB, InsertPt, DL, TII->get(RISCV::TH_VSETVL))
+        .addReg(RISCV::X0, RegState::Define | RegState::Dead)
+        .addReg(SavedVL, RegState::Kill)
+        .addReg(SavedVType, RegState::Kill);
+  }
 }
 
 static bool isLMUL1OrSmaller(RISCVII::VLMUL LMUL) {
@@ -1639,6 +1700,10 @@ bool RISCVInsertVSETVLI::runOnMachineFunction(MachineFunction &MF) {
   // of VLEFF/VLSEGFF.
   for (MachineBasicBlock &MBB : MF)
     insertReadVL(MBB);
+
+  if (HasVendorXTHeadV)
+    for (MachineBasicBlock &MBB : MF)        
+          insertVSETVLIForCOPY(MBB);
 
   BlockInfo.clear();
   return HaveVectorOp;
