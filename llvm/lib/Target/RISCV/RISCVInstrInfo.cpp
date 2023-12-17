@@ -164,8 +164,8 @@ static bool forwardCopyWillClobberTuple(unsigned DstReg, unsigned SrcReg,
 static bool isConvertibleToVMV_V_V(const RISCVSubtarget &STI,
                                    const MachineBasicBlock &MBB,
                                    MachineBasicBlock::const_iterator MBBI,
-                                   MachineBasicBlock::const_iterator &DefMBBI,
-                                   RISCVII::VLMUL LMul) {
+                                   RISCVII::VLMUL LMul,
+                                   MachineBasicBlock::const_iterator *DefMBBI = nullptr) {
   if (PreferWholeRegisterMove)
     return false;
 
@@ -294,7 +294,8 @@ static bool isConvertibleToVMV_V_V(const RISCVSubtarget &STI,
 
           // Found the definition.
           FoundDef = true;
-          DefMBBI = MBBI;
+          if (DefMBBI)
+            *DefMBBI = MBBI;
           break;
         }
       }
@@ -433,7 +434,7 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
     bool UseVMV_V_V = false;
     bool UseVMV_V_I = false;
     MachineBasicBlock::const_iterator DefMBBI;
-    if (isConvertibleToVMV_V_V(STI, MBB, MBBI, DefMBBI, LMul)) {
+    if (isConvertibleToVMV_V_V(STI, MBB, MBBI, LMul, &DefMBBI)) {
       UseVMV_V_V = true;
       // We only need to handle LMUL = 1/2/4/8 here because we only define
       // vector register classes for LMUL = 1/2/4/8.
@@ -2806,6 +2807,27 @@ MachineBasicBlock *RISCVInstrInfo::expandXWholeMove(
 
   MI.eraseFromParent();
   return BB;
+}
+
+bool RISCVInstrInfo::needVSETVLIForCOPY(const MachineBasicBlock &MBB,
+                                        const MachineInstr &MI) const {
+  Register SrcReg = MI.getOperand(1).getReg();
+  RISCVII::VLMUL LMul = RISCVII::LMUL_RESERVED;
+
+  // Do not check the type of the DstReg because in the stage of
+  // inserting VSETVLI it might be a virtual one.
+  if (RISCV::VRRegClass.contains(SrcReg))
+    LMul = RISCVII::LMUL_1;
+  else if (RISCV::VRM2RegClass.contains(SrcReg))
+    LMul = RISCVII::LMUL_2;
+  else if (RISCV::VRM4RegClass.contains(SrcReg))
+    LMul = RISCVII::LMUL_4;
+  else if (RISCV::VRM8RegClass.contains(SrcReg))
+    LMul = RISCVII::LMUL_8;
+
+  if (LMul != RISCVII::LMUL_RESERVED)
+    return !isConvertibleToVMV_V_V(STI, MBB, MI, LMul);
+  return false;
 }
 
 // Returns true if this is the sext.w pattern, addiw rd, rs1, 0.

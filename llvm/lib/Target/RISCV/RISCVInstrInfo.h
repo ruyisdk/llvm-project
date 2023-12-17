@@ -13,6 +13,7 @@
 #ifndef LLVM_LIB_TARGET_RISCV_RISCVINSTRINFO_H
 #define LLVM_LIB_TARGET_RISCV_RISCVINSTRINFO_H
 
+#include "MCTargetDesc/RISCVBaseInfo.h"
 #include "RISCVRegisterInfo.h"
 #include "llvm/CodeGen/TargetInstrInfo.h"
 #include "llvm/IR/DiagnosticInfo.h"
@@ -239,6 +240,8 @@ public:
 
   MachineBasicBlock *expandXWholeMove(MachineInstr &MI,
                                       MachineBasicBlock *BB, unsigned NREGS) const;
+
+  bool needVSETVLIForCOPY(const MachineBasicBlock &MBB, const MachineInstr &MI) const;
 
 protected:
   const RISCVSubtarget &STI;
