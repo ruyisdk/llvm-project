@@ -1586,6 +1586,18 @@ RISCVInstrInfo::getInverseOpcode(unsigned Opcode) const {
   }
 }
 
+bool RISCVInstrInfo::isSchedulingBoundary(const MachineInstr &MI,
+                                          const MachineBasicBlock *MBB,
+                                          const MachineFunction &MF) const {
+  if (TargetInstrInfo::isSchedulingBoundary(MI, MBB, MF))
+    return true;
+  if (!STI.hasVendorXTHeadV())
+    return false;
+  if (!MI.isCopy())
+    return false;
+  return needVSETVLIForCOPY(*MBB, MI);
+}
+
 static bool canCombineFPFusedMultiply(const MachineInstr &Root,
                                       const MachineOperand &MO,
                                       bool DoRegPressureReduce) {
