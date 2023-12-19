@@ -242,6 +242,10 @@ public:
   ArrayRef<std::pair<MachineMemOperand::Flags, const char *>>
   getSerializableMachineMemOperandTargetFlags() const override;
 
+  std::pair<Register, Register> adjustVLVTYPE(MachineInstr &MI,
+                                              MachineBasicBlock &MBB,
+                                              unsigned SEW, unsigned LMUL) const;
+
   MachineBasicBlock *expandXWholeMove(MachineInstr &MI,
                                       MachineBasicBlock *BB, unsigned NREGS) const;
 

@@ -2779,6 +2779,37 @@ RISCVInstrInfo::getSerializableMachineMemOperandTargetFlags() const {
   return ArrayRef(TargetFlags);
 }
 
+std::pair<Register, Register>
+RISCVInstrInfo::adjustVLVTYPE(MachineInstr &MI,
+                              MachineBasicBlock &MBB,
+                              unsigned SEW, unsigned LMUL) const {
+  // Save origin VL and VTYPE, then set VL to VLMAX, and adjust
+  // SEW and LMUL according to the parameters in front of the MI.
+  auto DL = MI.getDebugLoc();
+  auto *MRI = &MBB.getParent()->getRegInfo();
+
+  Register SavedVL = MRI->createVirtualRegister(&RISCV::GPRRegClass);
+  Register SavedVType = MRI->createVirtualRegister(&RISCV::GPRRegClass);
+
+  // Spec: The assembler pseudoinstruction to read a CSR, `CSRR rd, csr`, is
+  // encoded as `CSRRS rd, csr, x0`.
+  BuildMI(MBB, MI, DL, get(RISCV::CSRRS), SavedVL)
+      .addImm(RISCVSysReg::lookupSysRegByName("VL")->Encoding)
+      .addReg(RISCV::X0);
+  BuildMI(MBB, MI, DL, get(RISCV::CSRRS), SavedVType)
+      .addImm(RISCVSysReg::lookupSysRegByName("VTYPE")->Encoding)
+      .addReg(RISCV::X0);
+
+  auto VTypeI = RISCVVType::encodeXTHeadVTYPE(SEW, LMUL, 1);
+  BuildMI(MBB, MI, DL, get(RISCV::TH_VSETVLI))
+      .addReg(RISCV::X0, RegState::Define | RegState::Dead)
+      .addReg(RISCV::X0)
+      .addImm(VTypeI)
+      .addReg(RISCV::VL, RegState::Implicit);
+
+  return std::make_pair(SavedVL, SavedVType);
+}
+
 MachineBasicBlock *RISCVInstrInfo::expandXWholeMove(
     MachineInstr &MI, MachineBasicBlock *BB, unsigned NREGS) const {
   auto *TRI = STI.getRegisterInfo();
