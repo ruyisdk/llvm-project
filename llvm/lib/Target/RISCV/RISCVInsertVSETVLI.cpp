@@ -989,22 +989,8 @@ void RISCVInsertVSETVLI::insertVSETVLIForCOPY(MachineBasicBlock &MBB) {
     // instruction will behave correctly because it does not do sign
     // extension and we always set VL to VLMAX.
     // (It's an ugly solution, though. Maybe we can simulate GCC later.)
-    unsigned SEW = 8;
-
-    auto SavedVL = MRI->createVirtualRegister(&RISCV::GPRRegClass);
-    auto SavedVType = MRI->createVirtualRegister(&RISCV::GPRRegClass);
-    BuildMI(MBB, MI, DL, TII->get(RISCV::CSRRS), SavedVL)
-        .addImm(RISCVSysReg::lookupSysRegByName("VL")->Encoding)
-        .addReg(RISCV::X0);
-    BuildMI(MBB, MI, DL, TII->get(RISCV::CSRRS), SavedVType)
-        .addImm(RISCVSysReg::lookupSysRegByName("VTYPE")->Encoding)
-        .addReg(RISCV::X0);
-
-    auto NewVType = RISCVVType::encodeXTHeadVTYPE(SEW, 1, 1);
-    BuildMI(MBB, MI, DL, TII->get(RISCV::PseudoTH_VSETVLIX0))
-        .addReg(RISCV::X0, RegState::Define | RegState::Dead)
-        .addReg(RISCV::X0)
-        .addImm(NewVType);
+    Register SavedVL, SavedVType;
+    std::tie(SavedVL, SavedVType) = TII->adjustVLVTYPE(MI, MBB, 8, 1);
 
     // Restore vtype and vl after we done copy. Note that if there
     // is a REG_SEQUENCE instruction, we must place the vsetvli for

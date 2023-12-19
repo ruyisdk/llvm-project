@@ -14671,28 +14671,11 @@ static MachineBasicBlock *emitXWholeLoadStore(MachineInstr &MI,
                                               unsigned Opcode) {
   DebugLoc DL = MI.getDebugLoc();
 
-  auto *TII = BB->getParent()->getSubtarget().getInstrInfo();
-  auto *MRI = &BB->getParent()->getRegInfo();
+  auto *TII = BB->getParent()->getSubtarget<RISCVSubtarget>().getInstrInfo();
 
-  Register SavedVL = MRI->createVirtualRegister(&RISCV::GPRRegClass);
-  Register SavedVType = MRI->createVirtualRegister(&RISCV::GPRRegClass);
-
-  // Spec: The assembler pseudoinstruction to read a CSR, `CSRR rd, csr`, is
-  // encoded as `CSRRS rd, csr, x0`.
-  BuildMI(*BB, MI, DL, TII->get(RISCV::CSRRS), SavedVL)
-      .addImm(RISCVSysReg::lookupSysRegByName("VL")->Encoding)
-      .addReg(RISCV::X0);
-  BuildMI(*BB, MI, DL, TII->get(RISCV::CSRRS), SavedVType)
-      .addImm(RISCVSysReg::lookupSysRegByName("VTYPE")->Encoding)
-      .addReg(RISCV::X0);
-
-  // Generate `vsetvli x0, x0, e<SEW>, m<LMUL>`
-  auto VTypeI = RISCVVType::encodeXTHeadVTYPE(SEW, LMUL, 1);
-  BuildMI(*BB, MI, DL, TII->get(RISCV::TH_VSETVLI))
-      .addReg(RISCV::X0, RegState::Define | RegState::Dead)
-      .addReg(RISCV::X0)
-      .addImm(VTypeI)
-      .addReg(RISCV::VL, RegState::Implicit);
+  // Backup origin VL and VType.
+  Register SavedVL, SavedVType;
+  std::tie(SavedVL, SavedVType) = TII->adjustVLVTYPE(MI, *BB, SEW, LMUL);
 
   // Generate `vle.v` or `vse.v`
   // From GCC: `vl<LMUL>re<SEW>.v vd, (rs)` -> `vle.v vd, (rs), vm`
