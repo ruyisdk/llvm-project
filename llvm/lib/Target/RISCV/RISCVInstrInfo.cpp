@@ -2801,7 +2801,7 @@ RISCVInstrInfo::adjustVLVTYPE(MachineInstr &MI,
       .addReg(RISCV::X0);
 
   auto VTypeI = RISCVVType::encodeXTHeadVTYPE(SEW, LMUL, 1);
-  BuildMI(MBB, MI, DL, get(RISCV::TH_VSETVLI))
+  BuildMI(MBB, MI, DL, get(RISCV::PseudoTH_VSETVLIX0))
       .addReg(RISCV::X0, RegState::Define | RegState::Dead)
       .addReg(RISCV::X0)
       .addImm(VTypeI)

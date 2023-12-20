@@ -20,7 +20,7 @@ body:             |
     ; CHECK-NEXT: $v28m4 = PseudoTH_VLW_V_E32_M4 undef $v28m4, killed $x16, $noreg, 5 /* e32 */, implicit $vl, implicit $vtype, implicit $vl, implicit $vtype
     ; CHECK-NEXT: [[CSRRS:%[0-9]+]]:gpr = CSRRS 3104, $x0
     ; CHECK-NEXT: [[CSRRS1:%[0-9]+]]:gpr = CSRRS 3105, $x0
-    ; CHECK-NEXT: dead $x0 = PseudoTH_VSETVLIX0 $x0, 0, implicit-def $vl, implicit-def $vtype
+    ; CHECK-NEXT: dead $x0 = PseudoTH_VSETVLIX0 $x0, 0, implicit-def $vl, implicit-def $vtype, implicit $vl
     ; CHECK-NEXT: $v12 = TH_VMV_V_V $v28, implicit $vtype, implicit $vl
     ; CHECK-NEXT: $v13 = TH_VMV_V_V $v29, implicit $vtype, implicit $vl
     ; CHECK-NEXT: dead $x0 = TH_VSETVL killed [[CSRRS]], killed [[CSRRS1]], implicit-def $vtype, implicit-def $vl
@@ -73,7 +73,7 @@ body:             |
     ; CHECK-NEXT: $v28m4 = PseudoTH_VL4RE32_V $x16
     ; CHECK-NEXT: [[CSRRS:%[0-9]+]]:gpr = CSRRS 3104, $x0
     ; CHECK-NEXT: [[CSRRS1:%[0-9]+]]:gpr = CSRRS 3105, $x0
-    ; CHECK-NEXT: dead $x0 = PseudoTH_VSETVLIX0 $x0, 0, implicit-def $vl, implicit-def $vtype
+    ; CHECK-NEXT: dead $x0 = PseudoTH_VSETVLIX0 $x0, 0, implicit-def $vl, implicit-def $vtype, implicit $vl
     ; CHECK-NEXT: $v12 = TH_VMV_V_V $v28, implicit $vtype, implicit $vl
     ; CHECK-NEXT: $v13 = TH_VMV_V_V $v29, implicit $vtype, implicit $vl
     ; CHECK-NEXT: $v14 = TH_VMV_V_V $v30, implicit $vtype, implicit $vl
@@ -97,7 +97,7 @@ body:             |
     ; CHECK-NEXT: $v4m4, $x0 = PseudoTH_VLEFF_V_E32_M4 undef $v4m4, $x16, $noreg, 5 /* e32 */, implicit-def $vl, implicit $vl, implicit $vtype
     ; CHECK-NEXT: [[CSRRS:%[0-9]+]]:gpr = CSRRS 3104, $x0
     ; CHECK-NEXT: [[CSRRS1:%[0-9]+]]:gpr = CSRRS 3105, $x0
-    ; CHECK-NEXT: dead $x0 = PseudoTH_VSETVLIX0 $x0, 0, implicit-def $vl, implicit-def $vtype
+    ; CHECK-NEXT: dead $x0 = PseudoTH_VSETVLIX0 $x0, 0, implicit-def $vl, implicit-def $vtype, implicit $vl
     ; CHECK-NEXT: $v12 = TH_VMV_V_V $v28, implicit $vtype, implicit $vl
     ; CHECK-NEXT: $v13 = TH_VMV_V_V $v29, implicit $vtype, implicit $vl
     ; CHECK-NEXT: $v14 = TH_VMV_V_V $v30, implicit $vtype, implicit $vl
@@ -122,7 +122,7 @@ body:             |
     ; CHECK-NEXT: $x18 = PseudoTH_VSETVLIX0 $x0, 5, implicit-def $vl, implicit-def $vtype
     ; CHECK-NEXT: [[CSRRS:%[0-9]+]]:gpr = CSRRS 3104, $x0
     ; CHECK-NEXT: [[CSRRS1:%[0-9]+]]:gpr = CSRRS 3105, $x0
-    ; CHECK-NEXT: dead $x0 = PseudoTH_VSETVLIX0 $x0, 0, implicit-def $vl, implicit-def $vtype
+    ; CHECK-NEXT: dead $x0 = PseudoTH_VSETVLIX0 $x0, 0, implicit-def $vl, implicit-def $vtype, implicit $vl
     ; CHECK-NEXT: $v12 = TH_VMV_V_V $v28, implicit $vtype, implicit $vl
     ; CHECK-NEXT: $v13 = TH_VMV_V_V $v29, implicit $vtype, implicit $vl
     ; CHECK-NEXT: $v14 = TH_VMV_V_V $v30, implicit $vtype, implicit $vl
@@ -146,7 +146,7 @@ body:             |
     ; CHECK-NEXT: $v8_v9 = PseudoTH_VLSEG2E_V_E32_M1 undef $v8_v9, killed $x16, $noreg, 5 /* e32 */, implicit $vl, implicit $vtype, implicit $vl, implicit $vtype
     ; CHECK-NEXT: [[CSRRS:%[0-9]+]]:gpr = CSRRS 3104, $x0
     ; CHECK-NEXT: [[CSRRS1:%[0-9]+]]:gpr = CSRRS 3105, $x0
-    ; CHECK-NEXT: dead $x0 = PseudoTH_VSETVLIX0 $x0, 0, implicit-def $vl, implicit-def $vtype
+    ; CHECK-NEXT: dead $x0 = PseudoTH_VSETVLIX0 $x0, 0, implicit-def $vl, implicit-def $vtype, implicit $vl
     ; CHECK-NEXT: $v10 = TH_VMV_V_V $v8, implicit $vtype, implicit $vl
     ; CHECK-NEXT: dead $x0 = TH_VSETVL killed [[CSRRS]], killed [[CSRRS1]], implicit-def $vtype, implicit-def $vl
     $x15 = PseudoTH_VSETVLI $x14, 8, implicit-def $vl, implicit-def $vtype
@@ -183,17 +183,17 @@ body:             |
     ; CHECK-NEXT: $v10m2 = PseudoTH_VLH_V_E16_M2 undef $v10m2, killed $x11, $noreg, 4 /* e16 */, implicit $vl, implicit $vtype, implicit $vl, implicit $vtype
     ; CHECK-NEXT: [[CSRRS:%[0-9]+]]:gpr = CSRRS 3104, $x0
     ; CHECK-NEXT: [[CSRRS1:%[0-9]+]]:gpr = CSRRS 3105, $x0
-    ; CHECK-NEXT: dead $x0 = PseudoTH_VSETVLIX0 $x0, 0, implicit-def $vl, implicit-def $vtype
+    ; CHECK-NEXT: dead $x0 = PseudoTH_VSETVLIX0 $x0, 0, implicit-def $vl, implicit-def $vtype, implicit $vl
     ; CHECK-NEXT: $v10 = TH_VMV_V_V $v8, implicit $vtype, implicit $vl
     ; CHECK-NEXT: dead $x0 = TH_VSETVL killed [[CSRRS]], killed [[CSRRS1]], implicit-def $vtype, implicit-def $vl
     ; CHECK-NEXT: [[CSRRS2:%[0-9]+]]:gpr = CSRRS 3104, $x0
     ; CHECK-NEXT: [[CSRRS3:%[0-9]+]]:gpr = CSRRS 3105, $x0
-    ; CHECK-NEXT: dead $x0 = PseudoTH_VSETVLIX0 $x0, 0, implicit-def $vl, implicit-def $vtype
+    ; CHECK-NEXT: dead $x0 = PseudoTH_VSETVLIX0 $x0, 0, implicit-def $vl, implicit-def $vtype, implicit $vl
     ; CHECK-NEXT: $v11 = TH_VMV_V_V $v9, implicit $vtype, implicit $vl
     ; CHECK-NEXT: dead $x0 = TH_VSETVL killed [[CSRRS2]], killed [[CSRRS3]], implicit-def $vtype, implicit-def $vl
     ; CHECK-NEXT: [[CSRRS4:%[0-9]+]]:gpr = CSRRS 3104, $x0
     ; CHECK-NEXT: [[CSRRS5:%[0-9]+]]:gpr = CSRRS 3105, $x0
-    ; CHECK-NEXT: dead $x0 = PseudoTH_VSETVLIX0 $x0, 0, implicit-def $vl, implicit-def $vtype
+    ; CHECK-NEXT: dead $x0 = PseudoTH_VSETVLIX0 $x0, 0, implicit-def $vl, implicit-def $vtype, implicit $vl
     ; CHECK-NEXT: $v12 = TH_VMV_V_V $v10, implicit $vtype, implicit $vl
     ; CHECK-NEXT: $v13 = TH_VMV_V_V $v11, implicit $vtype, implicit $vl
     ; CHECK-NEXT: dead $x0 = TH_VSETVL killed [[CSRRS4]], killed [[CSRRS5]], implicit-def $vtype, implicit-def $vl
