@@ -63,8 +63,16 @@ static bool isVectorConfigInstr(const MachineInstr &MI) {
 /// Return true if this is 'vsetvli x0, x0, vtype' which preserves
 /// VL and only sets VTYPE.
 static bool isVLPreservingConfig(const MachineInstr &MI) {
-  if (MI.getOpcode() != RISCV::PseudoVSETVLIX0 &&
-      MI.getOpcode() != RISCV::PseudoTH_VSETVLIX0)
+  // Note: PseudoTH_VSETVLIX0 cannot preserve VL.
+  // From RVV 0.7.1 Spec: Using x0 as the rs1 register specifier...
+  // requests the maximum possible vector length... The behavior
+  // of vsetvl{i} does not depend on whether rd=x0.
+  // While in RVV 1.0 Spec:
+  // When rs1=x0 but rd!=x0... The resulting VLMAX is written
+  // to vl and also to the x register specified by rd.
+  // When rs1=x0 and rd=x0... The current vector length in vl
+  // is used as the AVL, and the resulting value is written to vl.
+  if (MI.getOpcode() != RISCV::PseudoVSETVLIX0)
     return false;
   assert(RISCV::X0 == MI.getOperand(1).getReg());
   return RISCV::X0 == MI.getOperand(0).getReg();
@@ -843,8 +851,15 @@ static VSETVLIInfo getInfoForVSETVLI(const MachineInstr &MI, bool XTHeadV) {
            MI.getOpcode() == RISCV::PseudoTH_VSETVLI ||
            MI.getOpcode() == RISCV::PseudoTH_VSETVLIX0);
     Register AVLReg = MI.getOperand(1).getReg();
-    assert((AVLReg != RISCV::X0 || MI.getOperand(0).getReg() != RISCV::X0) &&
-           "Can't handle X0, X0 vsetvli yet");
+    // If we're using RVV 0.7.1, don't check for X0, X0 vsetvli.
+    // In RVV 0.7.1, the meaning of X0, X0 vsetvli set VL to VLMAX,
+    // while in RVV 1.0 the meaning of that instruction is to keep
+    // the original VL. So it is reasonable to get around the check
+    // when using RVV 0.7.1.
+    // TODO: Maybe we should update the pass to reflect the difference?
+    if (!XTHeadV)
+      assert((AVLReg != RISCV::X0 || MI.getOperand(0).getReg() != RISCV::X0) &&
+            "Can't handle X0, X0 vsetvli yet");
     NewInfo.setAVLReg(AVLReg);
   }
   if (XTHeadV)
@@ -1549,8 +1564,14 @@ void RISCVInsertVSETVLI::doLocalPostpass(MachineBasicBlock &MBB) {
       continue;
     }
 
+    // In RVV 0.7.1 the behavior of vsetvli is not affected
+    // by rd, and setting both rd and rs1 to X0 will write
+    // VLMAX to VL. In RVV 1.0 if we need to update VL, then
+    // rd must not be X0, Checking if we are in RVV 0.7.1
+    // avoids this function from deleting those vsetvli which
+    // set VL to VLMAX.
     Register VRegDef = MI.getOperand(0).getReg();
-    if (VRegDef != RISCV::X0 &&
+    if ((VRegDef != RISCV::X0 || HasVendorXTHeadV) &&
         !(VRegDef.isVirtual() && MRI->use_nodbg_empty(VRegDef)))
       Used.demandVL();
 
@@ -1570,7 +1591,7 @@ void RISCVInsertVSETVLI::doLocalPostpass(MachineBasicBlock &MBB) {
         MI.getOperand(2).setImm(NextMI->getOperand(2).getImm());
         // Don't delete a vsetvli if its result might be used.
         Register NextVRefDef = NextMI->getOperand(0).getReg();
-        if (NextVRefDef == RISCV::X0 ||
+        if ((NextVRefDef == RISCV::X0 && !HasVendorXTHeadV) ||
             (NextVRefDef.isVirtual() && MRI->use_nodbg_empty(NextVRefDef)))
           ToDelete.push_back(NextMI);
         // fallthrough
