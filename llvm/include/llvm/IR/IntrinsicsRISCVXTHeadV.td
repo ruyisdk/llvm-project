@@ -375,6 +375,47 @@ let TargetPrefix = "riscv" in {
   foreach nf = [2, 3, 4, 5, 6, 7, 8] in {
     defm vlseg # nf # eff : XVUSSegLoadFF<nf>;
   }
+
+  // 7.8.2. Vector Strided Segment Loads and Stores
+  // For stride segment load
+  // Input: (passthru, pointer, stride, vl)
+  class XVSSegLoad<int nf>
+        : DefaultAttrsIntrinsic<!listconcat([llvm_anyvector_ty], !listsplat(LLVMMatchType<0>,
+                                !add(nf, -1))),
+                    !listconcat(!listsplat(LLVMMatchType<0>, nf),
+                                [llvm_ptr_ty, llvm_anyint_ty, LLVMMatchType<1>]),
+                    [NoCapture<ArgIndex<nf>>, IntrReadMem]>, RISCVVIntrinsic {
+    let VLOperand = !add(nf, 2);
+  }
+  // For stride segment load with mask
+  // Input: (maskedoff, pointer, stride, mask, vl)
+  class XVSSegLoadMasked<int nf>
+        : DefaultAttrsIntrinsic<!listconcat([llvm_anyvector_ty], !listsplat(LLVMMatchType<0>,
+                                !add(nf, -1))),
+                    !listconcat(!listsplat(LLVMMatchType<0>, nf),
+                                [llvm_ptr_ty,
+                                 llvm_anyint_ty,
+                                 LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>,
+                                 LLVMMatchType<1>]),
+                    [NoCapture<ArgIndex<nf>>, IntrReadMem]>,
+                    RISCVVIntrinsic {
+    let VLOperand = !add(nf, 3);
+  }
+
+  multiclass XVSSegLoad<int nf> {
+    def "int_riscv_th_" # NAME : XVSSegLoad<nf>;
+    def "int_riscv_th_" # NAME # "_mask" : XVSSegLoadMasked<nf>;
+  }
+
+  foreach nf = [2, 3, 4, 5, 6, 7, 8] in {
+    defm "vlsseg" # nf # "b" : XVSSegLoad<nf>;
+    defm "vlsseg" # nf # "bu" : XVSSegLoad<nf>;
+    defm "vlsseg" # nf # "h" : XVSSegLoad<nf>;
+    defm "vlsseg" # nf # "hu" : XVSSegLoad<nf>;
+    defm "vlsseg" # nf # "w" : XVSSegLoad<nf>;
+    defm "vlsseg" # nf # "wu" : XVSSegLoad<nf>;
+    defm "vlsseg" # nf # "e" : XVSSegLoad<nf>;
+  }
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
