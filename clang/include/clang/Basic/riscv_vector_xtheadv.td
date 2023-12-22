@@ -175,10 +175,10 @@ let HasBuiltinAlias = false,
 
 let SupportOverloading = false,
     UnMaskedPolicyScheme = HasPassthruOperand in {
-  multiclass RVVVLEBuiltin<string ir, string masked_ir, list<string> types> {
+  multiclass RVVVLEBuiltin<string ir, list<string> types> {
     let Name = NAME # "_v",
         IRName = ir,
-        MaskedIRName = masked_ir in {
+        MaskedIRName = ir # "_mask" in {
       foreach type = types in {
         // `vPCe` is type `const T * -> VectorType`
         def : RVVOutBuiltin<"v", "vPCe", type>;
@@ -187,6 +187,21 @@ let SupportOverloading = false,
           def : RVVOutBuiltin<"Uv", "UvPCUe", type>;
         }
       }
+    }
+  }
+
+  multiclass RVVVLXBuiltin<string ir, list<string> types> {
+    foreach type = types in {
+      // `vPCe` is type `const T * -> VectorType`
+      let Name = NAME # "_v",
+          IRName = ir,
+          MaskedIRName = ir # "_mask" in
+      def : RVVOutBuiltin<"v", "vPCe", type>;
+      // `UvPCUe` is type `const unsigned T * -> unsigned VectorType`
+      let Name = NAME # "u_v",
+          IRName = ir # "u",
+          MaskedIRName = ir # "u_mask" in
+      def : RVVOutBuiltin<"Uv", "UvPCUe", type>;
     }
   }
 }
@@ -207,10 +222,10 @@ let HasMaskedOffOperand = false,
       else
         IntrinsicTypes = {Ops[0]->getType(), Ops[2]->getType()};
     }] in {
-  multiclass RVVVSEBuiltin<string ir, string masked_ir, list<string> types> {
+  multiclass RVVVSEBuiltin<string ir, list<string> types> {
     let Name = NAME # "_v",
         IRName = ir,
-        MaskedIRName = masked_ir in {
+        MaskedIRName = ir # "_mask" in {
       foreach type = types in {
         // `0Pev` is type `T * -> VectorType -> void`
         def : RVVBuiltin<"v", "0Pev", type>;
@@ -221,19 +236,37 @@ let HasMaskedOffOperand = false,
       }
     }
   }
+
+  multiclass RVVVSXBuiltin<string ir, list<string> types> {
+    let Name = NAME # "_v",
+        IRName = ir,
+        MaskedIRName = ir # "_mask" in {
+      foreach type = types in {
+        // `0Pev` is type `T * -> VectorType -> void`
+        def : RVVBuiltin<"v", "0Pev", type>;
+        // `0PUeUv` is type `unsigned T * -> unsigned VectorType -> void`
+        def : RVVBuiltin<"Uv", "0PUeUv", type>;
+      }
+    }
+  }
 }
 
 // 7.1. Vector Unit-Stride Operations
-// TODO: vlb, vlh, vlw
-defm th_vle8 : RVVVLEBuiltin<"th_vle", "th_vle_mask", ["c"]>;
-defm th_vle16: RVVVLEBuiltin<"th_vle", "th_vle_mask", ["s","x"]>;
-defm th_vle32: RVVVLEBuiltin<"th_vle", "th_vle_mask", ["i","f"]>;
-defm th_vle64: RVVVLEBuiltin<"th_vle", "th_vle_mask", ["l","d"]>;
-// TODO: vsb, vsh, vsw
-defm th_vse8 : RVVVSEBuiltin<"th_vse", "th_vse_mask", ["c"]>;
-defm th_vse16: RVVVSEBuiltin<"th_vse", "th_vse_mask", ["s","x"]>;
-defm th_vse32: RVVVSEBuiltin<"th_vse", "th_vse_mask", ["i","f"]>;
-defm th_vse64: RVVVSEBuiltin<"th_vse", "th_vse_mask", ["l","d"]>;
+defm th_vlb  : RVVVLXBuiltin<"th_vlb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vlh  : RVVVLXBuiltin<"th_vlh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vlw  : RVVVLXBuiltin<"th_vlw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vle8 : RVVVLEBuiltin<"th_vle", ["c"]>;     // i8
+defm th_vle16: RVVVLEBuiltin<"th_vle", ["s","x"]>; // i16, f16
+defm th_vle32: RVVVLEBuiltin<"th_vle", ["i","f"]>; // i32, f32
+defm th_vle64: RVVVLEBuiltin<"th_vle", ["l","d"]>; // i64, f64
+
+defm th_vsb  : RVVVSXBuiltin<"th_vsb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vsh  : RVVVSXBuiltin<"th_vsh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vsw  : RVVVSXBuiltin<"th_vsw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vse8 : RVVVSEBuiltin<"th_vse", ["c"]>;     // i8
+defm th_vse16: RVVVSEBuiltin<"th_vse", ["s","x"]>; // i16, f16
+defm th_vse32: RVVVSEBuiltin<"th_vse", ["i","f"]>; // i32, f32
+defm th_vse64: RVVVSEBuiltin<"th_vse", ["l","d"]>; // i64, f64
 
 //===----------------------------------------------------------------------===//
 // 12. Vector Integer Arithmetic Operations
