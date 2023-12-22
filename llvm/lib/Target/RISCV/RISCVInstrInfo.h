@@ -13,6 +13,7 @@
 #ifndef LLVM_LIB_TARGET_RISCV_RISCVINSTRINFO_H
 #define LLVM_LIB_TARGET_RISCV_RISCVINSTRINFO_H
 
+#include "MCTargetDesc/RISCVBaseInfo.h"
 #include "RISCVRegisterInfo.h"
 #include "llvm/CodeGen/TargetInstrInfo.h"
 #include "llvm/IR/DiagnosticInfo.h"
@@ -79,6 +80,8 @@ public:
                             int FrameIndex, const TargetRegisterClass *RC,
                             const TargetRegisterInfo *TRI,
                             Register VReg) const override;
+
+  bool expandPostRAPseudo(MachineInstr &MI) const override;
 
   using TargetInstrInfo::foldMemoryOperandImpl;
   MachineInstr *foldMemoryOperandImpl(MachineFunction &MF, MachineInstr &MI,
@@ -232,8 +235,21 @@ public:
 
   std::optional<unsigned> getInverseOpcode(unsigned Opcode) const override;
 
+  bool isSchedulingBoundary(const MachineInstr &MI,
+                            const MachineBasicBlock *MBB,
+                            const MachineFunction &MF) const override;
+
   ArrayRef<std::pair<MachineMemOperand::Flags, const char *>>
   getSerializableMachineMemOperandTargetFlags() const override;
+
+  std::pair<Register, Register> adjustVLVTYPE(MachineInstr &MI,
+                                              MachineBasicBlock &MBB,
+                                              unsigned SEW, unsigned LMUL) const;
+
+  MachineBasicBlock *expandXWholeMove(MachineInstr &MI,
+                                      MachineBasicBlock *BB, unsigned NREGS) const;
+
+  bool needVSETVLIForCOPY(const MachineBasicBlock &MBB, const MachineInstr &MI) const;
 
 protected:
   const RISCVSubtarget &STI;
