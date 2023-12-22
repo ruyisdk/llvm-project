@@ -164,8 +164,8 @@ static bool forwardCopyWillClobberTuple(unsigned DstReg, unsigned SrcReg,
 static bool isConvertibleToVMV_V_V(const RISCVSubtarget &STI,
                                    const MachineBasicBlock &MBB,
                                    MachineBasicBlock::const_iterator MBBI,
-                                   MachineBasicBlock::const_iterator &DefMBBI,
-                                   RISCVII::VLMUL LMul) {
+                                   RISCVII::VLMUL LMul,
+                                   MachineBasicBlock::const_iterator *DefMBBI = nullptr) {
   if (PreferWholeRegisterMove)
     return false;
 
@@ -294,7 +294,8 @@ static bool isConvertibleToVMV_V_V(const RISCVSubtarget &STI,
 
           // Found the definition.
           FoundDef = true;
-          DefMBBI = MBBI;
+          if (DefMBBI)
+            *DefMBBI = MBBI;
           break;
         }
       }
@@ -433,7 +434,7 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
     bool UseVMV_V_V = false;
     bool UseVMV_V_I = false;
     MachineBasicBlock::const_iterator DefMBBI;
-    if (isConvertibleToVMV_V_V(STI, MBB, MBBI, DefMBBI, LMul)) {
+    if (isConvertibleToVMV_V_V(STI, MBB, MBBI, LMul, &DefMBBI)) {
       UseVMV_V_V = true;
       // We only need to handle LMUL = 1/2/4/8 here because we only define
       // vector register classes for LMUL = 1/2/4/8.
@@ -701,6 +702,37 @@ void RISCVInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
         .addImm(0)
         .addMemOperand(MMO);
   }
+}
+
+// We need to use custom logic to lower copy node here when the
+// `+xtheadvector' attribute is set.
+// The lowerCopy method called in the ExpandPostRAPseudo pass may
+// generate PseudoVMV<n>R_V node and our only chance to expand it
+// is in this method.
+bool RISCVInstrInfo::expandPostRAPseudo(MachineInstr &MI) const {
+  if (!(MI.getOpcode() == TargetOpcode::COPY && STI.hasVendorXTHeadV()))
+    return false;
+
+  auto MBB = MI.getParent();
+  lowerCopy(&MI, STI.getRegisterInfo());
+
+  for (auto& I : *MBB) {
+    switch (I.getOpcode()) {
+    case RISCV::PseudoTH_VMV1R_V:
+      expandXWholeMove(I, MBB, 1);
+      return true;
+    case RISCV::PseudoTH_VMV2R_V:
+      expandXWholeMove(I, MBB, 2);
+      return true;
+    case RISCV::PseudoTH_VMV4R_V:
+      expandXWholeMove(I, MBB, 4);
+      return true;
+    case RISCV::PseudoTH_VMV8R_V:
+      expandXWholeMove(I, MBB, 8);
+      return true;
+    }
+  }
+  return true;
 }
 
 MachineInstr *RISCVInstrInfo::foldMemoryOperandImpl(
@@ -1552,6 +1584,18 @@ RISCVInstrInfo::getInverseOpcode(unsigned Opcode) const {
   case RISCV::SUBW:
     return RISCV::ADDW;
   }
+}
+
+bool RISCVInstrInfo::isSchedulingBoundary(const MachineInstr &MI,
+                                          const MachineBasicBlock *MBB,
+                                          const MachineFunction &MF) const {
+  if (TargetInstrInfo::isSchedulingBoundary(MI, MBB, MF))
+    return true;
+  if (!STI.hasVendorXTHeadV())
+    return false;
+  if (!MI.isCopy())
+    return false;
+  return needVSETVLIForCOPY(*MBB, MI);
 }
 
 static bool canCombineFPFusedMultiply(const MachineInstr &Root,
@@ -2733,6 +2777,100 @@ RISCVInstrInfo::getSerializableMachineMemOperandTargetFlags() const {
       {{MONontemporalBit0, "riscv-nontemporal-domain-bit-0"},
        {MONontemporalBit1, "riscv-nontemporal-domain-bit-1"}};
   return ArrayRef(TargetFlags);
+}
+
+std::pair<Register, Register>
+RISCVInstrInfo::adjustVLVTYPE(MachineInstr &MI,
+                              MachineBasicBlock &MBB,
+                              unsigned SEW, unsigned LMUL) const {
+  // Save origin VL and VTYPE, then set VL to VLMAX, and adjust
+  // SEW and LMUL according to the parameters in front of the MI.
+  auto DL = MI.getDebugLoc();
+  auto *MRI = &MBB.getParent()->getRegInfo();
+
+  Register SavedVL = MRI->createVirtualRegister(&RISCV::GPRRegClass);
+  Register SavedVType = MRI->createVirtualRegister(&RISCV::GPRRegClass);
+
+  // Spec: The assembler pseudoinstruction to read a CSR, `CSRR rd, csr`, is
+  // encoded as `CSRRS rd, csr, x0`.
+  BuildMI(MBB, MI, DL, get(RISCV::CSRRS), SavedVL)
+      .addImm(RISCVSysReg::lookupSysRegByName("VL")->Encoding)
+      .addReg(RISCV::X0);
+  BuildMI(MBB, MI, DL, get(RISCV::CSRRS), SavedVType)
+      .addImm(RISCVSysReg::lookupSysRegByName("VTYPE")->Encoding)
+      .addReg(RISCV::X0);
+
+  auto VTypeI = RISCVVType::encodeXTHeadVTYPE(SEW, LMUL, 1);
+  BuildMI(MBB, MI, DL, get(RISCV::PseudoTH_VSETVLIX0))
+      .addReg(RISCV::X0, RegState::Define | RegState::Dead)
+      .addReg(RISCV::X0)
+      .addImm(VTypeI)
+      .addReg(RISCV::VL, RegState::Implicit);
+
+  return std::make_pair(SavedVL, SavedVType);
+}
+
+MachineBasicBlock *RISCVInstrInfo::expandXWholeMove(
+    MachineInstr &MI, MachineBasicBlock *BB, unsigned NREGS) const {
+  auto *TRI = STI.getRegisterInfo();
+  auto *TII = STI.getInstrInfo();
+  DebugLoc DL = MI.getDebugLoc();
+
+  // From RVV Spec 1.0:
+  // vmv<nr>r.v vd,  vs2  # General form
+  // vmv1r.v    v1,  v2   # Copy v1=v2
+  // vmv2r.v    v10, v12  # Copy v10=v12; v11=v13
+  // vmv4r.v    v4,  v8   # Copy v4=v8; v5=v9; v6=v10; v7=v11
+  // vmv8r.v    v0,  v8   # Copy v0=v8; v1=v9; ...; v7=v15
+
+  // We decide to emulate these instructions by "expanding" them to a sequence
+  // of individual `vmv.v` instructions, where vector-ness is not preserved.
+  // But I suppose this is fine since `RISCVInstrInfo::copyPhysReg` also expands
+  // suitable `vmv<nr>r.v` instructions to `vmv.v` sequence
+  // when `NF` (much like the `NREGS` here) is not 1.
+  // TODO[RVV 0.7.1]: be like vector operations?
+
+  auto DstRegNo = MI.getOperand(0).getReg();
+  auto SrcRegNo = MI.getOperand(1).getReg();
+
+  // We need to treat the case where NREGS is one specially,
+  // because in that case the arguments of the VMV<n>R pseudo
+  // will be `VR' and we cannot get subreg of them.
+  if (NREGS == 1) {
+    BuildMI(*BB, MI, DL, TII->get(RISCV::TH_VMV_V_V), DstRegNo)
+        .addReg(SrcRegNo);
+  } else {
+    for (unsigned I = 0; I < NREGS; ++I) {
+      auto DstReg = TRI->getSubReg(DstRegNo, RISCV::sub_vrm1_0 + I);
+      auto SrcReg = TRI->getSubReg(SrcRegNo, RISCV::sub_vrm1_0 + I);
+      BuildMI(*BB, MI, DL, TII->get(RISCV::TH_VMV_V_V), DstReg)
+          .addReg(SrcReg);
+    }
+  }
+
+  MI.eraseFromParent();
+  return BB;
+}
+
+bool RISCVInstrInfo::needVSETVLIForCOPY(const MachineBasicBlock &MBB,
+                                        const MachineInstr &MI) const {
+  Register SrcReg = MI.getOperand(1).getReg();
+  RISCVII::VLMUL LMul = RISCVII::LMUL_RESERVED;
+
+  // Do not check the type of the DstReg because in the stage of
+  // inserting VSETVLI it might be a virtual one.
+  if (RISCV::VRRegClass.contains(SrcReg))
+    LMul = RISCVII::LMUL_1;
+  else if (RISCV::VRM2RegClass.contains(SrcReg))
+    LMul = RISCVII::LMUL_2;
+  else if (RISCV::VRM4RegClass.contains(SrcReg))
+    LMul = RISCVII::LMUL_4;
+  else if (RISCV::VRM8RegClass.contains(SrcReg))
+    LMul = RISCVII::LMUL_8;
+
+  if (LMul != RISCVII::LMUL_RESERVED)
+    return !isConvertibleToVMV_V_V(STI, MBB, MI, LMul);
+  return false;
 }
 
 // Returns true if this is the sext.w pattern, addiw rd, rs1, 0.

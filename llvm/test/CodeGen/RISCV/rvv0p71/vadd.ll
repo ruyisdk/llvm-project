@@ -13,6 +13,14 @@ declare <vscale x 8 x i8> @llvm.riscv.th.vadd.nxv8i8.nxv8i8(
 define <vscale x 8 x i8> @intrinsic_xvadd_vv_nxv8i8_nxv8i8_nxv8i8(<vscale x 8 x i8> %0, <vscale x 8 x i8> %1, iXLen %2) nounwind {
 ; CHECK-LABEL: intrinsic_xvadd_vv_nxv8i8_nxv8i8_nxv8i8:
 ; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
 ; CHECK-NEXT:    th.vsetvli zero, a0, e8, m1, d1
 ; CHECK-NEXT:    th.vadd.vv v8, v8, v9
 ; CHECK-NEXT:    ret
@@ -36,6 +44,22 @@ declare <vscale x 8 x i8> @llvm.riscv.th.vadd.mask.nxv8i8.nxv8i8(
 define <vscale x 8 x i8> @intrinsic_xvadd_mask_vv_nxv8i8_nxv8i8_nxv8i8(<vscale x 8 x i8> %0, <vscale x 8 x i8> %1, <vscale x 8 x i8> %2, <vscale x 8 x i1> %3, iXLen %4) nounwind {
 ; CHECK-LABEL: intrinsic_xvadd_mask_vv_nxv8i8_nxv8i8_nxv8i8:
 ; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
 ; CHECK-NEXT:    th.vsetvli zero, a0, e8, m1, d1
 ; CHECK-NEXT:    th.vadd.vv v8, v9, v10, v0.t
 ; CHECK-NEXT:    ret

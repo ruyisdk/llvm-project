@@ -14671,28 +14671,11 @@ static MachineBasicBlock *emitXWholeLoadStore(MachineInstr &MI,
                                               unsigned Opcode) {
   DebugLoc DL = MI.getDebugLoc();
 
-  auto *TII = BB->getParent()->getSubtarget().getInstrInfo();
-  auto *MRI = &BB->getParent()->getRegInfo();
+  auto *TII = BB->getParent()->getSubtarget<RISCVSubtarget>().getInstrInfo();
 
-  Register SavedVL = MRI->createVirtualRegister(&RISCV::GPRRegClass);
-  Register SavedVType = MRI->createVirtualRegister(&RISCV::GPRRegClass);
-
-  // Spec: The assembler pseudoinstruction to read a CSR, `CSRR rd, csr`, is
-  // encoded as `CSRRS rd, csr, x0`.
-  BuildMI(*BB, MI, DL, TII->get(RISCV::CSRRS), SavedVL)
-      .addImm(RISCVSysReg::lookupSysRegByName("VL")->Encoding)
-      .addReg(RISCV::X0);
-  BuildMI(*BB, MI, DL, TII->get(RISCV::CSRRS), SavedVType)
-      .addImm(RISCVSysReg::lookupSysRegByName("VTYPE")->Encoding)
-      .addReg(RISCV::X0);
-
-  // Generate `vsetvli x0, x0, e<SEW>, m<LMUL>`
-  auto VTypeI = RISCVVType::encodeXTHeadVTYPE(SEW, LMUL, 1);
-  BuildMI(*BB, MI, DL, TII->get(RISCV::TH_VSETVLI))
-      .addReg(RISCV::X0, RegState::Define | RegState::Dead)
-      .addReg(RISCV::X0)
-      .addImm(VTypeI)
-      .addReg(RISCV::VL, RegState::Implicit);
+  // Backup origin VL and VType.
+  Register SavedVL, SavedVType;
+  std::tie(SavedVL, SavedVType) = TII->adjustVLVTYPE(MI, *BB, SEW, LMUL);
 
   // Generate `vle.v` or `vse.v`
   // From GCC: `vl<LMUL>re<SEW>.v vd, (rs)` -> `vle.v vd, (rs), vm`
@@ -14728,37 +14711,9 @@ static MachineBasicBlock *emitXWholeMove(MachineInstr &MI,
                                          MachineBasicBlock *BB, unsigned NREGS) {
   assert((NREGS == 1 || NREGS == 2 || NREGS == 4 || NREGS == 8) &&
          "Unexpected NREGS");
-  DebugLoc DL = MI.getDebugLoc();
-
-  auto *TII = BB->getParent()->getSubtarget().getInstrInfo();
-  auto *TRI = BB->getParent()->getSubtarget().getRegisterInfo();
-
-  // From RVV Spec 1.0:
-  // vmv<nr>r.v vd,  vs2  # General form
-  // vmv1r.v    v1,  v2   # Copy v1=v2
-  // vmv2r.v    v10, v12  # Copy v10=v12; v11=v13
-  // vmv4r.v    v4,  v8   # Copy v4=v8; v5=v9; v6=v10; v7=v11
-  // vmv8r.v    v0,  v8   # Copy v0=v8; v1=v9; ...; v7=v15
-
-  // We decide to emulate these instructions by "expanding" them to a sequence
-  // of individual `vmv.v` instructions, where vector-ness is not preserved.
-  // But I suppose this is fine since `RISCVInstrInfo::copyPhysReg` also expands
-  // suitable `vmv<nr>r.v` instructions to `vmv.v` sequence
-  // when `NF` (much like the `NREGS` here) is not 1.
-  // TODO[RVV 0.7.1]: be like vector operations?
-
-  auto DstRegNo = MI.getOperand(0).getReg();
-  auto SrcRegNo = MI.getOperand(1).getReg();
-
-  for (unsigned I = 0; I < NREGS; ++I) {
-    auto DstReg = TRI->getSubReg(DstRegNo, RISCV::sub_vrm1_0 + I);
-    auto SrcReg = TRI->getSubReg(SrcRegNo, RISCV::sub_vrm1_0 + I);
-    BuildMI(*BB, MI, DL, TII->get(RISCV::TH_VMV_V_V), DstReg)
-        .addReg(SrcReg);
-  }
-
-  MI.eraseFromParent();
-  return BB;
+  const RISCVSubtarget &STI = BB->getParent()->getSubtarget<RISCVSubtarget>();
+  const RISCVInstrInfo *TII = STI.getInstrInfo();
+  return TII->expandXWholeMove(MI, BB, NREGS);
 }
 
 MachineBasicBlock *
