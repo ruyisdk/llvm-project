@@ -175,10 +175,10 @@ let HasBuiltinAlias = false,
 
 let SupportOverloading = false,
     UnMaskedPolicyScheme = HasPassthruOperand in {
-  multiclass RVVVLEBuiltin<list<string> types> {
+  multiclass RVVVLEBuiltin<string ir, string masked_ir, list<string> types> {
     let Name = NAME # "_v",
-        IRName = "th_vle",
-        MaskedIRName ="th_vle_mask" in {
+        IRName = ir,
+        MaskedIRName = masked_ir in {
       foreach type = types in {
         // `vPCe` is type `const T * -> VectorType`
         def : RVVOutBuiltin<"v", "vPCe", type>;
@@ -207,10 +207,10 @@ let HasMaskedOffOperand = false,
       else
         IntrinsicTypes = {Ops[0]->getType(), Ops[2]->getType()};
     }] in {
-  multiclass RVVVSEBuiltin<list<string> types> {
+  multiclass RVVVSEBuiltin<string ir, string masked_ir, list<string> types> {
     let Name = NAME # "_v",
-        IRName = "th_vse",
-        MaskedIRName = "th_vse_mask" in {
+        IRName = ir,
+        MaskedIRName = masked_ir in {
       foreach type = types in {
         // `0Pev` is type `T * -> VectorType -> void`
         def : RVVBuiltin<"v", "0Pev", type>;
@@ -225,15 +225,15 @@ let HasMaskedOffOperand = false,
 
 // 7.1. Vector Unit-Stride Operations
 // TODO: vlb, vlh, vlw
-defm th_vle8: RVVVLEBuiltin<["c"]>;
-defm th_vle16: RVVVLEBuiltin<["s","x"]>;
-defm th_vle32: RVVVLEBuiltin<["i","f"]>;
-defm th_vle64: RVVVLEBuiltin<["l","d"]>;
+defm th_vle8 : RVVVLEBuiltin<"th_vle", "th_vle_mask", ["c"]>;
+defm th_vle16: RVVVLEBuiltin<"th_vle", "th_vle_mask", ["s","x"]>;
+defm th_vle32: RVVVLEBuiltin<"th_vle", "th_vle_mask", ["i","f"]>;
+defm th_vle64: RVVVLEBuiltin<"th_vle", "th_vle_mask", ["l","d"]>;
 // TODO: vsb, vsh, vsw
-defm th_vse8 : RVVVSEBuiltin<["c"]>;
-defm th_vse16: RVVVSEBuiltin<["s","x"]>;
-defm th_vse32: RVVVSEBuiltin<["i","f"]>;
-defm th_vse64: RVVVSEBuiltin<["l","d"]>;
+defm th_vse8 : RVVVSEBuiltin<"th_vse", "th_vse_mask", ["c"]>;
+defm th_vse16: RVVVSEBuiltin<"th_vse", "th_vse_mask", ["s","x"]>;
+defm th_vse32: RVVVSEBuiltin<"th_vse", "th_vse_mask", ["i","f"]>;
+defm th_vse64: RVVVSEBuiltin<"th_vse", "th_vse_mask", ["l","d"]>;
 
 //===----------------------------------------------------------------------===//
 // 12. Vector Integer Arithmetic Operations
