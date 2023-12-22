@@ -751,10 +751,10 @@ multiclass XVPseudoUSSegLoad {
       let VLMul = lmul.value, SEW = eew in {
         foreach nf = NFSet<lmul>.L in {
           defvar vreg = SegRegClass<lmul, nf>.RC;
-          def nf # "E_E" # eew # "_V_" # LInfo :
+          def nf # "E_V_E" # eew # "_" # LInfo :
             XVPseudoUSSegLoadNoMask<vreg, eew, eew, nf, 0, 1>,
             VLSEGSched<nf, eew, LInfo>;
-          def nf # "E_E" # eew # "_V_" # LInfo # "_MASK" :
+          def nf # "E_V_E" # eew # "_" # LInfo # "_MASK" :
             XVPseudoUSSegLoadMask<vreg, eew, eew, nf, 0, 1>,
             VLSEGSched<nf, eew, LInfo>;
         }
@@ -1279,14 +1279,12 @@ class XVPseudoWholeMove<Instruction instr, LMULInfo m, RegisterClass VRC>
 
 let Predicates = [HasVendorXTHeadV] in {
   let hasSideEffects = 0, mayLoad = 0, mayStore = 0, isCodeGenOnly = 1, usesCustomInserter = 1 in {
-    // Note: All `LMULInfo` and `RegisterClass` should be `V_M1` and `VR` respectively.
     // From RVV Spec 1.0: "These instructions are intended to aid compilers to
     // shuffle vector registers without needing to know or change vl or vtype."
-    // The 1, 2, 4, 8 in suffixes are "the number of individual vector registers, NREG, to copy",
-    // rather than LMUL.
+    // The 1, 2, 4, 8 in suffixes are "the number of individual vector registers, NREG, to copy".
     def PseudoTH_VMV1R_V : XVPseudoWholeMove<TH_VMV_V_V, V_M1, VR>;
-    def PseudoTH_VMV2R_V : XVPseudoWholeMove<TH_VMV_V_V, V_M1, VR>;
-    def PseudoTH_VMV4R_V : XVPseudoWholeMove<TH_VMV_V_V, V_M1, VR>;
-    def PseudoTH_VMV8R_V : XVPseudoWholeMove<TH_VMV_V_V, V_M1, VR>;
+    def PseudoTH_VMV2R_V : XVPseudoWholeMove<TH_VMV_V_V, V_M2, VRM2>;
+    def PseudoTH_VMV4R_V : XVPseudoWholeMove<TH_VMV_V_V, V_M4, VRM4>;
+    def PseudoTH_VMV8R_V : XVPseudoWholeMove<TH_VMV_V_V, V_M8, VRM8>;
   }
 } // Predicates = [HasVendorXTHeadV]

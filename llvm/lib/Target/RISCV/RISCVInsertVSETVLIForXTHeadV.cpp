@@ -31,8 +31,8 @@
 #include <queue>
 using namespace llvm;
 
-#define DEBUG_TYPE "riscv-insert-vsetvli-for-xtheadvector"
-#define RISCV_INSERT_VSETVLI_NAME "RISC-V Insert VSETVLI pass for XTHeadVector"
+#define DEBUG_TYPE "riscv-insert-vsetvli"
+#define RISCV_INSERT_VSETVLI_NAME "RISC-V Insert VSETVLI pass"
 
 static cl::opt<bool> DisableInsertVSETVLPHIOpt(
     "riscv-disable-insert-vsetvl-phi-opt", cl::init(false), cl::Hidden,
@@ -63,8 +63,16 @@ static bool isVectorConfigInstr(const MachineInstr &MI) {
 /// Return true if this is 'vsetvli x0, x0, vtype' which preserves
 /// VL and only sets VTYPE.
 static bool isVLPreservingConfig(const MachineInstr &MI) {
-  if (MI.getOpcode() != RISCV::PseudoVSETVLIX0 &&
-      MI.getOpcode() != RISCV::PseudoTH_VSETVLIX0)
+  // Note: PseudoTH_VSETVLIX0 cannot preserve VL.
+  // From RVV 0.7.1 Spec: Using x0 as the rs1 register specifier...
+  // requests the maximum possible vector length... The behavior
+  // of vsetvl{i} does not depend on whether rd=x0.
+  // While in RVV 1.0 Spec:
+  // When rs1=x0 but rd!=x0... The resulting VLMAX is written
+  // to vl and also to the x register specified by rd.
+  // When rs1=x0 and rd=x0... The current vector length in vl
+  // is used as the AVL, and the resulting value is written to vl.
+  if (MI.getOpcode() != RISCV::PseudoVSETVLIX0)
     return false;
   assert(RISCV::X0 == MI.getOperand(1).getReg());
   return RISCV::X0 == MI.getOperand(0).getReg();
@@ -314,9 +322,9 @@ DemandedFields getDemanded(const MachineInstr &MI,
   // Most instructions don't use any of these subfeilds.
   DemandedFields Res;
   // Start conservative if registers are used
-  if (MI.isCall() || MI.isInlineAsm() || MI.readsRegister(RISCV::VL, nullptr))
+  if (MI.isCall() || MI.isInlineAsm() || MI.readsRegister(RISCV::VL))
     Res.demandVL();
-  if (MI.isCall() || MI.isInlineAsm() || MI.readsRegister(RISCV::VTYPE, nullptr))
+  if (MI.isCall() || MI.isInlineAsm() || MI.readsRegister(RISCV::VTYPE))
     Res.demandVTYPE();
   // Start conservative on the unlowered form too
   uint64_t TSFlags = MI.getDesc().TSFlags;
@@ -704,8 +712,8 @@ struct BlockData {
   BlockData() = default;
 };
 
-class RISCVInsertVSETVLIForXTHeadVector : public MachineFunctionPass {
-  const TargetInstrInfo *TII;
+class RISCVInsertVSETVLI : public MachineFunctionPass {
+  const RISCVInstrInfo *TII;
   MachineRegisterInfo *MRI;
   bool HasVendorXTHeadV;
 
@@ -715,7 +723,7 @@ class RISCVInsertVSETVLIForXTHeadVector : public MachineFunctionPass {
 public:
   static char ID;
 
-  RISCVInsertVSETVLIForXTHeadVector() : MachineFunctionPass(ID) {
+  RISCVInsertVSETVLI() : MachineFunctionPass(ID) {
     initializeRISCVInsertVSETVLIPass(*PassRegistry::getPassRegistry());
   }
   bool runOnMachineFunction(MachineFunction &MF) override;
@@ -737,6 +745,7 @@ private:
   void insertVSETVLI(MachineBasicBlock &MBB,
                      MachineBasicBlock::iterator InsertPt, DebugLoc DL,
                      const VSETVLIInfo &Info, const VSETVLIInfo &PrevInfo);
+  void insertVSETVLIForCOPY(MachineBasicBlock &MBB);
 
   void transferBefore(VSETVLIInfo &Info, const MachineInstr &MI);
   void transferAfter(VSETVLIInfo &Info, const MachineInstr &MI);
@@ -750,10 +759,9 @@ private:
 
 } // end anonymous namespace
 
-char RISCVInsertVSETVLIForXTHeadVector::ID = 1;
-char &llvm::RISCVInsertVSETVLIForXTHeadVectorID = RISCVInsertVSETVLIForXTHeadVector::ID;
+char RISCVInsertVSETVLI::ID = 0;
 
-INITIALIZE_PASS(RISCVInsertVSETVLIForXTHeadVector, DEBUG_TYPE, RISCV_INSERT_VSETVLI_NAME,
+INITIALIZE_PASS(RISCVInsertVSETVLI, DEBUG_TYPE, RISCV_INSERT_VSETVLI_NAME,
                 false, false)
 
 static VSETVLIInfo computeInfoForInstr(const MachineInstr &MI, uint64_t TSFlags,
@@ -824,7 +832,7 @@ static VSETVLIInfo computeInfoForInstr(const MachineInstr &MI, uint64_t TSFlags,
   return InstrInfo;
 }
 
-void RISCVInsertVSETVLIForXTHeadVector::insertVSETVLI(MachineBasicBlock &MBB, MachineInstr &MI,
+void RISCVInsertVSETVLI::insertVSETVLI(MachineBasicBlock &MBB, MachineInstr &MI,
                                        const VSETVLIInfo &Info,
                                        const VSETVLIInfo &PrevInfo) {
   DebugLoc DL = MI.getDebugLoc();
@@ -843,8 +851,15 @@ static VSETVLIInfo getInfoForVSETVLI(const MachineInstr &MI, bool XTHeadV) {
            MI.getOpcode() == RISCV::PseudoTH_VSETVLI ||
            MI.getOpcode() == RISCV::PseudoTH_VSETVLIX0);
     Register AVLReg = MI.getOperand(1).getReg();
-    assert((AVLReg != RISCV::X0 || MI.getOperand(0).getReg() != RISCV::X0) &&
-           "Can't handle X0, X0 vsetvli yet");
+    // If we're using RVV 0.7.1, don't check for X0, X0 vsetvli.
+    // In RVV 0.7.1, the meaning of X0, X0 vsetvli set VL to VLMAX,
+    // while in RVV 1.0 the meaning of that instruction is to keep
+    // the original VL. So it is reasonable to get around the check
+    // when using RVV 0.7.1.
+    // TODO: Maybe we should update the pass to reflect the difference?
+    if (!XTHeadV)
+      assert((AVLReg != RISCV::X0 || MI.getOperand(0).getReg() != RISCV::X0) &&
+             "Can't handle X0, X0 vsetvli yet");
     NewInfo.setAVLReg(AVLReg);
   }
   if (XTHeadV)
@@ -855,7 +870,7 @@ static VSETVLIInfo getInfoForVSETVLI(const MachineInstr &MI, bool XTHeadV) {
   return NewInfo;
 }
 
-void RISCVInsertVSETVLIForXTHeadVector::insertVSETVLI(MachineBasicBlock &MBB,
+void RISCVInsertVSETVLI::insertVSETVLI(MachineBasicBlock &MBB,
                                        MachineBasicBlock::iterator InsertPt, DebugLoc DL,
                                        const VSETVLIInfo &Info, const VSETVLIInfo &PrevInfo) {
 
@@ -965,6 +980,52 @@ void RISCVInsertVSETVLIForXTHeadVector::insertVSETVLI(MachineBasicBlock &MBB,
       .addImm(TypeI);
 }
 
+void RISCVInsertVSETVLI::insertVSETVLIForCOPY(MachineBasicBlock &MBB) {
+  auto findRegSequence = [] (const MachineBasicBlock& BB,
+                            MachineBasicBlock::iterator I,
+                            Register DstReg) {
+    for (; I != BB.end(); ++I)
+      if (I->getOpcode() == TargetOpcode::REG_SEQUENCE &&
+          I->getOperand(1).getReg() == DstReg)
+        break;
+    return I;
+  };
+
+  for (auto MII = MBB.begin(); MII != MBB.end(); ++MII) {
+    MachineInstr &MI = *MII;
+    // Check if the COPY node will be converted to PseudoTH_VMV<n>R
+    // later. Set VTYPE and VL for the pseudo node if so.
+    if (!(MI.isCopy() && TII->needVSETVLIForCOPY(MBB, MI)))
+      continue;
+
+    auto DL = MI.getDebugLoc();
+
+    // Always set SEW to 8. Actually no matter what the SEW is the VMV
+    // instruction will behave correctly because it does not do sign
+    // extension and we always set VL to VLMAX.
+    // (It's an ugly solution, though. Maybe we can simulate GCC later.)
+    Register SavedVL, SavedVType;
+    std::tie(SavedVL, SavedVType) = TII->adjustVLVTYPE(MI, MBB, 8, 1);
+
+    // Restore vtype and vl after we done copy. Note that if there
+    // is a REG_SEQUENCE instruction, we must place the vsetvli for
+    // restoring VL and VTYPE after it, otherwise it may occur in
+    // the middle of a VMV_V_V group.
+    auto InsertPt = findRegSequence(MBB, MI, MI.getOperand(0).getReg());
+    if (InsertPt == MBB.end()) // Not found
+      InsertPt = MI;
+    if (!InsertPt->getNextNode())
+      InsertPt = MBB.end();
+    else
+      InsertPt = InsertPt->getNextNode();
+
+    BuildMI(MBB, InsertPt, DL, TII->get(RISCV::TH_VSETVL))
+        .addReg(RISCV::X0, RegState::Define | RegState::Dead)
+        .addReg(SavedVL, RegState::Kill)
+        .addReg(SavedVType, RegState::Kill);
+  }
+}
+
 static bool isLMUL1OrSmaller(RISCVII::VLMUL LMUL) {
   auto [LMul, Fractional] = RISCVVType::decodeVLMUL(LMUL);
   return Fractional || LMul == 1;
@@ -972,7 +1033,7 @@ static bool isLMUL1OrSmaller(RISCVII::VLMUL LMUL) {
 
 /// Return true if a VSETVLI is required to transition from CurInfo to Require
 /// before MI.
-bool RISCVInsertVSETVLIForXTHeadVector::needVSETVLI(const MachineInstr &MI,
+bool RISCVInsertVSETVLI::needVSETVLI(const MachineInstr &MI,
                                      const VSETVLIInfo &Require,
                                      const VSETVLIInfo &CurInfo) const {
   assert(Require ==
@@ -1037,7 +1098,7 @@ bool RISCVInsertVSETVLIForXTHeadVector::needVSETVLI(const MachineInstr &MI,
 // Given an incoming state reaching MI, modifies that state so that it is minimally
 // compatible with MI.  The resulting state is guaranteed to be semantically legal
 // for MI, but may not be the state requested by MI.
-void RISCVInsertVSETVLIForXTHeadVector::transferBefore(VSETVLIInfo &Info, const MachineInstr &MI) {
+void RISCVInsertVSETVLI::transferBefore(VSETVLIInfo &Info, const MachineInstr &MI) {
   uint64_t TSFlags = MI.getDesc().TSFlags;
   if (!RISCVII::hasSEWOp(TSFlags))
     return;
@@ -1095,7 +1156,7 @@ void RISCVInsertVSETVLIForXTHeadVector::transferBefore(VSETVLIInfo &Info, const 
 // Given a state with which we evaluated MI (see transferBefore above for why
 // this might be different that the state MI requested), modify the state to
 // reflect the changes MI might make.
-void RISCVInsertVSETVLIForXTHeadVector::transferAfter(VSETVLIInfo &Info, const MachineInstr &MI) {
+void RISCVInsertVSETVLI::transferAfter(VSETVLIInfo &Info, const MachineInstr &MI) {
   if (isVectorConfigInstr(MI)) {
     Info = getInfoForVSETVLI(MI, HasVendorXTHeadV);
     return;
@@ -1109,12 +1170,12 @@ void RISCVInsertVSETVLIForXTHeadVector::transferAfter(VSETVLIInfo &Info, const M
 
   // If this is something that updates VL/VTYPE that we don't know about, set
   // the state to unknown.
-  if (MI.isCall() || MI.isInlineAsm() || MI.modifiesRegister(RISCV::VL, nullptr) ||
-      MI.modifiesRegister(RISCV::VTYPE, nullptr))
+  if (MI.isCall() || MI.isInlineAsm() || MI.modifiesRegister(RISCV::VL) ||
+      MI.modifiesRegister(RISCV::VTYPE))
     Info = VSETVLIInfo::getUnknown();
 }
 
-bool RISCVInsertVSETVLIForXTHeadVector::computeVLVTYPEChanges(const MachineBasicBlock &MBB) {
+bool RISCVInsertVSETVLI::computeVLVTYPEChanges(const MachineBasicBlock &MBB) {
   bool HadVectorOp = false;
 
   BlockData &BBInfo = BlockInfo[MBB.getNumber()];
@@ -1131,7 +1192,7 @@ bool RISCVInsertVSETVLIForXTHeadVector::computeVLVTYPEChanges(const MachineBasic
   return HadVectorOp;
 }
 
-void RISCVInsertVSETVLIForXTHeadVector::computeIncomingVLVTYPE(const MachineBasicBlock &MBB) {
+void RISCVInsertVSETVLI::computeIncomingVLVTYPE(const MachineBasicBlock &MBB) {
 
   BlockData &BBInfo = BlockInfo[MBB.getNumber()];
 
@@ -1188,7 +1249,7 @@ void RISCVInsertVSETVLIForXTHeadVector::computeIncomingVLVTYPE(const MachineBasi
 // If we weren't able to prove a vsetvli was directly unneeded, it might still
 // be unneeded if the AVL is a phi node where all incoming values are VL
 // outputs from the last VSETVLI in their respective basic blocks.
-bool RISCVInsertVSETVLIForXTHeadVector::needVSETVLIPHI(const VSETVLIInfo &Require,
+bool RISCVInsertVSETVLI::needVSETVLIPHI(const VSETVLIInfo &Require,
                                         const MachineBasicBlock &MBB) const {
   if (DisableInsertVSETVLPHIOpt)
     return true;
@@ -1233,7 +1294,7 @@ bool RISCVInsertVSETVLIForXTHeadVector::needVSETVLIPHI(const VSETVLIInfo &Requir
   return false;
 }
 
-void RISCVInsertVSETVLIForXTHeadVector::emitVSETVLIs(MachineBasicBlock &MBB) {
+void RISCVInsertVSETVLI::emitVSETVLIs(MachineBasicBlock &MBB) {
   VSETVLIInfo CurInfo = BlockInfo[MBB.getNumber()].Pred;
   // Track whether the prefix of the block we've scanned is transparent
   // (meaning has not yet changed the abstract state).
@@ -1282,8 +1343,8 @@ void RISCVInsertVSETVLIForXTHeadVector::emitVSETVLIs(MachineBasicBlock &MBB) {
                                               /*isImp*/ true));
     }
 
-    if (MI.isCall() || MI.isInlineAsm() || MI.modifiesRegister(RISCV::VL, nullptr) ||
-        MI.modifiesRegister(RISCV::VTYPE, nullptr))
+    if (MI.isCall() || MI.isInlineAsm() || MI.modifiesRegister(RISCV::VL) ||
+        MI.modifiesRegister(RISCV::VTYPE))
       PrefixTransparent = false;
 
     transferAfter(CurInfo, MI);
@@ -1343,7 +1404,7 @@ static bool hasFixedResult(const VSETVLIInfo &Info, const RISCVSubtarget &ST) {
 /// beginning of one block to the end of one of its predecessors.  Specifically,
 /// this is geared to catch the common case of a fixed length vsetvl in a single
 /// block loop when it could execute once in the preheader instead.
-void RISCVInsertVSETVLIForXTHeadVector::doPRE(MachineBasicBlock &MBB) {
+void RISCVInsertVSETVLI::doPRE(MachineBasicBlock &MBB) {
   const MachineFunction &MF = *MBB.getParent();
   const RISCVSubtarget &ST = MF.getSubtarget<RISCVSubtarget>();
 
@@ -1488,7 +1549,7 @@ static bool canMutatePriorConfig(const MachineInstr &PrevMI,
   return areCompatibleVTYPEs(PriorVType, VType, Used);
 }
 
-void RISCVInsertVSETVLIForXTHeadVector::doLocalPostpass(MachineBasicBlock &MBB) {
+void RISCVInsertVSETVLI::doLocalPostpass(MachineBasicBlock &MBB) {
   MachineInstr *NextMI = nullptr;
   // We can have arbitrary code in successors, so VL and VTYPE
   // must be considered demanded.
@@ -1503,8 +1564,14 @@ void RISCVInsertVSETVLIForXTHeadVector::doLocalPostpass(MachineBasicBlock &MBB) 
       continue;
     }
 
+    // In RVV 0.7.1 the behavior of vsetvli is not affected
+    // by rd, and setting both rd and rs1 to X0 will write
+    // VLMAX to VL. In RVV 1.0 if we need to update VL, then
+    // rd must not be X0, Checking if we are in RVV 0.7.1
+    // avoids this function from deleting those vsetvli which
+    // set VL to VLMAX.
     Register VRegDef = MI.getOperand(0).getReg();
-    if (VRegDef != RISCV::X0 &&
+    if ((VRegDef != RISCV::X0 || HasVendorXTHeadV) &&
         !(VRegDef.isVirtual() && MRI->use_nodbg_empty(VRegDef)))
       Used.demandVL();
 
@@ -1524,7 +1591,7 @@ void RISCVInsertVSETVLIForXTHeadVector::doLocalPostpass(MachineBasicBlock &MBB) 
         MI.getOperand(2).setImm(NextMI->getOperand(2).getImm());
         // Don't delete a vsetvli if its result might be used.
         Register NextVRefDef = NextMI->getOperand(0).getReg();
-        if (NextVRefDef == RISCV::X0 ||
+        if ((NextVRefDef == RISCV::X0 && !HasVendorXTHeadV) ||
             (NextVRefDef.isVirtual() && MRI->use_nodbg_empty(NextVRefDef)))
           ToDelete.push_back(NextMI);
         // fallthrough
@@ -1538,7 +1605,7 @@ void RISCVInsertVSETVLIForXTHeadVector::doLocalPostpass(MachineBasicBlock &MBB) 
     MI->eraseFromParent();
 }
 
-void RISCVInsertVSETVLIForXTHeadVector::insertReadVL(MachineBasicBlock &MBB) {
+void RISCVInsertVSETVLI::insertReadVL(MachineBasicBlock &MBB) {
   for (auto I = MBB.begin(), E = MBB.end(); I != E;) {
     MachineInstr &MI = *I++;
     if (RISCV::isFaultFirstLoad(MI)) {
@@ -1552,7 +1619,7 @@ void RISCVInsertVSETVLIForXTHeadVector::insertReadVL(MachineBasicBlock &MBB) {
   }
 }
 
-bool RISCVInsertVSETVLIForXTHeadVector::runOnMachineFunction(MachineFunction &MF) {
+bool RISCVInsertVSETVLI::runOnMachineFunction(MachineFunction &MF) {
   // Skip if the vector extension is not enabled.
   const RISCVSubtarget &ST = MF.getSubtarget<RISCVSubtarget>();
   if (!ST.hasVInstructions())
@@ -1641,11 +1708,15 @@ bool RISCVInsertVSETVLIForXTHeadVector::runOnMachineFunction(MachineFunction &MF
   for (MachineBasicBlock &MBB : MF)
     insertReadVL(MBB);
 
+  if (HasVendorXTHeadV)
+    for (MachineBasicBlock &MBB : MF)
+      insertVSETVLIForCOPY(MBB);
+
   BlockInfo.clear();
   return HaveVectorOp;
 }
 
 /// Returns an instance of the Insert VSETVLI pass.
-FunctionPass *llvm::createRISCVInsertVSETVLIForXTHeadVectorPass() {
-  return new RISCVInsertVSETVLIForXTHeadVector();
+FunctionPass *llvm::createRISCVInsertVSETVLIPass() {
+  return new RISCVInsertVSETVLI();
 }

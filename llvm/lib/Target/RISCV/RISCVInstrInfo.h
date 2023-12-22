@@ -99,6 +99,8 @@ public:
                             const TargetRegisterInfo *TRI,
                             Register VReg) const override;
 
+  bool expandPostRAPseudo(MachineInstr &MI) const override;
+
   using TargetInstrInfo::foldMemoryOperandImpl;
   MachineInstr *foldMemoryOperandImpl(MachineFunction &MF, MachineInstr &MI,
                                       ArrayRef<unsigned> Ops,
@@ -279,12 +281,25 @@ public:
 
   std::optional<unsigned> getInverseOpcode(unsigned Opcode) const override;
 
+  bool isSchedulingBoundary(const MachineInstr &MI,
+                            const MachineBasicBlock *MBB,
+                            const MachineFunction &MF) const override;
+
   void getReassociateOperandIndices(
       const MachineInstr &Root, unsigned Pattern,
       std::array<unsigned, 5> &OperandIndices) const override;
 
   ArrayRef<std::pair<MachineMemOperand::Flags, const char *>>
   getSerializableMachineMemOperandTargetFlags() const override;
+
+  std::pair<Register, Register> adjustVLVTYPE(MachineInstr &MI,
+                                              MachineBasicBlock &MBB,
+                                              unsigned SEW, unsigned LMUL) const;
+
+  MachineBasicBlock *expandXWholeMove(MachineInstr &MI,
+                                      MachineBasicBlock *BB, unsigned NREGS) const;
+
+  bool needVSETVLIForCOPY(const MachineBasicBlock &MBB, const MachineInstr &MI) const;
 
   unsigned getUndefInitOpcode(unsigned RegClassID) const override {
     switch (RegClassID) {
