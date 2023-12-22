@@ -433,11 +433,11 @@ multiclass XVPseudoSLoad {
             def "S" # tag # "_V_E" # reg # "_" # LInfo # "_MASK" :
               XVPseudoSLoadMask<vreg, mem, reg, 0, 0>,
               RISCVMaskedPseudo<MaskIdx=3>,
-              VLESched<LInfo>;
+              VLSSched<mem, LInfo>;
             def "S" # tag # "U_V_E" # reg # "_" # LInfo # "_MASK" :
               XVPseudoSLoadMask<vreg, mem, reg, 1, 0>,
               RISCVMaskedPseudo<MaskIdx=3>,
-              VLESched<LInfo>;
+              VLSSched<mem, LInfo>;
           }
         }
       }
@@ -450,11 +450,11 @@ multiclass XVPseudoSLoad {
       let VLMul = lmul.value, SEW = eew in {
         def "SE_V_E" # eew # "_" # LInfo :
           XVPseudoSLoadNoMask<vreg, eew, eew, 0, 1>,
-          VLESched<LInfo>;
+          VLSSched<eew, LInfo>;
         def "SE_V_E" # eew # "_" # LInfo # "_MASK" :
           XVPseudoSLoadMask<vreg, eew, eew, 0, 1>,
           RISCVMaskedPseudo<MaskIdx=3>,
-          VLESched<LInfo>;
+          VLSSched<eew, LInfo>;
       }
     }
   }
@@ -470,10 +470,10 @@ multiclass XVPseudoSStore {
         let VLMul = lmul.value, SEW = mem in {
           def "S" # tag # "_V_E" # sew # "_" # LInfo :
             XVPseudoSStoreNoMask<vreg, mem, sew, 0>,
-            VSESched<LInfo>;
+            VSSSched<mem, LInfo>;
           def "S" # tag # "_V_E" # sew # "_" # LInfo # "_MASK" :
             XVPseudoSStoreMask<vreg, mem, sew, 0>,
-            VSESched<LInfo>;
+            VSSSched<mem, LInfo>;
         }
       }
     }
@@ -485,10 +485,10 @@ multiclass XVPseudoSStore {
       let VLMul = lmul.value, SEW = eew in {
         def "SE_V_E" # eew # "_" # LInfo :
           XVPseudoSStoreNoMask<vreg, eew, eew, 1>,
-          VSESched<LInfo>;
+          VSSSched<eew, LInfo>;
         def "SE_V_E" # eew # "_" # LInfo # "_MASK" :
           XVPseudoSStoreMask<vreg, eew, eew, 1>,
-          VSESched<LInfo>;
+          VSSSched<eew, LInfo>;
       }
     }
   }
@@ -673,11 +673,11 @@ multiclass XVPseudoFFLoad {
       let VLMul = lmul.value, SEW = eew in {
         def "EFF_V_E" # eew # "_" # LInfo :
           XVPseudoUSLoadFFNoMask<vreg, eew, eew, 0, 1>,
-          VLESched<LInfo>;
+          VLFSched<LInfo>;
         def "EFF_V_E" # eew # "_" # LInfo # "_MASK" :
           XVPseudoUSLoadFFMask<vreg, eew, eew, 0, 1>,
           RISCVMaskedPseudo<MaskIdx=2>,
-          VLESched<LInfo>;
+          VLFSched<LInfo>;
       }
     }
   }
@@ -805,7 +805,6 @@ multiclass XVPseudoUSSegStore {
                 VSSEGSched<nf, mem, LInfo>;
               def nf # tag # "_V_E" # reg # "_" # LInfo # "_MASK" :
                 XVPseudoUSSegStoreMask<vreg, mem, reg, nf, 0>,
-                RISCVMaskedPseudo<MaskIdx=2>,
                 VSSEGSched<nf, mem, LInfo>;
             }
           }
