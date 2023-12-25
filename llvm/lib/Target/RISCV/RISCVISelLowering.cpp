@@ -1286,6 +1286,22 @@ bool RISCVTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
   case Intrinsic::riscv_th_vsseg6##tag:     \
   case Intrinsic::riscv_th_vsseg7##tag:     \
   case Intrinsic::riscv_th_vsseg8##tag:
+#define CASE_TAG_TO_THVLSSEG_INTRINSIC(tag) \
+  case Intrinsic::riscv_th_vlsseg2##tag:    \
+  case Intrinsic::riscv_th_vlsseg3##tag:    \
+  case Intrinsic::riscv_th_vlsseg4##tag:    \
+  case Intrinsic::riscv_th_vlsseg5##tag:    \
+  case Intrinsic::riscv_th_vlsseg6##tag:    \
+  case Intrinsic::riscv_th_vlsseg7##tag:    \
+  case Intrinsic::riscv_th_vlsseg8##tag:
+#define CASE_TAG_TO_THVSSSEG_INTRINSIC(tag) \
+  case Intrinsic::riscv_th_vssseg2##tag:    \
+  case Intrinsic::riscv_th_vssseg3##tag:    \
+  case Intrinsic::riscv_th_vssseg4##tag:    \
+  case Intrinsic::riscv_th_vssseg5##tag:    \
+  case Intrinsic::riscv_th_vssseg6##tag:    \
+  case Intrinsic::riscv_th_vssseg7##tag:    \
+  case Intrinsic::riscv_th_vssseg8##tag:
 
   default:
     return false;
@@ -1524,6 +1540,13 @@ bool RISCVTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
   case Intrinsic::riscv_vluxseg6:
   case Intrinsic::riscv_vluxseg7:
   case Intrinsic::riscv_vluxseg8:
+  CASE_TAG_TO_THVLSSEG_INTRINSIC(b)
+  CASE_TAG_TO_THVLSSEG_INTRINSIC(bu)
+  CASE_TAG_TO_THVLSSEG_INTRINSIC(h)
+  CASE_TAG_TO_THVLSSEG_INTRINSIC(hu)
+  CASE_TAG_TO_THVLSSEG_INTRINSIC(w)
+  CASE_TAG_TO_THVLSSEG_INTRINSIC(wu)
+  CASE_TAG_TO_THVLSSEG_INTRINSIC(e)
     return SetRVVLoadStoreInfo(/*PtrOp*/ I.arg_size() - 3,
                                /*IsStore*/ false,
                                /*IsUnitStrided*/ false);
@@ -1549,6 +1572,16 @@ bool RISCVTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
   case Intrinsic::riscv_vluxseg7_mask:
   case Intrinsic::riscv_vluxseg8_mask:
     return SetRVVLoadStoreInfo(/*PtrOp*/ I.arg_size() - 5,
+                               /*IsStore*/ false,
+                               /*IsUnitStrided*/ false);
+  CASE_TAG_TO_THVLSSEG_INTRINSIC(b_mask)
+  CASE_TAG_TO_THVLSSEG_INTRINSIC(bu_mask)
+  CASE_TAG_TO_THVLSSEG_INTRINSIC(h_mask)
+  CASE_TAG_TO_THVLSSEG_INTRINSIC(hu_mask)
+  CASE_TAG_TO_THVLSSEG_INTRINSIC(w_mask)
+  CASE_TAG_TO_THVLSSEG_INTRINSIC(wu_mask)
+  CASE_TAG_TO_THVLSSEG_INTRINSIC(e_mask)
+    return SetRVVLoadStoreInfo(/*PtrOp*/ I.arg_size() - 4,
                                /*IsStore*/ false,
                                /*IsUnitStrided*/ false);
   case Intrinsic::riscv_vsseg2:
@@ -1600,6 +1633,10 @@ bool RISCVTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
   case Intrinsic::riscv_vsuxseg6:
   case Intrinsic::riscv_vsuxseg7:
   case Intrinsic::riscv_vsuxseg8:
+  CASE_TAG_TO_THVSSSEG_INTRINSIC(b)
+  CASE_TAG_TO_THVSSSEG_INTRINSIC(h)
+  CASE_TAG_TO_THVSSSEG_INTRINSIC(w)
+  CASE_TAG_TO_THVSSSEG_INTRINSIC(e)
     return SetRVVLoadStoreInfo(/*PtrOp*/ I.arg_size() - 3,
                                /*IsStore*/ true,
                                /*IsUnitStrided*/ false);
@@ -1624,6 +1661,10 @@ bool RISCVTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
   case Intrinsic::riscv_vsuxseg6_mask:
   case Intrinsic::riscv_vsuxseg7_mask:
   case Intrinsic::riscv_vsuxseg8_mask:
+  CASE_TAG_TO_THVSSSEG_INTRINSIC(b_mask)
+  CASE_TAG_TO_THVSSSEG_INTRINSIC(h_mask)
+  CASE_TAG_TO_THVSSSEG_INTRINSIC(w_mask)
+  CASE_TAG_TO_THVSSSEG_INTRINSIC(e_mask)
     return SetRVVLoadStoreInfo(/*PtrOp*/ I.arg_size() - 4,
                                /*IsStore*/ true,
                                /*IsUnitStrided*/ false);

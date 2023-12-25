@@ -155,9 +155,9 @@ public:
                  bool IsMasked, bool IsStrided, bool IsIndexed, bool IsFF, bool IsE);
   void selectXVS(SDNode *Node, const SDLoc& DL, unsigned IntNo,
                  bool IsMasked, bool IsStrided, bool IsIndexed, bool IsE);
-  void selectXVLSEG(SDNode *Node, unsigned IntNo, bool IsMasked, bool IsFF,
-                    bool IsUnsigned, bool IsE);
-  void selectXVSSEG(SDNode *Node, unsigned IntNo, bool IsMasked, bool IsE);
+  void selectXVLSEG(SDNode *Node, unsigned IntNo, bool IsMasked, bool IsStrided,
+                    bool IsFF, bool IsUnsigned, bool IsE);
+  void selectXVSSEG(SDNode *Node, unsigned IntNo, bool IsMasked, bool IsStrided, bool IsE);
   void selectVLSEG(SDNode *Node, bool IsMasked, bool IsStrided);
   void selectVLSEGFF(SDNode *Node, bool IsMasked);
   void selectVLXSEG(SDNode *Node, bool IsMasked, bool IsOrdered);
@@ -233,6 +233,7 @@ struct VSSEGPseudo {
 struct TH_VSSEGPseudo {
   uint16_t NF : 4;
   uint16_t Masked : 1;
+  uint16_t Strided : 1;
   uint16_t IsE : 1;
   uint16_t Log2MEM : 3;
   uint16_t Log2SEW : 3;
@@ -253,6 +254,7 @@ struct VSXSEGPseudo {
 struct TH_VLSEGPseudo {
   uint16_t NF : 4;
   uint16_t Masked : 1;
+  uint16_t Strided : 1;
   uint16_t FF : 1;
   uint16_t Unsigned : 1;
   uint16_t IsE : 1;
