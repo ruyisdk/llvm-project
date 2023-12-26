@@ -60,6 +60,10 @@ define <vscale x 8 x i8> @intrinsic_xvadd_mask_vv_nxv8i8_nxv8i8_nxv8i8(<vscale x
 ; CHECK-NEXT:    csrr a2, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vsetvl zero, a1, a2
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
 ; CHECK-NEXT:    th.vsetvli zero, a0, e8, m1, d1
 ; CHECK-NEXT:    th.vadd.vv v8, v9, v10, v0.t
 ; CHECK-NEXT:    ret
