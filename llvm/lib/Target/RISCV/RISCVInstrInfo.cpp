@@ -2854,18 +2854,31 @@ MachineBasicBlock *RISCVInstrInfo::expandXWholeMove(
 
 bool RISCVInstrInfo::needVSETVLIForCOPY(const MachineBasicBlock &MBB,
                                         const MachineInstr &MI) const {
-  Register SrcReg = MI.getOperand(1).getReg();
-  RISCVII::VLMUL LMul = RISCVII::LMUL_RESERVED;
+  // Check if either registers in the COPY instruction
+  // is a physical one. At the point of calling this method,
+  // register allocation is not done and if physical registers
+  // appear as operands of instruction, then it is because we
+  // have something to do with the calling convention.
+  // I think we need not to care about the cases where both
+  // operands are virtual, because optimization passes will finally
+  // collapse them to COPYs with at least one physical register,
+  // or eliminate them.
+  // TODO[XTHeadVector]: This introduces even more redundant
+  // instructions. Find a way to eliminate them in the furture.
+  Register ChkReg = MI.getOperand(1).getReg();
+  if (ChkReg.isVirtual())
+    ChkReg = MI.getOperand(0).getReg();
+  if (ChkReg.isVirtual())
+    return false;
 
-  // Do not check the type of the DstReg because in the stage of
-  // inserting VSETVLI it might be a virtual one.
-  if (RISCV::VRRegClass.contains(SrcReg))
+  RISCVII::VLMUL LMul = RISCVII::LMUL_RESERVED;
+  if (RISCV::VRRegClass.contains(ChkReg))
     LMul = RISCVII::LMUL_1;
-  else if (RISCV::VRM2RegClass.contains(SrcReg))
+  else if (RISCV::VRM2RegClass.contains(ChkReg))
     LMul = RISCVII::LMUL_2;
-  else if (RISCV::VRM4RegClass.contains(SrcReg))
+  else if (RISCV::VRM4RegClass.contains(ChkReg))
     LMul = RISCVII::LMUL_4;
-  else if (RISCV::VRM8RegClass.contains(SrcReg))
+  else if (RISCV::VRM8RegClass.contains(ChkReg))
     LMul = RISCVII::LMUL_8;
 
   if (LMul != RISCVII::LMUL_RESERVED)
