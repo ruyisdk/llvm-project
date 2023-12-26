@@ -477,9 +477,38 @@ let TargetPrefix = "riscv" in {
     let VLOperand = !add(nf, 3);
   }
 
+  // For indexed segment store
+  // Input: (value, pointer, offset, vl)
+  class XVISegStore<int nf>
+        : DefaultAttrsIntrinsic<[],
+                    !listconcat([llvm_anyvector_ty],
+                                !listsplat(LLVMMatchType<0>, !add(nf, -1)),
+                                [llvm_ptr_ty, llvm_anyvector_ty,
+                                 llvm_anyint_ty]),
+                    [NoCapture<ArgIndex<nf>>, IntrWriteMem]>, RISCVVIntrinsic {
+    let VLOperand = !add(nf, 2);
+  }
+  // For indexed segment store with mask
+  // Input: (value, pointer, offset, mask, vl)
+  class XVISegStoreMasked<int nf>
+        : DefaultAttrsIntrinsic<[],
+                    !listconcat([llvm_anyvector_ty],
+                                !listsplat(LLVMMatchType<0>, !add(nf, -1)),
+                                [llvm_ptr_ty, llvm_anyvector_ty,
+                                 LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>,
+                                 llvm_anyint_ty]),
+                    [NoCapture<ArgIndex<nf>>, IntrWriteMem]>, RISCVVIntrinsic {
+    let VLOperand = !add(nf, 3);
+  }
+
   multiclass XVISegLoad<int nf> {
     def "int_riscv_th_" # NAME : XVISegLoad<nf>;
     def "int_riscv_th_" # NAME # "_mask" : XVISegLoadMasked<nf>;
+  }
+
+  multiclass XVISegStore<int nf> {
+    def "int_riscv_th_" # NAME : XVISegStore<nf>;
+    def "int_riscv_th_" # NAME # "_mask" : XVISegStoreMasked<nf>;
   }
 
   foreach nf = [2, 3, 4, 5, 6, 7, 8] in {
@@ -490,6 +519,11 @@ let TargetPrefix = "riscv" in {
     defm "vlxseg" # nf # "w" : XVISegLoad<nf>;
     defm "vlxseg" # nf # "wu" : XVISegLoad<nf>;
     defm "vlxseg" # nf # "e" : XVISegLoad<nf>;
+
+    defm "vsxseg" # nf # "b" : XVISegStore<nf>;
+    defm "vsxseg" # nf # "h" : XVISegStore<nf>;
+    defm "vsxseg" # nf # "w" : XVISegStore<nf>;
+    defm "vsxseg" # nf # "e" : XVISegStore<nf>;
   }
 } // TargetPrefix = "riscv"
 
