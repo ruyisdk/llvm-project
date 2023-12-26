@@ -418,7 +418,7 @@ void RISCVDAGToDAGISel::selectXVL(
            "Element count mismatch");
     unsigned IndexLog2EEW = Log2_32(IndexVT.getScalarSizeInBits());
     if (IndexLog2EEW == 6 && !Subtarget->is64Bit()) {
-      report_fatal_error("The V extension does not support EEW=64 for index "
+      report_fatal_error("The XTHeadV extension does not support EEW=64 for index "
                          "values when XLEN=32");
     }
   }
@@ -484,7 +484,7 @@ void RISCVDAGToDAGISel::selectXVS(
            "Element count mismatch");
     unsigned IndexLog2EEW = Log2_32(IndexVT.getScalarSizeInBits());
     if (IndexLog2EEW == 6 && !Subtarget->is64Bit()) {
-      report_fatal_error("The V extension does not support EEW=64 for index "
+      report_fatal_error("The XTHeadV extension does not support EEW=64 for index "
                          "values when XLEN=32");
     }
   }
@@ -605,7 +605,7 @@ void RISCVDAGToDAGISel::selectXVLSEG(SDNode *Node, unsigned IntNo, bool IsMasked
            "Element count mismatch");
     unsigned IndexLog2EEW = Log2_32(IndexVT.getScalarSizeInBits());
     if (IndexLog2EEW == 6 && !Subtarget->is64Bit()) {
-      report_fatal_error("The V extension does not support EEW=64 for index "
+      report_fatal_error("The XTHeadV extension does not support EEW=64 for index "
                          "values when XLEN=32");
     }
   }
@@ -721,7 +721,7 @@ void RISCVDAGToDAGISel::selectXVSSEG(SDNode *Node, unsigned IntNo, bool IsMasked
   if (IsIndexed) {
     unsigned IndexLog2EEW = Log2_32(IndexVT.getScalarSizeInBits());
     if (IndexLog2EEW == 6 && !Subtarget->is64Bit()) {
-      report_fatal_error("The V extension does not support EEW=64 for index "
+      report_fatal_error("The XTHeadV extension does not support EEW=64 for index "
                         "values when XLEN=32");
     }
   }
