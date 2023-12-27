@@ -172,9 +172,9 @@ private:
   Sema &S;
   ASTContext &Context;
   RVVTypeCache TypeCache;
-  bool ConstructedRISCVVBuiltins;
-  bool ConstructedRISCVSiFiveVectorBuiltins;
-  bool ConstructedRISCVXTHeadVBuiltins;
+  bool ConstructedRISCVVBuiltins = false;
+  bool ConstructedRISCVSiFiveVectorBuiltins = false;
+  bool ConstructedRISCVXTHeadVBuiltins = false;
 
   // List of all RVV intrinsic.
   std::vector<RVVIntrinsicDef> IntrinsicList;
@@ -201,6 +201,7 @@ public:
   RISCVIntrinsicManagerImpl(clang::Sema &S) : S(S), Context(S.Context) {
     ConstructedRISCVVBuiltins = false;
     ConstructedRISCVSiFiveVectorBuiltins = false;
+    ConstructedRISCVXTHeadVBuiltins = false;
   }
 
   // Initialize IntrinsicList
