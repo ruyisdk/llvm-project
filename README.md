@@ -20,6 +20,7 @@ Any feature not listed below but present in the specification should be consider
     - (Done) `7.2. Vector Strided Load/Store Operations`
     - (Done) `7.3. Vector Indexed Load/Store Operations`
     - (Done) `7.4. Unit-stride Fault-Only-First Loads Operations`
+    - (Done) `7.5. Vector Load/Store Segment Operations (Zvlsseg)`, which is an essential part of `XTHeadVector`
   - (Done) `8. Vector AMO Operations (Zvamo)`, which is `XTHeadZvamo` [regarding the `XTHeadVector` extension](https://github.com/T-head-Semi/thead-extension-spec/blob/24349e6df223e8b268ba9672297018f508670acb/xtheadvector.adoc?plain=1#L27).
   - (WIP) `12. Vector Integer Arithmetic Operations`
     - (WIP) `12.1. Vector Single-Width Integer Add and Subtract`
@@ -36,6 +37,23 @@ Any feature not listed below but present in the specification should be consider
 #### How to build LLVM with the `XTHeadVector` extension?
 
 Build it as you are building the official LLVM project, but remember to enable the `RISCV` target.
+We provide a configuration used during development:
+
+```shell
+cmake -G Ninja \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DLLVM_ENABLE_PROJECTS="clang" \
+    -DLLVM_TARGETS_TO_BUILD="RISCV" \
+    -DBUILD_SHARED_LIBS=true \
+    -DLLVM_USE_LINKER=mold \
+    -DDEFAULT_SYSROOT="/opt/riscv/sysroot" \
+    -DLLVM_DEFAULT_TARGET_TRIPLE="riscv64-unknown-linux-gnu"
+```
+
+Where `/opt/riscv/sysroot` is a directory containing the headers and libraries of the target system.
+For details, please refer to the [RISC-V GNU toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain).
+
+We also recommend [mold](https://github.com/rui314/mold) as the linker, as it is unbelievably fast and memory-efficient.
 
 ### How to use the `XTHeadVector` extension?
 
@@ -74,6 +92,21 @@ To compile the LLVM IR to an executable binary, use the `llc` tool:
 
 ```bash
 llc -mtriple=riscv64 -mattr=+xtheadvector memcpy_v.ll
+```
+
+You may encounter some errors about missing libraries when using sysroot from GCC, lik
+```
+/opt/riscv/bin/riscv64-unknown-linux-gnu-ld: cannot find crtbeginS.o: No such file or directory
+/opt/riscv/bin/riscv64-unknown-linux-gnu-ld: cannot find -lgcc: No such file or directory
+/opt/riscv/bin/riscv64-unknown-linux-gnu-ld: cannot find -lgcc: No such file or directory
+```
+
+Here's a workaround, where `/opt/riscv` should be replaced with the path to your
+[RISC-V GNU toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain) mentioned above:
+
+```bash
+cd <path-to-the-build-directory>
+ln -s /opt/riscv/lib/gcc lib/gcc
 ```
 
 ### I would like to contribute to this project. How can I help?
