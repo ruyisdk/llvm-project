@@ -16,6 +16,10 @@ define <vscale x 8 x i8> @intrinsic_vlseg2eff_v_nxv8i8_nxv8i8(<vscale x 8 x i8>*
 ; RV32-NEXT:    th.vlseg2eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv8i8_nxv8i8:
@@ -24,6 +28,10 @@ define <vscale x 8 x i8> @intrinsic_vlseg2eff_v_nxv8i8_nxv8i8(<vscale x 8 x i8>*
 ; RV64-NEXT:    th.vlseg2eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i8>, <vscale x 8 x i8>, iXLen } @llvm.riscv.th.vlseg2eff.nxv8i8.nxv8i8(
@@ -55,10 +63,18 @@ define <vscale x 8 x i8> @intrinsic_vlseg2eff_mask_v_nxv8i8_nxv8i8(<vscale x 8 x
 ; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; RV32-NEXT:    th.vmv.v.v v7, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e8, m1, d1
 ; RV32-NEXT:    th.vlseg2eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv8i8_nxv8i8:
@@ -72,10 +88,18 @@ define <vscale x 8 x i8> @intrinsic_vlseg2eff_mask_v_nxv8i8_nxv8i8(<vscale x 8 x
 ; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; RV64-NEXT:    th.vmv.v.v v7, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e8, m1, d1
 ; RV64-NEXT:    th.vlseg2eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i8>, <vscale x 8 x i8>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv8i8.nxv8i8(
@@ -102,6 +126,10 @@ define <vscale x 8 x i8> @intrinsic_vlseg3eff_v_nxv8i8_nxv8i8(<vscale x 8 x i8>*
 ; RV32-NEXT:    th.vlseg3eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_v_nxv8i8_nxv8i8:
@@ -110,6 +138,10 @@ define <vscale x 8 x i8> @intrinsic_vlseg3eff_v_nxv8i8_nxv8i8(<vscale x 8 x i8>*
 ; RV64-NEXT:    th.vlseg3eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, iXLen } @llvm.riscv.th.vlseg3eff.nxv8i8.nxv8i8(
@@ -142,10 +174,18 @@ define <vscale x 8 x i8> @intrinsic_vlseg3eff_mask_v_nxv8i8_nxv8i8(<vscale x 8 x
 ; RV32-NEXT:    th.vmv.v.v v7, v8
 ; RV32-NEXT:    th.vmv.v.v v9, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e8, m1, d1
 ; RV32-NEXT:    th.vlseg3eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_mask_v_nxv8i8_nxv8i8:
@@ -160,10 +200,18 @@ define <vscale x 8 x i8> @intrinsic_vlseg3eff_mask_v_nxv8i8_nxv8i8(<vscale x 8 x
 ; RV64-NEXT:    th.vmv.v.v v7, v8
 ; RV64-NEXT:    th.vmv.v.v v9, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e8, m1, d1
 ; RV64-NEXT:    th.vlseg3eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, iXLen } @llvm.riscv.th.vlseg3eff.mask.nxv8i8.nxv8i8(
@@ -190,6 +238,10 @@ define <vscale x 8 x i8> @intrinsic_vlseg4eff_v_nxv8i8_nxv8i8(<vscale x 8 x i8>*
 ; RV32-NEXT:    th.vlseg4eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_v_nxv8i8_nxv8i8:
@@ -198,6 +250,10 @@ define <vscale x 8 x i8> @intrinsic_vlseg4eff_v_nxv8i8_nxv8i8(<vscale x 8 x i8>*
 ; RV64-NEXT:    th.vlseg4eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, iXLen } @llvm.riscv.th.vlseg4eff.nxv8i8.nxv8i8(
@@ -231,10 +287,18 @@ define <vscale x 8 x i8> @intrinsic_vlseg4eff_mask_v_nxv8i8_nxv8i8(<vscale x 8 x
 ; RV32-NEXT:    th.vmv.v.v v9, v8
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e8, m1, d1
 ; RV32-NEXT:    th.vlseg4eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_mask_v_nxv8i8_nxv8i8:
@@ -250,10 +314,18 @@ define <vscale x 8 x i8> @intrinsic_vlseg4eff_mask_v_nxv8i8_nxv8i8(<vscale x 8 x
 ; RV64-NEXT:    th.vmv.v.v v9, v8
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e8, m1, d1
 ; RV64-NEXT:    th.vlseg4eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, iXLen } @llvm.riscv.th.vlseg4eff.mask.nxv8i8.nxv8i8(
@@ -280,6 +352,10 @@ define <vscale x 8 x i8> @intrinsic_vlseg5eff_v_nxv8i8_nxv8i8(<vscale x 8 x i8>*
 ; RV32-NEXT:    th.vlseg5eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg5eff_v_nxv8i8_nxv8i8:
@@ -288,6 +364,10 @@ define <vscale x 8 x i8> @intrinsic_vlseg5eff_v_nxv8i8_nxv8i8(<vscale x 8 x i8>*
 ; RV64-NEXT:    th.vlseg5eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, iXLen } @llvm.riscv.th.vlseg5eff.nxv8i8.nxv8i8(
@@ -322,10 +402,18 @@ define <vscale x 8 x i8> @intrinsic_vlseg5eff_mask_v_nxv8i8_nxv8i8(<vscale x 8 x
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vmv.v.v v11, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e8, m1, d1
 ; RV32-NEXT:    th.vlseg5eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg5eff_mask_v_nxv8i8_nxv8i8:
@@ -342,10 +430,18 @@ define <vscale x 8 x i8> @intrinsic_vlseg5eff_mask_v_nxv8i8_nxv8i8(<vscale x 8 x
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vmv.v.v v11, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e8, m1, d1
 ; RV64-NEXT:    th.vlseg5eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, iXLen } @llvm.riscv.th.vlseg5eff.mask.nxv8i8.nxv8i8(
@@ -372,6 +468,10 @@ define <vscale x 8 x i8> @intrinsic_vlseg6eff_v_nxv8i8_nxv8i8(<vscale x 8 x i8>*
 ; RV32-NEXT:    th.vlseg6eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg6eff_v_nxv8i8_nxv8i8:
@@ -380,6 +480,10 @@ define <vscale x 8 x i8> @intrinsic_vlseg6eff_v_nxv8i8_nxv8i8(<vscale x 8 x i8>*
 ; RV64-NEXT:    th.vlseg6eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, iXLen } @llvm.riscv.th.vlseg6eff.nxv8i8.nxv8i8(
@@ -415,10 +519,18 @@ define <vscale x 8 x i8> @intrinsic_vlseg6eff_mask_v_nxv8i8_nxv8i8(<vscale x 8 x
 ; RV32-NEXT:    th.vmv.v.v v11, v8
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e8, m1, d1
 ; RV32-NEXT:    th.vlseg6eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg6eff_mask_v_nxv8i8_nxv8i8:
@@ -436,10 +548,18 @@ define <vscale x 8 x i8> @intrinsic_vlseg6eff_mask_v_nxv8i8_nxv8i8(<vscale x 8 x
 ; RV64-NEXT:    th.vmv.v.v v11, v8
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e8, m1, d1
 ; RV64-NEXT:    th.vlseg6eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, iXLen } @llvm.riscv.th.vlseg6eff.mask.nxv8i8.nxv8i8(
@@ -466,6 +586,10 @@ define <vscale x 8 x i8> @intrinsic_vlseg7eff_v_nxv8i8_nxv8i8(<vscale x 8 x i8>*
 ; RV32-NEXT:    th.vlseg7eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg7eff_v_nxv8i8_nxv8i8:
@@ -474,6 +598,10 @@ define <vscale x 8 x i8> @intrinsic_vlseg7eff_v_nxv8i8_nxv8i8(<vscale x 8 x i8>*
 ; RV64-NEXT:    th.vlseg7eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, iXLen } @llvm.riscv.th.vlseg7eff.nxv8i8.nxv8i8(
@@ -510,10 +638,18 @@ define <vscale x 8 x i8> @intrinsic_vlseg7eff_mask_v_nxv8i8_nxv8i8(<vscale x 8 x
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vmv.v.v v13, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e8, m1, d1
 ; RV32-NEXT:    th.vlseg7eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg7eff_mask_v_nxv8i8_nxv8i8:
@@ -532,10 +668,18 @@ define <vscale x 8 x i8> @intrinsic_vlseg7eff_mask_v_nxv8i8_nxv8i8(<vscale x 8 x
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vmv.v.v v13, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e8, m1, d1
 ; RV64-NEXT:    th.vlseg7eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, iXLen } @llvm.riscv.th.vlseg7eff.mask.nxv8i8.nxv8i8(
@@ -562,6 +706,10 @@ define <vscale x 8 x i8> @intrinsic_vlseg8eff_v_nxv8i8_nxv8i8(<vscale x 8 x i8>*
 ; RV32-NEXT:    th.vlseg8eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg8eff_v_nxv8i8_nxv8i8:
@@ -570,6 +718,10 @@ define <vscale x 8 x i8> @intrinsic_vlseg8eff_v_nxv8i8_nxv8i8(<vscale x 8 x i8>*
 ; RV64-NEXT:    th.vlseg8eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, iXLen } @llvm.riscv.th.vlseg8eff.nxv8i8.nxv8i8(
@@ -607,10 +759,18 @@ define <vscale x 8 x i8> @intrinsic_vlseg8eff_mask_v_nxv8i8_nxv8i8(<vscale x 8 x
 ; RV32-NEXT:    th.vmv.v.v v13, v8
 ; RV32-NEXT:    th.vmv.v.v v14, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e8, m1, d1
 ; RV32-NEXT:    th.vlseg8eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg8eff_mask_v_nxv8i8_nxv8i8:
@@ -630,10 +790,18 @@ define <vscale x 8 x i8> @intrinsic_vlseg8eff_mask_v_nxv8i8_nxv8i8(<vscale x 8 x
 ; RV64-NEXT:    th.vmv.v.v v13, v8
 ; RV64-NEXT:    th.vmv.v.v v14, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e8, m1, d1
 ; RV64-NEXT:    th.vlseg8eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, <vscale x 8 x i8>, iXLen } @llvm.riscv.th.vlseg8eff.mask.nxv8i8.nxv8i8(
@@ -660,6 +828,10 @@ define <vscale x 16 x i8> @intrinsic_vlseg2eff_v_nxv16i8_nxv16i8(<vscale x 16 x 
 ; RV32-NEXT:    th.vlseg2eff.v v6, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv16i8_nxv16i8:
@@ -668,6 +840,10 @@ define <vscale x 16 x i8> @intrinsic_vlseg2eff_v_nxv16i8_nxv16i8(<vscale x 16 x 
 ; RV64-NEXT:    th.vlseg2eff.v v6, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 16 x i8>, <vscale x 16 x i8>, iXLen } @llvm.riscv.th.vlseg2eff.nxv16i8.nxv16i8(
@@ -700,10 +876,18 @@ define <vscale x 16 x i8> @intrinsic_vlseg2eff_mask_v_nxv16i8_nxv16i8(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v6, v8
 ; RV32-NEXT:    th.vmv.v.v v7, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e8, m2, d1
 ; RV32-NEXT:    th.vlseg2eff.v v6, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv16i8_nxv16i8:
@@ -718,10 +902,18 @@ define <vscale x 16 x i8> @intrinsic_vlseg2eff_mask_v_nxv16i8_nxv16i8(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v6, v8
 ; RV64-NEXT:    th.vmv.v.v v7, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e8, m2, d1
 ; RV64-NEXT:    th.vlseg2eff.v v6, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 16 x i8>, <vscale x 16 x i8>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv16i8.nxv16i8(
@@ -748,6 +940,10 @@ define <vscale x 16 x i8> @intrinsic_vlseg3eff_v_nxv16i8_nxv16i8(<vscale x 16 x 
 ; RV32-NEXT:    th.vlseg3eff.v v6, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_v_nxv16i8_nxv16i8:
@@ -756,6 +952,10 @@ define <vscale x 16 x i8> @intrinsic_vlseg3eff_v_nxv16i8_nxv16i8(<vscale x 16 x 
 ; RV64-NEXT:    th.vlseg3eff.v v6, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 16 x i8>, <vscale x 16 x i8>, <vscale x 16 x i8>, iXLen } @llvm.riscv.th.vlseg3eff.nxv16i8.nxv16i8(
@@ -790,10 +990,18 @@ define <vscale x 16 x i8> @intrinsic_vlseg3eff_mask_v_nxv16i8_nxv16i8(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vmv.v.v v11, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e8, m2, d1
 ; RV32-NEXT:    th.vlseg3eff.v v6, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_mask_v_nxv16i8_nxv16i8:
@@ -810,10 +1018,18 @@ define <vscale x 16 x i8> @intrinsic_vlseg3eff_mask_v_nxv16i8_nxv16i8(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vmv.v.v v11, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e8, m2, d1
 ; RV64-NEXT:    th.vlseg3eff.v v6, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 16 x i8>, <vscale x 16 x i8>, <vscale x 16 x i8>, iXLen } @llvm.riscv.th.vlseg3eff.mask.nxv16i8.nxv16i8(
@@ -840,6 +1056,10 @@ define <vscale x 16 x i8> @intrinsic_vlseg4eff_v_nxv16i8_nxv16i8(<vscale x 16 x 
 ; RV32-NEXT:    th.vlseg4eff.v v6, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_v_nxv16i8_nxv16i8:
@@ -848,6 +1068,10 @@ define <vscale x 16 x i8> @intrinsic_vlseg4eff_v_nxv16i8_nxv16i8(<vscale x 16 x 
 ; RV64-NEXT:    th.vlseg4eff.v v6, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 16 x i8>, <vscale x 16 x i8>, <vscale x 16 x i8>, <vscale x 16 x i8>, iXLen } @llvm.riscv.th.vlseg4eff.nxv16i8.nxv16i8(
@@ -884,10 +1108,18 @@ define <vscale x 16 x i8> @intrinsic_vlseg4eff_mask_v_nxv16i8_nxv16i8(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vmv.v.v v13, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e8, m2, d1
 ; RV32-NEXT:    th.vlseg4eff.v v6, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_mask_v_nxv16i8_nxv16i8:
@@ -906,10 +1138,18 @@ define <vscale x 16 x i8> @intrinsic_vlseg4eff_mask_v_nxv16i8_nxv16i8(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vmv.v.v v13, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e8, m2, d1
 ; RV64-NEXT:    th.vlseg4eff.v v6, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 16 x i8>, <vscale x 16 x i8>, <vscale x 16 x i8>, <vscale x 16 x i8>, iXLen } @llvm.riscv.th.vlseg4eff.mask.nxv16i8.nxv16i8(
@@ -936,6 +1176,10 @@ define <vscale x 32 x i8> @intrinsic_vlseg2eff_v_nxv32i8_nxv32i8(<vscale x 32 x 
 ; RV32-NEXT:    th.vlseg2eff.v v4, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv32i8_nxv32i8:
@@ -944,6 +1188,10 @@ define <vscale x 32 x i8> @intrinsic_vlseg2eff_v_nxv32i8_nxv32i8(<vscale x 32 x 
 ; RV64-NEXT:    th.vlseg2eff.v v4, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 32 x i8>, <vscale x 32 x i8>, iXLen } @llvm.riscv.th.vlseg2eff.nxv32i8.nxv32i8(
@@ -978,10 +1226,18 @@ define <vscale x 32 x i8> @intrinsic_vlseg2eff_mask_v_nxv32i8_nxv32i8(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v6, v10
 ; RV32-NEXT:    th.vmv.v.v v7, v11
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e8, m4, d1
 ; RV32-NEXT:    th.vlseg2eff.v v4, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv32i8_nxv32i8:
@@ -998,10 +1254,18 @@ define <vscale x 32 x i8> @intrinsic_vlseg2eff_mask_v_nxv32i8_nxv32i8(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v6, v10
 ; RV64-NEXT:    th.vmv.v.v v7, v11
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e8, m4, d1
 ; RV64-NEXT:    th.vlseg2eff.v v4, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 32 x i8>, <vscale x 32 x i8>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv32i8.nxv32i8(
@@ -1028,6 +1292,10 @@ define <vscale x 4 x i16> @intrinsic_vlseg2eff_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; RV32-NEXT:    th.vlseg2eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv4i16_nxv4i16:
@@ -1036,6 +1304,10 @@ define <vscale x 4 x i16> @intrinsic_vlseg2eff_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; RV64-NEXT:    th.vlseg2eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, iXLen } @llvm.riscv.th.vlseg2eff.nxv4i16.nxv4i16(
@@ -1067,10 +1339,18 @@ define <vscale x 4 x i16> @intrinsic_vlseg2eff_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; RV32-NEXT:    th.vmv.v.v v7, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV32-NEXT:    th.vlseg2eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv4i16_nxv4i16:
@@ -1084,10 +1364,18 @@ define <vscale x 4 x i16> @intrinsic_vlseg2eff_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; RV64-NEXT:    th.vmv.v.v v7, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV64-NEXT:    th.vlseg2eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv4i16.nxv4i16(
@@ -1114,6 +1402,10 @@ define <vscale x 4 x i16> @intrinsic_vlseg3eff_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; RV32-NEXT:    th.vlseg3eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_v_nxv4i16_nxv4i16:
@@ -1122,6 +1414,10 @@ define <vscale x 4 x i16> @intrinsic_vlseg3eff_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; RV64-NEXT:    th.vlseg3eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, iXLen } @llvm.riscv.th.vlseg3eff.nxv4i16.nxv4i16(
@@ -1154,10 +1450,18 @@ define <vscale x 4 x i16> @intrinsic_vlseg3eff_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v7, v8
 ; RV32-NEXT:    th.vmv.v.v v9, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV32-NEXT:    th.vlseg3eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_mask_v_nxv4i16_nxv4i16:
@@ -1172,10 +1476,18 @@ define <vscale x 4 x i16> @intrinsic_vlseg3eff_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v7, v8
 ; RV64-NEXT:    th.vmv.v.v v9, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV64-NEXT:    th.vlseg3eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, iXLen } @llvm.riscv.th.vlseg3eff.mask.nxv4i16.nxv4i16(
@@ -1202,6 +1514,10 @@ define <vscale x 4 x i16> @intrinsic_vlseg4eff_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; RV32-NEXT:    th.vlseg4eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_v_nxv4i16_nxv4i16:
@@ -1210,6 +1526,10 @@ define <vscale x 4 x i16> @intrinsic_vlseg4eff_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; RV64-NEXT:    th.vlseg4eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, iXLen } @llvm.riscv.th.vlseg4eff.nxv4i16.nxv4i16(
@@ -1243,10 +1563,18 @@ define <vscale x 4 x i16> @intrinsic_vlseg4eff_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v9, v8
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV32-NEXT:    th.vlseg4eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_mask_v_nxv4i16_nxv4i16:
@@ -1262,10 +1590,18 @@ define <vscale x 4 x i16> @intrinsic_vlseg4eff_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v9, v8
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV64-NEXT:    th.vlseg4eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, iXLen } @llvm.riscv.th.vlseg4eff.mask.nxv4i16.nxv4i16(
@@ -1292,6 +1628,10 @@ define <vscale x 4 x i16> @intrinsic_vlseg5eff_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; RV32-NEXT:    th.vlseg5eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg5eff_v_nxv4i16_nxv4i16:
@@ -1300,6 +1640,10 @@ define <vscale x 4 x i16> @intrinsic_vlseg5eff_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; RV64-NEXT:    th.vlseg5eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, iXLen } @llvm.riscv.th.vlseg5eff.nxv4i16.nxv4i16(
@@ -1334,10 +1678,18 @@ define <vscale x 4 x i16> @intrinsic_vlseg5eff_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vmv.v.v v11, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV32-NEXT:    th.vlseg5eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg5eff_mask_v_nxv4i16_nxv4i16:
@@ -1354,10 +1706,18 @@ define <vscale x 4 x i16> @intrinsic_vlseg5eff_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vmv.v.v v11, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV64-NEXT:    th.vlseg5eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, iXLen } @llvm.riscv.th.vlseg5eff.mask.nxv4i16.nxv4i16(
@@ -1384,6 +1744,10 @@ define <vscale x 4 x i16> @intrinsic_vlseg6eff_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; RV32-NEXT:    th.vlseg6eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg6eff_v_nxv4i16_nxv4i16:
@@ -1392,6 +1756,10 @@ define <vscale x 4 x i16> @intrinsic_vlseg6eff_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; RV64-NEXT:    th.vlseg6eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, iXLen } @llvm.riscv.th.vlseg6eff.nxv4i16.nxv4i16(
@@ -1427,10 +1795,18 @@ define <vscale x 4 x i16> @intrinsic_vlseg6eff_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v11, v8
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV32-NEXT:    th.vlseg6eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg6eff_mask_v_nxv4i16_nxv4i16:
@@ -1448,10 +1824,18 @@ define <vscale x 4 x i16> @intrinsic_vlseg6eff_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v11, v8
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV64-NEXT:    th.vlseg6eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, iXLen } @llvm.riscv.th.vlseg6eff.mask.nxv4i16.nxv4i16(
@@ -1478,6 +1862,10 @@ define <vscale x 4 x i16> @intrinsic_vlseg7eff_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; RV32-NEXT:    th.vlseg7eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg7eff_v_nxv4i16_nxv4i16:
@@ -1486,6 +1874,10 @@ define <vscale x 4 x i16> @intrinsic_vlseg7eff_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; RV64-NEXT:    th.vlseg7eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, iXLen } @llvm.riscv.th.vlseg7eff.nxv4i16.nxv4i16(
@@ -1522,10 +1914,18 @@ define <vscale x 4 x i16> @intrinsic_vlseg7eff_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vmv.v.v v13, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV32-NEXT:    th.vlseg7eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg7eff_mask_v_nxv4i16_nxv4i16:
@@ -1544,10 +1944,18 @@ define <vscale x 4 x i16> @intrinsic_vlseg7eff_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vmv.v.v v13, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV64-NEXT:    th.vlseg7eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, iXLen } @llvm.riscv.th.vlseg7eff.mask.nxv4i16.nxv4i16(
@@ -1574,6 +1982,10 @@ define <vscale x 4 x i16> @intrinsic_vlseg8eff_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; RV32-NEXT:    th.vlseg8eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg8eff_v_nxv4i16_nxv4i16:
@@ -1582,6 +1994,10 @@ define <vscale x 4 x i16> @intrinsic_vlseg8eff_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; RV64-NEXT:    th.vlseg8eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, iXLen } @llvm.riscv.th.vlseg8eff.nxv4i16.nxv4i16(
@@ -1619,10 +2035,18 @@ define <vscale x 4 x i16> @intrinsic_vlseg8eff_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v13, v8
 ; RV32-NEXT:    th.vmv.v.v v14, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV32-NEXT:    th.vlseg8eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg8eff_mask_v_nxv4i16_nxv4i16:
@@ -1642,10 +2066,18 @@ define <vscale x 4 x i16> @intrinsic_vlseg8eff_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v13, v8
 ; RV64-NEXT:    th.vmv.v.v v14, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV64-NEXT:    th.vlseg8eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, iXLen } @llvm.riscv.th.vlseg8eff.mask.nxv4i16.nxv4i16(
@@ -1672,6 +2104,10 @@ define <vscale x 8 x i16> @intrinsic_vlseg2eff_v_nxv8i16_nxv8i16(<vscale x 8 x i
 ; RV32-NEXT:    th.vlseg2eff.v v6, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv8i16_nxv8i16:
@@ -1680,6 +2116,10 @@ define <vscale x 8 x i16> @intrinsic_vlseg2eff_v_nxv8i16_nxv8i16(<vscale x 8 x i
 ; RV64-NEXT:    th.vlseg2eff.v v6, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i16>, <vscale x 8 x i16>, iXLen } @llvm.riscv.th.vlseg2eff.nxv8i16.nxv8i16(
@@ -1712,10 +2152,18 @@ define <vscale x 8 x i16> @intrinsic_vlseg2eff_mask_v_nxv8i16_nxv8i16(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v6, v8
 ; RV32-NEXT:    th.vmv.v.v v7, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m2, d1
 ; RV32-NEXT:    th.vlseg2eff.v v6, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv8i16_nxv8i16:
@@ -1730,10 +2178,18 @@ define <vscale x 8 x i16> @intrinsic_vlseg2eff_mask_v_nxv8i16_nxv8i16(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v6, v8
 ; RV64-NEXT:    th.vmv.v.v v7, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m2, d1
 ; RV64-NEXT:    th.vlseg2eff.v v6, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i16>, <vscale x 8 x i16>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv8i16.nxv8i16(
@@ -1760,6 +2216,10 @@ define <vscale x 8 x i16> @intrinsic_vlseg3eff_v_nxv8i16_nxv8i16(<vscale x 8 x i
 ; RV32-NEXT:    th.vlseg3eff.v v6, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_v_nxv8i16_nxv8i16:
@@ -1768,6 +2228,10 @@ define <vscale x 8 x i16> @intrinsic_vlseg3eff_v_nxv8i16_nxv8i16(<vscale x 8 x i
 ; RV64-NEXT:    th.vlseg3eff.v v6, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16>, iXLen } @llvm.riscv.th.vlseg3eff.nxv8i16.nxv8i16(
@@ -1802,10 +2266,18 @@ define <vscale x 8 x i16> @intrinsic_vlseg3eff_mask_v_nxv8i16_nxv8i16(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vmv.v.v v11, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m2, d1
 ; RV32-NEXT:    th.vlseg3eff.v v6, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_mask_v_nxv8i16_nxv8i16:
@@ -1822,10 +2294,18 @@ define <vscale x 8 x i16> @intrinsic_vlseg3eff_mask_v_nxv8i16_nxv8i16(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vmv.v.v v11, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m2, d1
 ; RV64-NEXT:    th.vlseg3eff.v v6, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16>, iXLen } @llvm.riscv.th.vlseg3eff.mask.nxv8i16.nxv8i16(
@@ -1852,6 +2332,10 @@ define <vscale x 8 x i16> @intrinsic_vlseg4eff_v_nxv8i16_nxv8i16(<vscale x 8 x i
 ; RV32-NEXT:    th.vlseg4eff.v v6, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_v_nxv8i16_nxv8i16:
@@ -1860,6 +2344,10 @@ define <vscale x 8 x i16> @intrinsic_vlseg4eff_v_nxv8i16_nxv8i16(<vscale x 8 x i
 ; RV64-NEXT:    th.vlseg4eff.v v6, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16>, iXLen } @llvm.riscv.th.vlseg4eff.nxv8i16.nxv8i16(
@@ -1896,10 +2384,18 @@ define <vscale x 8 x i16> @intrinsic_vlseg4eff_mask_v_nxv8i16_nxv8i16(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vmv.v.v v13, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m2, d1
 ; RV32-NEXT:    th.vlseg4eff.v v6, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_mask_v_nxv8i16_nxv8i16:
@@ -1918,10 +2414,18 @@ define <vscale x 8 x i16> @intrinsic_vlseg4eff_mask_v_nxv8i16_nxv8i16(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vmv.v.v v13, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m2, d1
 ; RV64-NEXT:    th.vlseg4eff.v v6, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16>, iXLen } @llvm.riscv.th.vlseg4eff.mask.nxv8i16.nxv8i16(
@@ -1948,6 +2452,10 @@ define <vscale x 16 x i16> @intrinsic_vlseg2eff_v_nxv16i16_nxv16i16(<vscale x 16
 ; RV32-NEXT:    th.vlseg2eff.v v4, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv16i16_nxv16i16:
@@ -1956,6 +2464,10 @@ define <vscale x 16 x i16> @intrinsic_vlseg2eff_v_nxv16i16_nxv16i16(<vscale x 16
 ; RV64-NEXT:    th.vlseg2eff.v v4, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 16 x i16>, <vscale x 16 x i16>, iXLen } @llvm.riscv.th.vlseg2eff.nxv16i16.nxv16i16(
@@ -1990,10 +2502,18 @@ define <vscale x 16 x i16> @intrinsic_vlseg2eff_mask_v_nxv16i16_nxv16i16(<vscale
 ; RV32-NEXT:    th.vmv.v.v v6, v10
 ; RV32-NEXT:    th.vmv.v.v v7, v11
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m4, d1
 ; RV32-NEXT:    th.vlseg2eff.v v4, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv16i16_nxv16i16:
@@ -2010,10 +2530,18 @@ define <vscale x 16 x i16> @intrinsic_vlseg2eff_mask_v_nxv16i16_nxv16i16(<vscale
 ; RV64-NEXT:    th.vmv.v.v v6, v10
 ; RV64-NEXT:    th.vmv.v.v v7, v11
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m4, d1
 ; RV64-NEXT:    th.vlseg2eff.v v4, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 16 x i16>, <vscale x 16 x i16>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv16i16.nxv16i16(
@@ -2040,6 +2568,10 @@ define <vscale x 4 x half> @intrinsic_vlseg2eff_v_nxv4f16_nxv4f16(<vscale x 4 x 
 ; RV32-NEXT:    th.vlseg2eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv4f16_nxv4f16:
@@ -2048,6 +2580,10 @@ define <vscale x 4 x half> @intrinsic_vlseg2eff_v_nxv4f16_nxv4f16(<vscale x 4 x 
 ; RV64-NEXT:    th.vlseg2eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x half>, <vscale x 4 x half>, iXLen } @llvm.riscv.th.vlseg2eff.nxv4f16.nxv4f16(
@@ -2079,10 +2615,18 @@ define <vscale x 4 x half> @intrinsic_vlseg2eff_mask_v_nxv4f16_nxv4f16( <vscale 
 ; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; RV32-NEXT:    th.vmv.v.v v9, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV32-NEXT:    th.vlseg2eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv4f16_nxv4f16:
@@ -2096,10 +2640,18 @@ define <vscale x 4 x half> @intrinsic_vlseg2eff_mask_v_nxv4f16_nxv4f16( <vscale 
 ; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; RV64-NEXT:    th.vmv.v.v v9, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV64-NEXT:    th.vlseg2eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x half>, <vscale x 4 x half>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv4f16.nxv4f16(
@@ -2126,6 +2678,10 @@ define <vscale x 4 x half> @intrinsic_vlseg3eff_v_nxv4f16_nxv4f16(<vscale x 4 x 
 ; RV32-NEXT:    th.vlseg3eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_v_nxv4f16_nxv4f16:
@@ -2134,6 +2690,10 @@ define <vscale x 4 x half> @intrinsic_vlseg3eff_v_nxv4f16_nxv4f16(<vscale x 4 x 
 ; RV64-NEXT:    th.vlseg3eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, iXLen } @llvm.riscv.th.vlseg3eff.nxv4f16.nxv4f16(
@@ -2166,10 +2726,18 @@ define <vscale x 4 x half> @intrinsic_vlseg3eff_mask_v_nxv4f16_nxv4f16( <vscale 
 ; RV32-NEXT:    th.vmv.v.v v9, v8
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV32-NEXT:    th.vlseg3eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_mask_v_nxv4f16_nxv4f16:
@@ -2184,10 +2752,18 @@ define <vscale x 4 x half> @intrinsic_vlseg3eff_mask_v_nxv4f16_nxv4f16( <vscale 
 ; RV64-NEXT:    th.vmv.v.v v9, v8
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV64-NEXT:    th.vlseg3eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, iXLen } @llvm.riscv.th.vlseg3eff.mask.nxv4f16.nxv4f16(
@@ -2214,6 +2790,10 @@ define <vscale x 4 x half> @intrinsic_vlseg4eff_v_nxv4f16_nxv4f16(<vscale x 4 x 
 ; RV32-NEXT:    th.vlseg4eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_v_nxv4f16_nxv4f16:
@@ -2222,6 +2802,10 @@ define <vscale x 4 x half> @intrinsic_vlseg4eff_v_nxv4f16_nxv4f16(<vscale x 4 x 
 ; RV64-NEXT:    th.vlseg4eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, iXLen } @llvm.riscv.th.vlseg4eff.nxv4f16.nxv4f16(
@@ -2255,10 +2839,18 @@ define <vscale x 4 x half> @intrinsic_vlseg4eff_mask_v_nxv4f16_nxv4f16( <vscale 
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vmv.v.v v11, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV32-NEXT:    th.vlseg4eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_mask_v_nxv4f16_nxv4f16:
@@ -2274,10 +2866,18 @@ define <vscale x 4 x half> @intrinsic_vlseg4eff_mask_v_nxv4f16_nxv4f16( <vscale 
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vmv.v.v v11, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV64-NEXT:    th.vlseg4eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, iXLen } @llvm.riscv.th.vlseg4eff.mask.nxv4f16.nxv4f16(
@@ -2304,6 +2904,10 @@ define <vscale x 4 x half> @intrinsic_vlseg5eff_v_nxv4f16_nxv4f16(<vscale x 4 x 
 ; RV32-NEXT:    th.vlseg5eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg5eff_v_nxv4f16_nxv4f16:
@@ -2312,6 +2916,10 @@ define <vscale x 4 x half> @intrinsic_vlseg5eff_v_nxv4f16_nxv4f16(<vscale x 4 x 
 ; RV64-NEXT:    th.vlseg5eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, iXLen } @llvm.riscv.th.vlseg5eff.nxv4f16.nxv4f16(
@@ -2346,10 +2954,18 @@ define <vscale x 4 x half> @intrinsic_vlseg5eff_mask_v_nxv4f16_nxv4f16( <vscale 
 ; RV32-NEXT:    th.vmv.v.v v11, v8
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV32-NEXT:    th.vlseg5eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg5eff_mask_v_nxv4f16_nxv4f16:
@@ -2366,10 +2982,18 @@ define <vscale x 4 x half> @intrinsic_vlseg5eff_mask_v_nxv4f16_nxv4f16( <vscale 
 ; RV64-NEXT:    th.vmv.v.v v11, v8
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV64-NEXT:    th.vlseg5eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, iXLen } @llvm.riscv.th.vlseg5eff.mask.nxv4f16.nxv4f16(
@@ -2396,6 +3020,10 @@ define <vscale x 4 x half> @intrinsic_vlseg6eff_v_nxv4f16_nxv4f16(<vscale x 4 x 
 ; RV32-NEXT:    th.vlseg6eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg6eff_v_nxv4f16_nxv4f16:
@@ -2404,6 +3032,10 @@ define <vscale x 4 x half> @intrinsic_vlseg6eff_v_nxv4f16_nxv4f16(<vscale x 4 x 
 ; RV64-NEXT:    th.vlseg6eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, iXLen } @llvm.riscv.th.vlseg6eff.nxv4f16.nxv4f16(
@@ -2439,10 +3071,18 @@ define <vscale x 4 x half> @intrinsic_vlseg6eff_mask_v_nxv4f16_nxv4f16( <vscale 
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vmv.v.v v13, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV32-NEXT:    th.vlseg6eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg6eff_mask_v_nxv4f16_nxv4f16:
@@ -2460,10 +3100,18 @@ define <vscale x 4 x half> @intrinsic_vlseg6eff_mask_v_nxv4f16_nxv4f16( <vscale 
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vmv.v.v v13, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV64-NEXT:    th.vlseg6eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, iXLen } @llvm.riscv.th.vlseg6eff.mask.nxv4f16.nxv4f16(
@@ -2490,6 +3138,10 @@ define <vscale x 4 x half> @intrinsic_vlseg7eff_v_nxv4f16_nxv4f16(<vscale x 4 x 
 ; RV32-NEXT:    th.vlseg7eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg7eff_v_nxv4f16_nxv4f16:
@@ -2498,6 +3150,10 @@ define <vscale x 4 x half> @intrinsic_vlseg7eff_v_nxv4f16_nxv4f16(<vscale x 4 x 
 ; RV64-NEXT:    th.vlseg7eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, iXLen } @llvm.riscv.th.vlseg7eff.nxv4f16.nxv4f16(
@@ -2534,10 +3190,18 @@ define <vscale x 4 x half> @intrinsic_vlseg7eff_mask_v_nxv4f16_nxv4f16( <vscale 
 ; RV32-NEXT:    th.vmv.v.v v13, v8
 ; RV32-NEXT:    th.vmv.v.v v14, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV32-NEXT:    th.vlseg7eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg7eff_mask_v_nxv4f16_nxv4f16:
@@ -2556,10 +3220,18 @@ define <vscale x 4 x half> @intrinsic_vlseg7eff_mask_v_nxv4f16_nxv4f16( <vscale 
 ; RV64-NEXT:    th.vmv.v.v v13, v8
 ; RV64-NEXT:    th.vmv.v.v v14, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV64-NEXT:    th.vlseg7eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, iXLen } @llvm.riscv.th.vlseg7eff.mask.nxv4f16.nxv4f16(
@@ -2586,6 +3258,10 @@ define <vscale x 4 x half> @intrinsic_vlseg8eff_v_nxv4f16_nxv4f16(<vscale x 4 x 
 ; RV32-NEXT:    th.vlseg8eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg8eff_v_nxv4f16_nxv4f16:
@@ -2594,6 +3270,10 @@ define <vscale x 4 x half> @intrinsic_vlseg8eff_v_nxv4f16_nxv4f16(<vscale x 4 x 
 ; RV64-NEXT:    th.vlseg8eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, iXLen } @llvm.riscv.th.vlseg8eff.nxv4f16.nxv4f16(
@@ -2631,10 +3311,18 @@ define <vscale x 4 x half> @intrinsic_vlseg8eff_mask_v_nxv4f16_nxv4f16( <vscale 
 ; RV32-NEXT:    th.vmv.v.v v14, v8
 ; RV32-NEXT:    th.vmv.v.v v15, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV32-NEXT:    th.vlseg8eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg8eff_mask_v_nxv4f16_nxv4f16:
@@ -2654,10 +3342,18 @@ define <vscale x 4 x half> @intrinsic_vlseg8eff_mask_v_nxv4f16_nxv4f16( <vscale 
 ; RV64-NEXT:    th.vmv.v.v v14, v8
 ; RV64-NEXT:    th.vmv.v.v v15, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m1, d1
 ; RV64-NEXT:    th.vlseg8eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, <vscale x 4 x half>, iXLen } @llvm.riscv.th.vlseg8eff.mask.nxv4f16.nxv4f16(
@@ -2684,6 +3380,10 @@ define <vscale x 8 x half> @intrinsic_vlseg2eff_v_nxv8f16_nxv8f16(<vscale x 8 x 
 ; RV32-NEXT:    th.vlseg2eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv8f16_nxv8f16:
@@ -2692,6 +3392,10 @@ define <vscale x 8 x half> @intrinsic_vlseg2eff_v_nxv8f16_nxv8f16(<vscale x 8 x 
 ; RV64-NEXT:    th.vlseg2eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x half>, <vscale x 8 x half>, iXLen } @llvm.riscv.th.vlseg2eff.nxv8f16.nxv8f16(
@@ -2724,10 +3428,18 @@ define <vscale x 8 x half> @intrinsic_vlseg2eff_mask_v_nxv8f16_nxv8f16( <vscale 
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vmv.v.v v11, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m2, d1
 ; RV32-NEXT:    th.vlseg2eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv8f16_nxv8f16:
@@ -2742,10 +3454,18 @@ define <vscale x 8 x half> @intrinsic_vlseg2eff_mask_v_nxv8f16_nxv8f16( <vscale 
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vmv.v.v v11, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m2, d1
 ; RV64-NEXT:    th.vlseg2eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x half>, <vscale x 8 x half>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv8f16.nxv8f16(
@@ -2772,6 +3492,10 @@ define <vscale x 8 x half> @intrinsic_vlseg3eff_v_nxv8f16_nxv8f16(<vscale x 8 x 
 ; RV32-NEXT:    th.vlseg3eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_v_nxv8f16_nxv8f16:
@@ -2780,6 +3504,10 @@ define <vscale x 8 x half> @intrinsic_vlseg3eff_v_nxv8f16_nxv8f16(<vscale x 8 x 
 ; RV64-NEXT:    th.vlseg3eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x half>, <vscale x 8 x half>, <vscale x 8 x half>, iXLen } @llvm.riscv.th.vlseg3eff.nxv8f16.nxv8f16(
@@ -2814,10 +3542,18 @@ define <vscale x 8 x half> @intrinsic_vlseg3eff_mask_v_nxv8f16_nxv8f16( <vscale 
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vmv.v.v v13, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m2, d1
 ; RV32-NEXT:    th.vlseg3eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_mask_v_nxv8f16_nxv8f16:
@@ -2834,10 +3570,18 @@ define <vscale x 8 x half> @intrinsic_vlseg3eff_mask_v_nxv8f16_nxv8f16( <vscale 
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vmv.v.v v13, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m2, d1
 ; RV64-NEXT:    th.vlseg3eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x half>, <vscale x 8 x half>, <vscale x 8 x half>, iXLen } @llvm.riscv.th.vlseg3eff.mask.nxv8f16.nxv8f16(
@@ -2864,6 +3608,10 @@ define <vscale x 8 x half> @intrinsic_vlseg4eff_v_nxv8f16_nxv8f16(<vscale x 8 x 
 ; RV32-NEXT:    th.vlseg4eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_v_nxv8f16_nxv8f16:
@@ -2872,6 +3620,10 @@ define <vscale x 8 x half> @intrinsic_vlseg4eff_v_nxv8f16_nxv8f16(<vscale x 8 x 
 ; RV64-NEXT:    th.vlseg4eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x half>, <vscale x 8 x half>, <vscale x 8 x half>, <vscale x 8 x half>, iXLen } @llvm.riscv.th.vlseg4eff.nxv8f16.nxv8f16(
@@ -2908,10 +3660,18 @@ define <vscale x 8 x half> @intrinsic_vlseg4eff_mask_v_nxv8f16_nxv8f16( <vscale 
 ; RV32-NEXT:    th.vmv.v.v v14, v8
 ; RV32-NEXT:    th.vmv.v.v v15, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m2, d1
 ; RV32-NEXT:    th.vlseg4eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_mask_v_nxv8f16_nxv8f16:
@@ -2930,10 +3690,18 @@ define <vscale x 8 x half> @intrinsic_vlseg4eff_mask_v_nxv8f16_nxv8f16( <vscale 
 ; RV64-NEXT:    th.vmv.v.v v14, v8
 ; RV64-NEXT:    th.vmv.v.v v15, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m2, d1
 ; RV64-NEXT:    th.vlseg4eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x half>, <vscale x 8 x half>, <vscale x 8 x half>, <vscale x 8 x half>, iXLen } @llvm.riscv.th.vlseg4eff.mask.nxv8f16.nxv8f16(
@@ -2960,6 +3728,10 @@ define <vscale x 16 x half> @intrinsic_vlseg2eff_v_nxv16f16_nxv16f16(<vscale x 1
 ; RV32-NEXT:    th.vlseg2eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv16f16_nxv16f16:
@@ -2968,6 +3740,10 @@ define <vscale x 16 x half> @intrinsic_vlseg2eff_v_nxv16f16_nxv16f16(<vscale x 1
 ; RV64-NEXT:    th.vlseg2eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 16 x half>, <vscale x 16 x half>, iXLen } @llvm.riscv.th.vlseg2eff.nxv16f16.nxv16f16(
@@ -3002,10 +3778,18 @@ define <vscale x 16 x half> @intrinsic_vlseg2eff_mask_v_nxv16f16_nxv16f16( <vsca
 ; RV32-NEXT:    th.vmv.v.v v14, v10
 ; RV32-NEXT:    th.vmv.v.v v15, v11
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e16, m4, d1
 ; RV32-NEXT:    th.vlseg2eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv16f16_nxv16f16:
@@ -3022,10 +3806,18 @@ define <vscale x 16 x half> @intrinsic_vlseg2eff_mask_v_nxv16f16_nxv16f16( <vsca
 ; RV64-NEXT:    th.vmv.v.v v14, v10
 ; RV64-NEXT:    th.vmv.v.v v15, v11
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e16, m4, d1
 ; RV64-NEXT:    th.vlseg2eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 16 x half>, <vscale x 16 x half>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv16f16.nxv16f16(
@@ -3052,6 +3844,10 @@ define <vscale x 2 x i32> @intrinsic_vlseg2eff_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; RV32-NEXT:    th.vlseg2eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv2i32_nxv2i32:
@@ -3060,6 +3856,10 @@ define <vscale x 2 x i32> @intrinsic_vlseg2eff_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; RV64-NEXT:    th.vlseg2eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, iXLen } @llvm.riscv.th.vlseg2eff.nxv2i32.nxv2i32(
@@ -3091,10 +3891,18 @@ define <vscale x 2 x i32> @intrinsic_vlseg2eff_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; RV32-NEXT:    th.vmv.v.v v7, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV32-NEXT:    th.vlseg2eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv2i32_nxv2i32:
@@ -3108,10 +3916,18 @@ define <vscale x 2 x i32> @intrinsic_vlseg2eff_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; RV64-NEXT:    th.vmv.v.v v7, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV64-NEXT:    th.vlseg2eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv2i32.nxv2i32(
@@ -3138,6 +3954,10 @@ define <vscale x 2 x i32> @intrinsic_vlseg3eff_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; RV32-NEXT:    th.vlseg3eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_v_nxv2i32_nxv2i32:
@@ -3146,6 +3966,10 @@ define <vscale x 2 x i32> @intrinsic_vlseg3eff_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; RV64-NEXT:    th.vlseg3eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, iXLen } @llvm.riscv.th.vlseg3eff.nxv2i32.nxv2i32(
@@ -3178,10 +4002,18 @@ define <vscale x 2 x i32> @intrinsic_vlseg3eff_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v7, v8
 ; RV32-NEXT:    th.vmv.v.v v9, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV32-NEXT:    th.vlseg3eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_mask_v_nxv2i32_nxv2i32:
@@ -3196,10 +4028,18 @@ define <vscale x 2 x i32> @intrinsic_vlseg3eff_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v7, v8
 ; RV64-NEXT:    th.vmv.v.v v9, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV64-NEXT:    th.vlseg3eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, iXLen } @llvm.riscv.th.vlseg3eff.mask.nxv2i32.nxv2i32(
@@ -3226,6 +4066,10 @@ define <vscale x 2 x i32> @intrinsic_vlseg4eff_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; RV32-NEXT:    th.vlseg4eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_v_nxv2i32_nxv2i32:
@@ -3234,6 +4078,10 @@ define <vscale x 2 x i32> @intrinsic_vlseg4eff_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; RV64-NEXT:    th.vlseg4eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, iXLen } @llvm.riscv.th.vlseg4eff.nxv2i32.nxv2i32(
@@ -3267,10 +4115,18 @@ define <vscale x 2 x i32> @intrinsic_vlseg4eff_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v9, v8
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV32-NEXT:    th.vlseg4eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_mask_v_nxv2i32_nxv2i32:
@@ -3286,10 +4142,18 @@ define <vscale x 2 x i32> @intrinsic_vlseg4eff_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v9, v8
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV64-NEXT:    th.vlseg4eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, iXLen } @llvm.riscv.th.vlseg4eff.mask.nxv2i32.nxv2i32(
@@ -3316,6 +4180,10 @@ define <vscale x 2 x i32> @intrinsic_vlseg5eff_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; RV32-NEXT:    th.vlseg5eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg5eff_v_nxv2i32_nxv2i32:
@@ -3324,6 +4192,10 @@ define <vscale x 2 x i32> @intrinsic_vlseg5eff_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; RV64-NEXT:    th.vlseg5eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, iXLen } @llvm.riscv.th.vlseg5eff.nxv2i32.nxv2i32(
@@ -3358,10 +4230,18 @@ define <vscale x 2 x i32> @intrinsic_vlseg5eff_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vmv.v.v v11, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV32-NEXT:    th.vlseg5eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg5eff_mask_v_nxv2i32_nxv2i32:
@@ -3378,10 +4258,18 @@ define <vscale x 2 x i32> @intrinsic_vlseg5eff_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vmv.v.v v11, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV64-NEXT:    th.vlseg5eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, iXLen } @llvm.riscv.th.vlseg5eff.mask.nxv2i32.nxv2i32(
@@ -3408,6 +4296,10 @@ define <vscale x 2 x i32> @intrinsic_vlseg6eff_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; RV32-NEXT:    th.vlseg6eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg6eff_v_nxv2i32_nxv2i32:
@@ -3416,6 +4308,10 @@ define <vscale x 2 x i32> @intrinsic_vlseg6eff_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; RV64-NEXT:    th.vlseg6eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, iXLen } @llvm.riscv.th.vlseg6eff.nxv2i32.nxv2i32(
@@ -3451,10 +4347,18 @@ define <vscale x 2 x i32> @intrinsic_vlseg6eff_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v11, v8
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV32-NEXT:    th.vlseg6eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg6eff_mask_v_nxv2i32_nxv2i32:
@@ -3472,10 +4376,18 @@ define <vscale x 2 x i32> @intrinsic_vlseg6eff_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v11, v8
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV64-NEXT:    th.vlseg6eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, iXLen } @llvm.riscv.th.vlseg6eff.mask.nxv2i32.nxv2i32(
@@ -3502,6 +4414,10 @@ define <vscale x 2 x i32> @intrinsic_vlseg7eff_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; RV32-NEXT:    th.vlseg7eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg7eff_v_nxv2i32_nxv2i32:
@@ -3510,6 +4426,10 @@ define <vscale x 2 x i32> @intrinsic_vlseg7eff_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; RV64-NEXT:    th.vlseg7eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, iXLen } @llvm.riscv.th.vlseg7eff.nxv2i32.nxv2i32(
@@ -3546,10 +4466,18 @@ define <vscale x 2 x i32> @intrinsic_vlseg7eff_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vmv.v.v v13, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV32-NEXT:    th.vlseg7eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg7eff_mask_v_nxv2i32_nxv2i32:
@@ -3568,10 +4496,18 @@ define <vscale x 2 x i32> @intrinsic_vlseg7eff_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vmv.v.v v13, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV64-NEXT:    th.vlseg7eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, iXLen } @llvm.riscv.th.vlseg7eff.mask.nxv2i32.nxv2i32(
@@ -3598,6 +4534,10 @@ define <vscale x 2 x i32> @intrinsic_vlseg8eff_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; RV32-NEXT:    th.vlseg8eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg8eff_v_nxv2i32_nxv2i32:
@@ -3606,6 +4546,10 @@ define <vscale x 2 x i32> @intrinsic_vlseg8eff_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; RV64-NEXT:    th.vlseg8eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, iXLen } @llvm.riscv.th.vlseg8eff.nxv2i32.nxv2i32(
@@ -3643,10 +4587,18 @@ define <vscale x 2 x i32> @intrinsic_vlseg8eff_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v13, v8
 ; RV32-NEXT:    th.vmv.v.v v14, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV32-NEXT:    th.vlseg8eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg8eff_mask_v_nxv2i32_nxv2i32:
@@ -3666,10 +4618,18 @@ define <vscale x 2 x i32> @intrinsic_vlseg8eff_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v13, v8
 ; RV64-NEXT:    th.vmv.v.v v14, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV64-NEXT:    th.vlseg8eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, iXLen } @llvm.riscv.th.vlseg8eff.mask.nxv2i32.nxv2i32(
@@ -3696,6 +4656,10 @@ define <vscale x 4 x i32> @intrinsic_vlseg2eff_v_nxv4i32_nxv4i32(<vscale x 4 x i
 ; RV32-NEXT:    th.vlseg2eff.v v6, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv4i32_nxv4i32:
@@ -3704,6 +4668,10 @@ define <vscale x 4 x i32> @intrinsic_vlseg2eff_v_nxv4i32_nxv4i32(<vscale x 4 x i
 ; RV64-NEXT:    th.vlseg2eff.v v6, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i32>, <vscale x 4 x i32>, iXLen } @llvm.riscv.th.vlseg2eff.nxv4i32.nxv4i32(
@@ -3736,10 +4704,18 @@ define <vscale x 4 x i32> @intrinsic_vlseg2eff_mask_v_nxv4i32_nxv4i32(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v6, v8
 ; RV32-NEXT:    th.vmv.v.v v7, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m2, d1
 ; RV32-NEXT:    th.vlseg2eff.v v6, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv4i32_nxv4i32:
@@ -3754,10 +4730,18 @@ define <vscale x 4 x i32> @intrinsic_vlseg2eff_mask_v_nxv4i32_nxv4i32(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v6, v8
 ; RV64-NEXT:    th.vmv.v.v v7, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m2, d1
 ; RV64-NEXT:    th.vlseg2eff.v v6, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i32>, <vscale x 4 x i32>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv4i32.nxv4i32(
@@ -3784,6 +4768,10 @@ define <vscale x 4 x i32> @intrinsic_vlseg3eff_v_nxv4i32_nxv4i32(<vscale x 4 x i
 ; RV32-NEXT:    th.vlseg3eff.v v6, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_v_nxv4i32_nxv4i32:
@@ -3792,6 +4780,10 @@ define <vscale x 4 x i32> @intrinsic_vlseg3eff_v_nxv4i32_nxv4i32(<vscale x 4 x i
 ; RV64-NEXT:    th.vlseg3eff.v v6, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32>, iXLen } @llvm.riscv.th.vlseg3eff.nxv4i32.nxv4i32(
@@ -3826,10 +4818,18 @@ define <vscale x 4 x i32> @intrinsic_vlseg3eff_mask_v_nxv4i32_nxv4i32(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vmv.v.v v11, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m2, d1
 ; RV32-NEXT:    th.vlseg3eff.v v6, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_mask_v_nxv4i32_nxv4i32:
@@ -3846,10 +4846,18 @@ define <vscale x 4 x i32> @intrinsic_vlseg3eff_mask_v_nxv4i32_nxv4i32(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vmv.v.v v11, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m2, d1
 ; RV64-NEXT:    th.vlseg3eff.v v6, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32>, iXLen } @llvm.riscv.th.vlseg3eff.mask.nxv4i32.nxv4i32(
@@ -3876,6 +4884,10 @@ define <vscale x 4 x i32> @intrinsic_vlseg4eff_v_nxv4i32_nxv4i32(<vscale x 4 x i
 ; RV32-NEXT:    th.vlseg4eff.v v6, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_v_nxv4i32_nxv4i32:
@@ -3884,6 +4896,10 @@ define <vscale x 4 x i32> @intrinsic_vlseg4eff_v_nxv4i32_nxv4i32(<vscale x 4 x i
 ; RV64-NEXT:    th.vlseg4eff.v v6, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32>, iXLen } @llvm.riscv.th.vlseg4eff.nxv4i32.nxv4i32(
@@ -3920,10 +4936,18 @@ define <vscale x 4 x i32> @intrinsic_vlseg4eff_mask_v_nxv4i32_nxv4i32(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vmv.v.v v13, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m2, d1
 ; RV32-NEXT:    th.vlseg4eff.v v6, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_mask_v_nxv4i32_nxv4i32:
@@ -3942,10 +4966,18 @@ define <vscale x 4 x i32> @intrinsic_vlseg4eff_mask_v_nxv4i32_nxv4i32(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vmv.v.v v13, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m2, d1
 ; RV64-NEXT:    th.vlseg4eff.v v6, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32>, iXLen } @llvm.riscv.th.vlseg4eff.mask.nxv4i32.nxv4i32(
@@ -3972,6 +5004,10 @@ define <vscale x 8 x i32> @intrinsic_vlseg2eff_v_nxv8i32_nxv8i32(<vscale x 8 x i
 ; RV32-NEXT:    th.vlseg2eff.v v4, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv8i32_nxv8i32:
@@ -3980,6 +5016,10 @@ define <vscale x 8 x i32> @intrinsic_vlseg2eff_v_nxv8i32_nxv8i32(<vscale x 8 x i
 ; RV64-NEXT:    th.vlseg2eff.v v4, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i32>, <vscale x 8 x i32>, iXLen } @llvm.riscv.th.vlseg2eff.nxv8i32.nxv8i32(
@@ -4014,10 +5054,18 @@ define <vscale x 8 x i32> @intrinsic_vlseg2eff_mask_v_nxv8i32_nxv8i32(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v6, v10
 ; RV32-NEXT:    th.vmv.v.v v7, v11
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m4, d1
 ; RV32-NEXT:    th.vlseg2eff.v v4, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv8i32_nxv8i32:
@@ -4034,10 +5082,18 @@ define <vscale x 8 x i32> @intrinsic_vlseg2eff_mask_v_nxv8i32_nxv8i32(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v6, v10
 ; RV64-NEXT:    th.vmv.v.v v7, v11
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m4, d1
 ; RV64-NEXT:    th.vlseg2eff.v v4, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i32>, <vscale x 8 x i32>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv8i32.nxv8i32(
@@ -4064,6 +5120,10 @@ define <vscale x 2 x float> @intrinsic_vlseg2eff_v_nxv2f32_nxv2f32(<vscale x 2 x
 ; RV32-NEXT:    th.vlseg2eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv2f32_nxv2f32:
@@ -4072,6 +5132,10 @@ define <vscale x 2 x float> @intrinsic_vlseg2eff_v_nxv2f32_nxv2f32(<vscale x 2 x
 ; RV64-NEXT:    th.vlseg2eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x float>, <vscale x 2 x float>, iXLen } @llvm.riscv.th.vlseg2eff.nxv2f32.nxv2f32(
@@ -4103,10 +5167,18 @@ define <vscale x 2 x float> @intrinsic_vlseg2eff_mask_v_nxv2f32_nxv2f32( <vscale
 ; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; RV32-NEXT:    th.vmv.v.v v9, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV32-NEXT:    th.vlseg2eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv2f32_nxv2f32:
@@ -4120,10 +5192,18 @@ define <vscale x 2 x float> @intrinsic_vlseg2eff_mask_v_nxv2f32_nxv2f32( <vscale
 ; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; RV64-NEXT:    th.vmv.v.v v9, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV64-NEXT:    th.vlseg2eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x float>, <vscale x 2 x float>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv2f32.nxv2f32(
@@ -4150,6 +5230,10 @@ define <vscale x 2 x float> @intrinsic_vlseg3eff_v_nxv2f32_nxv2f32(<vscale x 2 x
 ; RV32-NEXT:    th.vlseg3eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_v_nxv2f32_nxv2f32:
@@ -4158,6 +5242,10 @@ define <vscale x 2 x float> @intrinsic_vlseg3eff_v_nxv2f32_nxv2f32(<vscale x 2 x
 ; RV64-NEXT:    th.vlseg3eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, iXLen } @llvm.riscv.th.vlseg3eff.nxv2f32.nxv2f32(
@@ -4190,10 +5278,18 @@ define <vscale x 2 x float> @intrinsic_vlseg3eff_mask_v_nxv2f32_nxv2f32( <vscale
 ; RV32-NEXT:    th.vmv.v.v v9, v8
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV32-NEXT:    th.vlseg3eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_mask_v_nxv2f32_nxv2f32:
@@ -4208,10 +5304,18 @@ define <vscale x 2 x float> @intrinsic_vlseg3eff_mask_v_nxv2f32_nxv2f32( <vscale
 ; RV64-NEXT:    th.vmv.v.v v9, v8
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV64-NEXT:    th.vlseg3eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, iXLen } @llvm.riscv.th.vlseg3eff.mask.nxv2f32.nxv2f32(
@@ -4238,6 +5342,10 @@ define <vscale x 2 x float> @intrinsic_vlseg4eff_v_nxv2f32_nxv2f32(<vscale x 2 x
 ; RV32-NEXT:    th.vlseg4eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_v_nxv2f32_nxv2f32:
@@ -4246,6 +5354,10 @@ define <vscale x 2 x float> @intrinsic_vlseg4eff_v_nxv2f32_nxv2f32(<vscale x 2 x
 ; RV64-NEXT:    th.vlseg4eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, iXLen } @llvm.riscv.th.vlseg4eff.nxv2f32.nxv2f32(
@@ -4279,10 +5391,18 @@ define <vscale x 2 x float> @intrinsic_vlseg4eff_mask_v_nxv2f32_nxv2f32( <vscale
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vmv.v.v v11, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV32-NEXT:    th.vlseg4eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_mask_v_nxv2f32_nxv2f32:
@@ -4298,10 +5418,18 @@ define <vscale x 2 x float> @intrinsic_vlseg4eff_mask_v_nxv2f32_nxv2f32( <vscale
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vmv.v.v v11, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV64-NEXT:    th.vlseg4eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, iXLen } @llvm.riscv.th.vlseg4eff.mask.nxv2f32.nxv2f32(
@@ -4328,6 +5456,10 @@ define <vscale x 2 x float> @intrinsic_vlseg5eff_v_nxv2f32_nxv2f32(<vscale x 2 x
 ; RV32-NEXT:    th.vlseg5eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg5eff_v_nxv2f32_nxv2f32:
@@ -4336,6 +5468,10 @@ define <vscale x 2 x float> @intrinsic_vlseg5eff_v_nxv2f32_nxv2f32(<vscale x 2 x
 ; RV64-NEXT:    th.vlseg5eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, iXLen } @llvm.riscv.th.vlseg5eff.nxv2f32.nxv2f32(
@@ -4370,10 +5506,18 @@ define <vscale x 2 x float> @intrinsic_vlseg5eff_mask_v_nxv2f32_nxv2f32( <vscale
 ; RV32-NEXT:    th.vmv.v.v v11, v8
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV32-NEXT:    th.vlseg5eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg5eff_mask_v_nxv2f32_nxv2f32:
@@ -4390,10 +5534,18 @@ define <vscale x 2 x float> @intrinsic_vlseg5eff_mask_v_nxv2f32_nxv2f32( <vscale
 ; RV64-NEXT:    th.vmv.v.v v11, v8
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV64-NEXT:    th.vlseg5eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, iXLen } @llvm.riscv.th.vlseg5eff.mask.nxv2f32.nxv2f32(
@@ -4420,6 +5572,10 @@ define <vscale x 2 x float> @intrinsic_vlseg6eff_v_nxv2f32_nxv2f32(<vscale x 2 x
 ; RV32-NEXT:    th.vlseg6eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg6eff_v_nxv2f32_nxv2f32:
@@ -4428,6 +5584,10 @@ define <vscale x 2 x float> @intrinsic_vlseg6eff_v_nxv2f32_nxv2f32(<vscale x 2 x
 ; RV64-NEXT:    th.vlseg6eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, iXLen } @llvm.riscv.th.vlseg6eff.nxv2f32.nxv2f32(
@@ -4463,10 +5623,18 @@ define <vscale x 2 x float> @intrinsic_vlseg6eff_mask_v_nxv2f32_nxv2f32( <vscale
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vmv.v.v v13, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV32-NEXT:    th.vlseg6eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg6eff_mask_v_nxv2f32_nxv2f32:
@@ -4484,10 +5652,18 @@ define <vscale x 2 x float> @intrinsic_vlseg6eff_mask_v_nxv2f32_nxv2f32( <vscale
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vmv.v.v v13, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV64-NEXT:    th.vlseg6eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, iXLen } @llvm.riscv.th.vlseg6eff.mask.nxv2f32.nxv2f32(
@@ -4514,6 +5690,10 @@ define <vscale x 2 x float> @intrinsic_vlseg7eff_v_nxv2f32_nxv2f32(<vscale x 2 x
 ; RV32-NEXT:    th.vlseg7eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg7eff_v_nxv2f32_nxv2f32:
@@ -4522,6 +5702,10 @@ define <vscale x 2 x float> @intrinsic_vlseg7eff_v_nxv2f32_nxv2f32(<vscale x 2 x
 ; RV64-NEXT:    th.vlseg7eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, iXLen } @llvm.riscv.th.vlseg7eff.nxv2f32.nxv2f32(
@@ -4558,10 +5742,18 @@ define <vscale x 2 x float> @intrinsic_vlseg7eff_mask_v_nxv2f32_nxv2f32( <vscale
 ; RV32-NEXT:    th.vmv.v.v v13, v8
 ; RV32-NEXT:    th.vmv.v.v v14, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV32-NEXT:    th.vlseg7eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg7eff_mask_v_nxv2f32_nxv2f32:
@@ -4580,10 +5772,18 @@ define <vscale x 2 x float> @intrinsic_vlseg7eff_mask_v_nxv2f32_nxv2f32( <vscale
 ; RV64-NEXT:    th.vmv.v.v v13, v8
 ; RV64-NEXT:    th.vmv.v.v v14, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV64-NEXT:    th.vlseg7eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, iXLen } @llvm.riscv.th.vlseg7eff.mask.nxv2f32.nxv2f32(
@@ -4610,6 +5810,10 @@ define <vscale x 2 x float> @intrinsic_vlseg8eff_v_nxv2f32_nxv2f32(<vscale x 2 x
 ; RV32-NEXT:    th.vlseg8eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg8eff_v_nxv2f32_nxv2f32:
@@ -4618,6 +5822,10 @@ define <vscale x 2 x float> @intrinsic_vlseg8eff_v_nxv2f32_nxv2f32(<vscale x 2 x
 ; RV64-NEXT:    th.vlseg8eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, iXLen } @llvm.riscv.th.vlseg8eff.nxv2f32.nxv2f32(
@@ -4655,10 +5863,18 @@ define <vscale x 2 x float> @intrinsic_vlseg8eff_mask_v_nxv2f32_nxv2f32( <vscale
 ; RV32-NEXT:    th.vmv.v.v v14, v8
 ; RV32-NEXT:    th.vmv.v.v v15, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV32-NEXT:    th.vlseg8eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg8eff_mask_v_nxv2f32_nxv2f32:
@@ -4678,10 +5894,18 @@ define <vscale x 2 x float> @intrinsic_vlseg8eff_mask_v_nxv2f32_nxv2f32( <vscale
 ; RV64-NEXT:    th.vmv.v.v v14, v8
 ; RV64-NEXT:    th.vmv.v.v v15, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m1, d1
 ; RV64-NEXT:    th.vlseg8eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, <vscale x 2 x float>, iXLen } @llvm.riscv.th.vlseg8eff.mask.nxv2f32.nxv2f32(
@@ -4708,6 +5932,10 @@ define <vscale x 4 x float> @intrinsic_vlseg2eff_v_nxv4f32_nxv4f32(<vscale x 4 x
 ; RV32-NEXT:    th.vlseg2eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv4f32_nxv4f32:
@@ -4716,6 +5944,10 @@ define <vscale x 4 x float> @intrinsic_vlseg2eff_v_nxv4f32_nxv4f32(<vscale x 4 x
 ; RV64-NEXT:    th.vlseg2eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x float>, <vscale x 4 x float>, iXLen } @llvm.riscv.th.vlseg2eff.nxv4f32.nxv4f32(
@@ -4748,10 +5980,18 @@ define <vscale x 4 x float> @intrinsic_vlseg2eff_mask_v_nxv4f32_nxv4f32( <vscale
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vmv.v.v v11, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m2, d1
 ; RV32-NEXT:    th.vlseg2eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv4f32_nxv4f32:
@@ -4766,10 +6006,18 @@ define <vscale x 4 x float> @intrinsic_vlseg2eff_mask_v_nxv4f32_nxv4f32( <vscale
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vmv.v.v v11, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m2, d1
 ; RV64-NEXT:    th.vlseg2eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x float>, <vscale x 4 x float>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv4f32.nxv4f32(
@@ -4796,6 +6044,10 @@ define <vscale x 4 x float> @intrinsic_vlseg3eff_v_nxv4f32_nxv4f32(<vscale x 4 x
 ; RV32-NEXT:    th.vlseg3eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_v_nxv4f32_nxv4f32:
@@ -4804,6 +6056,10 @@ define <vscale x 4 x float> @intrinsic_vlseg3eff_v_nxv4f32_nxv4f32(<vscale x 4 x
 ; RV64-NEXT:    th.vlseg3eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>, iXLen } @llvm.riscv.th.vlseg3eff.nxv4f32.nxv4f32(
@@ -4838,10 +6094,18 @@ define <vscale x 4 x float> @intrinsic_vlseg3eff_mask_v_nxv4f32_nxv4f32( <vscale
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vmv.v.v v13, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m2, d1
 ; RV32-NEXT:    th.vlseg3eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_mask_v_nxv4f32_nxv4f32:
@@ -4858,10 +6122,18 @@ define <vscale x 4 x float> @intrinsic_vlseg3eff_mask_v_nxv4f32_nxv4f32( <vscale
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vmv.v.v v13, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m2, d1
 ; RV64-NEXT:    th.vlseg3eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>, iXLen } @llvm.riscv.th.vlseg3eff.mask.nxv4f32.nxv4f32(
@@ -4888,6 +6160,10 @@ define <vscale x 4 x float> @intrinsic_vlseg4eff_v_nxv4f32_nxv4f32(<vscale x 4 x
 ; RV32-NEXT:    th.vlseg4eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_v_nxv4f32_nxv4f32:
@@ -4896,6 +6172,10 @@ define <vscale x 4 x float> @intrinsic_vlseg4eff_v_nxv4f32_nxv4f32(<vscale x 4 x
 ; RV64-NEXT:    th.vlseg4eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>, iXLen } @llvm.riscv.th.vlseg4eff.nxv4f32.nxv4f32(
@@ -4932,10 +6212,18 @@ define <vscale x 4 x float> @intrinsic_vlseg4eff_mask_v_nxv4f32_nxv4f32( <vscale
 ; RV32-NEXT:    th.vmv.v.v v14, v8
 ; RV32-NEXT:    th.vmv.v.v v15, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m2, d1
 ; RV32-NEXT:    th.vlseg4eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_mask_v_nxv4f32_nxv4f32:
@@ -4954,10 +6242,18 @@ define <vscale x 4 x float> @intrinsic_vlseg4eff_mask_v_nxv4f32_nxv4f32( <vscale
 ; RV64-NEXT:    th.vmv.v.v v14, v8
 ; RV64-NEXT:    th.vmv.v.v v15, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m2, d1
 ; RV64-NEXT:    th.vlseg4eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>, <vscale x 4 x float>, iXLen } @llvm.riscv.th.vlseg4eff.mask.nxv4f32.nxv4f32(
@@ -4984,6 +6280,10 @@ define <vscale x 8 x float> @intrinsic_vlseg2eff_v_nxv8f32_nxv8f32(<vscale x 8 x
 ; RV32-NEXT:    th.vlseg2eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv8f32_nxv8f32:
@@ -4992,6 +6292,10 @@ define <vscale x 8 x float> @intrinsic_vlseg2eff_v_nxv8f32_nxv8f32(<vscale x 8 x
 ; RV64-NEXT:    th.vlseg2eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x float>, <vscale x 8 x float>, iXLen } @llvm.riscv.th.vlseg2eff.nxv8f32.nxv8f32(
@@ -5026,10 +6330,18 @@ define <vscale x 8 x float> @intrinsic_vlseg2eff_mask_v_nxv8f32_nxv8f32( <vscale
 ; RV32-NEXT:    th.vmv.v.v v14, v10
 ; RV32-NEXT:    th.vmv.v.v v15, v11
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e32, m4, d1
 ; RV32-NEXT:    th.vlseg2eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv8f32_nxv8f32:
@@ -5046,10 +6358,18 @@ define <vscale x 8 x float> @intrinsic_vlseg2eff_mask_v_nxv8f32_nxv8f32( <vscale
 ; RV64-NEXT:    th.vmv.v.v v14, v10
 ; RV64-NEXT:    th.vmv.v.v v15, v11
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e32, m4, d1
 ; RV64-NEXT:    th.vlseg2eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x float>, <vscale x 8 x float>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv8f32.nxv8f32(
@@ -5076,6 +6396,10 @@ define <vscale x 1 x i64> @intrinsic_vlseg2eff_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; RV32-NEXT:    th.vlseg2eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv1i64_nxv1i64:
@@ -5084,6 +6408,10 @@ define <vscale x 1 x i64> @intrinsic_vlseg2eff_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; RV64-NEXT:    th.vlseg2eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, iXLen } @llvm.riscv.th.vlseg2eff.nxv1i64.nxv1i64(
@@ -5115,10 +6443,18 @@ define <vscale x 1 x i64> @intrinsic_vlseg2eff_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; RV32-NEXT:    th.vmv.v.v v7, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV32-NEXT:    th.vlseg2eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv1i64_nxv1i64:
@@ -5132,10 +6468,18 @@ define <vscale x 1 x i64> @intrinsic_vlseg2eff_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; RV64-NEXT:    th.vmv.v.v v7, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV64-NEXT:    th.vlseg2eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv1i64.nxv1i64(
@@ -5162,6 +6506,10 @@ define <vscale x 1 x i64> @intrinsic_vlseg3eff_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; RV32-NEXT:    th.vlseg3eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_v_nxv1i64_nxv1i64:
@@ -5170,6 +6518,10 @@ define <vscale x 1 x i64> @intrinsic_vlseg3eff_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; RV64-NEXT:    th.vlseg3eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, iXLen } @llvm.riscv.th.vlseg3eff.nxv1i64.nxv1i64(
@@ -5202,10 +6554,18 @@ define <vscale x 1 x i64> @intrinsic_vlseg3eff_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v7, v8
 ; RV32-NEXT:    th.vmv.v.v v9, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV32-NEXT:    th.vlseg3eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_mask_v_nxv1i64_nxv1i64:
@@ -5220,10 +6580,18 @@ define <vscale x 1 x i64> @intrinsic_vlseg3eff_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v7, v8
 ; RV64-NEXT:    th.vmv.v.v v9, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV64-NEXT:    th.vlseg3eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, iXLen } @llvm.riscv.th.vlseg3eff.mask.nxv1i64.nxv1i64(
@@ -5250,6 +6618,10 @@ define <vscale x 1 x i64> @intrinsic_vlseg4eff_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; RV32-NEXT:    th.vlseg4eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_v_nxv1i64_nxv1i64:
@@ -5258,6 +6630,10 @@ define <vscale x 1 x i64> @intrinsic_vlseg4eff_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; RV64-NEXT:    th.vlseg4eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, iXLen } @llvm.riscv.th.vlseg4eff.nxv1i64.nxv1i64(
@@ -5291,10 +6667,18 @@ define <vscale x 1 x i64> @intrinsic_vlseg4eff_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v9, v8
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV32-NEXT:    th.vlseg4eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_mask_v_nxv1i64_nxv1i64:
@@ -5310,10 +6694,18 @@ define <vscale x 1 x i64> @intrinsic_vlseg4eff_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v9, v8
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV64-NEXT:    th.vlseg4eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, iXLen } @llvm.riscv.th.vlseg4eff.mask.nxv1i64.nxv1i64(
@@ -5340,6 +6732,10 @@ define <vscale x 1 x i64> @intrinsic_vlseg5eff_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; RV32-NEXT:    th.vlseg5eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg5eff_v_nxv1i64_nxv1i64:
@@ -5348,6 +6744,10 @@ define <vscale x 1 x i64> @intrinsic_vlseg5eff_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; RV64-NEXT:    th.vlseg5eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, iXLen } @llvm.riscv.th.vlseg5eff.nxv1i64.nxv1i64(
@@ -5382,10 +6782,18 @@ define <vscale x 1 x i64> @intrinsic_vlseg5eff_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vmv.v.v v11, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV32-NEXT:    th.vlseg5eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg5eff_mask_v_nxv1i64_nxv1i64:
@@ -5402,10 +6810,18 @@ define <vscale x 1 x i64> @intrinsic_vlseg5eff_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vmv.v.v v11, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV64-NEXT:    th.vlseg5eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, iXLen } @llvm.riscv.th.vlseg5eff.mask.nxv1i64.nxv1i64(
@@ -5432,6 +6848,10 @@ define <vscale x 1 x i64> @intrinsic_vlseg6eff_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; RV32-NEXT:    th.vlseg6eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg6eff_v_nxv1i64_nxv1i64:
@@ -5440,6 +6860,10 @@ define <vscale x 1 x i64> @intrinsic_vlseg6eff_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; RV64-NEXT:    th.vlseg6eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, iXLen } @llvm.riscv.th.vlseg6eff.nxv1i64.nxv1i64(
@@ -5475,10 +6899,18 @@ define <vscale x 1 x i64> @intrinsic_vlseg6eff_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v11, v8
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV32-NEXT:    th.vlseg6eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg6eff_mask_v_nxv1i64_nxv1i64:
@@ -5496,10 +6928,18 @@ define <vscale x 1 x i64> @intrinsic_vlseg6eff_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v11, v8
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV64-NEXT:    th.vlseg6eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, iXLen } @llvm.riscv.th.vlseg6eff.mask.nxv1i64.nxv1i64(
@@ -5526,6 +6966,10 @@ define <vscale x 1 x i64> @intrinsic_vlseg7eff_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; RV32-NEXT:    th.vlseg7eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg7eff_v_nxv1i64_nxv1i64:
@@ -5534,6 +6978,10 @@ define <vscale x 1 x i64> @intrinsic_vlseg7eff_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; RV64-NEXT:    th.vlseg7eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, iXLen } @llvm.riscv.th.vlseg7eff.nxv1i64.nxv1i64(
@@ -5570,10 +7018,18 @@ define <vscale x 1 x i64> @intrinsic_vlseg7eff_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vmv.v.v v13, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV32-NEXT:    th.vlseg7eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg7eff_mask_v_nxv1i64_nxv1i64:
@@ -5592,10 +7048,18 @@ define <vscale x 1 x i64> @intrinsic_vlseg7eff_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vmv.v.v v13, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV64-NEXT:    th.vlseg7eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, iXLen } @llvm.riscv.th.vlseg7eff.mask.nxv1i64.nxv1i64(
@@ -5622,6 +7086,10 @@ define <vscale x 1 x i64> @intrinsic_vlseg8eff_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; RV32-NEXT:    th.vlseg8eff.v v7, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg8eff_v_nxv1i64_nxv1i64:
@@ -5630,6 +7098,10 @@ define <vscale x 1 x i64> @intrinsic_vlseg8eff_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; RV64-NEXT:    th.vlseg8eff.v v7, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, iXLen } @llvm.riscv.th.vlseg8eff.nxv1i64.nxv1i64(
@@ -5667,10 +7139,18 @@ define <vscale x 1 x i64> @intrinsic_vlseg8eff_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v13, v8
 ; RV32-NEXT:    th.vmv.v.v v14, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV32-NEXT:    th.vlseg8eff.v v7, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg8eff_mask_v_nxv1i64_nxv1i64:
@@ -5690,10 +7170,18 @@ define <vscale x 1 x i64> @intrinsic_vlseg8eff_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v13, v8
 ; RV64-NEXT:    th.vmv.v.v v14, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV64-NEXT:    th.vlseg8eff.v v7, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, iXLen } @llvm.riscv.th.vlseg8eff.mask.nxv1i64.nxv1i64(
@@ -5720,6 +7208,10 @@ define <vscale x 2 x i64> @intrinsic_vlseg2eff_v_nxv2i64_nxv2i64(<vscale x 2 x i
 ; RV32-NEXT:    th.vlseg2eff.v v6, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv2i64_nxv2i64:
@@ -5728,6 +7220,10 @@ define <vscale x 2 x i64> @intrinsic_vlseg2eff_v_nxv2i64_nxv2i64(<vscale x 2 x i
 ; RV64-NEXT:    th.vlseg2eff.v v6, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i64>, <vscale x 2 x i64>, iXLen } @llvm.riscv.th.vlseg2eff.nxv2i64.nxv2i64(
@@ -5760,10 +7256,18 @@ define <vscale x 2 x i64> @intrinsic_vlseg2eff_mask_v_nxv2i64_nxv2i64(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v6, v8
 ; RV32-NEXT:    th.vmv.v.v v7, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m2, d1
 ; RV32-NEXT:    th.vlseg2eff.v v6, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv2i64_nxv2i64:
@@ -5778,10 +7282,18 @@ define <vscale x 2 x i64> @intrinsic_vlseg2eff_mask_v_nxv2i64_nxv2i64(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v6, v8
 ; RV64-NEXT:    th.vmv.v.v v7, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m2, d1
 ; RV64-NEXT:    th.vlseg2eff.v v6, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i64>, <vscale x 2 x i64>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv2i64.nxv2i64(
@@ -5808,6 +7320,10 @@ define <vscale x 2 x i64> @intrinsic_vlseg3eff_v_nxv2i64_nxv2i64(<vscale x 2 x i
 ; RV32-NEXT:    th.vlseg3eff.v v6, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_v_nxv2i64_nxv2i64:
@@ -5816,6 +7332,10 @@ define <vscale x 2 x i64> @intrinsic_vlseg3eff_v_nxv2i64_nxv2i64(<vscale x 2 x i
 ; RV64-NEXT:    th.vlseg3eff.v v6, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i64>, <vscale x 2 x i64>, <vscale x 2 x i64>, iXLen } @llvm.riscv.th.vlseg3eff.nxv2i64.nxv2i64(
@@ -5850,10 +7370,18 @@ define <vscale x 2 x i64> @intrinsic_vlseg3eff_mask_v_nxv2i64_nxv2i64(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vmv.v.v v11, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m2, d1
 ; RV32-NEXT:    th.vlseg3eff.v v6, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_mask_v_nxv2i64_nxv2i64:
@@ -5870,10 +7398,18 @@ define <vscale x 2 x i64> @intrinsic_vlseg3eff_mask_v_nxv2i64_nxv2i64(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vmv.v.v v11, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m2, d1
 ; RV64-NEXT:    th.vlseg3eff.v v6, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i64>, <vscale x 2 x i64>, <vscale x 2 x i64>, iXLen } @llvm.riscv.th.vlseg3eff.mask.nxv2i64.nxv2i64(
@@ -5900,6 +7436,10 @@ define <vscale x 2 x i64> @intrinsic_vlseg4eff_v_nxv2i64_nxv2i64(<vscale x 2 x i
 ; RV32-NEXT:    th.vlseg4eff.v v6, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_v_nxv2i64_nxv2i64:
@@ -5908,6 +7448,10 @@ define <vscale x 2 x i64> @intrinsic_vlseg4eff_v_nxv2i64_nxv2i64(<vscale x 2 x i
 ; RV64-NEXT:    th.vlseg4eff.v v6, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i64>, <vscale x 2 x i64>, <vscale x 2 x i64>, <vscale x 2 x i64>, iXLen } @llvm.riscv.th.vlseg4eff.nxv2i64.nxv2i64(
@@ -5944,10 +7488,18 @@ define <vscale x 2 x i64> @intrinsic_vlseg4eff_mask_v_nxv2i64_nxv2i64(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vmv.v.v v13, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m2, d1
 ; RV32-NEXT:    th.vlseg4eff.v v6, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_mask_v_nxv2i64_nxv2i64:
@@ -5966,10 +7518,18 @@ define <vscale x 2 x i64> @intrinsic_vlseg4eff_mask_v_nxv2i64_nxv2i64(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vmv.v.v v13, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m2, d1
 ; RV64-NEXT:    th.vlseg4eff.v v6, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i64>, <vscale x 2 x i64>, <vscale x 2 x i64>, <vscale x 2 x i64>, iXLen } @llvm.riscv.th.vlseg4eff.mask.nxv2i64.nxv2i64(
@@ -5996,6 +7556,10 @@ define <vscale x 4 x i64> @intrinsic_vlseg2eff_v_nxv4i64_nxv4i64(<vscale x 4 x i
 ; RV32-NEXT:    th.vlseg2eff.v v4, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv4i64_nxv4i64:
@@ -6004,6 +7568,10 @@ define <vscale x 4 x i64> @intrinsic_vlseg2eff_v_nxv4i64_nxv4i64(<vscale x 4 x i
 ; RV64-NEXT:    th.vlseg2eff.v v4, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i64>, <vscale x 4 x i64>, iXLen } @llvm.riscv.th.vlseg2eff.nxv4i64.nxv4i64(
@@ -6038,10 +7606,18 @@ define <vscale x 4 x i64> @intrinsic_vlseg2eff_mask_v_nxv4i64_nxv4i64(<vscale x 
 ; RV32-NEXT:    th.vmv.v.v v6, v10
 ; RV32-NEXT:    th.vmv.v.v v7, v11
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m4, d1
 ; RV32-NEXT:    th.vlseg2eff.v v4, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv4i64_nxv4i64:
@@ -6058,10 +7634,18 @@ define <vscale x 4 x i64> @intrinsic_vlseg2eff_mask_v_nxv4i64_nxv4i64(<vscale x 
 ; RV64-NEXT:    th.vmv.v.v v6, v10
 ; RV64-NEXT:    th.vmv.v.v v7, v11
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m4, d1
 ; RV64-NEXT:    th.vlseg2eff.v v4, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i64>, <vscale x 4 x i64>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv4i64.nxv4i64(
@@ -6088,6 +7672,10 @@ define <vscale x 1 x double> @intrinsic_vlseg2eff_v_nxv1f64_nxv1f64(<vscale x 1 
 ; RV32-NEXT:    th.vlseg2eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv1f64_nxv1f64:
@@ -6096,6 +7684,10 @@ define <vscale x 1 x double> @intrinsic_vlseg2eff_v_nxv1f64_nxv1f64(<vscale x 1 
 ; RV64-NEXT:    th.vlseg2eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x double>, <vscale x 1 x double>, iXLen } @llvm.riscv.th.vlseg2eff.nxv1f64.nxv1f64(
@@ -6127,10 +7719,18 @@ define <vscale x 1 x double> @intrinsic_vlseg2eff_mask_v_nxv1f64_nxv1f64( <vscal
 ; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; RV32-NEXT:    th.vmv.v.v v9, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV32-NEXT:    th.vlseg2eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv1f64_nxv1f64:
@@ -6144,10 +7744,18 @@ define <vscale x 1 x double> @intrinsic_vlseg2eff_mask_v_nxv1f64_nxv1f64( <vscal
 ; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; RV64-NEXT:    th.vmv.v.v v9, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV64-NEXT:    th.vlseg2eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x double>, <vscale x 1 x double>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv1f64.nxv1f64(
@@ -6174,6 +7782,10 @@ define <vscale x 1 x double> @intrinsic_vlseg3eff_v_nxv1f64_nxv1f64(<vscale x 1 
 ; RV32-NEXT:    th.vlseg3eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_v_nxv1f64_nxv1f64:
@@ -6182,6 +7794,10 @@ define <vscale x 1 x double> @intrinsic_vlseg3eff_v_nxv1f64_nxv1f64(<vscale x 1 
 ; RV64-NEXT:    th.vlseg3eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, iXLen } @llvm.riscv.th.vlseg3eff.nxv1f64.nxv1f64(
@@ -6214,10 +7830,18 @@ define <vscale x 1 x double> @intrinsic_vlseg3eff_mask_v_nxv1f64_nxv1f64( <vscal
 ; RV32-NEXT:    th.vmv.v.v v9, v8
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV32-NEXT:    th.vlseg3eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_mask_v_nxv1f64_nxv1f64:
@@ -6232,10 +7856,18 @@ define <vscale x 1 x double> @intrinsic_vlseg3eff_mask_v_nxv1f64_nxv1f64( <vscal
 ; RV64-NEXT:    th.vmv.v.v v9, v8
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV64-NEXT:    th.vlseg3eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, iXLen } @llvm.riscv.th.vlseg3eff.mask.nxv1f64.nxv1f64(
@@ -6262,6 +7894,10 @@ define <vscale x 1 x double> @intrinsic_vlseg4eff_v_nxv1f64_nxv1f64(<vscale x 1 
 ; RV32-NEXT:    th.vlseg4eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_v_nxv1f64_nxv1f64:
@@ -6270,6 +7906,10 @@ define <vscale x 1 x double> @intrinsic_vlseg4eff_v_nxv1f64_nxv1f64(<vscale x 1 
 ; RV64-NEXT:    th.vlseg4eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, iXLen } @llvm.riscv.th.vlseg4eff.nxv1f64.nxv1f64(
@@ -6303,10 +7943,18 @@ define <vscale x 1 x double> @intrinsic_vlseg4eff_mask_v_nxv1f64_nxv1f64( <vscal
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vmv.v.v v11, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV32-NEXT:    th.vlseg4eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_mask_v_nxv1f64_nxv1f64:
@@ -6322,10 +7970,18 @@ define <vscale x 1 x double> @intrinsic_vlseg4eff_mask_v_nxv1f64_nxv1f64( <vscal
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vmv.v.v v11, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV64-NEXT:    th.vlseg4eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, iXLen } @llvm.riscv.th.vlseg4eff.mask.nxv1f64.nxv1f64(
@@ -6352,6 +8008,10 @@ define <vscale x 1 x double> @intrinsic_vlseg5eff_v_nxv1f64_nxv1f64(<vscale x 1 
 ; RV32-NEXT:    th.vlseg5eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg5eff_v_nxv1f64_nxv1f64:
@@ -6360,6 +8020,10 @@ define <vscale x 1 x double> @intrinsic_vlseg5eff_v_nxv1f64_nxv1f64(<vscale x 1 
 ; RV64-NEXT:    th.vlseg5eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, iXLen } @llvm.riscv.th.vlseg5eff.nxv1f64.nxv1f64(
@@ -6394,10 +8058,18 @@ define <vscale x 1 x double> @intrinsic_vlseg5eff_mask_v_nxv1f64_nxv1f64( <vscal
 ; RV32-NEXT:    th.vmv.v.v v11, v8
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV32-NEXT:    th.vlseg5eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg5eff_mask_v_nxv1f64_nxv1f64:
@@ -6414,10 +8086,18 @@ define <vscale x 1 x double> @intrinsic_vlseg5eff_mask_v_nxv1f64_nxv1f64( <vscal
 ; RV64-NEXT:    th.vmv.v.v v11, v8
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV64-NEXT:    th.vlseg5eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, iXLen } @llvm.riscv.th.vlseg5eff.mask.nxv1f64.nxv1f64(
@@ -6444,6 +8124,10 @@ define <vscale x 1 x double> @intrinsic_vlseg6eff_v_nxv1f64_nxv1f64(<vscale x 1 
 ; RV32-NEXT:    th.vlseg6eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg6eff_v_nxv1f64_nxv1f64:
@@ -6452,6 +8136,10 @@ define <vscale x 1 x double> @intrinsic_vlseg6eff_v_nxv1f64_nxv1f64(<vscale x 1 
 ; RV64-NEXT:    th.vlseg6eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, iXLen } @llvm.riscv.th.vlseg6eff.nxv1f64.nxv1f64(
@@ -6487,10 +8175,18 @@ define <vscale x 1 x double> @intrinsic_vlseg6eff_mask_v_nxv1f64_nxv1f64( <vscal
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vmv.v.v v13, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV32-NEXT:    th.vlseg6eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg6eff_mask_v_nxv1f64_nxv1f64:
@@ -6508,10 +8204,18 @@ define <vscale x 1 x double> @intrinsic_vlseg6eff_mask_v_nxv1f64_nxv1f64( <vscal
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vmv.v.v v13, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV64-NEXT:    th.vlseg6eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, iXLen } @llvm.riscv.th.vlseg6eff.mask.nxv1f64.nxv1f64(
@@ -6538,6 +8242,10 @@ define <vscale x 1 x double> @intrinsic_vlseg7eff_v_nxv1f64_nxv1f64(<vscale x 1 
 ; RV32-NEXT:    th.vlseg7eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg7eff_v_nxv1f64_nxv1f64:
@@ -6546,6 +8254,10 @@ define <vscale x 1 x double> @intrinsic_vlseg7eff_v_nxv1f64_nxv1f64(<vscale x 1 
 ; RV64-NEXT:    th.vlseg7eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, iXLen } @llvm.riscv.th.vlseg7eff.nxv1f64.nxv1f64(
@@ -6582,10 +8294,18 @@ define <vscale x 1 x double> @intrinsic_vlseg7eff_mask_v_nxv1f64_nxv1f64( <vscal
 ; RV32-NEXT:    th.vmv.v.v v13, v8
 ; RV32-NEXT:    th.vmv.v.v v14, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV32-NEXT:    th.vlseg7eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg7eff_mask_v_nxv1f64_nxv1f64:
@@ -6604,10 +8324,18 @@ define <vscale x 1 x double> @intrinsic_vlseg7eff_mask_v_nxv1f64_nxv1f64( <vscal
 ; RV64-NEXT:    th.vmv.v.v v13, v8
 ; RV64-NEXT:    th.vmv.v.v v14, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV64-NEXT:    th.vlseg7eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, iXLen } @llvm.riscv.th.vlseg7eff.mask.nxv1f64.nxv1f64(
@@ -6634,6 +8362,10 @@ define <vscale x 1 x double> @intrinsic_vlseg8eff_v_nxv1f64_nxv1f64(<vscale x 1 
 ; RV32-NEXT:    th.vlseg8eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg8eff_v_nxv1f64_nxv1f64:
@@ -6642,6 +8374,10 @@ define <vscale x 1 x double> @intrinsic_vlseg8eff_v_nxv1f64_nxv1f64(<vscale x 1 
 ; RV64-NEXT:    th.vlseg8eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, iXLen } @llvm.riscv.th.vlseg8eff.nxv1f64.nxv1f64(
@@ -6679,10 +8415,18 @@ define <vscale x 1 x double> @intrinsic_vlseg8eff_mask_v_nxv1f64_nxv1f64( <vscal
 ; RV32-NEXT:    th.vmv.v.v v14, v8
 ; RV32-NEXT:    th.vmv.v.v v15, v8
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV32-NEXT:    th.vlseg8eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg8eff_mask_v_nxv1f64_nxv1f64:
@@ -6702,10 +8446,18 @@ define <vscale x 1 x double> @intrinsic_vlseg8eff_mask_v_nxv1f64_nxv1f64( <vscal
 ; RV64-NEXT:    th.vmv.v.v v14, v8
 ; RV64-NEXT:    th.vmv.v.v v15, v8
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m1, d1
 ; RV64-NEXT:    th.vlseg8eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, <vscale x 1 x double>, iXLen } @llvm.riscv.th.vlseg8eff.mask.nxv1f64.nxv1f64(
@@ -6732,6 +8484,10 @@ define <vscale x 2 x double> @intrinsic_vlseg2eff_v_nxv2f64_nxv2f64(<vscale x 2 
 ; RV32-NEXT:    th.vlseg2eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv2f64_nxv2f64:
@@ -6740,6 +8496,10 @@ define <vscale x 2 x double> @intrinsic_vlseg2eff_v_nxv2f64_nxv2f64(<vscale x 2 
 ; RV64-NEXT:    th.vlseg2eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x double>, <vscale x 2 x double>, iXLen } @llvm.riscv.th.vlseg2eff.nxv2f64.nxv2f64(
@@ -6772,10 +8532,18 @@ define <vscale x 2 x double> @intrinsic_vlseg2eff_mask_v_nxv2f64_nxv2f64( <vscal
 ; RV32-NEXT:    th.vmv.v.v v10, v8
 ; RV32-NEXT:    th.vmv.v.v v11, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m2, d1
 ; RV32-NEXT:    th.vlseg2eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv2f64_nxv2f64:
@@ -6790,10 +8558,18 @@ define <vscale x 2 x double> @intrinsic_vlseg2eff_mask_v_nxv2f64_nxv2f64( <vscal
 ; RV64-NEXT:    th.vmv.v.v v10, v8
 ; RV64-NEXT:    th.vmv.v.v v11, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m2, d1
 ; RV64-NEXT:    th.vlseg2eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x double>, <vscale x 2 x double>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv2f64.nxv2f64(
@@ -6820,6 +8596,10 @@ define <vscale x 2 x double> @intrinsic_vlseg3eff_v_nxv2f64_nxv2f64(<vscale x 2 
 ; RV32-NEXT:    th.vlseg3eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_v_nxv2f64_nxv2f64:
@@ -6828,6 +8608,10 @@ define <vscale x 2 x double> @intrinsic_vlseg3eff_v_nxv2f64_nxv2f64(<vscale x 2 
 ; RV64-NEXT:    th.vlseg3eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x double>, <vscale x 2 x double>, <vscale x 2 x double>, iXLen } @llvm.riscv.th.vlseg3eff.nxv2f64.nxv2f64(
@@ -6862,10 +8646,18 @@ define <vscale x 2 x double> @intrinsic_vlseg3eff_mask_v_nxv2f64_nxv2f64( <vscal
 ; RV32-NEXT:    th.vmv.v.v v12, v8
 ; RV32-NEXT:    th.vmv.v.v v13, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m2, d1
 ; RV32-NEXT:    th.vlseg3eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg3eff_mask_v_nxv2f64_nxv2f64:
@@ -6882,10 +8674,18 @@ define <vscale x 2 x double> @intrinsic_vlseg3eff_mask_v_nxv2f64_nxv2f64( <vscal
 ; RV64-NEXT:    th.vmv.v.v v12, v8
 ; RV64-NEXT:    th.vmv.v.v v13, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m2, d1
 ; RV64-NEXT:    th.vlseg3eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x double>, <vscale x 2 x double>, <vscale x 2 x double>, iXLen } @llvm.riscv.th.vlseg3eff.mask.nxv2f64.nxv2f64(
@@ -6912,6 +8712,10 @@ define <vscale x 2 x double> @intrinsic_vlseg4eff_v_nxv2f64_nxv2f64(<vscale x 2 
 ; RV32-NEXT:    th.vlseg4eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_v_nxv2f64_nxv2f64:
@@ -6920,6 +8724,10 @@ define <vscale x 2 x double> @intrinsic_vlseg4eff_v_nxv2f64_nxv2f64(<vscale x 2 
 ; RV64-NEXT:    th.vlseg4eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x double>, <vscale x 2 x double>, <vscale x 2 x double>, <vscale x 2 x double>, iXLen } @llvm.riscv.th.vlseg4eff.nxv2f64.nxv2f64(
@@ -6956,10 +8764,18 @@ define <vscale x 2 x double> @intrinsic_vlseg4eff_mask_v_nxv2f64_nxv2f64( <vscal
 ; RV32-NEXT:    th.vmv.v.v v14, v8
 ; RV32-NEXT:    th.vmv.v.v v15, v9
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m2, d1
 ; RV32-NEXT:    th.vlseg4eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg4eff_mask_v_nxv2f64_nxv2f64:
@@ -6978,10 +8794,18 @@ define <vscale x 2 x double> @intrinsic_vlseg4eff_mask_v_nxv2f64_nxv2f64( <vscal
 ; RV64-NEXT:    th.vmv.v.v v14, v8
 ; RV64-NEXT:    th.vmv.v.v v15, v9
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m2, d1
 ; RV64-NEXT:    th.vlseg4eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x double>, <vscale x 2 x double>, <vscale x 2 x double>, <vscale x 2 x double>, iXLen } @llvm.riscv.th.vlseg4eff.mask.nxv2f64.nxv2f64(
@@ -7008,6 +8832,10 @@ define <vscale x 4 x double> @intrinsic_vlseg2eff_v_nxv4f64_nxv4f64(<vscale x 4 
 ; RV32-NEXT:    th.vlseg2eff.v v8, (a0)
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_v_nxv4f64_nxv4f64:
@@ -7016,6 +8844,10 @@ define <vscale x 4 x double> @intrinsic_vlseg2eff_v_nxv4f64_nxv4f64(<vscale x 4 
 ; RV64-NEXT:    th.vlseg2eff.v v8, (a0)
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x double>, <vscale x 4 x double>, iXLen } @llvm.riscv.th.vlseg2eff.nxv4f64.nxv4f64(
@@ -7050,10 +8882,18 @@ define <vscale x 4 x double> @intrinsic_vlseg2eff_mask_v_nxv4f64_nxv4f64( <vscal
 ; RV32-NEXT:    th.vmv.v.v v14, v10
 ; RV32-NEXT:    th.vmv.v.v v15, v11
 ; RV32-NEXT:    th.vsetvl zero, a3, a4
+; RV32-NEXT:    csrr a3, vl
+; RV32-NEXT:    csrr a4, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a3, a4
 ; RV32-NEXT:    th.vsetvli zero, a1, e64, m4, d1
 ; RV32-NEXT:    th.vlseg2eff.v v8, (a0), v0.t
 ; RV32-NEXT:    csrr a0, vl
 ; RV32-NEXT:    sw a0, 0(a2)
+; RV32-NEXT:    csrr a0, vl
+; RV32-NEXT:    csrr a1, vtype
+; RV32-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV32-NEXT:    th.vsetvl zero, a0, a1
 ; RV32-NEXT:    ret
 ;
 ; RV64-LABEL: intrinsic_vlseg2eff_mask_v_nxv4f64_nxv4f64:
@@ -7070,10 +8910,18 @@ define <vscale x 4 x double> @intrinsic_vlseg2eff_mask_v_nxv4f64_nxv4f64( <vscal
 ; RV64-NEXT:    th.vmv.v.v v14, v10
 ; RV64-NEXT:    th.vmv.v.v v15, v11
 ; RV64-NEXT:    th.vsetvl zero, a3, a4
+; RV64-NEXT:    csrr a3, vl
+; RV64-NEXT:    csrr a4, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a3, a4
 ; RV64-NEXT:    th.vsetvli zero, a1, e64, m4, d1
 ; RV64-NEXT:    th.vlseg2eff.v v8, (a0), v0.t
 ; RV64-NEXT:    csrr a0, vl
 ; RV64-NEXT:    sd a0, 0(a2)
+; RV64-NEXT:    csrr a0, vl
+; RV64-NEXT:    csrr a1, vtype
+; RV64-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; RV64-NEXT:    th.vsetvl zero, a0, a1
 ; RV64-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x double>, <vscale x 4 x double>, iXLen } @llvm.riscv.th.vlseg2eff.mask.nxv4f64.nxv4f64(
