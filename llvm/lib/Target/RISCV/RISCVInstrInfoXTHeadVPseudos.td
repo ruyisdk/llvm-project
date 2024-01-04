@@ -1710,6 +1710,37 @@ let Predicates = [HasVendorXTHeadV] in {
   defm PseudoTH_VADD   : XVPseudoVALU_VV_VX_VI;
   defm PseudoTH_VSUB   : XVPseudoVALU_VV_VX;
   defm PseudoTH_VRSUB  : XVPseudoVALU_VX_VI;
+
+  foreach vti = AllIntegerXVectors in {
+    // Match vrsub with 2 vector operands to th.vsub.vv by swapping operands. This
+    // Occurs when legalizing th.vrsub.vx intrinsics for i64 on RV32 since we need
+    // to use a more complex splat sequence. Add the pattern for all VTs for
+    // consistency.
+    let Predicates = GetXVTypePredicates<vti>.Predicates in {
+      def : Pat<(vti.Vector (int_riscv_th_vrsub (vti.Vector vti.RegClass:$merge),
+                                                (vti.Vector vti.RegClass:$rs2),
+                                                (vti.Vector vti.RegClass:$rs1),
+                                                VLOpFrag)),
+                (!cast<Instruction>("PseudoTH_VSUB_VV_"#vti.LMul.MX)
+                                                          vti.RegClass:$merge,
+                                                          vti.RegClass:$rs1,
+                                                          vti.RegClass:$rs2,
+                                                          GPR:$vl,
+                                                          vti.Log2SEW)>;
+      def : Pat<(vti.Vector (int_riscv_th_vrsub_mask (vti.Vector vti.RegClass:$merge),
+                                                     (vti.Vector vti.RegClass:$rs2),
+                                                     (vti.Vector vti.RegClass:$rs1),
+                                                     (vti.Mask V0),
+                                                     VLOpFrag)),
+                (!cast<Instruction>("PseudoTH_VSUB_VV_"#vti.LMul.MX#"_MASK")
+                                                          vti.RegClass:$merge,
+                                                          vti.RegClass:$rs1,
+                                                          vti.RegClass:$rs2,
+                                                          (vti.Mask V0),
+                                                          GPR:$vl,
+                                                          vti.Log2SEW)>;
+    }
+  }
 } // Predicates = [HasVendorXTHeadV]
 
 let Predicates = [HasVendorXTHeadV] in {
