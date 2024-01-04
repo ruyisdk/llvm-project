@@ -1739,6 +1739,29 @@ let Predicates = [HasVendorXTHeadV] in {
                                                           (vti.Mask V0),
                                                           GPR:$vl,
                                                           vti.Log2SEW)>;
+
+    // Match th.vsub with a small immediate to th.vadd.vi by negating the immediate.
+    def : Pat<(vti.Vector (int_riscv_th_vsub (vti.Vector (undef)),
+                                             (vti.Vector vti.RegClass:$rs1),
+                                             (vti.Scalar simm5_plus1:$rs2),
+                                             VLOpFrag)),
+              (!cast<Instruction>("PseudoTH_VADD_VI_"#vti.LMul.MX) (vti.Vector (IMPLICIT_DEF)),
+                                                                vti.RegClass:$rs1,
+                                                                (NegImm simm5_plus1:$rs2),
+                                                                GPR:$vl,
+                                                                vti.Log2SEW)>;
+    def : Pat<(vti.Vector (int_riscv_th_vsub_mask (vti.Vector vti.RegClass:$merge),
+                                                  (vti.Vector vti.RegClass:$rs1),
+                                                  (vti.Scalar simm5_plus1:$rs2),
+                                                  (vti.Mask V0),
+                                                  VLOpFrag)),
+              (!cast<Instruction>("PseudoTH_VADD_VI_"#vti.LMul.MX#"_MASK")
+                                                        vti.RegClass:$merge,
+                                                        vti.RegClass:$rs1,
+                                                        (NegImm simm5_plus1:$rs2),
+                                                        (vti.Mask V0),
+                                                        GPR:$vl,
+                                                        vti.Log2SEW)>;
     }
   }
 } // Predicates = [HasVendorXTHeadV]
