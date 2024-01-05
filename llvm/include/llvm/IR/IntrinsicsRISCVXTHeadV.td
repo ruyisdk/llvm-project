@@ -562,8 +562,30 @@ let TargetPrefix = "riscv" in {
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
+  // For destination vector type is the same as
+  // first source vector (with mask but no policy).
+  // Input: (maskedoff, vector_in, vector_in/scalar_in, mask, vl)
+  class XVBinaryAAXMasked
+       : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                   [LLVMMatchType<0>, LLVMMatchType<0>, llvm_any_ty,
+                    LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty],
+                   [IntrNoMem]>, RISCVVIntrinsic {
+    let ScalarOperand = 2;
+    let VLOperand = 4;
+  }
+
+  multiclass XVBinaryAAX {
+    def "int_riscv_" # NAME : RISCVBinaryAAXUnMasked;
+    def "int_riscv_" # NAME # "_mask" : XVBinaryAAXMasked;
+  }
+}
+
+let TargetPrefix = "riscv" in {
   // 12. Vector Integer Arithmetic Instructions
-  defm th_vadd : RISCVBinaryAAX;
+  // 12.1. Vector Single-Width Integer Add and Subtract
+  defm th_vadd : XVBinaryAAX;
+  defm th_vsub : XVBinaryAAX;
+  defm th_vrsub : XVBinaryAAX;
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {

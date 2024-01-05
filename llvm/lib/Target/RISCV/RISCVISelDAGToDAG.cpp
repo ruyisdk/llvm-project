@@ -102,7 +102,8 @@ void RISCVDAGToDAGISel::PreprocessISelDAG() {
       Chain = CurDAG->getNode(ISD::TokenFactor, DL, MVT::Other, Lo, Hi);
 
       SDVTList VTs = CurDAG->getVTList({VT, MVT::Other});
-      SDValue IntID =
+      SDValue IntID = Subtarget->hasVendorXTHeadV() ?
+          CurDAG->getTargetConstant(Intrinsic::riscv_th_vlse, DL, MVT::i64) :
           CurDAG->getTargetConstant(Intrinsic::riscv_vlse, DL, MVT::i64);
       SDValue Ops[] = {Chain,
                        IntID,
