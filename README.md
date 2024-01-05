@@ -23,8 +23,10 @@ Any feature not listed below but present in the specification should be consider
     - (Done) `7.5. Vector Load/Store Segment Operations (Zvlsseg)`, which is an essential part of `XTHeadVector`
   - (Done) `8. Vector AMO Operations (Zvamo)`, which is `XTHeadZvamo` [regarding the `XTHeadVector` extension](https://github.com/T-head-Semi/thead-extension-spec/blob/24349e6df223e8b268ba9672297018f508670acb/xtheadvector.adoc?plain=1#L27).
   - (WIP) `12. Vector Integer Arithmetic Operations`
-    - (WIP) `12.1. Vector Single-Width Integer Add and Subtract`
+    - (Done) `12.1. Vector Single-Width Integer Add and Subtract`
       - (Done) `vadd.{vv,vx,vi}`
+      - (Done) `vsub.{vv,vx}`
+      - (Done) `vrsub.{vx,vi}`
 - (WIP) Clang intrinsics related to the `XTHeadVector` extension:
   - (WIP) `6. Configuration-Setting and Utility`
     - (Done) `6.1. Set vl and vtype`
