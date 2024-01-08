@@ -471,6 +471,7 @@ let SupportOverloading = false,
         MaskedIRName = ir # "_mask" in {
       foreach type = types in {
         // `vPCe` is type `const T * -> {VL} -> VectorType`
+        // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
         def : RVVOutBuiltin<"v", "vPCe", type>;
         if !not(IsFloat<type>.val) then {
           // `UvPCUe` is type `const unsigned T * -> {VL} -> unsigned VectorType`
@@ -484,6 +485,7 @@ let SupportOverloading = false,
   multiclass RVVVLXBuiltin<string ir, list<string> types> {
     foreach type = types in {
       // `vPCe` is type `const T * -> {VL} -> VectorType`
+      // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
       let Name = NAME # "_v",
           IRName = ir,
           MaskedIRName = ir # "_mask" in
@@ -503,6 +505,7 @@ let SupportOverloading = false,
         MaskedIRName = ir # "_mask" in {
       foreach type = types in {
         // `vPCet` is type `const T * -> PtrDiffT -> {VL} -> VectorType`
+        // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
         def : RVVOutBuiltin<"v", "vPCet", type>;
         if !not(IsFloat<type>.val) then {
           // `UvPCUet` is type `const unsigned T * -> PtrDiffT -> {VL} -> unsigned VectorType`
@@ -516,6 +519,7 @@ let SupportOverloading = false,
   multiclass RVVVLSXBuiltin<string ir, list<string> types> {
     foreach type = types in {
       // `vPCez` is type `const T * -> SizeT -> {VL} -> VectorType`
+      // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
       let Name = NAME # "_v",
           IRName = ir,
           MaskedIRName = ir # "_mask" in
@@ -552,6 +556,7 @@ let HasMaskedOffOperand = false,
         MaskedIRName = ir # "_mask" in {
       foreach type = types in {
         // `0Pev` is type `T * -> VectorType -> {VL} -> void`
+        // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
         def : RVVBuiltin<"v", "0Pev", type>;
         if !not(IsFloat<type>.val) then {
           // `0PUeUv` is type `unsigned T * -> unsigned VectorType -> {VL} -> void`
@@ -568,6 +573,7 @@ let HasMaskedOffOperand = false,
         MaskedIRName = ir # "_mask" in {
       foreach type = types in {
         // `0Pev` is type `T * -> VectorType -> {VL} -> void`
+        // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
         def : RVVBuiltin<"v", "0Pev", type>;
         // `0PUeUv` is type `unsigned T * -> unsigned VectorType -> {VL} -> void`
         def : RVVBuiltin<"Uv", "0PUeUv", type>;
@@ -599,6 +605,7 @@ let HasMaskedOffOperand = false,
         MaskedIRName = ir # "_mask" in {
       foreach type = types in {
         // `0Petv` is type `T * -> -> PtrDiffT -> VectorType -> {VL} -> void`
+        // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
         def : RVVBuiltin<"v", "0Petv", type>;
         if !not(IsFloat<type>.val) then {
           // `0PUetUv` is type `unsigned T * -> PtrDiffT -> unsigned VectorType -> {VL} -> void`
@@ -615,6 +622,7 @@ let HasMaskedOffOperand = false,
         MaskedIRName = ir # "_mask" in {
       foreach type = types in {
         // `0Pezv` is type `T * -> SizeT -> VectorType -> {VL} -> void`
+        // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
         def : RVVBuiltin<"v", "0Pezv", type>;
         // `0PUezUv` is type `unsigned T * -> SizeT -> unsigned VectorType -> {VL} -> void`
         def : RVVBuiltin<"Uv", "0PUezUv", type>;
