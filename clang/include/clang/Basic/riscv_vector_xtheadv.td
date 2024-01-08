@@ -173,324 +173,73 @@ let HasBuiltinAlias = false,
 // 7. Vector Loads and Stores
 //===----------------------------------------------------------------------===//
 
-let HeaderCode =
-[{
-// Vector Unit-stride loads
-#define __riscv_vlb_v_i8m1(base, vl) __riscv_th_vlb_v_i8m1(base, vl)
-#define __riscv_vlb_v_i8m2(base, vl) __riscv_th_vlb_v_i8m2(base, vl)
-#define __riscv_vlb_v_i8m4(base, vl) __riscv_th_vlb_v_i8m4(base, vl)
-#define __riscv_vlb_v_i8m8(base, vl) __riscv_th_vlb_v_i8m8(base, vl)
-#define __riscv_vlb_v_i16m1(base, vl) __riscv_th_vlb_v_i16m1(base, vl)
-#define __riscv_vlb_v_i16m2(base, vl) __riscv_th_vlb_v_i16m2(base, vl)
-#define __riscv_vlb_v_i16m4(base, vl) __riscv_th_vlb_v_i16m4(base, vl)
-#define __riscv_vlb_v_i16m8(base, vl) __riscv_th_vlb_v_i16m8(base, vl)
-#define __riscv_vlb_v_i32m1(base, vl) __riscv_th_vlb_v_i32m1(base, vl)
-#define __riscv_vlb_v_i32m2(base, vl) __riscv_th_vlb_v_i32m2(base, vl)
-#define __riscv_vlb_v_i32m4(base, vl) __riscv_th_vlb_v_i32m4(base, vl)
-#define __riscv_vlb_v_i32m8(base, vl) __riscv_th_vlb_v_i32m8(base, vl)
-#define __riscv_vlb_v_i64m1(base, vl) __riscv_th_vlb_v_i64m1(base, vl)
-#define __riscv_vlb_v_i64m2(base, vl) __riscv_th_vlb_v_i64m2(base, vl)
-#define __riscv_vlb_v_i64m4(base, vl) __riscv_th_vlb_v_i64m4(base, vl)
-#define __riscv_vlb_v_i64m8(base, vl) __riscv_th_vlb_v_i64m8(base, vl)
-#define __riscv_vlh_v_i8m1(base, vl) __riscv_th_vlh_v_i8m1(base, vl)
-#define __riscv_vlh_v_i8m2(base, vl) __riscv_th_vlh_v_i8m2(base, vl)
-#define __riscv_vlh_v_i8m4(base, vl) __riscv_th_vlh_v_i8m4(base, vl)
-#define __riscv_vlh_v_i8m8(base, vl) __riscv_th_vlh_v_i8m8(base, vl)
-#define __riscv_vlh_v_i16m1(base, vl) __riscv_th_vlh_v_i16m1(base, vl)
-#define __riscv_vlh_v_i16m2(base, vl) __riscv_th_vlh_v_i16m2(base, vl)
-#define __riscv_vlh_v_i16m4(base, vl) __riscv_th_vlh_v_i16m4(base, vl)
-#define __riscv_vlh_v_i16m8(base, vl) __riscv_th_vlh_v_i16m8(base, vl)
-#define __riscv_vlh_v_i32m1(base, vl) __riscv_th_vlh_v_i32m1(base, vl)
-#define __riscv_vlh_v_i32m2(base, vl) __riscv_th_vlh_v_i32m2(base, vl)
-#define __riscv_vlh_v_i32m4(base, vl) __riscv_th_vlh_v_i32m4(base, vl)
-#define __riscv_vlh_v_i32m8(base, vl) __riscv_th_vlh_v_i32m8(base, vl)
-#define __riscv_vlh_v_i64m1(base, vl) __riscv_th_vlh_v_i64m1(base, vl)
-#define __riscv_vlh_v_i64m2(base, vl) __riscv_th_vlh_v_i64m2(base, vl)
-#define __riscv_vlh_v_i64m4(base, vl) __riscv_th_vlh_v_i64m4(base, vl)
-#define __riscv_vlh_v_i64m8(base, vl) __riscv_th_vlh_v_i64m8(base, vl)
-#define __riscv_vlw_v_i8m1(base, vl) __riscv_th_vlw_v_i8m1(base, vl)
-#define __riscv_vlw_v_i8m2(base, vl) __riscv_th_vlw_v_i8m2(base, vl)
-#define __riscv_vlw_v_i8m4(base, vl) __riscv_th_vlw_v_i8m4(base, vl)
-#define __riscv_vlw_v_i8m8(base, vl) __riscv_th_vlw_v_i8m8(base, vl)
-#define __riscv_vlw_v_i16m1(base, vl) __riscv_th_vlw_v_i16m1(base, vl)
-#define __riscv_vlw_v_i16m2(base, vl) __riscv_th_vlw_v_i16m2(base, vl)
-#define __riscv_vlw_v_i16m4(base, vl) __riscv_th_vlw_v_i16m4(base, vl)
-#define __riscv_vlw_v_i16m8(base, vl) __riscv_th_vlw_v_i16m8(base, vl)
-#define __riscv_vlw_v_i32m1(base, vl) __riscv_th_vlw_v_i32m1(base, vl)
-#define __riscv_vlw_v_i32m2(base, vl) __riscv_th_vlw_v_i32m2(base, vl)
-#define __riscv_vlw_v_i32m4(base, vl) __riscv_th_vlw_v_i32m4(base, vl)
-#define __riscv_vlw_v_i32m8(base, vl) __riscv_th_vlw_v_i32m8(base, vl)
-#define __riscv_vlw_v_i64m1(base, vl) __riscv_th_vlw_v_i64m1(base, vl)
-#define __riscv_vlw_v_i64m2(base, vl) __riscv_th_vlw_v_i64m2(base, vl)
-#define __riscv_vlw_v_i64m4(base, vl) __riscv_th_vlw_v_i64m4(base, vl)
-#define __riscv_vlw_v_i64m8(base, vl) __riscv_th_vlw_v_i64m8(base, vl)
-#define __riscv_vlbu_v_u8m1(base, vl) __riscv_th_vlbu_v_u8m1(base, vl)
-#define __riscv_vlbu_v_u8m2(base, vl) __riscv_th_vlbu_v_u8m2(base, vl)
-#define __riscv_vlbu_v_u8m4(base, vl) __riscv_th_vlbu_v_u8m4(base, vl)
-#define __riscv_vlbu_v_u8m8(base, vl) __riscv_th_vlbu_v_u8m8(base, vl)
-#define __riscv_vlbu_v_u16m1(base, vl) __riscv_th_vlbu_v_u16m1(base, vl)
-#define __riscv_vlbu_v_u16m2(base, vl) __riscv_th_vlbu_v_u16m2(base, vl)
-#define __riscv_vlbu_v_u16m4(base, vl) __riscv_th_vlbu_v_u16m4(base, vl)
-#define __riscv_vlbu_v_u16m8(base, vl) __riscv_th_vlbu_v_u16m8(base, vl)
-#define __riscv_vlbu_v_u32m1(base, vl) __riscv_th_vlbu_v_u32m1(base, vl)
-#define __riscv_vlbu_v_u32m2(base, vl) __riscv_th_vlbu_v_u32m2(base, vl)
-#define __riscv_vlbu_v_u32m4(base, vl) __riscv_th_vlbu_v_u32m4(base, vl)
-#define __riscv_vlbu_v_u32m8(base, vl) __riscv_th_vlbu_v_u32m8(base, vl)
-#define __riscv_vlbu_v_u64m1(base, vl) __riscv_th_vlbu_v_u64m1(base, vl)
-#define __riscv_vlbu_v_u64m2(base, vl) __riscv_th_vlbu_v_u64m2(base, vl)
-#define __riscv_vlbu_v_u64m4(base, vl) __riscv_th_vlbu_v_u64m4(base, vl)
-#define __riscv_vlbu_v_u64m8(base, vl) __riscv_th_vlbu_v_u64m8(base, vl)
-#define __riscv_vlhu_v_u8m1(base, vl) __riscv_th_vlhu_v_u8m1(base, vl)
-#define __riscv_vlhu_v_u8m2(base, vl) __riscv_th_vlhu_v_u8m2(base, vl)
-#define __riscv_vlhu_v_u8m4(base, vl) __riscv_th_vlhu_v_u8m4(base, vl)
-#define __riscv_vlhu_v_u8m8(base, vl) __riscv_th_vlhu_v_u8m8(base, vl)
-#define __riscv_vlhu_v_u16m1(base, vl) __riscv_th_vlhu_v_u16m1(base, vl)
-#define __riscv_vlhu_v_u16m2(base, vl) __riscv_th_vlhu_v_u16m2(base, vl)
-#define __riscv_vlhu_v_u16m4(base, vl) __riscv_th_vlhu_v_u16m4(base, vl)
-#define __riscv_vlhu_v_u16m8(base, vl) __riscv_th_vlhu_v_u16m8(base, vl)
-#define __riscv_vlhu_v_u32m1(base, vl) __riscv_th_vlhu_v_u32m1(base, vl)
-#define __riscv_vlhu_v_u32m2(base, vl) __riscv_th_vlhu_v_u32m2(base, vl)
-#define __riscv_vlhu_v_u32m4(base, vl) __riscv_th_vlhu_v_u32m4(base, vl)
-#define __riscv_vlhu_v_u32m8(base, vl) __riscv_th_vlhu_v_u32m8(base, vl)
-#define __riscv_vlhu_v_u64m1(base, vl) __riscv_th_vlhu_v_u64m1(base, vl)
-#define __riscv_vlhu_v_u64m2(base, vl) __riscv_th_vlhu_v_u64m2(base, vl)
-#define __riscv_vlhu_v_u64m4(base, vl) __riscv_th_vlhu_v_u64m4(base, vl)
-#define __riscv_vlhu_v_u64m8(base, vl) __riscv_th_vlhu_v_u64m8(base, vl)
-#define __riscv_vlwu_v_u8m1(base, vl) __riscv_th_vlwu_v_u8m1(base, vl)
-#define __riscv_vlwu_v_u8m2(base, vl) __riscv_th_vlwu_v_u8m2(base, vl)
-#define __riscv_vlwu_v_u8m4(base, vl) __riscv_th_vlwu_v_u8m4(base, vl)
-#define __riscv_vlwu_v_u8m8(base, vl) __riscv_th_vlwu_v_u8m8(base, vl)
-#define __riscv_vlwu_v_u16m1(base, vl) __riscv_th_vlwu_v_u16m1(base, vl)
-#define __riscv_vlwu_v_u16m2(base, vl) __riscv_th_vlwu_v_u16m2(base, vl)
-#define __riscv_vlwu_v_u16m4(base, vl) __riscv_th_vlwu_v_u16m4(base, vl)
-#define __riscv_vlwu_v_u16m8(base, vl) __riscv_th_vlwu_v_u16m8(base, vl)
-#define __riscv_vlwu_v_u32m1(base, vl) __riscv_th_vlwu_v_u32m1(base, vl)
-#define __riscv_vlwu_v_u32m2(base, vl) __riscv_th_vlwu_v_u32m2(base, vl)
-#define __riscv_vlwu_v_u32m4(base, vl) __riscv_th_vlwu_v_u32m4(base, vl)
-#define __riscv_vlwu_v_u32m8(base, vl) __riscv_th_vlwu_v_u32m8(base, vl)
-#define __riscv_vlwu_v_u64m1(base, vl) __riscv_th_vlwu_v_u64m1(base, vl)
-#define __riscv_vlwu_v_u64m2(base, vl) __riscv_th_vlwu_v_u64m2(base, vl)
-#define __riscv_vlwu_v_u64m4(base, vl) __riscv_th_vlwu_v_u64m4(base, vl)
-#define __riscv_vlwu_v_u64m8(base, vl) __riscv_th_vlwu_v_u64m8(base, vl)
-#define __riscv_vle8_v_i8m1(base, vl) __riscv_th_vle8_v_i8m1(base, vl)
-#define __riscv_vle8_v_i8m2(base, vl) __riscv_th_vle8_v_i8m2(base, vl)
-#define __riscv_vle8_v_i8m4(base, vl) __riscv_th_vle8_v_i8m4(base, vl)
-#define __riscv_vle8_v_i8m8(base, vl) __riscv_th_vle8_v_i8m8(base, vl)
-#define __riscv_vle16_v_i16m1(base, vl) __riscv_th_vle16_v_i16m1(base, vl)
-#define __riscv_vle16_v_i16m2(base, vl) __riscv_th_vle16_v_i16m2(base, vl)
-#define __riscv_vle16_v_i16m4(base, vl) __riscv_th_vle16_v_i16m4(base, vl)
-#define __riscv_vle16_v_i16m8(base, vl) __riscv_th_vle16_v_i16m8(base, vl)
-#define __riscv_vle32_v_i32m1(base, vl) __riscv_th_vle32_v_i32m1(base, vl)
-#define __riscv_vle32_v_i32m2(base, vl) __riscv_th_vle32_v_i32m2(base, vl)
-#define __riscv_vle32_v_i32m4(base, vl) __riscv_th_vle32_v_i32m4(base, vl)
-#define __riscv_vle32_v_i32m8(base, vl) __riscv_th_vle32_v_i32m8(base, vl)
-#define __riscv_vle64_v_i64m1(base, vl) __riscv_th_vle64_v_i64m1(base, vl)
-#define __riscv_vle64_v_i64m2(base, vl) __riscv_th_vle64_v_i64m2(base, vl)
-#define __riscv_vle64_v_i64m4(base, vl) __riscv_th_vle64_v_i64m4(base, vl)
-#define __riscv_vle64_v_i64m8(base, vl) __riscv_th_vle64_v_i64m8(base, vl)
-#define __riscv_vle8_v_u8m1(base, vl) __riscv_th_vle8_v_u8m1(base, vl)
-#define __riscv_vle8_v_u8m2(base, vl) __riscv_th_vle8_v_u8m2(base, vl)
-#define __riscv_vle8_v_u8m4(base, vl) __riscv_th_vle8_v_u8m4(base, vl)
-#define __riscv_vle8_v_u8m8(base, vl) __riscv_th_vle8_v_u8m8(base, vl)
-#define __riscv_vle16_v_u16m1(base, vl) __riscv_th_vle16_v_u16m1(base, vl)
-#define __riscv_vle16_v_u16m2(base, vl) __riscv_th_vle16_v_u16m2(base, vl)
-#define __riscv_vle16_v_u16m4(base, vl) __riscv_th_vle16_v_u16m4(base, vl)
-#define __riscv_vle16_v_u16m8(base, vl) __riscv_th_vle16_v_u16m8(base, vl)
-#define __riscv_vle32_v_u32m1(base, vl) __riscv_th_vle32_v_u32m1(base, vl)
-#define __riscv_vle32_v_u32m2(base, vl) __riscv_th_vle32_v_u32m2(base, vl)
-#define __riscv_vle32_v_u32m4(base, vl) __riscv_th_vle32_v_u32m4(base, vl)
-#define __riscv_vle32_v_u32m8(base, vl) __riscv_th_vle32_v_u32m8(base, vl)
-#define __riscv_vle64_v_u64m1(base, vl) __riscv_th_vle64_v_u64m1(base, vl)
-#define __riscv_vle64_v_u64m2(base, vl) __riscv_th_vle64_v_u64m2(base, vl)
-#define __riscv_vle64_v_u64m4(base, vl) __riscv_th_vle64_v_u64m4(base, vl)
-#define __riscv_vle64_v_u64m8(base, vl) __riscv_th_vle64_v_u64m8(base, vl)
-#define __riscv_vle16_v_f16m1(base, vl) __riscv_th_vle16_v_f16m1(base, vl)
-#define __riscv_vle16_v_f16m2(base, vl) __riscv_th_vle16_v_f16m2(base, vl)
-#define __riscv_vle16_v_f16m4(base, vl) __riscv_th_vle16_v_f16m4(base, vl)
-#define __riscv_vle16_v_f16m8(base, vl) __riscv_th_vle16_v_f16m8(base, vl)
-#define __riscv_vle32_v_f32m1(base, vl) __riscv_th_vle32_v_f32m1(base, vl)
-#define __riscv_vle32_v_f32m2(base, vl) __riscv_th_vle32_v_f32m2(base, vl)
-#define __riscv_vle32_v_f32m4(base, vl) __riscv_th_vle32_v_f32m4(base, vl)
-#define __riscv_vle32_v_f32m8(base, vl) __riscv_th_vle32_v_f32m8(base, vl)
-#define __riscv_vle64_v_f64m1(base, vl) __riscv_th_vle64_v_f64m1(base, vl)
-#define __riscv_vle64_v_f64m2(base, vl) __riscv_th_vle64_v_f64m2(base, vl)
-#define __riscv_vle64_v_f64m4(base, vl) __riscv_th_vle64_v_f64m4(base, vl)
-#define __riscv_vle64_v_f64m8(base, vl) __riscv_th_vle64_v_f64m8(base, vl)
-
-// Vector Unit-stride stores
-#define __riscv_vsb_v_i8m1(dst_ptr, vector_value, vl) __riscv_th_vsb_v_i8m1(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_i8m2(dst_ptr, vector_value, vl) __riscv_th_vsb_v_i8m2(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_i8m4(dst_ptr, vector_value, vl) __riscv_th_vsb_v_i8m4(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_i8m8(dst_ptr, vector_value, vl) __riscv_th_vsb_v_i8m8(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_i16m1(dst_ptr, vector_value, vl) __riscv_th_vsb_v_i16m1(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_i16m2(dst_ptr, vector_value, vl) __riscv_th_vsb_v_i16m2(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_i16m4(dst_ptr, vector_value, vl) __riscv_th_vsb_v_i16m4(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_i16m8(dst_ptr, vector_value, vl) __riscv_th_vsb_v_i16m8(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_i32m1(dst_ptr, vector_value, vl) __riscv_th_vsb_v_i32m1(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_i32m2(dst_ptr, vector_value, vl) __riscv_th_vsb_v_i32m2(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_i32m4(dst_ptr, vector_value, vl) __riscv_th_vsb_v_i32m4(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_i32m8(dst_ptr, vector_value, vl) __riscv_th_vsb_v_i32m8(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_i64m1(dst_ptr, vector_value, vl) __riscv_th_vsb_v_i64m1(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_i64m2(dst_ptr, vector_value, vl) __riscv_th_vsb_v_i64m2(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_i64m4(dst_ptr, vector_value, vl) __riscv_th_vsb_v_i64m4(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_i64m8(dst_ptr, vector_value, vl) __riscv_th_vsb_v_i64m8(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_i8m1(dst_ptr, vector_value, vl) __riscv_th_vsh_v_i8m1(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_i8m2(dst_ptr, vector_value, vl) __riscv_th_vsh_v_i8m2(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_i8m4(dst_ptr, vector_value, vl) __riscv_th_vsh_v_i8m4(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_i8m8(dst_ptr, vector_value, vl) __riscv_th_vsh_v_i8m8(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_i16m1(dst_ptr, vector_value, vl) __riscv_th_vsh_v_i16m1(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_i16m2(dst_ptr, vector_value, vl) __riscv_th_vsh_v_i16m2(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_i16m4(dst_ptr, vector_value, vl) __riscv_th_vsh_v_i16m4(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_i16m8(dst_ptr, vector_value, vl) __riscv_th_vsh_v_i16m8(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_i32m1(dst_ptr, vector_value, vl) __riscv_th_vsh_v_i32m1(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_i32m2(dst_ptr, vector_value, vl) __riscv_th_vsh_v_i32m2(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_i32m4(dst_ptr, vector_value, vl) __riscv_th_vsh_v_i32m4(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_i32m8(dst_ptr, vector_value, vl) __riscv_th_vsh_v_i32m8(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_i64m1(dst_ptr, vector_value, vl) __riscv_th_vsh_v_i64m1(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_i64m2(dst_ptr, vector_value, vl) __riscv_th_vsh_v_i64m2(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_i64m4(dst_ptr, vector_value, vl) __riscv_th_vsh_v_i64m4(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_i64m8(dst_ptr, vector_value, vl) __riscv_th_vsh_v_i64m8(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_i8m1(dst_ptr, vector_value, vl) __riscv_th_vsw_v_i8m1(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_i8m2(dst_ptr, vector_value, vl) __riscv_th_vsw_v_i8m2(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_i8m4(dst_ptr, vector_value, vl) __riscv_th_vsw_v_i8m4(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_i8m8(dst_ptr, vector_value, vl) __riscv_th_vsw_v_i8m8(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_i16m1(dst_ptr, vector_value, vl) __riscv_th_vsw_v_i16m1(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_i16m2(dst_ptr, vector_value, vl) __riscv_th_vsw_v_i16m2(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_i16m4(dst_ptr, vector_value, vl) __riscv_th_vsw_v_i16m4(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_i16m8(dst_ptr, vector_value, vl) __riscv_th_vsw_v_i16m8(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_i32m1(dst_ptr, vector_value, vl) __riscv_th_vsw_v_i32m1(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_i32m2(dst_ptr, vector_value, vl) __riscv_th_vsw_v_i32m2(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_i32m4(dst_ptr, vector_value, vl) __riscv_th_vsw_v_i32m4(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_i32m8(dst_ptr, vector_value, vl) __riscv_th_vsw_v_i32m8(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_i64m1(dst_ptr, vector_value, vl) __riscv_th_vsw_v_i64m1(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_i64m2(dst_ptr, vector_value, vl) __riscv_th_vsw_v_i64m2(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_i64m4(dst_ptr, vector_value, vl) __riscv_th_vsw_v_i64m4(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_i64m8(dst_ptr, vector_value, vl) __riscv_th_vsw_v_i64m8(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_u8m1(dst_ptr, vector_value, vl) __riscv_th_vsb_v_u8m1(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_u8m2(dst_ptr, vector_value, vl) __riscv_th_vsb_v_u8m2(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_u8m4(dst_ptr, vector_value, vl) __riscv_th_vsb_v_u8m4(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_u8m8(dst_ptr, vector_value, vl) __riscv_th_vsb_v_u8m8(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_u16m1(dst_ptr, vector_value, vl) __riscv_th_vsb_v_u16m1(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_u16m2(dst_ptr, vector_value, vl) __riscv_th_vsb_v_u16m2(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_u16m4(dst_ptr, vector_value, vl) __riscv_th_vsb_v_u16m4(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_u16m8(dst_ptr, vector_value, vl) __riscv_th_vsb_v_u16m8(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_u32m1(dst_ptr, vector_value, vl) __riscv_th_vsb_v_u32m1(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_u32m2(dst_ptr, vector_value, vl) __riscv_th_vsb_v_u32m2(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_u32m4(dst_ptr, vector_value, vl) __riscv_th_vsb_v_u32m4(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_u32m8(dst_ptr, vector_value, vl) __riscv_th_vsb_v_u32m8(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_u64m1(dst_ptr, vector_value, vl) __riscv_th_vsb_v_u64m1(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_u64m2(dst_ptr, vector_value, vl) __riscv_th_vsb_v_u64m2(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_u64m4(dst_ptr, vector_value, vl) __riscv_th_vsb_v_u64m4(dst_ptr, vector_value, vl)
-#define __riscv_vsb_v_u64m8(dst_ptr, vector_value, vl) __riscv_th_vsb_v_u64m8(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_u8m1(dst_ptr, vector_value, vl) __riscv_th_vsh_v_u8m1(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_u8m2(dst_ptr, vector_value, vl) __riscv_th_vsh_v_u8m2(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_u8m4(dst_ptr, vector_value, vl) __riscv_th_vsh_v_u8m4(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_u8m8(dst_ptr, vector_value, vl) __riscv_th_vsh_v_u8m8(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_u16m1(dst_ptr, vector_value, vl) __riscv_th_vsh_v_u16m1(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_u16m2(dst_ptr, vector_value, vl) __riscv_th_vsh_v_u16m2(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_u16m4(dst_ptr, vector_value, vl) __riscv_th_vsh_v_u16m4(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_u16m8(dst_ptr, vector_value, vl) __riscv_th_vsh_v_u16m8(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_u32m1(dst_ptr, vector_value, vl) __riscv_th_vsh_v_u32m1(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_u32m2(dst_ptr, vector_value, vl) __riscv_th_vsh_v_u32m2(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_u32m4(dst_ptr, vector_value, vl) __riscv_th_vsh_v_u32m4(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_u32m8(dst_ptr, vector_value, vl) __riscv_th_vsh_v_u32m8(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_u64m1(dst_ptr, vector_value, vl) __riscv_th_vsh_v_u64m1(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_u64m2(dst_ptr, vector_value, vl) __riscv_th_vsh_v_u64m2(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_u64m4(dst_ptr, vector_value, vl) __riscv_th_vsh_v_u64m4(dst_ptr, vector_value, vl)
-#define __riscv_vsh_v_u64m8(dst_ptr, vector_value, vl) __riscv_th_vsh_v_u64m8(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_u8m1(dst_ptr, vector_value, vl) __riscv_th_vsw_v_u8m1(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_u8m2(dst_ptr, vector_value, vl) __riscv_th_vsw_v_u8m2(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_u8m4(dst_ptr, vector_value, vl) __riscv_th_vsw_v_u8m4(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_u8m8(dst_ptr, vector_value, vl) __riscv_th_vsw_v_u8m8(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_u16m1(dst_ptr, vector_value, vl) __riscv_th_vsw_v_u16m1(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_u16m2(dst_ptr, vector_value, vl) __riscv_th_vsw_v_u16m2(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_u16m4(dst_ptr, vector_value, vl) __riscv_th_vsw_v_u16m4(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_u16m8(dst_ptr, vector_value, vl) __riscv_th_vsw_v_u16m8(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_u32m1(dst_ptr, vector_value, vl) __riscv_th_vsw_v_u32m1(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_u32m2(dst_ptr, vector_value, vl) __riscv_th_vsw_v_u32m2(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_u32m4(dst_ptr, vector_value, vl) __riscv_th_vsw_v_u32m4(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_u32m8(dst_ptr, vector_value, vl) __riscv_th_vsw_v_u32m8(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_u64m1(dst_ptr, vector_value, vl) __riscv_th_vsw_v_u64m1(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_u64m2(dst_ptr, vector_value, vl) __riscv_th_vsw_v_u64m2(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_u64m4(dst_ptr, vector_value, vl) __riscv_th_vsw_v_u64m4(dst_ptr, vector_value, vl)
-#define __riscv_vsw_v_u64m8(dst_ptr, vector_value, vl) __riscv_th_vsw_v_u64m8(dst_ptr, vector_value, vl)
-#define __riscv_vse8_v_i8m1(dst_ptr, vector_value, vl) __riscv_th_vse8_v_i8m1(dst_ptr, vector_value, vl)
-#define __riscv_vse8_v_i8m2(dst_ptr, vector_value, vl) __riscv_th_vse8_v_i8m2(dst_ptr, vector_value, vl)
-#define __riscv_vse8_v_i8m4(dst_ptr, vector_value, vl) __riscv_th_vse8_v_i8m4(dst_ptr, vector_value, vl)
-#define __riscv_vse8_v_i8m8(dst_ptr, vector_value, vl) __riscv_th_vse8_v_i8m8(dst_ptr, vector_value, vl)
-#define __riscv_vse16_v_i16m1(dst_ptr, vector_value, vl) __riscv_th_vse16_v_i16m1(dst_ptr, vector_value, vl)
-#define __riscv_vse16_v_i16m2(dst_ptr, vector_value, vl) __riscv_th_vse16_v_i16m2(dst_ptr, vector_value, vl)
-#define __riscv_vse16_v_i16m4(dst_ptr, vector_value, vl) __riscv_th_vse16_v_i16m4(dst_ptr, vector_value, vl)
-#define __riscv_vse16_v_i16m8(dst_ptr, vector_value, vl) __riscv_th_vse16_v_i16m8(dst_ptr, vector_value, vl)
-#define __riscv_vse32_v_i32m1(dst_ptr, vector_value, vl) __riscv_th_vse32_v_i32m1(dst_ptr, vector_value, vl)
-#define __riscv_vse32_v_i32m2(dst_ptr, vector_value, vl) __riscv_th_vse32_v_i32m2(dst_ptr, vector_value, vl)
-#define __riscv_vse32_v_i32m4(dst_ptr, vector_value, vl) __riscv_th_vse32_v_i32m4(dst_ptr, vector_value, vl)
-#define __riscv_vse32_v_i32m8(dst_ptr, vector_value, vl) __riscv_th_vse32_v_i32m8(dst_ptr, vector_value, vl)
-#define __riscv_vse64_v_i64m1(dst_ptr, vector_value, vl) __riscv_th_vse64_v_i64m1(dst_ptr, vector_value, vl)
-#define __riscv_vse64_v_i64m2(dst_ptr, vector_value, vl) __riscv_th_vse64_v_i64m2(dst_ptr, vector_value, vl)
-#define __riscv_vse64_v_i64m4(dst_ptr, vector_value, vl) __riscv_th_vse64_v_i64m4(dst_ptr, vector_value, vl)
-#define __riscv_vse64_v_i64m8(dst_ptr, vector_value, vl) __riscv_th_vse64_v_i64m8(dst_ptr, vector_value, vl)
-#define __riscv_vse8_v_u8m1(dst_ptr, vector_value, vl) __riscv_th_vse8_v_u8m1(dst_ptr, vector_value, vl)
-#define __riscv_vse8_v_u8m2(dst_ptr, vector_value, vl) __riscv_th_vse8_v_u8m2(dst_ptr, vector_value, vl)
-#define __riscv_vse8_v_u8m4(dst_ptr, vector_value, vl) __riscv_th_vse8_v_u8m4(dst_ptr, vector_value, vl)
-#define __riscv_vse8_v_u8m8(dst_ptr, vector_value, vl) __riscv_th_vse8_v_u8m8(dst_ptr, vector_value, vl)
-#define __riscv_vse16_v_u16m1(dst_ptr, vector_value, vl) __riscv_th_vse16_v_u16m1(dst_ptr, vector_value, vl)
-#define __riscv_vse16_v_u16m2(dst_ptr, vector_value, vl) __riscv_th_vse16_v_u16m2(dst_ptr, vector_value, vl)
-#define __riscv_vse16_v_u16m4(dst_ptr, vector_value, vl) __riscv_th_vse16_v_u16m4(dst_ptr, vector_value, vl)
-#define __riscv_vse16_v_u16m8(dst_ptr, vector_value, vl) __riscv_th_vse16_v_u16m8(dst_ptr, vector_value, vl)
-#define __riscv_vse32_v_u32m1(dst_ptr, vector_value, vl) __riscv_th_vse32_v_u32m1(dst_ptr, vector_value, vl)
-#define __riscv_vse32_v_u32m2(dst_ptr, vector_value, vl) __riscv_th_vse32_v_u32m2(dst_ptr, vector_value, vl)
-#define __riscv_vse32_v_u32m4(dst_ptr, vector_value, vl) __riscv_th_vse32_v_u32m4(dst_ptr, vector_value, vl)
-#define __riscv_vse32_v_u32m8(dst_ptr, vector_value, vl) __riscv_th_vse32_v_u32m8(dst_ptr, vector_value, vl)
-#define __riscv_vse64_v_u64m1(dst_ptr, vector_value, vl) __riscv_th_vse64_v_u64m1(dst_ptr, vector_value, vl)
-#define __riscv_vse64_v_u64m2(dst_ptr, vector_value, vl) __riscv_th_vse64_v_u64m2(dst_ptr, vector_value, vl)
-#define __riscv_vse64_v_u64m4(dst_ptr, vector_value, vl) __riscv_th_vse64_v_u64m4(dst_ptr, vector_value, vl)
-#define __riscv_vse64_v_u64m8(dst_ptr, vector_value, vl) __riscv_th_vse64_v_u64m8(dst_ptr, vector_value, vl)
-#define __riscv_vse16_v_f16m1(dst_ptr, vector_value, vl) __riscv_th_vse16_v_f16m1(dst_ptr, vector_value, vl)
-#define __riscv_vse16_v_f16m2(dst_ptr, vector_value, vl) __riscv_th_vse16_v_f16m2(dst_ptr, vector_value, vl)
-#define __riscv_vse16_v_f16m4(dst_ptr, vector_value, vl) __riscv_th_vse16_v_f16m4(dst_ptr, vector_value, vl)
-#define __riscv_vse16_v_f16m8(dst_ptr, vector_value, vl) __riscv_th_vse16_v_f16m8(dst_ptr, vector_value, vl)
-#define __riscv_vse32_v_f32m1(dst_ptr, vector_value, vl) __riscv_th_vse32_v_f32m1(dst_ptr, vector_value, vl)
-#define __riscv_vse32_v_f32m2(dst_ptr, vector_value, vl) __riscv_th_vse32_v_f32m2(dst_ptr, vector_value, vl)
-#define __riscv_vse32_v_f32m4(dst_ptr, vector_value, vl) __riscv_th_vse32_v_f32m4(dst_ptr, vector_value, vl)
-#define __riscv_vse32_v_f32m8(dst_ptr, vector_value, vl) __riscv_th_vse32_v_f32m8(dst_ptr, vector_value, vl)
-#define __riscv_vse64_v_f64m1(dst_ptr, vector_value, vl) __riscv_th_vse64_v_f64m1(dst_ptr, vector_value, vl)
-#define __riscv_vse64_v_f64m2(dst_ptr, vector_value, vl) __riscv_th_vse64_v_f64m2(dst_ptr, vector_value, vl)
-#define __riscv_vse64_v_f64m4(dst_ptr, vector_value, vl) __riscv_th_vse64_v_f64m4(dst_ptr, vector_value, vl)
-#define __riscv_vse64_v_f64m8(dst_ptr, vector_value, vl) __riscv_th_vse64_v_f64m8(dst_ptr, vector_value, vl)
-
-}] in
-def th_unit_stride_wrapper_macros: RVVHeader;
-
 let SupportOverloading = false,
     UnMaskedPolicyScheme = HasPassthruOperand in {
+  // 7.1 Unit-stride load: vle8/16/32/64
   multiclass RVVVLEBuiltin<string ir, list<string> types> {
     let Name = NAME # "_v",
         IRName = ir,
         MaskedIRName = ir # "_mask" in {
       foreach type = types in {
-        // `vPCe` is type `const T * -> VectorType`
+        // `vPCe` is type `const T * -> {VL} -> VectorType`
+        // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
         def : RVVOutBuiltin<"v", "vPCe", type>;
         if !not(IsFloat<type>.val) then {
-          // `UvPCUe` is type `const unsigned T * -> unsigned VectorType`
+          // `UvPCUe` is type `const unsigned T * -> {VL} -> unsigned VectorType`
           def : RVVOutBuiltin<"Uv", "UvPCUe", type>;
         }
       }
     }
   }
 
+  // 7.1 Unit-stride load: vlb/h/w/bu/hu/wu
   multiclass RVVVLXBuiltin<string ir, list<string> types> {
     foreach type = types in {
-      // `vPCe` is type `const T * -> VectorType`
+      // `vPCe` is type `const T * -> {VL} -> VectorType`
+      // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
       let Name = NAME # "_v",
           IRName = ir,
           MaskedIRName = ir # "_mask" in
       def : RVVOutBuiltin<"v", "vPCe", type>;
-      // `UvPCUe` is type `const unsigned T * -> unsigned VectorType`
+      // `UvPCUe` is type `const unsigned T * -> {VL} -> unsigned VectorType`
       let Name = NAME # "u_v",
           IRName = ir # "u",
           MaskedIRName = ir # "u_mask" in
       def : RVVOutBuiltin<"Uv", "UvPCUe", type>;
+    }
+  }
+
+  // 7.2 Strided load: vlse8/16/32/64
+  multiclass RVVVLSEBuiltin<string ir, list<string> types> {
+    let Name = NAME # "_v",
+        IRName = ir,
+        MaskedIRName = ir # "_mask" in {
+      foreach type = types in {
+        // `vPCet` is type `const T * -> PtrDiffT -> {VL} -> VectorType`
+        // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
+        def : RVVOutBuiltin<"v", "vPCet", type>;
+        if !not(IsFloat<type>.val) then {
+          // `UvPCUet` is type `const unsigned T * -> PtrDiffT -> {VL} -> unsigned VectorType`
+          def : RVVOutBuiltin<"Uv", "UvPCUet", type>;
+        }
+      }
+    }
+  }
+
+  // 7.2 Strided load: vlsb/h/w/bu/hu/wu
+  multiclass RVVVLSXBuiltin<string ir, list<string> types> {
+    foreach type = types in {
+      // `vPCez` is type `const T * -> SizeT -> {VL} -> VectorType`
+      // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
+      let Name = NAME # "_v",
+          IRName = ir,
+          MaskedIRName = ir # "_mask" in
+      def : RVVOutBuiltin<"v", "vPCez", type>;
+      // `UvPCUez` is type `const unsigned T * -> SizeT -> {VL} -> unsigned VectorType`
+      let Name = NAME # "u_v",
+          IRName = ir # "u",
+          MaskedIRName = ir # "u_mask" in
+      def : RVVOutBuiltin<"Uv", "UvPCUez", type>;
     }
   }
 }
@@ -511,30 +260,83 @@ let HasMaskedOffOperand = false,
       else
         IntrinsicTypes = {Ops[0]->getType(), Ops[2]->getType()};
     }] in {
+  // 7.1 Unit-stride store: vse8/16/32/64
   multiclass RVVVSEBuiltin<string ir, list<string> types> {
     let Name = NAME # "_v",
         IRName = ir,
         MaskedIRName = ir # "_mask" in {
       foreach type = types in {
-        // `0Pev` is type `T * -> VectorType -> void`
+        // `0Pev` is type `T * -> VectorType -> {VL} -> void`
+        // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
         def : RVVBuiltin<"v", "0Pev", type>;
         if !not(IsFloat<type>.val) then {
-          // `0PUeUv` is type `unsigned T * -> unsigned VectorType -> void`
+          // `0PUeUv` is type `unsigned T * -> unsigned VectorType -> {VL} -> void`
           def : RVVBuiltin<"Uv", "0PUeUv", type>;
         }
       }
     }
   }
 
+  // 7.1 Unit-stride store: vsb/h/w/bu/hu/wu
   multiclass RVVVSXBuiltin<string ir, list<string> types> {
     let Name = NAME # "_v",
         IRName = ir,
         MaskedIRName = ir # "_mask" in {
       foreach type = types in {
-        // `0Pev` is type `T * -> VectorType -> void`
+        // `0Pev` is type `T * -> VectorType -> {VL} -> void`
+        // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
         def : RVVBuiltin<"v", "0Pev", type>;
-        // `0PUeUv` is type `unsigned T * -> unsigned VectorType -> void`
+        // `0PUeUv` is type `unsigned T * -> unsigned VectorType -> {VL} -> void`
         def : RVVBuiltin<"Uv", "0PUeUv", type>;
+      }
+    }
+  }
+}
+
+let HasMaskedOffOperand = false,
+    MaskedPolicyScheme = NonePolicy,
+    ManualCodegen = [{
+      if (IsMasked) {
+        // Builtin: (mask, ptr, stride, value, vl). Intrinsic: (value, ptr, stride, mask, vl)
+        std::swap(Ops[0], Ops[3]);
+      } else {
+        // Builtin: (ptr, stride, value, vl). Intrinsic: (value, ptr, stride, vl)
+        std::rotate(Ops.begin(), Ops.begin() + 2, Ops.begin() + 3);
+      }
+      Ops[1] = Builder.CreateBitCast(Ops[1], Ops[0]->getType()->getPointerTo());
+      if (IsMasked)
+        IntrinsicTypes = {Ops[0]->getType(), Ops[4]->getType()};
+      else
+        IntrinsicTypes = {Ops[0]->getType(), Ops[3]->getType()};
+    }] in {
+  // 7.2 Strided store: vsse8/16/32/64
+  multiclass RVVVSSEBuiltin<string ir, list<string> types> {
+    let Name = NAME # "_v",
+        IRName = ir,
+        MaskedIRName = ir # "_mask" in {
+      foreach type = types in {
+        // `0Petv` is type `T * -> -> PtrDiffT -> VectorType -> {VL} -> void`
+        // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
+        def : RVVBuiltin<"v", "0Petv", type>;
+        if !not(IsFloat<type>.val) then {
+          // `0PUetUv` is type `unsigned T * -> PtrDiffT -> unsigned VectorType -> {VL} -> void`
+          def : RVVBuiltin<"Uv", "0PUetUv", type>;
+        }
+      }
+    }
+  }
+
+  // 7.2 Strided store: vssb/h/w/bu/hu/wu
+  multiclass RVVVSSXBuiltin<string ir, list<string> types> {
+    let Name = NAME # "_v",
+        IRName = ir,
+        MaskedIRName = ir # "_mask" in {
+      foreach type = types in {
+        // `0Pezv` is type `T * -> SizeT -> VectorType -> {VL} -> void`
+        // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
+        def : RVVBuiltin<"v", "0Pezv", type>;
+        // `0PUezUv` is type `unsigned T * -> SizeT -> unsigned VectorType -> {VL} -> void`
+        def : RVVBuiltin<"Uv", "0PUezUv", type>;
       }
     }
   }
@@ -557,6 +359,23 @@ defm th_vse16: RVVVSEBuiltin<"th_vse", ["s","x"]>; // i16, f16
 defm th_vse32: RVVVSEBuiltin<"th_vse", ["i","f"]>; // i32, f32
 defm th_vse64: RVVVSEBuiltin<"th_vse", ["l","d"]>; // i64, f64
 
+// 7.2. Vector Strided Load/Store Operations
+defm th_vlsb  : RVVVLSXBuiltin<"th_vlsb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vlsh  : RVVVLSXBuiltin<"th_vlsh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vlsw  : RVVVLSXBuiltin<"th_vlsw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vlse8 : RVVVLSEBuiltin<"th_vlse", ["c"]>;     // i8
+defm th_vlse16: RVVVLSEBuiltin<"th_vlse", ["s","x"]>; // i16, f16
+defm th_vlse32: RVVVLSEBuiltin<"th_vlse", ["i","f"]>; // i32, f32
+defm th_vlse64: RVVVLSEBuiltin<"th_vlse", ["l","d"]>; // i64, f64
+
+defm th_vssb  : RVVVSSXBuiltin<"th_vssb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vssh  : RVVVSSXBuiltin<"th_vssh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vssw  : RVVVSSXBuiltin<"th_vssw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vsse8 : RVVVSSEBuiltin<"th_vsse", ["c"]>;     // i8
+defm th_vsse16: RVVVSSEBuiltin<"th_vsse", ["s","x"]>; // i16, f16
+defm th_vsse32: RVVVSSEBuiltin<"th_vsse", ["i","f"]>; // i32, f32
+defm th_vsse64: RVVVSSEBuiltin<"th_vsse", ["l","d"]>; // i64, f64
+
 //===----------------------------------------------------------------------===//
 // 12. Vector Integer Arithmetic Operations
 //===----------------------------------------------------------------------===//
@@ -564,3 +383,5 @@ defm th_vse64: RVVVSEBuiltin<"th_vse", ["l","d"]>; // i64, f64
 let UnMaskedPolicyScheme = HasPassthruOperand in {
   defm th_vadd : RVVIntBinBuiltinSet;
 }
+
+include "riscv_vector_xtheadv_wrappers.td"
