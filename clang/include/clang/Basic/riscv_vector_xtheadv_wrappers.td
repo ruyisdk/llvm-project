@@ -594,3 +594,54 @@ let HeaderCode =
 }] in
 def th_strided_wrapper_macros: RVVHeader;
 
+let HeaderCode =
+[{
+// Vector Unit-stride Fault-Only-First loads
+#define __riscv_vle8ff_v_i8m1(src_ptr, new_vl_ptr, vl) __riscv_th_vle8ff_v_i8m1(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle8ff_v_i8m2(src_ptr, new_vl_ptr, vl) __riscv_th_vle8ff_v_i8m2(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle8ff_v_i8m4(src_ptr, new_vl_ptr, vl) __riscv_th_vle8ff_v_i8m4(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle8ff_v_i8m8(src_ptr, new_vl_ptr, vl) __riscv_th_vle8ff_v_i8m8(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle16ff_v_i16m1(src_ptr, new_vl_ptr, vl) __riscv_th_vle16ff_v_i16m1(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle16ff_v_i16m2(src_ptr, new_vl_ptr, vl) __riscv_th_vle16ff_v_i16m2(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle16ff_v_i16m4(src_ptr, new_vl_ptr, vl) __riscv_th_vle16ff_v_i16m4(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle16ff_v_i16m8(src_ptr, new_vl_ptr, vl) __riscv_th_vle16ff_v_i16m8(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle32ff_v_i32m1(src_ptr, new_vl_ptr, vl) __riscv_th_vle32ff_v_i32m1(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle32ff_v_i32m2(src_ptr, new_vl_ptr, vl) __riscv_th_vle32ff_v_i32m2(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle32ff_v_i32m4(src_ptr, new_vl_ptr, vl) __riscv_th_vle32ff_v_i32m4(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle32ff_v_i32m8(src_ptr, new_vl_ptr, vl) __riscv_th_vle32ff_v_i32m8(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle64ff_v_i64m1(src_ptr, new_vl_ptr, vl) __riscv_th_vle64ff_v_i64m1(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle64ff_v_i64m2(src_ptr, new_vl_ptr, vl) __riscv_th_vle64ff_v_i64m2(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle64ff_v_i64m4(src_ptr, new_vl_ptr, vl) __riscv_th_vle64ff_v_i64m4(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle64ff_v_i64m8(src_ptr, new_vl_ptr, vl) __riscv_th_vle64ff_v_i64m8(src_ptr, new_vl_ptr, vl)
+
+#define __riscv_vle8ff_v_u8m1(src_ptr, new_vl_ptr, vl) __riscv_th_vle8ff_v_u8m1(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle8ff_v_u8m2(src_ptr, new_vl_ptr, vl) __riscv_th_vle8ff_v_u8m2(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle8ff_v_u8m4(src_ptr, new_vl_ptr, vl) __riscv_th_vle8ff_v_u8m4(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle8ff_v_u8m8(src_ptr, new_vl_ptr, vl) __riscv_th_vle8ff_v_u8m8(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle16ff_v_u16m1(src_ptr, new_vl_ptr, vl) __riscv_th_vle16ff_v_u16m1(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle16ff_v_u16m2(src_ptr, new_vl_ptr, vl) __riscv_th_vle16ff_v_u16m2(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle16ff_v_u16m4(src_ptr, new_vl_ptr, vl) __riscv_th_vle16ff_v_u16m4(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle16ff_v_u16m8(src_ptr, new_vl_ptr, vl) __riscv_th_vle16ff_v_u16m8(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle32ff_v_u32m1(src_ptr, new_vl_ptr, vl) __riscv_th_vle32ff_v_u32m1(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle32ff_v_u32m2(src_ptr, new_vl_ptr, vl) __riscv_th_vle32ff_v_u32m2(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle32ff_v_u32m4(src_ptr, new_vl_ptr, vl) __riscv_th_vle32ff_v_u32m4(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle32ff_v_u32m8(src_ptr, new_vl_ptr, vl) __riscv_th_vle32ff_v_u32m8(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle64ff_v_u64m1(src_ptr, new_vl_ptr, vl) __riscv_th_vle64ff_v_u64m1(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle64ff_v_u64m2(src_ptr, new_vl_ptr, vl) __riscv_th_vle64ff_v_u64m2(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle64ff_v_u64m4(src_ptr, new_vl_ptr, vl) __riscv_th_vle64ff_v_u64m4(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle64ff_v_u64m8(src_ptr, new_vl_ptr, vl) __riscv_th_vle64ff_v_u64m8(src_ptr, new_vl_ptr, vl)
+
+#define __riscv_vle16ff_v_f16m1(src_ptr, new_vl_ptr, vl) __riscv_th_vle16ff_v_f16m1(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle16ff_v_f16m2(src_ptr, new_vl_ptr, vl) __riscv_th_vle16ff_v_f16m2(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle16ff_v_f16m4(src_ptr, new_vl_ptr, vl) __riscv_th_vle16ff_v_f16m4(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle16ff_v_f16m8(src_ptr, new_vl_ptr, vl) __riscv_th_vle16ff_v_f16m8(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle32ff_v_f32m1(src_ptr, new_vl_ptr, vl) __riscv_th_vle32ff_v_f32m1(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle32ff_v_f32m2(src_ptr, new_vl_ptr, vl) __riscv_th_vle32ff_v_f32m2(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle32ff_v_f32m4(src_ptr, new_vl_ptr, vl) __riscv_th_vle32ff_v_f32m4(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle32ff_v_f32m8(src_ptr, new_vl_ptr, vl) __riscv_th_vle32ff_v_f32m8(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle64ff_v_f64m1(src_ptr, new_vl_ptr, vl) __riscv_th_vle64ff_v_f64m1(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle64ff_v_f64m2(src_ptr, new_vl_ptr, vl) __riscv_th_vle64ff_v_f64m2(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle64ff_v_f64m4(src_ptr, new_vl_ptr, vl) __riscv_th_vle64ff_v_f64m4(src_ptr, new_vl_ptr, vl)
+#define __riscv_vle64ff_v_f64m8(src_ptr, new_vl_ptr, vl) __riscv_th_vle64ff_v_f64m8(src_ptr, new_vl_ptr, vl)
+}] in
+def th_unit_stride_ff_wrapper_macros: RVVHeader;
