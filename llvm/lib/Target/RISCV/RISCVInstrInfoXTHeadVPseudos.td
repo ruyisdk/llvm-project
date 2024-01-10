@@ -18,6 +18,9 @@
 // Used to iterate over all possible LMULs in RVV 0.7.1
 defvar MxListXTHeadV = [V_M1, V_M2, V_M4, V_M8];
 
+// Used to iterate over all possible extendable LMULs in RVV 0.7.1.
+defvar MxListWXTHeadV = [V_M1, V_M2, V_M4];
+
 // Redefine `AllIntegerVectors` from RISCVInstrInfoVPseudos.td to remove fractionally-grouped register groups
 // like MF2, MF4, MF8, which are not supported by the 'V' extension 0.7.1.
 defset list<VTypeInfo> AllXVectors = {
@@ -77,6 +80,22 @@ defset list<VTypeInfo> AllXVectors = {
                                   VRM8, V_M8, f64, FPR64>;
     }
   }
+}
+
+// Redefine `AllWidenableIntVectors` from RISCVInstrInfoVPseudos.td to remove fractionally-grouped
+// register groups like MF2, MF4, MF8, which are not supported by the 'V' extension 0.7.1.
+defset list<VTypeInfoToWide> AllWidenableIntXVectors = {
+  def : VTypeInfoToWide<VI8M1,   VI16M2>;
+  def : VTypeInfoToWide<VI8M2,   VI16M4>;
+  def : VTypeInfoToWide<VI8M4,   VI16M8>;
+
+  def : VTypeInfoToWide<VI16M1,  VI32M2>;
+  def : VTypeInfoToWide<VI16M2,  VI32M4>;
+  def : VTypeInfoToWide<VI16M4,  VI32M8>;
+
+  def : VTypeInfoToWide<VI32M1,  VI64M2>;
+  def : VTypeInfoToWide<VI32M2,  VI64M4>;
+  def : VTypeInfoToWide<VI32M4,  VI64M8>;
 }
 
 class GetXVTypePredicates<VTypeInfo vti> {
