@@ -1579,6 +1579,27 @@ multiclass XVPseudoBinaryV_VI<Operand ImmType = simm5, LMULInfo m, string Constr
   defm _VI : XVPseudoBinary<m.vrclass, m.vrclass, ImmType, m, Constraint>;
 }
 
+multiclass XVPseudoBinaryW_VV<LMULInfo m> {
+  defm _VV : XVPseudoBinary<m.wvrclass, m.vrclass, m.vrclass, m,
+                            "@earlyclobber $rd">;
+}
+
+multiclass XVPseudoBinaryW_VX<LMULInfo m> {
+  defm _VX : XVPseudoBinary<m.wvrclass, m.vrclass, GPR, m,
+                            "@earlyclobber $rd">;
+}
+
+multiclass XVPseudoBinaryW_WV<LMULInfo m> {
+  defm _WV : XVPseudoBinary<m.wvrclass, m.wvrclass, m.vrclass, m,
+                            "@earlyclobber $rd">;
+  defm _WV : XVPseudoTiedBinary<m.wvrclass, m.vrclass, m,
+                                "@earlyclobber $rd">;
+}
+
+multiclass XVPseudoBinaryW_WX<LMULInfo m> {
+  defm _WX : XVPseudoBinary<m.wvrclass, m.wvrclass, GPR, m>;
+}
+
 multiclass XVPseudoVALU_VV_VX_VI<Operand ImmType = simm5, string Constraint = ""> {
   foreach m = MxListXTHeadV in {
     defvar mx = m.MX;
@@ -1624,6 +1645,36 @@ multiclass XVPseudoVALU_VX_VI<Operand ImmType = simm5> {
               Sched<[WriteVIALUX_MX, ReadVIALUV_MX, ReadVIALUX_MX, ReadVMask]>;
     defm "" : XVPseudoBinaryV_VI<ImmType, m>,
               Sched<[WriteVIALUI_MX, ReadVIALUV_MX, ReadVMask]>;
+  }
+}
+
+multiclass XVPseudoVWALU_VV_VX {
+  foreach m = MxListWXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVIWALUV_MX = !cast<SchedWrite>("WriteVIWALUV_" # mx);
+    defvar WriteVIWALUX_MX = !cast<SchedWrite>("WriteVIWALUX_" # mx);
+    defvar ReadVIWALUV_MX = !cast<SchedRead>("ReadVIWALUV_" # mx);
+    defvar ReadVIWALUX_MX = !cast<SchedRead>("ReadVIWALUX_" # mx);
+
+    defm "" : XVPseudoBinaryW_VV<m>,
+            Sched<[WriteVIWALUV_MX, ReadVIWALUV_MX, ReadVIWALUV_MX, ReadVMask]>;
+    defm "" : XVPseudoBinaryW_VX<m>,
+            Sched<[WriteVIWALUX_MX, ReadVIWALUV_MX, ReadVIWALUX_MX, ReadVMask]>;
+  }
+}
+
+multiclass XVPseudoVWALU_WV_WX {
+  foreach m = MxListWXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVIWALUV_MX = !cast<SchedWrite>("WriteVIWALUV_" # mx);
+    defvar WriteVIWALUX_MX = !cast<SchedWrite>("WriteVIWALUX_" # mx);
+    defvar ReadVIWALUV_MX = !cast<SchedRead>("ReadVIWALUV_" # mx);
+    defvar ReadVIWALUX_MX = !cast<SchedRead>("ReadVIWALUX_" # mx);
+
+    defm "" : XVPseudoBinaryW_WV<m>,
+              Sched<[WriteVIWALUV_MX, ReadVIWALUV_MX, ReadVIWALUV_MX, ReadVMask]>;
+    defm "" : XVPseudoBinaryW_WX<m>,
+              Sched<[WriteVIWALUX_MX, ReadVIWALUV_MX, ReadVIWALUX_MX, ReadVMask]>;
   }
 }
 
