@@ -1747,6 +1747,40 @@ class XVPatBinaryNoMask<string intrinsic_name,
                    (op2_type op2_kind:$rs2),
                    GPR:$vl, sew)>;
 
+class XVPatTiedBinaryNoMask<string intrinsic_name,
+                            string inst,
+                            ValueType result_type,
+                            ValueType op2_type,
+                            int sew,
+                            VReg result_reg_class,
+                            DAGOperand op2_kind> :
+  Pat<(result_type (!cast<Intrinsic>(intrinsic_name)
+                   (result_type (undef)),
+                   (result_type result_reg_class:$rs1),
+                   (op2_type op2_kind:$rs2), VLOpFrag)),
+                   (!cast<Instruction>(inst#"_TIED")
+                   (result_type result_reg_class:$rs1),
+                   (op2_type op2_kind:$rs2),
+                   GPR:$vl, sew)>;
+
+class XVPatTiedBinaryMask<string intrinsic_name,
+                          string inst,
+                          ValueType result_type,
+                          ValueType op2_type,
+                          ValueType mask_type,
+                          int sew,
+                          VReg result_reg_class,
+                          DAGOperand op2_kind> :
+  Pat<(result_type (!cast<Intrinsic>(intrinsic_name#"_mask")
+                   (result_type result_reg_class:$merge),
+                   (result_type result_reg_class:$merge),
+                   (op2_type op2_kind:$rs2),
+                   (mask_type V0), VLOpFrag)),
+                   (!cast<Instruction>(inst#"_MASK_TIED")
+                   (result_type result_reg_class:$merge),
+                   (op2_type op2_kind:$rs2),
+                   (mask_type V0), GPR:$vl, sew)>;
+
 multiclass XVPatBinary<string intrinsic,
                       string inst,
                       ValueType result_type,
@@ -1802,6 +1836,73 @@ multiclass XVPatBinaryV_VI<string intrinsic, string instruction,
                       vti.RegClass, imm_type>;
 }
 
+multiclass XVPatBinaryW_VV<string intrinsic, string instruction,
+                           list<VTypeInfoToWide> vtilist> {
+  foreach VtiToWti = vtilist in {
+    defvar Vti = VtiToWti.Vti;
+    defvar Wti = VtiToWti.Wti;
+    let Predicates = !listconcat(GetXVTypePredicates<Vti>.Predicates,
+                                 GetXVTypePredicates<Wti>.Predicates) in
+    defm : XVPatBinary<intrinsic, instruction # "_VV_" # Vti.LMul.MX,
+                       Wti.Vector, Vti.Vector, Vti.Vector, Vti.Mask,
+                       Vti.Log2SEW, Wti.RegClass,
+                       Vti.RegClass, Vti.RegClass>;
+  }
+}
+
+multiclass XVPatBinaryW_VX<string intrinsic, string instruction,
+                           list<VTypeInfoToWide> vtilist> {
+  foreach VtiToWti = vtilist in {
+    defvar Vti = VtiToWti.Vti;
+    defvar Wti = VtiToWti.Wti;
+    defvar kind = "V"#Vti.ScalarSuffix;
+    let Predicates = !listconcat(GetXVTypePredicates<Vti>.Predicates,
+                                 GetXVTypePredicates<Wti>.Predicates) in
+    defm : XVPatBinary<intrinsic, instruction#"_"#kind#"_"#Vti.LMul.MX,
+                       Wti.Vector, Vti.Vector, Vti.Scalar, Vti.Mask,
+                       Vti.Log2SEW, Wti.RegClass,
+                       Vti.RegClass, Vti.ScalarRegClass>;
+  }
+}
+
+multiclass XVPatBinaryW_WV<string intrinsic, string instruction,
+                           list<VTypeInfoToWide> vtilist> {
+  foreach VtiToWti = vtilist in {
+    defvar Vti = VtiToWti.Vti;
+    defvar Wti = VtiToWti.Wti;
+    let Predicates = !listconcat(GetXVTypePredicates<Vti>.Predicates,
+                                 GetXVTypePredicates<Wti>.Predicates) in {
+      def : XVPatTiedBinaryNoMask<intrinsic, instruction # "_WV_" # Vti.LMul.MX,
+                                  Wti.Vector, Vti.Vector,
+                                  Vti.Log2SEW, Wti.RegClass, Vti.RegClass>;
+      let AddedComplexity = 1 in {
+      def : XVPatTiedBinaryMask<intrinsic, instruction # "_WV_" # Vti.LMul.MX,
+                                Wti.Vector, Vti.Vector, Vti.Mask,
+                                Vti.Log2SEW, Wti.RegClass, Vti.RegClass>;
+      }
+      def : VPatBinaryMask<intrinsic, instruction # "_WV_" # Vti.LMul.MX,
+                            Wti.Vector, Wti.Vector, Vti.Vector, Vti.Mask,
+                            Vti.Log2SEW, Wti.RegClass,
+                            Wti.RegClass, Vti.RegClass>;
+    }
+  }
+}
+
+multiclass XVPatBinaryW_WX<string intrinsic, string instruction,
+                           list<VTypeInfoToWide> vtilist> {
+  foreach VtiToWti = vtilist in {
+    defvar Vti = VtiToWti.Vti;
+    defvar Wti = VtiToWti.Wti;
+    defvar kind = "W"#Vti.ScalarSuffix;
+    let Predicates = !listconcat(GetXVTypePredicates<Vti>.Predicates,
+                                 GetXVTypePredicates<Wti>.Predicates) in
+    defm : XVPatBinary<intrinsic, instruction#"_"#kind#"_"#Vti.LMul.MX,
+                       Wti.Vector, Wti.Vector, Vti.Scalar, Vti.Mask,
+                       Vti.Log2SEW, Wti.RegClass,
+                       Wti.RegClass, Vti.ScalarRegClass>;
+  }
+}
+
 multiclass XVPatBinaryV_VV_VX_VI<string intrinsic, string instruction,
                                  list<VTypeInfo> vtilist, Operand ImmType = simm5>
     : XVPatBinaryV_VV<intrinsic, instruction, vtilist>,
@@ -1817,6 +1918,16 @@ multiclass XVPatBinaryV_VX_VI<string intrinsic, string instruction,
                               list<VTypeInfo> vtilist>
     : XVPatBinaryV_VX<intrinsic, instruction, vtilist>,
       XVPatBinaryV_VI<intrinsic, instruction, vtilist, simm5>;
+
+multiclass XVPatBinaryW_VV_VX<string intrinsic, string instruction,
+                              list<VTypeInfoToWide> vtilist>
+    : XVPatBinaryW_VV<intrinsic, instruction, vtilist>,
+      XVPatBinaryW_VX<intrinsic, instruction, vtilist>;
+
+multiclass XVPatBinaryW_WV_WX<string intrinsic, string instruction,
+                              list<VTypeInfoToWide> vtilist>
+    : XVPatBinaryW_WV<intrinsic, instruction, vtilist>,
+      XVPatBinaryW_WX<intrinsic, instruction, vtilist>;
 
 //===----------------------------------------------------------------------===//
 // 12.1. Vector Single-Width Saturating Add and Subtract
@@ -1886,6 +1997,31 @@ let Predicates = [HasVendorXTHeadV] in {
   defm : XVPatBinaryV_VV_VX<"int_riscv_th_vsub", "PseudoTH_VSUB", AllIntegerXVectors>;
   defm : XVPatBinaryV_VX_VI<"int_riscv_th_vrsub", "PseudoTH_VRSUB", AllIntegerXVectors>;
 } // Predicates = [HasVendorXTHeadV]
+
+//===----------------------------------------------------------------------===//
+// 12.2. Vector Widening Integer Add/Subtract
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VWADDU : XVPseudoVWALU_VV_VX;
+  defm PseudoTH_VWSUBU : XVPseudoVWALU_VV_VX;
+  defm PseudoTH_VWADD  : XVPseudoVWALU_VV_VX;
+  defm PseudoTH_VWSUB  : XVPseudoVWALU_VV_VX;
+  defm PseudoTH_VWADDU : XVPseudoVWALU_WV_WX;
+  defm PseudoTH_VWSUBU : XVPseudoVWALU_WV_WX;
+  defm PseudoTH_VWADD  : XVPseudoVWALU_WV_WX;
+  defm PseudoTH_VWSUB  : XVPseudoVWALU_WV_WX;
+}
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryW_VV_VX<"int_riscv_th_vwaddu", "PseudoTH_VWADDU", AllWidenableIntXVectors>;
+  defm : XVPatBinaryW_VV_VX<"int_riscv_th_vwsubu", "PseudoTH_VWSUBU", AllWidenableIntXVectors>;
+  defm : XVPatBinaryW_VV_VX<"int_riscv_th_vwadd", "PseudoTH_VWADD", AllWidenableIntXVectors>;
+  defm : XVPatBinaryW_VV_VX<"int_riscv_th_vwsub", "PseudoTH_VWSUB", AllWidenableIntXVectors>;
+  defm : XVPatBinaryW_WV_WX<"int_riscv_th_vwaddu_w", "PseudoTH_VWADDU", AllWidenableIntXVectors>;
+  defm : XVPatBinaryW_WV_WX<"int_riscv_th_vwsubu_w", "PseudoTH_VWSUBU", AllWidenableIntXVectors>;
+  defm : XVPatBinaryW_WV_WX<"int_riscv_th_vwadd_w", "PseudoTH_VWADD", AllWidenableIntXVectors>;
+  defm : XVPatBinaryW_WV_WX<"int_riscv_th_vwsub_w", "PseudoTH_VWSUB", AllWidenableIntXVectors>;
+}
 
 //===----------------------------------------------------------------------===//
 // 12.14. Vector Integer Merge and Move Instructions
