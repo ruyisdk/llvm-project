@@ -1551,6 +1551,39 @@ class XVPseudoBinaryNoMask<VReg RetClass,
   let HasSEWOp = 1;
 }
 
+class XVPseudoTiedBinaryNoMask<VReg RetClass,
+                               DAGOperand Op2Class,
+                               string Constraint> :
+        Pseudo<(outs RetClass:$rd),
+               (ins RetClass:$rs2, Op2Class:$rs1, AVL:$vl, ixlenimm:$sew), []>,
+        RISCVVPseudo {
+  let mayLoad = 0;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let Constraints = !interleave([Constraint, "$rd = $rs2"], ",");
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+  let isConvertibleToThreeAddress = 1;
+  let IsTiedPseudo = 1;
+}
+
+class XVPseudoTiedBinaryMask<VReg RetClass,
+                            DAGOperand Op2Class,
+                            string Constraint> :
+        Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd),
+                (ins GetVRegNoV0<RetClass>.R:$merge,
+                     Op2Class:$rs1,
+                     VMaskOp:$vm, GPR:$vl, ixlenimm:$sew), []>,
+        RISCVVPseudo {
+  let mayLoad = 0;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let Constraints = !interleave([Constraint, "$rd = $merge"], ",");
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+  let IsTiedPseudo = 1;
+}
+
 multiclass XVPseudoBinary<VReg RetClass,
                           VReg Op1Class,
                           DAGOperand Op2Class,
@@ -1564,6 +1597,18 @@ multiclass XVPseudoBinary<VReg RetClass,
     def suffix # "_MASK" : VPseudoBinaryMask<RetClass, Op1Class, Op2Class,
                                              Constraint>,
                            RISCVMaskedPseudo<MaskIdx=3>;
+  }
+}
+
+multiclass XVPseudoTiedBinary<VReg RetClass,
+                              DAGOperand Op2Class,
+                              LMULInfo MInfo,
+                              string Constraint = ""> {
+  let VLMul = MInfo.value in {
+    def "_" # MInfo.MX # "_TIED": XVPseudoTiedBinaryNoMask<RetClass, Op2Class,
+                                                           Constraint>;
+    def "_" # MInfo.MX # "_MASK_TIED" : XVPseudoTiedBinaryMask<RetClass, Op2Class,
+                                                               Constraint>;
   }
 }
 
