@@ -27,6 +27,10 @@ Any feature not listed below but present in the specification should be consider
       - (Done) `vadd.{vv,vx,vi}`
       - (Done) `vsub.{vv,vx}`
       - (Done) `vrsub.{vx,vi}`
+    - (Done) `12.2. Vector Widening Integer Add/Subtract`
+      - (Done) `vwadd{u}.{vv,vx,wv,wx}`
+      - (Done) `vwsub{u}.{vv,vx,wv,wx}`
+
 - (WIP) Clang intrinsics related to the `XTHeadVector` extension:
   - (WIP) `6. Configuration-Setting and Utility`
     - (Done) `6.1. Set vl and vtype`
