@@ -574,9 +574,26 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 4;
   }
 
+  // For destination vector type is NOT the same as
+  // first source vector (with mask but no policy).
+  // Input: (maskedoff, vector_in, vector_in/scalar_in, mask, vl)
+  class XVBinaryABXMasked
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, llvm_anyvector_ty, llvm_any_ty,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty],
+                    [IntrNoMem]>, RISCVVIntrinsic {
+    let ScalarOperand = 2;
+    let VLOperand = 4;
+  }
+
   multiclass XVBinaryAAX {
     def "int_riscv_" # NAME : RISCVBinaryAAXUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVBinaryAAXMasked;
+  }
+
+  multiclass XVBinaryABX {
+    def "int_riscv_" # NAME : RISCVBinaryABXUnMasked;
+    def "int_riscv_" # NAME # "_mask" : XVBinaryABXMasked;
   }
 }
 
@@ -586,6 +603,16 @@ let TargetPrefix = "riscv" in {
   defm th_vadd : XVBinaryAAX;
   defm th_vsub : XVBinaryAAX;
   defm th_vrsub : XVBinaryAAX;
+
+  // 12.2. Vector Widening Integer Add/Subtract
+  defm th_vwaddu : XVBinaryABX;
+  defm th_vwadd : XVBinaryABX;
+  defm th_vwaddu_w : XVBinaryAAX;
+  defm th_vwadd_w : XVBinaryAAX;
+  defm th_vwsubu : XVBinaryABX;
+  defm th_vwsub : XVBinaryABX;
+  defm th_vwsubu_w : XVBinaryAAX;
+  defm th_vwsub_w : XVBinaryAAX;
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
