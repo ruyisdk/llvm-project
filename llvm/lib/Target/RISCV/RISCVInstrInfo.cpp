@@ -3511,6 +3511,9 @@ MachineInstr *RISCVInstrInfo::commuteInstructionImpl(MachineInstr &MI,
 #define CASE_WIDEOP_OPCODE_COMMON(OP, LMUL)                                    \
   RISCV::PseudoV##OP##_##LMUL##_TIED
 
+#define CASE_TH_WIDEOP_OPCODE_COMMON(OP, LMUL)                                 \
+  RISCV::PseudoTH_V##OP##_##LMUL##_TIED
+
 #define CASE_WIDEOP_OPCODE_LMULS_MF4(OP)                                       \
   CASE_WIDEOP_OPCODE_COMMON(OP, MF4):                                          \
   case CASE_WIDEOP_OPCODE_COMMON(OP, MF2):                                     \
@@ -3522,9 +3525,19 @@ MachineInstr *RISCVInstrInfo::commuteInstructionImpl(MachineInstr &MI,
   CASE_WIDEOP_OPCODE_COMMON(OP, MF8):                                          \
   case CASE_WIDEOP_OPCODE_LMULS_MF4(OP)
 
+#define CASE_TH_WIDEOP_OPCODE_LMULS(OP)                                        \
+  CASE_TH_WIDEOP_OPCODE_COMMON(OP, M1):                                        \
+  case CASE_TH_WIDEOP_OPCODE_COMMON(OP, M2):                                   \
+  case CASE_TH_WIDEOP_OPCODE_COMMON(OP, M4)
+
 #define CASE_WIDEOP_CHANGE_OPCODE_COMMON(OP, LMUL)                             \
   case RISCV::PseudoV##OP##_##LMUL##_TIED:                                     \
     NewOpc = RISCV::PseudoV##OP##_##LMUL;                                      \
+    break;
+
+#define CASE_TH_WIDEOP_CHANGE_OPCODE_COMMON(OP, LMUL)                          \
+  case RISCV::PseudoTH_V##OP##_##LMUL##_TIED:                                  \
+    NewOpc = RISCV::PseudoTH_V##OP##_##LMUL;                                   \
     break;
 
 #define CASE_WIDEOP_CHANGE_OPCODE_LMULS_MF4(OP)                                \
@@ -3537,6 +3550,11 @@ MachineInstr *RISCVInstrInfo::commuteInstructionImpl(MachineInstr &MI,
 #define CASE_WIDEOP_CHANGE_OPCODE_LMULS(OP)                                    \
   CASE_WIDEOP_CHANGE_OPCODE_COMMON(OP, MF8)                                    \
   CASE_WIDEOP_CHANGE_OPCODE_LMULS_MF4(OP)
+
+#define CASE_TH_WIDEOP_CHANGE_OPCODE_LMULS(OP)                                 \
+  CASE_TH_WIDEOP_CHANGE_OPCODE_COMMON(OP, M1)                                  \
+  CASE_TH_WIDEOP_CHANGE_OPCODE_COMMON(OP, M2)                                  \
+  CASE_TH_WIDEOP_CHANGE_OPCODE_COMMON(OP, M4)
 
 // FP Widening Ops may by SEW aware. Create SEW aware cases for these cases.
 #define CASE_FP_WIDEOP_OPCODE_COMMON(OP, LMUL, SEW)                            \
@@ -3614,12 +3632,20 @@ MachineInstr *RISCVInstrInfo::convertToThreeAddress(MachineInstr &MI,
   case CASE_WIDEOP_OPCODE_LMULS(WADD_WV):
   case CASE_WIDEOP_OPCODE_LMULS(WADDU_WV):
   case CASE_WIDEOP_OPCODE_LMULS(WSUB_WV):
-  case CASE_WIDEOP_OPCODE_LMULS(WSUBU_WV): {
+  case CASE_WIDEOP_OPCODE_LMULS(WSUBU_WV):
+  case CASE_TH_WIDEOP_OPCODE_LMULS(WADD_WV):
+  case CASE_TH_WIDEOP_OPCODE_LMULS(WADDU_WV):
+  case CASE_TH_WIDEOP_OPCODE_LMULS(WSUB_WV):
+  case CASE_TH_WIDEOP_OPCODE_LMULS(WSUBU_WV):{
     // If the tail policy is undisturbed we can't convert.
-    assert(RISCVII::hasVecPolicyOp(MI.getDesc().TSFlags) &&
-           MI.getNumExplicitOperands() == 6);
-    if ((MI.getOperand(5).getImm() & 1) == 0)
-      return nullptr;
+    // We can always do the conversion in RVV 0.7.1, since
+    // it is always tail agnostic.
+    if (!STI.hasVendorXTHeadV()) {
+      assert(RISCVII::hasVecPolicyOp(MI.getDesc().TSFlags) &&
+             MI.getNumExplicitOperands() == 6);
+      if ((MI.getOperand(5).getImm() & 1) == 0)
+        return nullptr;
+    }
 
     // clang-format off
     unsigned NewOpc;
@@ -3630,6 +3656,10 @@ MachineInstr *RISCVInstrInfo::convertToThreeAddress(MachineInstr &MI,
     CASE_WIDEOP_CHANGE_OPCODE_LMULS(WADDU_WV)
     CASE_WIDEOP_CHANGE_OPCODE_LMULS(WSUB_WV)
     CASE_WIDEOP_CHANGE_OPCODE_LMULS(WSUBU_WV)
+    CASE_TH_WIDEOP_CHANGE_OPCODE_LMULS(WADD_WV)
+    CASE_TH_WIDEOP_CHANGE_OPCODE_LMULS(WADDU_WV)
+    CASE_TH_WIDEOP_CHANGE_OPCODE_LMULS(WSUB_WV)
+    CASE_TH_WIDEOP_CHANGE_OPCODE_LMULS(WSUBU_WV)
     }
     // clang-format on
 
@@ -3640,8 +3670,9 @@ MachineInstr *RISCVInstrInfo::convertToThreeAddress(MachineInstr &MI,
               .add(MI.getOperand(1))
               .add(MI.getOperand(2))
               .add(MI.getOperand(3))
-              .add(MI.getOperand(4))
-              .add(MI.getOperand(5));
+              .add(MI.getOperand(4));
+    if (!STI.hasVendorXTHeadV())
+      MIB.add(MI.getOperand(5));
     break;
   }
   }
