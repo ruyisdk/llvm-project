@@ -613,6 +613,12 @@ let TargetPrefix = "riscv" in {
   defm th_vwsub : XVBinaryABX;
   defm th_vwsubu_w : XVBinaryAAX;
   defm th_vwsub_w : XVBinaryAAX;
+
+  // 12.3. Vector Integer Add-with-Carry / Subtract-with-Borrow Instructions
+  defm th_vadc : RISCVBinaryWithV0;
+  defm th_vmadc_carry_in : RISCVBinaryMaskOutWithV0;
+  defm th_vsbc : RISCVBinaryWithV0;
+  defm th_vmsbc_borrow_in : RISCVBinaryMaskOutWithV0;
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
