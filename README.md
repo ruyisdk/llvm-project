@@ -33,6 +33,8 @@ Any feature not listed below but present in the specification should be consider
     - (Done) `6.2. Set vl to VLMAX with specific vtype`
   - (WIP) `7. Vector Load/Store`
     - (Done) `7.1. Vector Unit-Stride Operations`
+    - (Done) `7.2. Vector Strided Load/Store Operations`
+    - (Done) `7.4 Unit-stride Fault-Only-First Loads Operations`
 
 ## Q & A
 

@@ -242,6 +242,54 @@ let SupportOverloading = false,
       def : RVVOutBuiltin<"Uv", "UvPCUez", type>;
     }
   }
+
+  // 7.4. Unit-stride Fault-Only-First Loads Operations
+  multiclass RVVVLEFFBuiltin<string ir, list<string> types> {
+    let Name = NAME # "_v",
+        IRName = ir,
+        MaskedIRName = ir # "_mask",
+        ManualCodegen = [{
+        {
+          if (IsMasked) {
+            // Move mask to right before vl.
+            std::rotate(Ops.begin(), Ops.begin() + 1, Ops.end() - 1);
+            if ((PolicyAttrs & RVV_VTA) && (PolicyAttrs & RVV_VMA))
+              Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType));
+            Ops.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+            IntrinsicTypes = {ResultType, Ops[4]->getType()};
+          } else {
+            if (PolicyAttrs & RVV_VTA)
+              Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType));
+            IntrinsicTypes = {ResultType, Ops[3]->getType()};
+          }
+          Ops[1] = Builder.CreateBitCast(Ops[1], ResultType->getPointerTo());
+          Value *NewVL = Ops[2];
+          Ops.erase(Ops.begin() + 2);
+          llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
+          llvm::Value *LoadValue = Builder.CreateCall(F, Ops, "");
+          llvm::Value *V = Builder.CreateExtractValue(LoadValue, {0});
+          // Store new_vl.
+          clang::CharUnits Align;
+          if (IsMasked)
+            Align = CGM.getNaturalPointeeTypeAlignment(E->getArg(E->getNumArgs()-2)->getType());
+          else
+            Align = CGM.getNaturalPointeeTypeAlignment(E->getArg(1)->getType());
+          llvm::Value *Val = Builder.CreateExtractValue(LoadValue, {1});
+          Builder.CreateStore(Val, Address(NewVL, Val->getType(), Align));
+          return V;
+        }
+    }] in {
+      foreach type = types in {
+        // `vPCePz` is type `const T * -> SizeT * -> {VL} -> VectorType`
+        // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
+        def : RVVBuiltin<"v", "vPCePz", type>;
+        if !not(IsFloat<type>.val) then {
+          // `UvPCUePz` is type `const unsigned T * -> SizeT * -> {VL} -> unsigned VectorType`
+          def : RVVBuiltin<"Uv", "UvPCUePz", type>;
+        }
+      }
+    }
+  }
 }
 
 let HasMaskedOffOperand = false,
@@ -375,6 +423,12 @@ defm th_vsse8 : RVVVSSEBuiltin<"th_vsse", ["c"]>;     // i8
 defm th_vsse16: RVVVSSEBuiltin<"th_vsse", ["s","x"]>; // i16, f16
 defm th_vsse32: RVVVSSEBuiltin<"th_vsse", ["i","f"]>; // i32, f32
 defm th_vsse64: RVVVSSEBuiltin<"th_vsse", ["l","d"]>; // i64, f64
+
+// 7.4. Unit-stride Fault-Only-First Loads Operations
+defm th_vle8ff : RVVVLEFFBuiltin<"th_vleff", ["c"]>;      // i8
+defm th_vle16ff: RVVVLEFFBuiltin<"th_vleff", ["s","x"]>;  // i16, f16
+defm th_vle32ff: RVVVLEFFBuiltin<"th_vleff", ["i", "f"]>; // i32, f32
+defm th_vle64ff: RVVVLEFFBuiltin<"th_vleff", ["l", "d"]>; // i64, f64
 
 //===----------------------------------------------------------------------===//
 // 12. Vector Integer Arithmetic Operations
