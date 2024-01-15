@@ -35,6 +35,10 @@ Any feature not listed below but present in the specification should be consider
       - (Done) `vmadc.{vvm,vxm,vim}`
       - (Done) `vsbc.{vvm,vxm}`
       - (Done) `vmsbc.{vvm,vxm}`
+    - (Done) `12.4. Vector Bitwise Logical Instructions`
+      - (Done) `vand.{vv,vx,vi}`
+      - (Done) `vor.{vv,vx,vi}`
+      - (Done) `vxor.{vv,vx,vi}`
 - (WIP) Clang intrinsics related to the `XTHeadVector` extension:
   - (WIP) `6. Configuration-Setting and Utility`
     - (Done) `6.1. Set vl and vtype`

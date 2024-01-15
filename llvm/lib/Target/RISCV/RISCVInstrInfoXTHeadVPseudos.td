@@ -2193,6 +2193,21 @@ let Predicates = [HasVendorXTHeadV] in {
 } // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
+// 12.4. Vector Bitwise Logical Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VAND : XVPseudoVALU_VV_VX_VI;
+  defm PseudoTH_VOR  : XVPseudoVALU_VV_VX_VI;
+  defm PseudoTH_VXOR : XVPseudoVALU_VV_VX_VI;
+}
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryV_VV_VX_VI<"int_riscv_th_vand", "PseudoTH_VAND", AllIntegerXVectors>;
+  defm : XVPatBinaryV_VV_VX_VI<"int_riscv_th_vor", "PseudoTH_VOR", AllIntegerXVectors>;
+  defm : XVPatBinaryV_VV_VX_VI<"int_riscv_th_vxor", "PseudoTH_VXOR", AllIntegerXVectors>;
+}
+
+//===----------------------------------------------------------------------===//
 // 12.14. Vector Integer Merge and Move Instructions
 //===----------------------------------------------------------------------===//
 multiclass XVPseudoUnaryVMV_V_X_I {
