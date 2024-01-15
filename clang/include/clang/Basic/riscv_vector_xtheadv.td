@@ -447,6 +447,44 @@ let HasMaskedOffOperand = false,
   }
 }
 
+// 7.3 Indexed Store Operations: vsxei<eew>
+multiclass RVVVSXEEWBuiltin<string ir, list<string> types> {
+  let HasMaskedOffOperand = false,
+      MaskedPolicyScheme = NonePolicy,
+      ManualCodegen = [{
+        if (IsMasked) {
+          // Builtin: (mask, ptr, index, value, vl). Intrinsic: (value, ptr, index, mask, vl)
+          std::swap(Ops[0], Ops[3]);
+        } else {
+          // Builtin: (ptr, index, value, vl). Intrinsic: (value, ptr, index, vl)
+          std::rotate(Ops.begin(), Ops.begin() + 2, Ops.begin() + 3);
+        }
+        Ops[1] = Builder.CreateBitCast(Ops[1], Ops[0]->getType()->getPointerTo());
+        if (IsMasked)
+          IntrinsicTypes = {Ops[0]->getType(), Ops[2]->getType(), Ops[4]->getType()};
+        else
+          IntrinsicTypes = {Ops[0]->getType(), Ops[2]->getType(), Ops[3]->getType()};
+      }] in {
+    foreach type = types in {
+      foreach eew_list = EEWList in {
+        defvar eew = eew_list[0];
+        defvar eew_type = eew_list[1];
+        let Name = NAME # eew # "_v",
+            IRName = ir,
+            MaskedIRName = ir # "_mask" in  {
+          // `0Pe<eew>Uvv` is type `T * -> unsigned <EEW> VectorType -> VectorType -> {VL} -> void`
+          // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
+          def : RVVBuiltin<"v", "0Pe" # eew_type # "Uvv", type>;
+          if !not(IsFloat<type>.val) then {
+            // `0PUe<eew>UvUv` is type `unsigned T * -> unsigned <EEW> VectorType -> unsigned VectorType -> {VL} -> void`
+            def : RVVBuiltin<"Uv", "0PUe" # eew_type # "UvUv", type>;
+          }
+        }
+      }
+    }
+  }
+}
+
 // 7.1. Vector Unit-Stride Operations
 defm th_vlb  : RVVVLBHWBuiltin<"th_vlb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
 defm th_vlh  : RVVVLBHWBuiltin<"th_vlh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
@@ -486,6 +524,8 @@ defm th_vlxb   : RVVVLXBHWBuiltin<"th_vlxb", ["c", "s", "i", "l"]>; // i8, i16, 
 defm th_vlxh   : RVVVLXBHWBuiltin<"th_vlxh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
 defm th_vlxw   : RVVVLXBHWBuiltin<"th_vlxw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
 defm th_vloxei : RVVVLXEEWBuiltin<"th_vlxe", TypeList>;             // all types
+
+defm th_vsoxei : RVVVSXEEWBuiltin<"th_vsxe", TypeList>;             // all types
 
 // 7.4. Unit-stride Fault-Only-First Loads Operations
 defm th_vle8ff : RVVVLEFFBuiltin<"th_vleff", ["c"]>;      // i8
