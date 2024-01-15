@@ -243,6 +243,24 @@ let SupportOverloading = false,
     }
   }
 
+
+  // 7.3 Indexed Load Operations: vlxb/h/w/bu/hu/wu
+  multiclass RVVVLXBHWBuiltin<string ir, list<string> types> {
+    foreach type = types in {
+      // `vPCeUv` is type `const T * -> unsigned VectorType -> {VL} -> VectorType`
+      // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
+      let Name = NAME # "_v",
+          IRName = ir,
+          MaskedIRName = ir # "_mask" in
+      def : RVVOutBuiltin<"v", "vPCeUv", type>;
+      // `UvPCUeUv` is type `const unsigned T * -> unsigned VectorType -> {VL} -> unsigned VectorType`
+      let Name = NAME # "u_v",
+          IRName = ir # "u",
+          MaskedIRName = ir # "u_mask" in
+      def : RVVOutBuiltin<"Uv", "UvPCUez", type>;
+    }
+  }
+
   // 7.4. Unit-stride Fault-Only-First Loads Operations
   multiclass RVVVLEFFBuiltin<string ir, list<string> types> {
     let Name = NAME # "_v",
@@ -423,6 +441,11 @@ defm th_vsse8 : RVVVSSEBuiltin<"th_vsse", ["c"]>;     // i8
 defm th_vsse16: RVVVSSEBuiltin<"th_vsse", ["s","x"]>; // i16, f16
 defm th_vsse32: RVVVSSEBuiltin<"th_vsse", ["i","f"]>; // i32, f32
 defm th_vsse64: RVVVSSEBuiltin<"th_vsse", ["l","d"]>; // i64, f64
+
+// 7.3 Vector Indexed Load/Store Operations
+defm th_vlxb  : RVVVLXBHWBuiltin<"th_vlxb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vlxh  : RVVVLXBHWBuiltin<"th_vlxh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vlxw  : RVVVLXBHWBuiltin<"th_vlxw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
 
 // 7.4. Unit-stride Fault-Only-First Loads Operations
 defm th_vle8ff : RVVVLEFFBuiltin<"th_vleff", ["c"]>;      // i8
