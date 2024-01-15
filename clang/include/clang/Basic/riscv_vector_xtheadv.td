@@ -19,6 +19,11 @@ class RVVOutBuiltin<string suffix, string prototype, string type_range>
   let IntrinsicTypes = [-1];
 }
 
+class RVVOutOp1Builtin<string suffix, string prototype, string type_range>
+    : RVVBuiltin<suffix, prototype, type_range> {
+  let IntrinsicTypes = [-1, 1];
+}
+
 multiclass RVVBuiltinSet<string intrinsic_name, string type_range,
                          list<list<string>> suffixes_prototypes,
                          list<int> intrinsic_types> {
@@ -53,6 +58,11 @@ multiclass RVVIntBinBuiltinSet
     : RVVSignedBinBuiltinSet,
       RVVUnsignedBinBuiltinSet;
 
+defvar TypeList = ["c", "s", "i", "l", "x", "f", "d"];
+defvar EEWList = [["8", "(Log2EEW:3)"],
+                  ["16", "(Log2EEW:4)"],
+                  ["32", "(Log2EEW:5)"],
+                  ["64", "(Log2EEW:6)"]];
 
 //===----------------------------------------------------------------------===//
 // 6. Configuration-Setting and Utility
@@ -310,6 +320,35 @@ let SupportOverloading = false,
   }
 }
 
+// 7.3 Indexed Load Operations: vlxei<eew>
+multiclass RVVVLXEEWBuiltin<string ir, list<string> types> {
+  let UnMaskedPolicyScheme = HasPassthruOperand in {
+    foreach type = types in {
+      foreach eew_list = EEWList in {
+        defvar eew = eew_list[0];
+        defvar eew_type = eew_list[1];
+        let Name = NAME # eew # "_v", 
+            IRName = ir, 
+            MaskedIRName = ir # "_mask" in {
+          // Compare the following two signatures of vloxei:
+          // vint8m1_t vloxei8_v_i8m1 (const int8_t *base,  vuint8m1_t bindex, size_t vl);
+          // vint8m1_t vloxei16_v_i8m1 (const int8_t *base, vuint16m2_t bindex, size_t vl);
+          // The type of `bindex` should not be computed from `type` (aka, i8m1, i8m2, etc.),
+          // which is not the same as what we do in other intirnsics.
+
+          // `vPCe<eew>Uv` is type `const T * -> unsigned <EEW> VectorType -> {VL} -> VectorType`
+          // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
+          def: RVVOutOp1Builtin<"v", "vPCe" # eew_type # "Uv", type>;
+          if !not(IsFloat<type>.val) then {
+            // `UvPCUe<eew>Uv` is type `const unsigned T * -> unsigned <EEW> VectorType -> {VL} -> unsigned VectorType`
+            def: RVVOutOp1Builtin<"Uv", "UvPCUe" # eew_type # "Uv", type>;
+          }
+        }
+      }
+    }
+  }
+}
+
 let HasMaskedOffOperand = false,
     MaskedPolicyScheme = NonePolicy,
     ManualCodegen = [{
@@ -443,9 +482,10 @@ defm th_vsse32: RVVVSSEBuiltin<"th_vsse", ["i","f"]>; // i32, f32
 defm th_vsse64: RVVVSSEBuiltin<"th_vsse", ["l","d"]>; // i64, f64
 
 // 7.3 Vector Indexed Load/Store Operations
-defm th_vlxb  : RVVVLXBHWBuiltin<"th_vlxb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
-defm th_vlxh  : RVVVLXBHWBuiltin<"th_vlxh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
-defm th_vlxw  : RVVVLXBHWBuiltin<"th_vlxw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vlxb   : RVVVLXBHWBuiltin<"th_vlxb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vlxh   : RVVVLXBHWBuiltin<"th_vlxh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vlxw   : RVVVLXBHWBuiltin<"th_vlxw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vloxei : RVVVLXEEWBuiltin<"th_vlxe", TypeList>;             // all types
 
 // 7.4. Unit-stride Fault-Only-First Loads Operations
 defm th_vle8ff : RVVVLEFFBuiltin<"th_vleff", ["c"]>;      // i8
