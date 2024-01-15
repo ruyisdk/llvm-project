@@ -547,7 +547,11 @@ defm th_vsxb   : RVVVSXBHWBuiltin<"th_vsxb", ["c", "s", "i", "l"]>; // i8, i16, 
 defm th_vsxh   : RVVVSXBHWBuiltin<"th_vsxh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
 defm th_vsxw   : RVVVSXBHWBuiltin<"th_vsxw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
 defm th_vsoxei : RVVVSXEEWBuiltin<"th_vsxe", TypeList>;             // all types
-// TODO: th_vsuxb, th_vsuxh, th_vsuxw, th_xsuxei
+// TODO: LLVM intrinsic th_vsuxb, th_vsuxh, th_vsuxw, th_xsuxei for the following:
+//defm th_vsuxb   : RVVVSXBHWBuiltin<"th_vsuxb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+//defm th_vsuxh   : RVVVSXBHWBuiltin<"th_vsuxh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+//defm th_vsuxw   : RVVVSXBHWBuiltin<"th_vsuxw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+//defm th_vsuxei : RVVVSXEEWBuiltin<"th_vsuxe", TypeList>;             // all types
 
 // 7.4. Unit-stride Fault-Only-First Loads Operations
 defm th_vle8ff : RVVVLEFFBuiltin<"th_vleff", ["c"]>;      // i8
