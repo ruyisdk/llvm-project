@@ -30,7 +30,11 @@ Any feature not listed below but present in the specification should be consider
     - (Done) `12.2. Vector Widening Integer Add/Subtract`
       - (Done) `vwadd{u}.{vv,vx,wv,wx}`
       - (Done) `vwsub{u}.{vv,vx,wv,wx}`
-
+    - (Done) `12.3. Vector Integer Add-with-Carry / Subtract-with-Borrow Instructions`
+      - (Done) `vadc.{vvm,vxm,vim}`
+      - (Done) `vmadc.{vvm,vxm,vim}`
+      - (Done) `vsbc.{vvm,vxm}`
+      - (Done) `vmsbc.{vvm,vxm}`
 - (WIP) Clang intrinsics related to the `XTHeadVector` extension:
   - (WIP) `6. Configuration-Setting and Utility`
     - (Done) `6.1. Set vl and vtype`

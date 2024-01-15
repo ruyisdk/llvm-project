@@ -1723,6 +1723,72 @@ multiclass XVPseudoVWALU_WV_WX {
   }
 }
 
+multiclass XVPseudoVCALU_VM_XM_IM {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVICALUV_MX = !cast<SchedWrite>("WriteVICALUV_" # mx);
+    defvar WriteVICALUX_MX = !cast<SchedWrite>("WriteVICALUX_" # mx);
+    defvar WriteVICALUI_MX = !cast<SchedWrite>("WriteVICALUI_" # mx);
+    defvar ReadVICALUV_MX = !cast<SchedRead>("ReadVICALUV_" # mx);
+    defvar ReadVICALUX_MX = !cast<SchedRead>("ReadVICALUX_" # mx);
+
+    defm "" : VPseudoTiedBinaryV_VM<m>,
+              Sched<[WriteVICALUV_MX, ReadVICALUV_MX, ReadVICALUV_MX, ReadVMask]>;
+    defm "" : VPseudoTiedBinaryV_XM<m>,
+              Sched<[WriteVICALUX_MX, ReadVICALUV_MX, ReadVICALUX_MX, ReadVMask]>;
+    defm "" : VPseudoTiedBinaryV_IM<m>,
+              Sched<[WriteVICALUI_MX, ReadVICALUV_MX, ReadVMask]>;
+  }
+}
+
+multiclass XVPseudoVCALUM_VM_XM_IM<string Constraint> {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVICALUV_MX = !cast<SchedWrite>("WriteVICALUV_" # mx);
+    defvar WriteVICALUX_MX = !cast<SchedWrite>("WriteVICALUX_" # mx);
+    defvar WriteVICALUI_MX = !cast<SchedWrite>("WriteVICALUI_" # mx);
+    defvar ReadVICALUV_MX = !cast<SchedRead>("ReadVICALUV_" # mx);
+    defvar ReadVICALUX_MX = !cast<SchedRead>("ReadVICALUX_" # mx);
+
+    defm "" : VPseudoBinaryV_VM<m, CarryOut=1, CarryIn=1, Constraint=Constraint>,
+              Sched<[WriteVICALUV_MX, ReadVICALUV_MX, ReadVICALUV_MX, ReadVMask]>;
+    defm "" : VPseudoBinaryV_XM<m, CarryOut=1, CarryIn=1, Constraint=Constraint>,
+              Sched<[WriteVICALUX_MX, ReadVICALUV_MX, ReadVICALUX_MX, ReadVMask]>;
+    defm "" : VPseudoBinaryV_IM<m, CarryOut=1, CarryIn=1, Constraint=Constraint>,
+              Sched<[WriteVICALUI_MX, ReadVICALUV_MX, ReadVMask]>;
+  }
+}
+
+multiclass XVPseudoVCALU_VM_XM {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVICALUV_MX = !cast<SchedWrite>("WriteVICALUV_" # mx);
+    defvar WriteVICALUX_MX = !cast<SchedWrite>("WriteVICALUX_" # mx);
+    defvar ReadVICALUV_MX = !cast<SchedRead>("ReadVICALUV_" # mx);
+    defvar ReadVICALUX_MX = !cast<SchedRead>("ReadVICALUX_" # mx);
+
+    defm "" : VPseudoTiedBinaryV_VM<m>,
+              Sched<[WriteVICALUV_MX, ReadVICALUV_MX, ReadVICALUV_MX, ReadVMask]>;
+    defm "" : VPseudoTiedBinaryV_XM<m>,
+              Sched<[WriteVICALUX_MX, ReadVICALUV_MX, ReadVICALUX_MX, ReadVMask]>;
+  }
+}
+
+multiclass XVPseudoVCALUM_VM_XM<string Constraint> {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVICALUV_MX = !cast<SchedWrite>("WriteVICALUV_" # mx);
+    defvar WriteVICALUX_MX = !cast<SchedWrite>("WriteVICALUX_" # mx);
+    defvar ReadVICALUV_MX = !cast<SchedRead>("ReadVICALUV_" # mx);
+    defvar ReadVICALUX_MX = !cast<SchedRead>("ReadVICALUX_" # mx);
+
+    defm "" : VPseudoBinaryV_VM<m, CarryOut=1, CarryIn=1, Constraint=Constraint>,
+              Sched<[WriteVICALUV_MX, ReadVICALUV_MX, ReadVICALUV_MX, ReadVMask]>;
+    defm "" : VPseudoBinaryV_XM<m, CarryOut=1, CarryIn=1, Constraint=Constraint>,
+              Sched<[WriteVICALUX_MX, ReadVICALUV_MX, ReadVICALUX_MX, ReadVMask]>;
+  }
+}
+
 //===----------------------------------------------------------------------===//
 // Helpers to define the intrinsic patterns for the XTHeadVector extension.
 //===----------------------------------------------------------------------===//
@@ -1903,6 +1969,72 @@ multiclass XVPatBinaryW_WX<string intrinsic, string instruction,
   }
 }
 
+multiclass XVPatBinaryV_VM_TAIL<string intrinsic, string instruction> {
+  foreach vti = AllIntegerXVectors in
+    let Predicates = GetXVTypePredicates<vti>.Predicates in
+    defm : VPatBinaryCarryInTAIL<intrinsic, instruction, "VVM",
+                                 vti.Vector,
+                                 vti.Vector, vti.Vector, vti.Mask,
+                                 vti.Log2SEW, vti.LMul, vti.RegClass,
+                                 vti.RegClass, vti.RegClass>;
+}
+
+multiclass XVPatBinaryV_XM_TAIL<string intrinsic, string instruction> {
+  foreach vti = AllIntegerXVectors in
+    let Predicates = GetXVTypePredicates<vti>.Predicates in
+    defm : VPatBinaryCarryInTAIL<intrinsic, instruction,
+                                 "V"#vti.ScalarSuffix#"M",
+                                 vti.Vector,
+                                 vti.Vector, vti.Scalar, vti.Mask,
+                                 vti.Log2SEW, vti.LMul, vti.RegClass,
+                                 vti.RegClass, vti.ScalarRegClass>;
+}
+
+multiclass XVPatBinaryV_IM_TAIL<string intrinsic, string instruction> {
+  foreach vti = AllIntegerXVectors in
+    let Predicates = GetXVTypePredicates<vti>.Predicates in
+    defm : VPatBinaryCarryInTAIL<intrinsic, instruction, "VIM",
+                                 vti.Vector,
+                                 vti.Vector, XLenVT, vti.Mask,
+                                 vti.Log2SEW, vti.LMul,
+                                 vti.RegClass, vti.RegClass, simm5>;
+}
+multiclass XVPatBinaryV_VM<string intrinsic, string instruction,
+                           bit CarryOut = 0,
+                           list<VTypeInfo> vtilist = AllIntegerXVectors> {
+  foreach vti = vtilist in
+    let Predicates = GetXVTypePredicates<vti>.Predicates in
+    defm : VPatBinaryCarryIn<intrinsic, instruction, "VVM",
+                             !if(CarryOut, vti.Mask, vti.Vector),
+                             vti.Vector, vti.Vector, vti.Mask,
+                             vti.Log2SEW, vti.LMul,
+                             vti.RegClass, vti.RegClass>;
+}
+
+multiclass XVPatBinaryV_XM<string intrinsic, string instruction,
+                           bit CarryOut = 0,
+                           list<VTypeInfo> vtilist = AllIntegerXVectors> {
+  foreach vti = vtilist in
+    let Predicates = GetXVTypePredicates<vti>.Predicates in
+    defm : VPatBinaryCarryIn<intrinsic, instruction,
+                             "V"#vti.ScalarSuffix#"M",
+                             !if(CarryOut, vti.Mask, vti.Vector),
+                             vti.Vector, vti.Scalar, vti.Mask,
+                             vti.Log2SEW, vti.LMul,
+                             vti.RegClass, vti.ScalarRegClass>;
+}
+
+multiclass XVPatBinaryV_IM<string intrinsic, string instruction,
+                           bit CarryOut = 0> {
+  foreach vti = AllIntegerXVectors in
+    let Predicates = GetXVTypePredicates<vti>.Predicates in
+    defm : VPatBinaryCarryIn<intrinsic, instruction, "VIM",
+                             !if(CarryOut, vti.Mask, vti.Vector),
+                             vti.Vector, XLenVT, vti.Mask,
+                             vti.Log2SEW, vti.LMul,
+                             vti.RegClass, simm5>;
+}
+
 multiclass XVPatBinaryV_VV_VX_VI<string intrinsic, string instruction,
                                  list<VTypeInfo> vtilist, Operand ImmType = simm5>
     : XVPatBinaryV_VV<intrinsic, instruction, vtilist>,
@@ -1928,6 +2060,24 @@ multiclass XVPatBinaryW_WV_WX<string intrinsic, string instruction,
                               list<VTypeInfoToWide> vtilist>
     : XVPatBinaryW_WV<intrinsic, instruction, vtilist>,
       XVPatBinaryW_WX<intrinsic, instruction, vtilist>;
+
+multiclass XVPatBinaryV_VM_XM_IM<string intrinsic, string instruction>
+    : XVPatBinaryV_VM_TAIL<intrinsic, instruction>,
+      XVPatBinaryV_XM_TAIL<intrinsic, instruction>,
+      XVPatBinaryV_IM_TAIL<intrinsic, instruction>;
+
+multiclass XVPatBinaryM_VM_XM_IM<string intrinsic, string instruction>
+    : XVPatBinaryV_VM<intrinsic, instruction, CarryOut=1>,
+      XVPatBinaryV_XM<intrinsic, instruction, CarryOut=1>,
+      XVPatBinaryV_IM<intrinsic, instruction, CarryOut=1>;
+
+multiclass XVPatBinaryV_VM_XM<string intrinsic, string instruction>
+    : XVPatBinaryV_VM_TAIL<intrinsic, instruction>,
+      XVPatBinaryV_XM_TAIL<intrinsic, instruction>;
+
+multiclass XVPatBinaryM_VM_XM<string intrinsic, string instruction>
+    : XVPatBinaryV_VM<intrinsic, instruction, CarryOut=1>,
+      XVPatBinaryV_XM<intrinsic, instruction, CarryOut=1>;
 
 //===----------------------------------------------------------------------===//
 // 12.1. Vector Single-Width Saturating Add and Subtract
@@ -2022,6 +2172,25 @@ let Predicates = [HasVendorXTHeadV] in {
   defm : XVPatBinaryW_WV_WX<"int_riscv_th_vwadd_w", "PseudoTH_VWADD", AllWidenableIntXVectors>;
   defm : XVPatBinaryW_WV_WX<"int_riscv_th_vwsub_w", "PseudoTH_VWSUB", AllWidenableIntXVectors>;
 }
+
+//===----------------------------------------------------------------------===//
+// 12.3. Vector Integer Add-with-Carry / Subtract-with-Borrow Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VADC   : XVPseudoVCALU_VM_XM_IM;
+  defm PseudoTH_VMADC  : XVPseudoVCALUM_VM_XM_IM<"@earlyclobber $rd">;
+
+  defm PseudoTH_VSBC  : XVPseudoVCALU_VM_XM;
+  defm PseudoTH_VMSBC : XVPseudoVCALUM_VM_XM<"@earlyclobber $rd">;
+} // Predicates = [HasVendorXTHeadV]
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryV_VM_XM_IM<"int_riscv_th_vadc", "PseudoTH_VADC">;
+  defm : XVPatBinaryM_VM_XM_IM<"int_riscv_th_vmadc_carry_in", "PseudoTH_VMADC">;
+
+  defm : XVPatBinaryV_VM_XM<"int_riscv_th_vsbc", "PseudoTH_VSBC">;
+  defm : XVPatBinaryM_VM_XM<"int_riscv_th_vmsbc_borrow_in", "PseudoTH_VMSBC">;
+} // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
 // 12.14. Vector Integer Merge and Move Instructions
