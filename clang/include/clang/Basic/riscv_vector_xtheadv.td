@@ -262,12 +262,12 @@ let SupportOverloading = false,
       let Name = NAME # "_v",
           IRName = ir,
           MaskedIRName = ir # "_mask" in
-      def : RVVOutBuiltin<"v", "vPCeUv", type>;
+      def : RVVOutOp1Builtin<"v", "vPCeUv", type>;
       // `UvPCUeUv` is type `const unsigned T * -> unsigned VectorType -> {VL} -> unsigned VectorType`
       let Name = NAME # "u_v",
           IRName = ir # "u",
           MaskedIRName = ir # "u_mask" in
-      def : RVVOutBuiltin<"Uv", "UvPCUeUv", type>;
+      def : RVVOutOp1Builtin<"Uv", "UvPCUeUv", type>;
     }
   }
 
