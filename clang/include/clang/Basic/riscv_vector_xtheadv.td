@@ -349,6 +349,7 @@ multiclass RVVVLXEEWBuiltin<string ir, list<string> types> {
   }
 }
 
+// 7.1 Unit-strided Store Operations
 let HasMaskedOffOperand = false,
     MaskedPolicyScheme = NonePolicy,
     ManualCodegen = [{
@@ -398,6 +399,7 @@ let HasMaskedOffOperand = false,
   }
 }
 
+// 7.2 Strided Store Operations
 let HasMaskedOffOperand = false,
     MaskedPolicyScheme = NonePolicy,
     ManualCodegen = [{
@@ -447,7 +449,7 @@ let HasMaskedOffOperand = false,
   }
 }
 
-// 7.3 Indexed Store Operations: vsxei<eew>
+// 7.3 Indexed Store Operations
 multiclass RVVVSXEEWBuiltin<string ir, list<string> types> {
   let HasMaskedOffOperand = false,
       MaskedPolicyScheme = NonePolicy,
@@ -465,6 +467,7 @@ multiclass RVVVSXEEWBuiltin<string ir, list<string> types> {
         else
           IntrinsicTypes = {Ops[0]->getType(), Ops[2]->getType(), Ops[3]->getType()};
       }] in {
+    // 7.3 Indexed store: vsxei<eew>
     foreach type = types in {
       foreach eew_list = EEWList in {
         defvar eew = eew_list[0];
@@ -479,6 +482,21 @@ multiclass RVVVSXEEWBuiltin<string ir, list<string> types> {
             // `0PUe<eew>UvUv` is type `unsigned T * -> unsigned <EEW> VectorType -> unsigned VectorType -> {VL} -> void`
             def : RVVBuiltin<"Uv", "0PUe" # eew_type # "UvUv", type>;
           }
+        }
+      }
+    }
+
+    // 7.3 Indexed store: vsxb/h/w/bu/hu/wu
+    multiclass RVVVSXBHWBuiltin<string ir, list<string> types> {
+      let Name = NAME # "_v",
+          IRName = ir,
+          MaskedIRName = ir # "_mask" in {
+        foreach type = types in {
+          // `0PeUvv` is type `T * -> unsigned VectorType -> VectorType -> {VL} -> void`
+          // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
+          def : RVVBuiltin<"v", "0PeUvv", type>;
+          // `0PUeUvUv` is type `unsigned T * -> unsigned VectorType -> unsigned VectorType -> {VL} -> void`
+          def : RVVBuiltin<"Uv", "0PUeUvUv", type>;
         }
       }
     }
@@ -525,7 +543,11 @@ defm th_vlxh   : RVVVLXBHWBuiltin<"th_vlxh", ["c", "s", "i", "l"]>; // i8, i16, 
 defm th_vlxw   : RVVVLXBHWBuiltin<"th_vlxw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
 defm th_vloxei : RVVVLXEEWBuiltin<"th_vlxe", TypeList>;             // all types
 
+defm th_vsxb   : RVVVSXBHWBuiltin<"th_vsxb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vsxh   : RVVVSXBHWBuiltin<"th_vsxh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vsxw   : RVVVSXBHWBuiltin<"th_vsxw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
 defm th_vsoxei : RVVVSXEEWBuiltin<"th_vsxe", TypeList>;             // all types
+// TODO: th_vsuxb, th_vsuxh, th_vsuxw, th_xsuxei
 
 // 7.4. Unit-stride Fault-Only-First Loads Operations
 defm th_vle8ff : RVVVLEFFBuiltin<"th_vleff", ["c"]>;      // i8
