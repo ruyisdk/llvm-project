@@ -193,7 +193,7 @@ let SupportOverloading = false,
   }
 
   // 7.1 Unit-stride load: vlb/h/w/bu/hu/wu
-  multiclass RVVVLXBuiltin<string ir, list<string> types> {
+  multiclass RVVVLBHWBuiltin<string ir, list<string> types> {
     foreach type = types in {
       // `vPCe` is type `const T * -> {VL} -> VectorType`
       // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
@@ -227,7 +227,7 @@ let SupportOverloading = false,
   }
 
   // 7.2 Strided load: vlsb/h/w/bu/hu/wu
-  multiclass RVVVLSXBuiltin<string ir, list<string> types> {
+  multiclass RVVVLSBHWBuiltin<string ir, list<string> types> {
     foreach type = types in {
       // `vPCez` is type `const T * -> SizeT -> {VL} -> VectorType`
       // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
@@ -391,9 +391,9 @@ let HasMaskedOffOperand = false,
 }
 
 // 7.1. Vector Unit-Stride Operations
-defm th_vlb  : RVVVLXBuiltin<"th_vlb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
-defm th_vlh  : RVVVLXBuiltin<"th_vlh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
-defm th_vlw  : RVVVLXBuiltin<"th_vlw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vlb  : RVVVLBHWBuiltin<"th_vlb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vlh  : RVVVLBHWBuiltin<"th_vlh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vlw  : RVVVLBHWBuiltin<"th_vlw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
 defm th_vle8 : RVVVLEBuiltin<"th_vle", ["c"]>;     // i8
 defm th_vle16: RVVVLEBuiltin<"th_vle", ["s","x"]>; // i16, f16
 defm th_vle32: RVVVLEBuiltin<"th_vle", ["i","f"]>; // i32, f32
@@ -408,9 +408,9 @@ defm th_vse32: RVVVSEBuiltin<"th_vse", ["i","f"]>; // i32, f32
 defm th_vse64: RVVVSEBuiltin<"th_vse", ["l","d"]>; // i64, f64
 
 // 7.2. Vector Strided Load/Store Operations
-defm th_vlsb  : RVVVLSXBuiltin<"th_vlsb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
-defm th_vlsh  : RVVVLSXBuiltin<"th_vlsh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
-defm th_vlsw  : RVVVLSXBuiltin<"th_vlsw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vlsb  : RVVVLSBHWBuiltin<"th_vlsb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vlsh  : RVVVLSBHWBuiltin<"th_vlsh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vlsw  : RVVVLSBHWBuiltin<"th_vlsw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
 defm th_vlse8 : RVVVLSEBuiltin<"th_vlse", ["c"]>;     // i8
 defm th_vlse16: RVVVLSEBuiltin<"th_vlse", ["s","x"]>; // i16, f16
 defm th_vlse32: RVVVLSEBuiltin<"th_vlse", ["i","f"]>; // i32, f32
