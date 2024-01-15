@@ -383,7 +383,7 @@ let HasMaskedOffOperand = false,
   }
 
   // 7.1 Unit-stride store: vsb/h/w/bu/hu/wu
-  multiclass RVVVSXBuiltin<string ir, list<string> types> {
+  multiclass RVVVSBHWBuiltin<string ir, list<string> types> {
     let Name = NAME # "_v",
         IRName = ir,
         MaskedIRName = ir # "_mask" in {
@@ -432,7 +432,7 @@ let HasMaskedOffOperand = false,
   }
 
   // 7.2 Strided store: vssb/h/w/bu/hu/wu
-  multiclass RVVVSSXBuiltin<string ir, list<string> types> {
+  multiclass RVVVSSBHWBuiltin<string ir, list<string> types> {
     let Name = NAME # "_v",
         IRName = ir,
         MaskedIRName = ir # "_mask" in {
@@ -494,9 +494,9 @@ defm th_vle16: RVVVLEBuiltin<"th_vle", ["s","x"]>; // i16, f16
 defm th_vle32: RVVVLEBuiltin<"th_vle", ["i","f"]>; // i32, f32
 defm th_vle64: RVVVLEBuiltin<"th_vle", ["l","d"]>; // i64, f64
 
-defm th_vsb  : RVVVSXBuiltin<"th_vsb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
-defm th_vsh  : RVVVSXBuiltin<"th_vsh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
-defm th_vsw  : RVVVSXBuiltin<"th_vsw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vsb  : RVVVSBHWBuiltin<"th_vsb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vsh  : RVVVSBHWBuiltin<"th_vsh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vsw  : RVVVSBHWBuiltin<"th_vsw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
 defm th_vse8 : RVVVSEBuiltin<"th_vse", ["c"]>;     // i8
 defm th_vse16: RVVVSEBuiltin<"th_vse", ["s","x"]>; // i16, f16
 defm th_vse32: RVVVSEBuiltin<"th_vse", ["i","f"]>; // i32, f32
@@ -511,9 +511,9 @@ defm th_vlse16: RVVVLSEBuiltin<"th_vlse", ["s","x"]>; // i16, f16
 defm th_vlse32: RVVVLSEBuiltin<"th_vlse", ["i","f"]>; // i32, f32
 defm th_vlse64: RVVVLSEBuiltin<"th_vlse", ["l","d"]>; // i64, f64
 
-defm th_vssb  : RVVVSSXBuiltin<"th_vssb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
-defm th_vssh  : RVVVSSXBuiltin<"th_vssh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
-defm th_vssw  : RVVVSSXBuiltin<"th_vssw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vssb  : RVVVSSBHWBuiltin<"th_vssb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vssh  : RVVVSSBHWBuiltin<"th_vssh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
+defm th_vssw  : RVVVSSBHWBuiltin<"th_vssw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
 defm th_vsse8 : RVVVSSEBuiltin<"th_vsse", ["c"]>;     // i8
 defm th_vsse16: RVVVSSEBuiltin<"th_vsse", ["s","x"]>; // i16, f16
 defm th_vsse32: RVVVSSEBuiltin<"th_vsse", ["i","f"]>; // i32, f32
