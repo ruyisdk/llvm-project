@@ -267,7 +267,7 @@ let SupportOverloading = false,
       let Name = NAME # "u_v",
           IRName = ir # "u",
           MaskedIRName = ir # "u_mask" in
-      def : RVVOutBuiltin<"Uv", "UvPCUez", type>;
+      def : RVVOutBuiltin<"Uv", "UvPCUeUv", type>;
     }
   }
 
