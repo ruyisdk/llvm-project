@@ -619,6 +619,11 @@ let TargetPrefix = "riscv" in {
   defm th_vmadc_carry_in : RISCVBinaryMaskOutWithV0;
   defm th_vsbc : RISCVBinaryWithV0;
   defm th_vmsbc_borrow_in : RISCVBinaryMaskOutWithV0;
+
+  // 12.4. Vector Single-Width Integer Add and Subtract
+  defm th_vand : XVBinaryAAX;
+  defm th_vor : XVBinaryAAX;
+  defm th_vxor : XVBinaryAAX;
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
