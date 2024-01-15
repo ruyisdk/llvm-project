@@ -450,23 +450,23 @@ let HasMaskedOffOperand = false,
 }
 
 // 7.3 Indexed Store Operations
-multiclass RVVVSXEEWBuiltin<string ir, list<string> types> {
-  let HasMaskedOffOperand = false,
-      MaskedPolicyScheme = NonePolicy,
-      ManualCodegen = [{
-        if (IsMasked) {
-          // Builtin: (mask, ptr, index, value, vl). Intrinsic: (value, ptr, index, mask, vl)
-          std::swap(Ops[0], Ops[3]);
-        } else {
-          // Builtin: (ptr, index, value, vl). Intrinsic: (value, ptr, index, vl)
-          std::rotate(Ops.begin(), Ops.begin() + 2, Ops.begin() + 3);
-        }
-        Ops[1] = Builder.CreateBitCast(Ops[1], Ops[0]->getType()->getPointerTo());
-        if (IsMasked)
-          IntrinsicTypes = {Ops[0]->getType(), Ops[2]->getType(), Ops[4]->getType()};
-        else
-          IntrinsicTypes = {Ops[0]->getType(), Ops[2]->getType(), Ops[3]->getType()};
-      }] in {
+let HasMaskedOffOperand = false,
+    MaskedPolicyScheme = NonePolicy,
+    ManualCodegen = [{
+      if (IsMasked) {
+        // Builtin: (mask, ptr, index, value, vl). Intrinsic: (value, ptr, index, mask, vl)
+        std::swap(Ops[0], Ops[3]);
+      } else {
+        // Builtin: (ptr, index, value, vl). Intrinsic: (value, ptr, index, vl)
+        std::rotate(Ops.begin(), Ops.begin() + 2, Ops.begin() + 3);
+      }
+      Ops[1] = Builder.CreateBitCast(Ops[1], Ops[0]->getType()->getPointerTo());
+      if (IsMasked)
+        IntrinsicTypes = {Ops[0]->getType(), Ops[2]->getType(), Ops[4]->getType()};
+      else
+        IntrinsicTypes = {Ops[0]->getType(), Ops[2]->getType(), Ops[3]->getType()};
+    }] in {
+  multiclass RVVVSXEEWBuiltin<string ir, list<string> types> {
     // 7.3 Indexed store: vsxei<eew>
     foreach type = types in {
       foreach eew_list = EEWList in {
@@ -485,19 +485,19 @@ multiclass RVVVSXEEWBuiltin<string ir, list<string> types> {
         }
       }
     }
+  }
 
-    // 7.3 Indexed store: vsxb/h/w/bu/hu/wu
-    multiclass RVVVSXBHWBuiltin<string ir, list<string> types> {
-      let Name = NAME # "_v",
-          IRName = ir,
-          MaskedIRName = ir # "_mask" in {
-        foreach type = types in {
-          // `0PeUvv` is type `T * -> unsigned VectorType -> VectorType -> {VL} -> void`
-          // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
-          def : RVVBuiltin<"v", "0PeUvv", type>;
-          // `0PUeUvUv` is type `unsigned T * -> unsigned VectorType -> unsigned VectorType -> {VL} -> void`
-          def : RVVBuiltin<"Uv", "0PUeUvUv", type>;
-        }
+  // 7.3 Indexed store: vsxb/h/w/bu/hu/wu
+  multiclass RVVVSXBHWBuiltin<string ir, list<string> types> {
+    let Name = NAME # "_v",
+        IRName = ir,
+        MaskedIRName = ir # "_mask" in {
+      foreach type = types in {
+        // `0PeUvv` is type `T * -> unsigned VectorType -> VectorType -> {VL} -> void`
+        // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
+        def : RVVBuiltin<"v", "0PeUvv", type>;
+        // `0PUeUvUv` is type `unsigned T * -> unsigned VectorType -> unsigned VectorType -> {VL} -> void`
+        def : RVVBuiltin<"Uv", "0PUeUvUv", type>;
       }
     }
   }
