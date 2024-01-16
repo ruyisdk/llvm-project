@@ -2226,6 +2226,48 @@ let Predicates = [HasVendorXTHeadV] in {
 }
 
 //===----------------------------------------------------------------------===//
+// 12.5. Vector Single-Width Bit Shift Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VSLL : XVPseudoVSHT_VV_VX_VI<uimm5>;
+  defm PseudoTH_VSRL : XVPseudoVSHT_VV_VX_VI<uimm5>;
+  defm PseudoTH_VSRA : XVPseudoVSHT_VV_VX_VI<uimm5>;
+} // Predicates = [HasVendorXTHeadV]
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryV_VV_VX_VI<"int_riscv_th_vsll", "PseudoTH_VSLL", AllIntegerXVectors,
+                               uimm5>;
+  defm : XVPatBinaryV_VV_VX_VI<"int_riscv_th_vsrl", "PseudoTH_VSRL", AllIntegerXVectors,
+                               uimm5>;
+  defm : XVPatBinaryV_VV_VX_VI<"int_riscv_th_vsra", "PseudoTH_VSRA", AllIntegerXVectors,
+                               uimm5>;
+
+  foreach vti = AllIntegerXVectors in {
+    // Emit shift by 1 as an add since it might be faster.
+    let Predicates = GetXVTypePredicates<vti>.Predicates in {
+      def : Pat<(vti.Vector (int_riscv_th_vsll (vti.Vector undef),
+                                               (vti.Vector vti.RegClass:$rs1),
+                                               (XLenVT 1), VLOpFrag)),
+                (!cast<Instruction>("PseudoTH_VADD_VV_"#vti.LMul.MX)
+                  (vti.Vector (IMPLICIT_DEF)), vti.RegClass:$rs1,
+                  vti.RegClass:$rs1, GPR:$vl, vti.Log2SEW)>;
+      def : Pat<(vti.Vector (int_riscv_th_vsll_mask (vti.Vector vti.RegClass:$merge),
+                                                    (vti.Vector vti.RegClass:$rs1),
+                                                    (XLenVT 1),
+                                                    (vti.Mask V0),
+                                                    VLOpFrag)),
+                (!cast<Instruction>("PseudoTH_VADD_VV_"#vti.LMul.MX#"_MASK")
+                                                            vti.RegClass:$merge,
+                                                            vti.RegClass:$rs1,
+                                                            vti.RegClass:$rs1,
+                                                            (vti.Mask V0),
+                                                            GPR:$vl,
+                                                            vti.Log2SEW)>;
+    }
+  }
+} // Predicates = [HasVendorXTHeadV]
+
+//===----------------------------------------------------------------------===//
 // 12.14. Vector Integer Merge and Move Instructions
 //===----------------------------------------------------------------------===//
 multiclass XVPseudoUnaryVMV_V_X_I {
