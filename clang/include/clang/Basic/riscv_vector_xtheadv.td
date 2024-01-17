@@ -561,7 +561,7 @@ defm th_vle16ff: RVVVLEFFBuiltin<"th_vleff", ["s","x"]>;  // i16, f16
 defm th_vle32ff: RVVVLEFFBuiltin<"th_vleff", ["i", "f"]>; // i32, f32
 defm th_vle64ff: RVVVLEFFBuiltin<"th_vleff", ["l", "d"]>; // i64, f64
 
-// 7.5. Vector Load Segment Operations (Zvlsseg)
+// 7.5.1 Vector Unit-stride Segment Loads (Zvlsseg)
 multiclass RVVUSSegLoadEEW<string ir, list<string> types> {
   foreach type = types in {
     defvar eew = !cond(!eq(type, "c") : "8",
@@ -621,7 +621,7 @@ multiclass RVVUSSegLoadEEW<string ir, list<string> types> {
   }
 }
 
-// 7.5. Vector Store Segment Operations (Zvlsseg)
+// 7.5.1 Vector Unit-stride Segment Stores (Zvlsseg)
 multiclass RVVUSSegStoreEEW<string ir, list<string> types> {
   foreach type = types in {
     defvar eew = !cond(!eq(type, "c") : "8",
@@ -673,11 +673,86 @@ multiclass RVVUSSegStoreEEW<string ir, list<string> types> {
   }
 }
 
+// 7.5.1 Vector Unit-stride Segment Loads Fault-Only-First  (Zvlsseg)
+multiclass RVVUSSegLoadEEWFF<string ir, list<string> types> {
+  foreach type = types in {
+    defvar eew = !cond(!eq(type, "c") : "8",
+                       !eq(type, "s") : "16",
+                       !eq(type, "i") : "32",
+                       !eq(type, "l") : "64",
+                       !eq(type, "x") : "16",
+                       !eq(type, "f") : "32",
+                       !eq(type, "d") : "64");
+      foreach nf = NFList in {
+        let Name = ir # nf # "e" # eew # "ff_v",
+            IRName = ir # nf # "eff",
+            MaskedIRName = ir # nf # "eff_mask",
+            NF = nf,
+            ManualCodegen = [{
+    {
+      llvm::Type *ElementVectorType = cast<StructType>(ResultType)->elements()[0];
+      IntrinsicTypes = {ElementVectorType, Ops.back()->getType()};
+      SmallVector<llvm::Value*, 12> Operands;
+
+      bool NoPassthru =
+        (IsMasked && (PolicyAttrs & RVV_VTA) && (PolicyAttrs & RVV_VMA)) |
+        (!IsMasked && (PolicyAttrs & RVV_VTA));
+      unsigned Offset = IsMasked ? NoPassthru ? 1 : 2 : NoPassthru ? 0 : 1;
+
+      if (NoPassthru) { // Push poison into passthru
+        Operands.append(NF, llvm::PoisonValue::get(ElementVectorType));
+      } else { // Push intrinsics operands into passthru
+        llvm::Value *PassthruOperand = IsMasked ? Ops[1] : Ops[0];
+        for (unsigned I = 0; I < NF; ++I)
+          Operands.push_back(Builder.CreateExtractValue(PassthruOperand, {I}));
+      }
+
+      Operands.push_back(Ops[Offset]); // Ptr
+      if (IsMasked)
+        Operands.push_back(Ops[0]);
+      Operands.push_back(Ops[Offset + 2]); // vl
+      if (IsMasked)
+        Operands.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+
+      llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
+
+      llvm::Value *LoadValue = Builder.CreateCall(F, Operands, "");
+      // Get alignment from the new vl operand
+      clang::CharUnits Align =
+          CGM.getNaturalPointeeTypeAlignment(E->getArg(Offset + 1)->getType());
+
+      llvm::Value *ReturnTuple = llvm::PoisonValue::get(ResultType);
+      for (unsigned I = 0; I < NF; ++I) {
+        llvm::Value *V = Builder.CreateExtractValue(LoadValue, {I});
+        ReturnTuple = Builder.CreateInsertValue(ReturnTuple, V, {I});
+      }
+
+      // Store new_vl
+      llvm::Value *V = Builder.CreateExtractValue(LoadValue, {NF});
+      Builder.CreateStore(V, Address(Ops[Offset + 1], V->getType(), Align));
+
+      if (ReturnValue.isNull())
+        return ReturnTuple;
+      else
+        return Builder.CreateStore(ReturnTuple, ReturnValue.getValue());
+    }
+    }] in {
+        defvar T = "(Tuple:" # nf # ")";
+        def : RVVBuiltin<T # "v", T # "vPCePz", type>;
+        if !not(IsFloat<type>.val) then {
+          def : RVVBuiltin<T # "Uv", T # "UvPCUePz", type>;
+        }
+      }
+    }
+  }
+}
+
 // 7.5. Vector Load/Store Segment Operations (Zvlsseg)
 
 let UnMaskedPolicyScheme = HasPassthruOperand,
     IsTuple = true in {
   defm : RVVUSSegLoadEEW<"th_vlseg", TypeList>;
+  defm : RVVUSSegLoadEEWFF<"th_vlseg", TypeList>;
 
   // TODO: indexed segment load
   // defm : RVVSSegLoadEEW<"th_vlsseg", TypeList>;
