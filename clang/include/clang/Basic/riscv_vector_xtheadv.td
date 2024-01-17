@@ -58,6 +58,7 @@ multiclass RVVIntBinBuiltinSet
     : RVVSignedBinBuiltinSet,
       RVVUnsignedBinBuiltinSet;
 
+defvar NFList = [2, 3, 4, 5, 6, 7, 8];
 defvar TypeList = ["c", "s", "i", "l", "x", "f", "d"];
 defvar EEWList = [["8", "(Log2EEW:3)"],
                   ["16", "(Log2EEW:4)"],
@@ -559,6 +560,137 @@ defm th_vle8ff : RVVVLEFFBuiltin<"th_vleff", ["c"]>;      // i8
 defm th_vle16ff: RVVVLEFFBuiltin<"th_vleff", ["s","x"]>;  // i16, f16
 defm th_vle32ff: RVVVLEFFBuiltin<"th_vleff", ["i", "f"]>; // i32, f32
 defm th_vle64ff: RVVVLEFFBuiltin<"th_vleff", ["l", "d"]>; // i64, f64
+
+// 7.5. Vector Load Segment Operations (Zvlsseg)
+multiclass RVVUSSegLoadEEW<string ir, list<string> types> {
+  foreach type = types in {
+    defvar eew = !cond(!eq(type, "c") : "8",
+                       !eq(type, "s") : "16",
+                       !eq(type, "i") : "32",
+                       !eq(type, "l") : "64",
+                       !eq(type, "x") : "16",
+                       !eq(type, "f") : "32",
+                       !eq(type, "d") : "64");
+      foreach nf = NFList in {
+        let Name = ir # nf # "e" # eew # "_v",
+            IRName = ir # nf # "e",
+            MaskedIRName = ir # nf # "e" # "_mask",
+            NF = nf,
+            ManualCodegen = [{
+    {
+      llvm::Type *ElementVectorType = cast<StructType>(ResultType)->elements()[0];
+      IntrinsicTypes = {ElementVectorType, Ops.back()->getType()};
+      SmallVector<llvm::Value*, 12> Operands;
+
+      bool NoPassthru =
+        (IsMasked && (PolicyAttrs & RVV_VTA) && (PolicyAttrs & RVV_VMA)) |
+        (!IsMasked && (PolicyAttrs & RVV_VTA));
+      unsigned Offset = IsMasked ? NoPassthru ? 1 : 2 : NoPassthru ? 0 : 1;
+
+      if (NoPassthru) { // Push poison into passthru
+        Operands.append(NF, llvm::PoisonValue::get(ElementVectorType));
+      } else { // Push intrinsics operands into passthru
+        llvm::Value *PassthruOperand = IsMasked ? Ops[1] : Ops[0];
+        for (unsigned I = 0; I < NF; ++I)
+          Operands.push_back(Builder.CreateExtractValue(PassthruOperand, {I}));
+      }
+
+      Operands.push_back(Ops[Offset]); // Ptr
+      if (IsMasked)
+        Operands.push_back(Ops[0]);
+      Operands.push_back(Ops[Offset + 1]); // VL
+      if (IsMasked)
+        Operands.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+
+      llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
+
+      llvm::Value *LoadValue = Builder.CreateCall(F, Operands, "");
+      if (ReturnValue.isNull())
+        return LoadValue;
+      else
+        return Builder.CreateStore(LoadValue, ReturnValue.getValue());
+    }
+    }] in {
+        defvar T = "(Tuple:" # nf # ")";
+        def : RVVBuiltin<T # "v", T # "vPCe", type>;
+        if !not(IsFloat<type>.val) then {
+          def : RVVBuiltin<T # "Uv", T # "UvPCUe", type>;
+        }
+      }
+    }
+  }
+}
+
+// 7.5. Vector Store Segment Operations (Zvlsseg)
+multiclass RVVUSSegStoreEEW<string ir, list<string> types> {
+  foreach type = types in {
+    defvar eew = !cond(!eq(type, "c") : "8",
+                       !eq(type, "s") : "16",
+                       !eq(type, "i") : "32",
+                       !eq(type, "l") : "64",
+                       !eq(type, "x") : "16",
+                       !eq(type, "f") : "32",
+                       !eq(type, "d") : "64");
+      foreach nf = NFList in {
+      let Name = ir # nf # "e" # eew # "_v",
+          IRName = ir # nf # "e",
+          MaskedIRName = ir # nf # "e" # "_mask",
+          NF = nf,
+          HasMaskedOffOperand = false,
+          ManualCodegen = [{
+    {
+      // Masked
+      // Builtin: (mask, ptr, v_tuple, vl)
+      // Intrinsic: (val0, val1, ..., ptr, mask, vl)
+      // Unmasked
+      // Builtin: (ptr, v_tuple, vl)
+      // Intrinsic: (val0, val1, ..., ptr, vl)
+      unsigned Offset = IsMasked ? 1 : 0;
+      llvm::Value *VTupleOperand = Ops[Offset + 1];
+
+      SmallVector<llvm::Value*, 12> Operands;
+      for (unsigned I = 0; I < NF; ++I) {
+        llvm::Value *V = Builder.CreateExtractValue(VTupleOperand, {I});
+        Operands.push_back(V);
+      }
+      Operands.push_back(Ops[Offset]); // Ptr
+      if (IsMasked)
+        Operands.push_back(Ops[0]);
+      Operands.push_back(Ops[Offset + 2]); // VL
+
+      IntrinsicTypes = {Operands[0]->getType(), Operands.back()->getType()};
+      llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
+      return Builder.CreateCall(F, Operands, "");
+   }
+      }] in {
+        defvar T = "(Tuple:" # nf # ")";
+        def : RVVBuiltin<T # "v", "0Pe" # T # "v", type>;
+        if !not(IsFloat<type>.val) then {
+          def : RVVBuiltin<T # "Uv", "0PUe" # T # "Uv", type>;
+        }
+      }
+    }
+  }
+}
+
+// 7.5. Vector Load/Store Segment Operations (Zvlsseg)
+
+let UnMaskedPolicyScheme = HasPassthruOperand,
+    IsTuple = true in {
+  defm : RVVUSSegLoadEEW<"th_vlseg", TypeList>;
+
+  // TODO: indexed segment load
+  // defm : RVVSSegLoadEEW<"th_vlsseg", TypeList>;
+}
+
+let UnMaskedPolicyScheme = NonePolicy,
+    MaskedPolicyScheme = NonePolicy,
+    IsTuple = true in {
+  defm : RVVUSSegStoreEEW<"th_vsseg", TypeList>;
+
+  // TODO: indexed segment store
+  // defm : RVVSSegStoreEEW<"th_vssseg", TypeList>;
+}
 
 //===----------------------------------------------------------------------===//
 // 12. Vector Integer Arithmetic Operations
