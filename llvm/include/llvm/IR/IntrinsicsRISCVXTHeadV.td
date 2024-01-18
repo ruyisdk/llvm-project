@@ -586,6 +586,18 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 4;
   }
 
+  // For destination vector type is the same as
+  // first source vector (with mask but no policy).
+  // The second source operand must match the destination type or be an XLen scalar.
+  // Input: (maskedoff, vector_in, vector_in/scalar_in, mask, vl)
+  class XVBinaryAAShiftMasked
+       : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                   [LLVMMatchType<0>, LLVMMatchType<0>, llvm_any_ty,
+                    LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty],
+                   [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 4;
+  }
+
   multiclass XVBinaryAAX {
     def "int_riscv_" # NAME : RISCVBinaryAAXUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVBinaryAAXMasked;
@@ -594,6 +606,11 @@ let TargetPrefix = "riscv" in {
   multiclass XVBinaryABX {
     def "int_riscv_" # NAME : RISCVBinaryABXUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVBinaryABXMasked;
+  }
+
+  multiclass XVBinaryAAShift {
+    def "int_riscv_" # NAME : RISCVBinaryAAShiftUnMasked;
+    def "int_riscv_" # NAME # "_mask" : XVBinaryAAShiftMasked;
   }
 }
 
@@ -624,6 +641,11 @@ let TargetPrefix = "riscv" in {
   defm th_vand : XVBinaryAAX;
   defm th_vor : XVBinaryAAX;
   defm th_vxor : XVBinaryAAX;
+
+  // 12.5. Vector Single-Width Bit Shift Instructions
+  defm th_vsll : XVBinaryAAShift;
+  defm th_vsrl : XVBinaryAAShift;
+  defm th_vsra : XVBinaryAAShift;
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
