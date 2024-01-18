@@ -1789,6 +1789,24 @@ multiclass XVPseudoVCALUM_VM_XM<string Constraint> {
   }
 }
 
+multiclass XVPseudoVSHT_VV_VX_VI<Operand ImmType = simm5, string Constraint = ""> {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVShiftV_MX = !cast<SchedWrite>("WriteVShiftV_" # mx);
+    defvar WriteVShiftX_MX = !cast<SchedWrite>("WriteVShiftX_" # mx);
+    defvar WriteVShiftI_MX = !cast<SchedWrite>("WriteVShiftI_" # mx);
+    defvar ReadVShiftV_MX = !cast<SchedRead>("ReadVShiftV_" # mx);
+    defvar ReadVShiftX_MX = !cast<SchedRead>("ReadVShiftX_" # mx);
+
+    defm "" : XVPseudoBinaryV_VV<m, Constraint>,
+              Sched<[WriteVShiftV_MX, ReadVShiftV_MX, ReadVShiftV_MX, ReadVMask]>;
+    defm "" : XVPseudoBinaryV_VX<m, Constraint>,
+              Sched<[WriteVShiftX_MX, ReadVShiftV_MX, ReadVShiftX_MX, ReadVMask]>;
+    defm "" : XVPseudoBinaryV_VI<ImmType, m, Constraint>,
+              Sched<[WriteVShiftI_MX, ReadVShiftV_MX, ReadVMask]>;
+  }
+}
+
 //===----------------------------------------------------------------------===//
 // Helpers to define the intrinsic patterns for the XTHeadVector extension.
 //===----------------------------------------------------------------------===//
@@ -2206,6 +2224,48 @@ let Predicates = [HasVendorXTHeadV] in {
   defm : XVPatBinaryV_VV_VX_VI<"int_riscv_th_vor", "PseudoTH_VOR", AllIntegerXVectors>;
   defm : XVPatBinaryV_VV_VX_VI<"int_riscv_th_vxor", "PseudoTH_VXOR", AllIntegerXVectors>;
 }
+
+//===----------------------------------------------------------------------===//
+// 12.5. Vector Single-Width Bit Shift Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VSLL : XVPseudoVSHT_VV_VX_VI<uimm5>;
+  defm PseudoTH_VSRL : XVPseudoVSHT_VV_VX_VI<uimm5>;
+  defm PseudoTH_VSRA : XVPseudoVSHT_VV_VX_VI<uimm5>;
+} // Predicates = [HasVendorXTHeadV]
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryV_VV_VX_VI<"int_riscv_th_vsll", "PseudoTH_VSLL", AllIntegerXVectors,
+                               uimm5>;
+  defm : XVPatBinaryV_VV_VX_VI<"int_riscv_th_vsrl", "PseudoTH_VSRL", AllIntegerXVectors,
+                               uimm5>;
+  defm : XVPatBinaryV_VV_VX_VI<"int_riscv_th_vsra", "PseudoTH_VSRA", AllIntegerXVectors,
+                               uimm5>;
+
+  foreach vti = AllIntegerXVectors in {
+    // Emit shift by 1 as an add since it might be faster.
+    let Predicates = GetXVTypePredicates<vti>.Predicates in {
+      def : Pat<(vti.Vector (int_riscv_th_vsll (vti.Vector undef),
+                                               (vti.Vector vti.RegClass:$rs1),
+                                               (XLenVT 1), VLOpFrag)),
+                (!cast<Instruction>("PseudoTH_VADD_VV_"#vti.LMul.MX)
+                  (vti.Vector (IMPLICIT_DEF)), vti.RegClass:$rs1,
+                  vti.RegClass:$rs1, GPR:$vl, vti.Log2SEW)>;
+      def : Pat<(vti.Vector (int_riscv_th_vsll_mask (vti.Vector vti.RegClass:$merge),
+                                                    (vti.Vector vti.RegClass:$rs1),
+                                                    (XLenVT 1),
+                                                    (vti.Mask V0),
+                                                    VLOpFrag)),
+                (!cast<Instruction>("PseudoTH_VADD_VV_"#vti.LMul.MX#"_MASK")
+                                                            vti.RegClass:$merge,
+                                                            vti.RegClass:$rs1,
+                                                            vti.RegClass:$rs1,
+                                                            (vti.Mask V0),
+                                                            GPR:$vl,
+                                                            vti.Log2SEW)>;
+    }
+  }
+} // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
 // 12.14. Vector Integer Merge and Move Instructions
