@@ -52,6 +52,8 @@ Any feature not listed below but present in the specification should be consider
     - (Done) `7.2. Vector Strided Load/Store Operations`
     - (Done) `7.3. Vector Indexed Load/Store Operations`
     - (Done) `7.4 Unit-stride Fault-Only-First Loads Operations`
+    - (WIP) `7.5. Vector Load/Store Segment Operations (Zvlsseg)`
+      - (Done) `7.5.1. Vector Unit-Stride Segment Loads and Stores`
 
 ## Q & A
 
