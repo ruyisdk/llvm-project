@@ -623,7 +623,7 @@ multiclass RVVUSSegLoad<string ir, string bhwe, bit with_eew, list<string> types
 }
 
 // 7.5.1 Vector Unit-stride Segment Stores (Zvlsseg)
-multiclass RVVUSSegStoreEEW<string ir, list<string> types> {
+multiclass RVVUSSegStore<string ir, string bhwe, bit with_eew, list<string> types> {
   foreach type = types in {
     defvar eew = !cond(!eq(type, "c") : "8",
                        !eq(type, "s") : "16",
@@ -633,9 +633,9 @@ multiclass RVVUSSegStoreEEW<string ir, list<string> types> {
                        !eq(type, "f") : "32",
                        !eq(type, "d") : "64");
       foreach nf = NFList in {
-      let Name = ir # nf # "e" # eew # "_v",
-          IRName = ir # nf # "e",
-          MaskedIRName = ir # nf # "e" # "_mask",
+      let Name = ir # nf # bhwe # !if(with_eew, eew, "") # "_v",
+          IRName = ir # nf # bhwe,
+          MaskedIRName = ir # nf # bhwe # "_mask",
           NF = nf,
           HasMaskedOffOperand = false,
           ManualCodegen = [{
@@ -766,7 +766,10 @@ let UnMaskedPolicyScheme = HasPassthruOperand,
 let UnMaskedPolicyScheme = NonePolicy,
     MaskedPolicyScheme = NonePolicy,
     IsTuple = true in {
-  defm : RVVUSSegStoreEEW<"th_vsseg", TypeList>;
+  defm : RVVUSSegStore<"th_vsseg", "b", 0, TypeList>;
+  defm : RVVUSSegStore<"th_vsseg", "h", 0, TypeList>;
+  defm : RVVUSSegStore<"th_vsseg", "w", 0, TypeList>;
+  defm : RVVUSSegStore<"th_vsseg", "e", 1, TypeList>;
 
   // TODO: indexed segment store
   // defm : RVVSSegStoreEEW<"th_vssseg", TypeList>;
