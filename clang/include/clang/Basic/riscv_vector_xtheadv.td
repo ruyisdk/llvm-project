@@ -562,6 +562,27 @@ defm th_vle32ff: RVVVLEFFBuiltin<"th_vleff", ["i", "f"]>; // i32, f32
 defm th_vle64ff: RVVVLEFFBuiltin<"th_vleff", ["l", "d"]>; // i64, f64
 
 // 7.5.1 Vector Unit-stride Segment Loads (Zvlsseg)
+
+multiclass RVVUSSegLoadBHW<string ir, string bhw, list<string> types> {
+  foreach type = types in {
+    foreach nf = NFList in {
+      defvar T = "(Tuple:" # nf # ")";
+      // `vPCe` is type `const T * -> {VL} -> Tupled-VectorType`
+      // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
+      let Name = ir # nf # bhw # "_v",
+          IRName = ir # nf # bhw,
+          MaskedIRName = ir # nf # bhw # "_mask",
+          NF = nf in
+      def : RVVOutBuiltin<"v", T # "vPCe", type>;
+      let Name = ir # nf # bhw # "u_v",
+          IRName = ir # nf # bhw # "u",
+          MaskedIRName = ir # nf # bhw # "u_mask",
+          NF = nf in
+      def : RVVOutBuiltin<"Uv", T # "UvPCUe", type>;
+    }
+  }
+}
+
 multiclass RVVUSSegLoadEEW<string ir, list<string> types> {
   foreach type = types in {
     defvar eew = !cond(!eq(type, "c") : "8",
@@ -751,6 +772,10 @@ multiclass RVVUSSegLoadEEWFF<string ir, list<string> types> {
 
 let UnMaskedPolicyScheme = HasPassthruOperand,
     IsTuple = true in {
+  // Unit-stride segment load
+  defm : RVVUSSegLoadBHW<"th_vlseg", "b", TypeList>;
+  defm : RVVUSSegLoadBHW<"th_vlseg", "h", TypeList>;
+  defm : RVVUSSegLoadBHW<"th_vlseg", "w", TypeList>;
   defm : RVVUSSegLoadEEW<"th_vlseg", TypeList>;
   defm : RVVUSSegLoadEEWFF<"th_vlseg", TypeList>;
 
