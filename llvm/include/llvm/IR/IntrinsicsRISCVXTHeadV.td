@@ -15,6 +15,8 @@
 //===----------------------------------------------------------------------===//
 // Vectors version 0.7.1
 
+defvar NFList = [2, 3, 4, 5, 6, 7, 8];
+
 let TargetPrefix = "riscv" in {
   // 6. Configuration-Setting and Utility
   def int_riscv_th_vsetvl    : Intrinsic<[llvm_anyint_ty],
@@ -322,7 +324,7 @@ let TargetPrefix = "riscv" in {
     def "int_riscv_th_" # NAME # "_mask" : XVUSSegStoreMasked<nf>;
   }
 
-  foreach nf = [2, 3, 4, 5, 6, 7, 8] in {
+  foreach nf = NFList in {
     defm "vlseg" # nf # "b" : XVUSSegLoad<nf>;
     defm "vlseg" # nf # "bu" : XVUSSegLoad<nf>;
     defm "vlseg" # nf # "h" : XVUSSegLoad<nf>;
@@ -372,7 +374,7 @@ let TargetPrefix = "riscv" in {
     def "int_riscv_th_" # NAME # "_mask" : XVUSSegLoadFFMasked<nf>;
   }
 
-  foreach nf = [2, 3, 4, 5, 6, 7, 8] in {
+  foreach nf = NFList in {
     defm vlseg # nf # eff : XVUSSegLoadFF<nf>;
   }
 
@@ -436,7 +438,7 @@ let TargetPrefix = "riscv" in {
     def "int_riscv_th_" # NAME # "_mask" : XVSSegStoreMasked<nf>;
   }
 
-  foreach nf = [2, 3, 4, 5, 6, 7, 8] in {
+  foreach nf = NFList in {
     defm "vlsseg" # nf # "b" : XVSSegLoad<nf>;
     defm "vlsseg" # nf # "bu" : XVSSegLoad<nf>;
     defm "vlsseg" # nf # "h" : XVSSegLoad<nf>;
@@ -511,7 +513,7 @@ let TargetPrefix = "riscv" in {
     def "int_riscv_th_" # NAME # "_mask" : XVISegStoreMasked<nf>;
   }
 
-  foreach nf = [2, 3, 4, 5, 6, 7, 8] in {
+  foreach nf = NFList in {
     defm "vlxseg" # nf # "b" : XVISegLoad<nf>;
     defm "vlxseg" # nf # "bu" : XVISegLoad<nf>;
     defm "vlxseg" # nf # "h" : XVISegLoad<nf>;
