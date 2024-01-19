@@ -563,27 +563,7 @@ defm th_vle64ff: RVVVLEFFBuiltin<"th_vleff", ["l", "d"]>; // i64, f64
 
 // 7.5.1 Vector Unit-stride Segment Loads (Zvlsseg)
 
-multiclass RVVUSSegLoadBHW<string ir, string bhw, list<string> types> {
-  foreach type = types in {
-    foreach nf = NFList in {
-      defvar T = "(Tuple:" # nf # ")";
-      // `vPCe` is type `const T * -> {VL} -> Tupled-VectorType`
-      // Note: the last operand {VL} is inserted by `RVVIntrinsic::computeBuiltinTypes`
-      let Name = ir # nf # bhw # "_v",
-          IRName = ir # nf # bhw,
-          MaskedIRName = ir # nf # bhw # "_mask",
-          NF = nf in
-      def : RVVOutBuiltin<"v", T # "vPCe", type>;
-      let Name = ir # nf # bhw # "u_v",
-          IRName = ir # nf # bhw # "u",
-          MaskedIRName = ir # nf # bhw # "u_mask",
-          NF = nf in
-      def : RVVOutBuiltin<"Uv", T # "UvPCUe", type>;
-    }
-  }
-}
-
-multiclass RVVUSSegLoadEEW<string ir, list<string> types> {
+multiclass RVVUSSegLoad<string ir, string bhwe, bit with_eew, list<string> types> {
   foreach type = types in {
     defvar eew = !cond(!eq(type, "c") : "8",
                        !eq(type, "s") : "16",
@@ -593,9 +573,9 @@ multiclass RVVUSSegLoadEEW<string ir, list<string> types> {
                        !eq(type, "f") : "32",
                        !eq(type, "d") : "64");
       foreach nf = NFList in {
-        let Name = ir # nf # "e" # eew # "_v",
-            IRName = ir # nf # "e",
-            MaskedIRName = ir # nf # "e" # "_mask",
+        let Name = ir # nf # bhwe # !if(with_eew, eew, "") # "_v",
+            IRName = ir # nf # bhwe,
+            MaskedIRName = ir # nf # bhwe # "_mask",
             NF = nf,
             ManualCodegen = [{
     {
@@ -695,7 +675,7 @@ multiclass RVVUSSegStoreEEW<string ir, list<string> types> {
 }
 
 // 7.5.1 Vector Unit-stride Segment Loads Fault-Only-First  (Zvlsseg)
-multiclass RVVUSSegLoadEEWFF<string ir, list<string> types> {
+multiclass RVVUSSegLoadFF<string ir, string bhwe, bit with_eew, list<string> types> {
   foreach type = types in {
     defvar eew = !cond(!eq(type, "c") : "8",
                        !eq(type, "s") : "16",
@@ -705,8 +685,8 @@ multiclass RVVUSSegLoadEEWFF<string ir, list<string> types> {
                        !eq(type, "f") : "32",
                        !eq(type, "d") : "64");
       foreach nf = NFList in {
-        let Name = ir # nf # "e" # eew # "ff_v",
-            IRName = ir # nf # "eff",
+        let Name = ir # nf # bhwe # !if(with_eew, eew, "") # "ff_v",
+            IRName = ir # nf # bhwe # "ff",
             MaskedIRName = ir # nf # "eff_mask",
             NF = nf,
             ManualCodegen = [{
@@ -773,11 +753,11 @@ multiclass RVVUSSegLoadEEWFF<string ir, list<string> types> {
 let UnMaskedPolicyScheme = HasPassthruOperand,
     IsTuple = true in {
   // Unit-stride segment load
-  defm : RVVUSSegLoadBHW<"th_vlseg", "b", TypeList>;
-  defm : RVVUSSegLoadBHW<"th_vlseg", "h", TypeList>;
-  defm : RVVUSSegLoadBHW<"th_vlseg", "w", TypeList>;
-  defm : RVVUSSegLoadEEW<"th_vlseg", TypeList>;
-  defm : RVVUSSegLoadEEWFF<"th_vlseg", TypeList>;
+  defm :   RVVUSSegLoad<"th_vlseg", "b", 0, TypeList>;
+  defm :   RVVUSSegLoad<"th_vlseg", "h", 0, TypeList>;
+  defm :   RVVUSSegLoad<"th_vlseg", "w", 0, TypeList>;
+  defm :   RVVUSSegLoad<"th_vlseg", "e", 1, TypeList>;
+  defm : RVVUSSegLoadFF<"th_vlseg", "e", 1, TypeList>;
 
   // TODO: indexed segment load
   // defm : RVVSSegLoadEEW<"th_vlsseg", TypeList>;
