@@ -1645,6 +1645,28 @@ multiclass XVPseudoBinaryW_WX<LMULInfo m> {
   defm _WX : XVPseudoBinary<m.wvrclass, m.wvrclass, GPR, m>;
 }
 
+// In RVV 1.0 `@earlyclobber` is used here to prevent the source and destination
+// from overlapping. The case where LMUL <= 1 is excluded because of the
+// exception from the 1.0 spec:
+// "The destination EEW is smaller than the source EEW and the overlap is in the
+//  lowest-numbered part of the source register group."
+// However, the 0.7 spec is unclear about the source-destination overlapping of
+// narrowing instructions like vnsrl/vnsra. Here we simply follow the 1.0 spec.
+multiclass XVPseudoBinaryVNSHT_VV<LMULInfo m> {
+  defm _VV : XVPseudoBinary<m.vrclass, m.wvrclass, m.vrclass, m,
+                            !if(!ge(m.octuple, 8), "@earlyclobber $rd", "")>;
+}
+
+multiclass XVPseudoBinaryVNSHT_VX<LMULInfo m> {
+  defm _VX : XVPseudoBinary<m.vrclass, m.wvrclass, GPR, m,
+                            !if(!ge(m.octuple, 8), "@earlyclobber $rd", "")>;
+}
+
+multiclass XVPseudoBinaryVNSHT_VI<LMULInfo m> {
+  defm _VI : XVPseudoBinary<m.vrclass, m.wvrclass, uimm5, m,
+                            !if(!ge(m.octuple, 8), "@earlyclobber $rd", "")>;
+}
+
 multiclass XVPseudoVALU_VV_VX_VI<Operand ImmType = simm5, string Constraint = ""> {
   foreach m = MxListXTHeadV in {
     defvar mx = m.MX;
@@ -1804,6 +1826,24 @@ multiclass XVPseudoVSHT_VV_VX_VI<Operand ImmType = simm5, string Constraint = ""
               Sched<[WriteVShiftX_MX, ReadVShiftV_MX, ReadVShiftX_MX, ReadVMask]>;
     defm "" : XVPseudoBinaryV_VI<ImmType, m, Constraint>,
               Sched<[WriteVShiftI_MX, ReadVShiftV_MX, ReadVMask]>;
+  }
+}
+
+multiclass XVPseudoVNSHT_VV_VX_VI {
+  foreach m = MxListWXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVNShiftV_MX = !cast<SchedWrite>("WriteVNShiftV_" # mx);
+    defvar WriteVNShiftX_MX = !cast<SchedWrite>("WriteVNShiftX_" # mx);
+    defvar WriteVNShiftI_MX = !cast<SchedWrite>("WriteVNShiftI_" # mx);
+    defvar ReadVNShiftV_MX = !cast<SchedRead>("ReadVNShiftV_" # mx);
+    defvar ReadVNShiftX_MX = !cast<SchedRead>("ReadVNShiftX_" # mx);
+
+    defm "" : XVPseudoBinaryVNSHT_VV<m>,
+              Sched<[WriteVNShiftV_MX, ReadVNShiftV_MX, ReadVNShiftV_MX, ReadVMask]>;
+    defm "" : XVPseudoBinaryVNSHT_VX<m>,
+              Sched<[WriteVNShiftX_MX, ReadVNShiftV_MX, ReadVNShiftX_MX, ReadVMask]>;
+    defm "" : XVPseudoBinaryVNSHT_VI<m>,
+              Sched<[WriteVNShiftI_MX, ReadVNShiftV_MX, ReadVMask]>;
   }
 }
 
@@ -2053,6 +2093,49 @@ multiclass XVPatBinaryV_IM<string intrinsic, string instruction,
                              vti.RegClass, simm5>;
 }
 
+multiclass XVPatBinaryVNSHT_VV<string intrinsic, string instruction,
+                               list<VTypeInfoToWide> vtilist> {
+  foreach VtiToWti = vtilist in {
+    defvar Vti = VtiToWti.Vti;
+    defvar Wti = VtiToWti.Wti;
+    let Predicates = !listconcat(GetXVTypePredicates<Vti>.Predicates,
+                                 GetXVTypePredicates<Wti>.Predicates) in
+    defm : XVPatBinary<intrinsic, instruction # "_VV_" # Vti.LMul.MX,
+                       Vti.Vector, Wti.Vector, Vti.Vector, Vti.Mask,
+                       Vti.Log2SEW, Vti.RegClass,
+                       Wti.RegClass, Vti.RegClass>;
+  }
+}
+
+multiclass XVPatBinaryVNSHT_VX<string intrinsic, string instruction,
+                               list<VTypeInfoToWide> vtilist> {
+  foreach VtiToWti = vtilist in {
+    defvar Vti = VtiToWti.Vti;
+    defvar Wti = VtiToWti.Wti;
+    defvar kind = "V"#Vti.ScalarSuffix;
+    let Predicates = !listconcat(GetXVTypePredicates<Vti>.Predicates,
+                                 GetXVTypePredicates<Wti>.Predicates) in
+    defm : XVPatBinary<intrinsic, instruction#"_"#kind#"_"#Vti.LMul.MX,
+                       Vti.Vector, Wti.Vector, Vti.Scalar, Vti.Mask,
+                       Vti.Log2SEW, Vti.RegClass,
+                       Wti.RegClass, Vti.ScalarRegClass>;
+  }
+}
+
+multiclass XVPatBinaryVNSHT_VI<string intrinsic, string instruction,
+                               list<VTypeInfoToWide> vtilist> {
+  foreach VtiToWti = vtilist in {
+    defvar Vti = VtiToWti.Vti;
+    defvar Wti = VtiToWti.Wti;
+    let Predicates = !listconcat(GetXVTypePredicates<Vti>.Predicates,
+                                 GetXVTypePredicates<Wti>.Predicates) in
+    defm : XVPatBinary<intrinsic, instruction # "_VI_" # Vti.LMul.MX,
+                       Vti.Vector, Wti.Vector, XLenVT, Vti.Mask,
+                       Vti.Log2SEW, Vti.RegClass,
+                       Wti.RegClass, uimm5>;
+  }
+}
+
 multiclass XVPatBinaryV_VV_VX_VI<string intrinsic, string instruction,
                                  list<VTypeInfo> vtilist, Operand ImmType = simm5>
     : XVPatBinaryV_VV<intrinsic, instruction, vtilist>,
@@ -2096,6 +2179,12 @@ multiclass XVPatBinaryV_VM_XM<string intrinsic, string instruction>
 multiclass XVPatBinaryM_VM_XM<string intrinsic, string instruction>
     : XVPatBinaryV_VM<intrinsic, instruction, CarryOut=1>,
       XVPatBinaryV_XM<intrinsic, instruction, CarryOut=1>;
+
+multiclass XVPatBinaryVNSHT_VV_VX_VI<string intrinsic, string instruction,
+                                     list<VTypeInfoToWide> vtilist>
+    : XVPatBinaryVNSHT_VV<intrinsic, instruction, vtilist>,
+      XVPatBinaryVNSHT_VX<intrinsic, instruction, vtilist>,
+      XVPatBinaryVNSHT_VI<intrinsic, instruction, vtilist>;
 
 //===----------------------------------------------------------------------===//
 // 12.1. Vector Single-Width Saturating Add and Subtract
@@ -2266,6 +2355,19 @@ let Predicates = [HasVendorXTHeadV] in {
     }
   }
 } // Predicates = [HasVendorXTHeadV]
+
+//===----------------------------------------------------------------------===//
+// 12.6. Vector Narrowing Integer Right Shift Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VNSRL : XVPseudoVNSHT_VV_VX_VI;
+  defm PseudoTH_VNSRA : XVPseudoVNSHT_VV_VX_VI;
+} // Predicates = [HasVendorXTHeadV]
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryVNSHT_VV_VX_VI<"int_riscv_th_vnsrl", "PseudoTH_VNSRL", AllWidenableIntXVectors>;
+  defm : XVPatBinaryVNSHT_VV_VX_VI<"int_riscv_th_vnsra", "PseudoTH_VNSRA", AllWidenableIntXVectors>;
+}
 
 //===----------------------------------------------------------------------===//
 // 12.14. Vector Integer Merge and Move Instructions

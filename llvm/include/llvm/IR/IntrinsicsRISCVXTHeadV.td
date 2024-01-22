@@ -600,6 +600,18 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 4;
   }
 
+  // For destination vector type is the same as
+  // first source vector (with mask but no policy).
+  // The second source operand must match the destination type or be an XLen scalar.
+  // Input: (maskedoff, vector_in, vector_in/scalar_in, mask, vl)
+  class XVBinaryABShiftMasked
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, llvm_anyvector_ty, llvm_any_ty,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty],
+                    [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 4;
+  }
+
   multiclass XVBinaryAAX {
     def "int_riscv_" # NAME : RISCVBinaryAAXUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVBinaryAAXMasked;
@@ -613,6 +625,11 @@ let TargetPrefix = "riscv" in {
   multiclass XVBinaryAAShift {
     def "int_riscv_" # NAME : RISCVBinaryAAShiftUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVBinaryAAShiftMasked;
+  }
+
+  multiclass XVBinaryABShift {
+    def "int_riscv_" # NAME : RISCVBinaryABShiftUnMasked;
+    def "int_riscv_" # NAME # "_mask" : XVBinaryABShiftMasked;
   }
 }
 
@@ -648,6 +665,10 @@ let TargetPrefix = "riscv" in {
   defm th_vsll : XVBinaryAAShift;
   defm th_vsrl : XVBinaryAAShift;
   defm th_vsra : XVBinaryAAShift;
+
+  // 12.6. Vector Narrowing Integer Right Shift Instructions
+  defm th_vnsrl : XVBinaryABShift;
+  defm th_vnsra : XVBinaryABShift;
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
