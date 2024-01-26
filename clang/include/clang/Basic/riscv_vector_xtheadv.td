@@ -24,6 +24,11 @@ class RVVOutOp1Builtin<string suffix, string prototype, string type_range>
   let IntrinsicTypes = [-1, 1];
 }
 
+class RVVOutOp0Op1Builtin<string suffix, string prototype, string type_range>
+    : RVVBuiltin<suffix, prototype, type_range> {
+  let IntrinsicTypes = [-1, 0, 1];
+}
+
 multiclass RVVBuiltinSet<string intrinsic_name, string type_range,
                          list<list<string>> suffixes_prototypes,
                          list<int> intrinsic_types> {
@@ -57,6 +62,56 @@ multiclass RVVUnsignedBinBuiltinSet
 multiclass RVVIntBinBuiltinSet
     : RVVSignedBinBuiltinSet,
       RVVUnsignedBinBuiltinSet;
+
+multiclass RVVWidenBuiltinSet<string intrinsic_name, string type_range,
+                              list<list<string>> suffixes_prototypes> {
+  let Log2LMUL = [-3, -2, -1, 0, 1, 2],
+      IRName = intrinsic_name, MaskedIRName = intrinsic_name # "_mask" in {
+    foreach s_p = suffixes_prototypes in {
+      let Name = NAME # "_" # s_p[0],
+          OverloadedName = NAME # "_" # s_p[0] in {
+        defvar suffix = s_p[1];
+        defvar prototype = s_p[2];
+        def : RVVOutOp0Op1Builtin<suffix, prototype, type_range>;
+      }
+    }
+  }
+}
+
+multiclass RVVWidenWOp0BuiltinSet<string intrinsic_name, string type_range,
+                                  list<list<string>> suffixes_prototypes> {
+  let Log2LMUL = [-3, -2, -1, 0, 1, 2],
+      IRName = intrinsic_name, MaskedIRName = intrinsic_name # "_mask" in {
+    foreach s_p = suffixes_prototypes in {
+      let Name = NAME # "_" # s_p[0],
+          OverloadedName = NAME # "_" # s_p[0] in {
+        defvar suffix = s_p[1];
+        defvar prototype = s_p[2];
+        def : RVVOutOp1Builtin<suffix, prototype, type_range>;
+      }
+    }
+  }
+}
+
+multiclass RVVUnsignedWidenBinBuiltinSet
+    : RVVWidenBuiltinSet<NAME, "csi",
+                         [["vv", "Uw", "UwUvUv"],
+                          ["vx", "Uw", "UwUvUe"]]>;
+
+multiclass RVVSignedWidenBinBuiltinSet
+    : RVVWidenBuiltinSet<NAME, "csi",
+                         [["vv", "w", "wvv"],
+                          ["vx", "w", "wve"]]>;
+
+multiclass RVVUnsignedWidenOp0BinBuiltinSet
+    : RVVWidenWOp0BuiltinSet<NAME # "_w", "csi",
+                             [["wv", "Uw", "UwUwUv"],
+                              ["wx", "Uw", "UwUwUe"]]>;
+
+multiclass RVVSignedWidenOp0BinBuiltinSet
+    : RVVWidenWOp0BuiltinSet<NAME # "_w", "csi",
+                             [["wv", "w", "wwv"],
+                              ["wx", "w", "wwe"]]>;
 
 defvar NFList = [2, 3, 4, 5, 6, 7, 8];
 defvar TypeList = ["c", "s", "i", "l", "x", "f", "d"];
@@ -781,10 +836,10 @@ let UnMaskedPolicyScheme = NonePolicy,
 // 12. Vector Integer Arithmetic Operations
 //===----------------------------------------------------------------------===//
 
-multiclass RVVPseudoUnaryBuiltin<string IR, string type_range> {
+multiclass RVVPseudoUnaryBuiltin<string ir, string type_range> {
   let Name = NAME,
-      IRName = IR,
-      MaskedIRName = IR # "_mask",
+      IRName = ir,
+      MaskedIRName = ir # "_mask",
       UnMaskedPolicyScheme = HasPassthruOperand,
       ManualCodegen = [{
       {
@@ -815,6 +870,7 @@ multiclass RVVPseudoUnaryBuiltin<string IR, string type_range> {
   }
 }
 
+// 12.1. Vector Single-Width Integer Add and Subtract
 let UnMaskedPolicyScheme = HasPassthruOperand in {
   defm th_vadd : RVVIntBinBuiltinSet;
   defm th_vsub : RVVIntBinBuiltinSet;
@@ -823,5 +879,18 @@ let UnMaskedPolicyScheme = HasPassthruOperand in {
                                        ["vx", "Uv", "UvUvUe"]]>;
 }
 defm th_vneg_v : RVVPseudoUnaryBuiltin<"th_vrsub", "csil">;
+
+// 12.2. Vector Widening Integer Add/Subtract Operations
+let UnMaskedPolicyScheme = HasPassthruOperand in {
+defm th_vwaddu : RVVUnsignedWidenBinBuiltinSet;
+defm th_vwaddu : RVVUnsignedWidenOp0BinBuiltinSet;
+defm th_vwsubu : RVVUnsignedWidenBinBuiltinSet;
+defm th_vwsubu : RVVUnsignedWidenOp0BinBuiltinSet;
+defm th_vwadd : RVVSignedWidenBinBuiltinSet;
+defm th_vwadd : RVVSignedWidenOp0BinBuiltinSet;
+defm th_vwsub : RVVSignedWidenBinBuiltinSet;
+defm th_vwsub : RVVSignedWidenOp0BinBuiltinSet;
+}
+
 
 include "riscv_vector_xtheadv_wrappers.td"
