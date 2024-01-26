@@ -730,10 +730,10 @@ let UnMaskedPolicyScheme = NonePolicy,
 // 12. Vector Integer Arithmetic Operations
 //===----------------------------------------------------------------------===//
 
-multiclass RVVPseudoUnaryBuiltin<string IR, string type_range> {
+multiclass RVVPseudoUnaryBuiltin<string ir, string type_range> {
   let Name = NAME,
-      IRName = IR,
-      MaskedIRName = IR # "_mask",
+      IRName = ir,
+      MaskedIRName = ir # "_mask",
       UnMaskedPolicyScheme = HasPassthruOperand,
       ManualCodegen = [{
       {
@@ -764,6 +764,7 @@ multiclass RVVPseudoUnaryBuiltin<string IR, string type_range> {
   }
 }
 
+// 12.1. Vector Single-Width Integer Add and Subtract
 let UnMaskedPolicyScheme = HasPassthruOperand in {
   defm th_vadd : RVVIntBinBuiltinSet;
   defm th_vsub : RVVIntBinBuiltinSet;
@@ -772,5 +773,18 @@ let UnMaskedPolicyScheme = HasPassthruOperand in {
                                        ["vx", "Uv", "UvUvUe"]]>;
 }
 defm th_vneg_v : RVVPseudoUnaryBuiltin<"th_vrsub", "csil">;
+
+// 12.2. Vector Widening Integer Add/Subtract Operations
+let UnMaskedPolicyScheme = HasPassthruOperand in {
+defm th_vwaddu : RVVUnsignedWidenBinBuiltinSet;
+defm th_vwaddu : RVVUnsignedWidenOp0BinBuiltinSet;
+defm th_vwsubu : RVVUnsignedWidenBinBuiltinSet;
+defm th_vwsubu : RVVUnsignedWidenOp0BinBuiltinSet;
+defm th_vwadd : RVVSignedWidenBinBuiltinSet;
+defm th_vwadd : RVVSignedWidenOp0BinBuiltinSet;
+defm th_vwsub : RVVSignedWidenBinBuiltinSet;
+defm th_vwsub : RVVSignedWidenOp0BinBuiltinSet;
+}
+
 
 include "riscv_vector_xtheadv_wrappers.td"
