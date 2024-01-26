@@ -600,6 +600,7 @@ multiclass RVVUSSegLoad<string ir, string bhwe, bit with_eew, list<string> types
       if (IsMasked)
         Operands.push_back(Ops[0]);
       Operands.push_back(Ops[Offset + 1]); // VL
+      // TODO: no policy in LLVM side for masked intrinsics.
       if (IsMasked)
         Operands.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
 
@@ -712,6 +713,7 @@ multiclass RVVUSSegLoadFF<string ir, string bhwe, bit with_eew, list<string> typ
       if (IsMasked)
         Operands.push_back(Ops[0]);
       Operands.push_back(Ops[Offset + 2]); // vl
+      // TODO: no policy in LLVM side for masked intrinsics.
       if (IsMasked)
         Operands.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
 
@@ -779,8 +781,47 @@ let UnMaskedPolicyScheme = NonePolicy,
 // 12. Vector Integer Arithmetic Operations
 //===----------------------------------------------------------------------===//
 
+multiclass RVVPseudoUnaryBuiltin<string IR, string type_range> {
+  let Name = NAME,
+      IRName = IR,
+      MaskedIRName = IR # "_mask",
+      UnMaskedPolicyScheme = HasPassthruOperand,
+      ManualCodegen = [{
+      {
+        if (IsMasked) {
+          std::rotate(Ops.begin(), Ops.begin() + 1, Ops.end() - 1);
+          if ((PolicyAttrs & RVV_VTA) && (PolicyAttrs & RVV_VMA))
+            Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType));
+        } else {
+          if (PolicyAttrs & RVV_VTA)
+            Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType));
+        }
+        auto ElemTy = cast<llvm::VectorType>(ResultType)->getElementType();
+        Ops.insert(Ops.begin() + 2, llvm::Constant::getNullValue(ElemTy));
+
+        if (IsMasked) {
+          // TODO: no policy in LLVM side for masked intrinsics.
+          Ops.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+          // maskedoff, op1, op2, mask, vl, policy
+          IntrinsicTypes = {ResultType, ElemTy, Ops[4]->getType()};
+        } else {
+          // passthru, op1, op2, vl
+          IntrinsicTypes = {ResultType, ElemTy, Ops[3]->getType()};
+        }
+        break;
+      }
+      }] in {
+        def : RVVBuiltin<"v", "vv", type_range>;
+  }
+}
+
 let UnMaskedPolicyScheme = HasPassthruOperand in {
   defm th_vadd : RVVIntBinBuiltinSet;
+  defm th_vsub : RVVIntBinBuiltinSet;
+  defm th_vrsub : RVVOutOp1BuiltinSet<"th_vrsub", "csil",
+                                      [["vx", "v", "vve"],
+                                       ["vx", "Uv", "UvUvUe"]]>;
 }
+defm th_vneg_v : RVVPseudoUnaryBuiltin<"th_vrsub", "csil">;
 
 include "riscv_vector_xtheadv_wrappers.td"
