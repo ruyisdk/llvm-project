@@ -44,6 +44,12 @@ Any feature not listed below but present in the specification should be consider
       - (Done) `vsrl.{vv,vx,vi}`
       - (Done) `vsra.{vv,vx,vi}`
     - (Done) `12.6. Vector Narrowing Integer Right Shift Instructions`
+    - (WIP)  `12.7 Vector Integer Comparison Instructions`
+      - (Done) `vmseq`
+      - (Done) `vmsne`
+      - (Done) `vmslt{u}`
+      - (Done) `vmsle{u}`
+      - (Done) `vmsgt{u}`
 - (WIP) Clang intrinsics related to the `XTHeadVector` extension:
   - (WIP) `6. Configuration-Setting and Utility`
     - (Done) `6.1. Set vl and vtype`
