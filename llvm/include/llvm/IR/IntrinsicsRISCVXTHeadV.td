@@ -669,6 +669,16 @@ let TargetPrefix = "riscv" in {
   // 12.6. Vector Narrowing Integer Right Shift Instructions
   defm th_vnsrl : XVBinaryABShift;
   defm th_vnsra : XVBinaryABShift;
+
+  // 12.7. Vector Integer Comparison Instructions
+  defm th_vmseq : RISCVCompare;
+  defm th_vmsne : RISCVCompare;
+  defm th_vmsltu : RISCVCompare;
+  defm th_vmslt : RISCVCompare;
+  defm th_vmsleu : RISCVCompare;
+  defm th_vmsle : RISCVCompare;
+  defm th_vmsgtu : RISCVCompare;
+  defm th_vmsgt : RISCVCompare;
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
