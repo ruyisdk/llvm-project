@@ -2283,6 +2283,21 @@ multiclass XVPatCompare_VI<string intrinsic, string inst,
   }
 }
 
+multiclass XVPseudoVMINMAX_VV_VX {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVIMinMaxV_MX = !cast<SchedWrite>("WriteVIMinMaxV_" # mx);
+    defvar WriteVIMinMaxX_MX = !cast<SchedWrite>("WriteVIMinMaxX_" # mx);
+    defvar ReadVIMinMaxV_MX = !cast<SchedRead>("ReadVIMinMaxV_" # mx);
+    defvar ReadVIMinMaxX_MX = !cast<SchedRead>("ReadVIMinMaxX_" # mx);
+
+    defm "" : XVPseudoBinaryV_VV<m>,
+              Sched<[WriteVIMinMaxV_MX, ReadVIMinMaxV_MX, ReadVIMinMaxV_MX, ReadVMask]>;
+    defm "" : XVPseudoBinaryV_VX<m>,
+              Sched<[WriteVIMinMaxX_MX, ReadVIMinMaxV_MX, ReadVIMinMaxX_MX, ReadVMask]>;
+  }
+}
+
 multiclass XVPatBinaryV_VV_VX_VI<string intrinsic, string instruction,
                                  list<VTypeInfo> vtilist, Operand ImmType = simm5>
     : XVPatBinaryV_VV<intrinsic, instruction, vtilist>,
@@ -2576,6 +2591,23 @@ let Predicates = [HasVendorXTHeadV] in {
   defm : XVPatCompare_VI<"int_riscv_th_vmslt", "PseudoTH_VMSLE", simm5_plus1_nonzero>;
   defm : XVPatCompare_VI<"int_riscv_th_vmsltu", "PseudoTH_VMSLEU", simm5_plus1_nonzero>;
 } // Predicates = [HasVendorXTHeadV]
+
+//===----------------------------------------------------------------------===//
+// 12.8. Vector Integer Min/Max Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VMINU : XVPseudoVMINMAX_VV_VX;
+  defm PseudoTH_VMIN  : XVPseudoVMINMAX_VV_VX;
+  defm PseudoTH_VMAXU : XVPseudoVMINMAX_VV_VX;
+  defm PseudoTH_VMAX  : XVPseudoVMINMAX_VV_VX;
+} // Predicates = [HasVendorXTHeadV]
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryV_VV_VX<"int_riscv_th_vminu", "PseudoTH_VMINU", AllIntegerXVectors>;
+  defm : XVPatBinaryV_VV_VX<"int_riscv_th_vmin", "PseudoTH_VMIN", AllIntegerXVectors>;
+  defm : XVPatBinaryV_VV_VX<"int_riscv_th_vmaxu", "PseudoTH_VMAXU", AllIntegerXVectors>;
+  defm : XVPatBinaryV_VV_VX<"int_riscv_th_vmax", "PseudoTH_VMAX", AllIntegerXVectors>;
+}
 
 //===----------------------------------------------------------------------===//
 // 12.14. Vector Integer Merge and Move Instructions
