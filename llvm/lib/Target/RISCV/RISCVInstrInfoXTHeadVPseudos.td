@@ -1895,6 +1895,39 @@ multiclass XVPseudoVCMPM_VX_VI {
   }
 }
 
+multiclass XVPseudoVMSGE_VX_VI {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar prefix = "Pseudo" # PseudoToVInst<NAME>.VInst;
+    defvar WriteVICmpX_MX = !cast<SchedWrite>("WriteVICmpX_" # mx);
+    defvar WriteVICmpI_MX = !cast<SchedWrite>("WriteVICmpI_" # mx);
+    defvar ReadVICmpV_MX = !cast<SchedRead>("ReadVICmpV_" # mx);
+    defvar ReadVICmpX_MX = !cast<SchedRead>("ReadVICmpX_" # mx);
+
+    let VLMul = m.value in {
+      let BaseInstr = !cast<Instruction>(prefix # "_VX") in
+      def "_VX_" # mx : VPseudoBinaryMOutNoMask<VR, m.vrclass, GPR,
+                                                !if(!ge(m.octuple, 16), "@earlyclobber $rd", "")>,
+                        Sched<[WriteVICmpX_MX, ReadVICmpV_MX, ReadVICmpX_MX, ReadVMask]>;
+      let BaseInstr = !cast<Instruction>(prefix # "_VX_M") in
+      def "_VX_" # mx # "_MASK" : VPseudoBinaryMOutMask<VR, m.vrclass, GPR,
+                                                        !if(!ge(m.octuple, 16), "@earlyclobber $rd", "")>,
+                                  RISCVMaskedPseudo<MaskIdx=3>,
+                                  Sched<[WriteVICmpX_MX, ReadVICmpV_MX, ReadVICmpX_MX, ReadVMask]>;
+
+      let BaseInstr = !cast<Instruction>(prefix # "_VI") in
+      def "_VI_" # mx : VPseudoBinaryMOutNoMask<VR, m.vrclass, simm5,
+                                                !if(!ge(m.octuple, 16), "@earlyclobber $rd", "")>,
+                        Sched<[WriteVICmpI_MX, ReadVICmpV_MX, ReadVMask]>;
+      let BaseInstr = !cast<Instruction>(prefix # "_VI") in
+      def "_VI_" # mx # "_MASK" : VPseudoBinaryMOutMask<VR, m.vrclass, simm5,
+                                                        !if(!ge(m.octuple, 16), "@earlyclobber $rd", "")>,
+                                  RISCVMaskedPseudo<MaskIdx=3>,
+                                  Sched<[WriteVICmpI_MX, ReadVICmpV_MX, ReadVMask]>;
+    }
+  }
+}
+
 //===----------------------------------------------------------------------===//
 // Helpers to define the intrinsic patterns for the XTHeadVector extension.
 //===----------------------------------------------------------------------===//
@@ -2511,6 +2544,8 @@ let Predicates = [HasVendorXTHeadV] in {
   defm PseudoTH_VMSLE  : XVPseudoVCMPM_VV_VX_VI;
   defm PseudoTH_VMSGTU : XVPseudoVCMPM_VX_VI;
   defm PseudoTH_VMSGT  : XVPseudoVCMPM_VX_VI;
+  defm PseudoTH_VMSGE  : XVPseudoVMSGE_VX_VI;
+  defm PseudoTH_VMSGEU : XVPseudoVMSGE_VX_VI;
 } // Predicates = [HasVendorXTHeadV]
 
 let Predicates = [HasVendorXTHeadV] in {
@@ -2527,6 +2562,12 @@ let Predicates = [HasVendorXTHeadV] in {
   // Match vmsgt with 2 vector operands to vmslt with the operands swapped.
   defm : XVPatBinarySwappedM_VV<"int_riscv_th_vmsgtu", "PseudoTH_VMSLTU", AllIntegerXVectors>;
   defm : XVPatBinarySwappedM_VV<"int_riscv_th_vmsgt", "PseudoTH_VMSLT", AllIntegerXVectors>;
+
+  defm : XVPatBinarySwappedM_VV<"int_riscv_th_vmsgeu", "PseudoTH_VMSLEU", AllIntegerXVectors>;
+  defm : XVPatBinarySwappedM_VV<"int_riscv_th_vmsge", "PseudoTH_VMSLE", AllIntegerXVectors>;
+
+  defm : XVPatBinaryM_VX_VI<"int_riscv_th_vmsgeu", "PseudoTH_VMSGEU", AllIntegerXVectors>;
+  defm : XVPatBinaryM_VX_VI<"int_riscv_th_vmsge", "PseudoTH_VMSGE", AllIntegerXVectors>;
 
   // Match vmslt(u).vx intrinsics to vmsle(u).vi if the scalar is -15 to 16 and
   // non-zero. Zero can be .vx with x0. This avoids the user needing to know that
