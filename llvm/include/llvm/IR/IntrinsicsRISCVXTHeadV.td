@@ -679,6 +679,8 @@ let TargetPrefix = "riscv" in {
   defm th_vmsle : RISCVCompare;
   defm th_vmsgtu : RISCVCompare;
   defm th_vmsgt : RISCVCompare;
+  defm th_vmsge: RISCVCompare;
+  defm th_vmsgeu: RISCVCompare;
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
