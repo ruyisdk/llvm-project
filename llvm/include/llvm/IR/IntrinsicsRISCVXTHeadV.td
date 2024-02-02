@@ -687,6 +687,12 @@ let TargetPrefix = "riscv" in {
   defm th_vmin : XVBinaryAAX;
   defm th_vmaxu : XVBinaryAAX;
   defm th_vmax : XVBinaryAAX;
+
+  // 12.10 Vector Integer Divide Instructions
+  defm th_vdivu : XVBinaryAAX;
+  defm th_vdiv : XVBinaryAAX;
+  defm th_vremu : XVBinaryAAX;
+  defm th_vrem : XVBinaryAAX;
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
