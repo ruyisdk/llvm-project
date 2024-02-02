@@ -681,6 +681,12 @@ let TargetPrefix = "riscv" in {
   defm th_vmsgt : RISCVCompare;
   defm th_vmsge: RISCVCompare;
   defm th_vmsgeu: RISCVCompare;
+
+  // 12.8. Vector Integer Min/Max Instructions
+  defm th_vminu : XVBinaryAAX;
+  defm th_vmin : XVBinaryAAX;
+  defm th_vmaxu : XVBinaryAAX;
+  defm th_vmax : XVBinaryAAX;
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
