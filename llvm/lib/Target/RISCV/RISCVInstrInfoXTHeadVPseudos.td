@@ -1946,6 +1946,21 @@ multiclass XVPseudoVDIV_VV_VX {
   }
 }
 
+multiclass XVPseudoVWMUL_VV_VX {
+  foreach m = MxListWXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVIWMulV_MX = !cast<SchedWrite>("WriteVIWMulV_" # mx);
+    defvar WriteVIWMulX_MX = !cast<SchedWrite>("WriteVIWMulX_" # mx);
+    defvar ReadVIWMulV_MX = !cast<SchedRead>("ReadVIWMulV_" # mx);
+    defvar ReadVIWMulX_MX = !cast<SchedRead>("ReadVIWMulX_" # mx);
+
+    defm "" : XVPseudoBinaryW_VV<m>,
+              Sched<[WriteVIWMulV_MX, ReadVIWMulV_MX, ReadVIWMulV_MX, ReadVMask]>;
+    defm "" : XVPseudoBinaryW_VX<m>,
+              Sched<[WriteVIWMulX_MX, ReadVIWMulV_MX, ReadVIWMulX_MX, ReadVMask]>;
+  }
+}
+
 //===----------------------------------------------------------------------===//
 // Helpers to define the intrinsic patterns for the XTHeadVector extension.
 //===----------------------------------------------------------------------===//
@@ -2642,6 +2657,21 @@ let Predicates = [HasVendorXTHeadV] in {
   defm : XVPatBinaryV_VV_VX<"int_riscv_th_vdiv", "PseudoTH_VDIV", AllIntegerXVectors, isSEWAware=1>;
   defm : XVPatBinaryV_VV_VX<"int_riscv_th_vremu", "PseudoTH_VREMU", AllIntegerXVectors, isSEWAware=1>;
   defm : XVPatBinaryV_VV_VX<"int_riscv_th_vrem", "PseudoTH_VREM", AllIntegerXVectors, isSEWAware=1>;
+} // Predicates = [HasVendorXTHeadV]
+
+//===----------------------------------------------------------------------===//
+// 12.11. Vector Widening Integer Multiply Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VWMUL   : XVPseudoVWMUL_VV_VX;
+  defm PseudoTH_VWMULU  : XVPseudoVWMUL_VV_VX;
+  defm PseudoTH_VWMULSU : XVPseudoVWMUL_VV_VX;
+} // Predicates = [HasVendorXTHeadV]
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryW_VV_VX<"int_riscv_th_vwmul", "PseudoTH_VWMUL", AllWidenableIntXVectors>;
+  defm : XVPatBinaryW_VV_VX<"int_riscv_th_vwmulu", "PseudoTH_VWMULU", AllWidenableIntXVectors>;
+  defm : XVPatBinaryW_VV_VX<"int_riscv_th_vwmulsu", "PseudoTH_VWMULSU", AllWidenableIntXVectors>;
 } // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
