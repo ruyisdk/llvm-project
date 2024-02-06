@@ -693,6 +693,11 @@ let TargetPrefix = "riscv" in {
   defm th_vdiv : XVBinaryAAX;
   defm th_vremu : XVBinaryAAX;
   defm th_vrem : XVBinaryAAX;
+
+  // 12.11. Vector Widening Integer Multiply Instructions
+  defm th_vwmul : XVBinaryABX;
+  defm th_vwmulu : XVBinaryABX;
+  defm th_vwmulsu : XVBinaryABX;
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
