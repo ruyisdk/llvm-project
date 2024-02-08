@@ -612,6 +612,27 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 4;
   }
 
+  // UnMasked Vector Multiply-Add operations, its first operand can not be undef.
+  // Input: (vector_in, vector_in/scalar, vector_in, vl)
+  class XVTernaryAAXAUnMasked
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, llvm_any_ty, LLVMMatchType<0>,
+                     llvm_anyint_ty], [IntrNoMem]>, RISCVVIntrinsic {
+    let ScalarOperand = 1;
+    let VLOperand = 3;
+  }
+
+  // Masked Vector Multiply-Add operations, its first operand can not be undef.
+  // Input: (vector_in, vector_in/scalar, vector_in, mask, vl)
+  class XVTernaryAAXAMasked
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, llvm_any_ty, LLVMMatchType<0>,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>,
+                     llvm_anyint_ty], [IntrNoMem]>, RISCVVIntrinsic {
+    let ScalarOperand = 1;
+    let VLOperand = 4;
+  }
+
   multiclass XVBinaryAAX {
     def "int_riscv_" # NAME : RISCVBinaryAAXUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVBinaryAAXMasked;
@@ -630,6 +651,11 @@ let TargetPrefix = "riscv" in {
   multiclass XVBinaryABShift {
     def "int_riscv_" # NAME : RISCVBinaryABShiftUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVBinaryABShiftMasked;
+  }
+
+  multiclass XVTernaryAAXA {
+    def "int_riscv_" # NAME : XVTernaryAAXAUnMasked;
+    def "int_riscv_" # NAME # "_mask" : XVTernaryAAXAMasked;
   }
 }
 
@@ -698,6 +724,12 @@ let TargetPrefix = "riscv" in {
   defm th_vwmul : XVBinaryABX;
   defm th_vwmulu : XVBinaryABX;
   defm th_vwmulsu : XVBinaryABX;
+
+  // 12.12. Vector Single-Width Integer Multiply-Add Instructions
+  defm th_vmacc : XVTernaryAAXA;
+  defm th_vnmsac : XVTernaryAAXA;
+  defm th_vmadd : XVTernaryAAXA;
+  defm th_vnmsub : XVTernaryAAXA;
 } // TargetPrefix = "riscv"
 
 let TargetPrefix = "riscv" in {
