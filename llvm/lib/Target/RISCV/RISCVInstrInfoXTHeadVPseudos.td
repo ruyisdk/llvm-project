@@ -1584,6 +1584,23 @@ class XVPseudoTiedBinaryMask<VReg RetClass,
   let IsTiedPseudo = 1;
 }
 
+class XVPseudoBinaryMaskNoPolicy<VReg RetClass,
+                                 RegisterClass Op1Class,
+                                 DAGOperand Op2Class,
+                                 string Constraint> :
+        Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd),
+               (ins GetVRegNoV0<RetClass>.R:$merge,
+                     Op1Class:$rs2, Op2Class:$rs1,
+                     VMaskOp:$vm, AVL:$vl, ixlenimm:$sew), []>,
+        RISCVVPseudo {
+  let mayLoad = 0;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let Constraints = !interleave([Constraint, "$rd = $merge"], ",");
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+}
+
 multiclass XVPseudoBinary<VReg RetClass,
                           VReg Op1Class,
                           DAGOperand Op2Class,
@@ -1609,6 +1626,20 @@ multiclass XVPseudoTiedBinary<VReg RetClass,
                                                            Constraint>;
     def "_" # MInfo.MX # "_MASK_TIED" : XVPseudoTiedBinaryMask<RetClass, Op2Class,
                                                                Constraint>;
+  }
+}
+
+multiclass XVPseudoTernaryNoPolicy<VReg RetClass,
+                                     RegisterClass Op1Class,
+                                     DAGOperand Op2Class,
+                                     LMULInfo MInfo,
+                                     string Constraint = "",
+                                     bit Commutable = 0> {
+  let VLMul = MInfo.value in {
+    let isCommutable = Commutable in
+    def "_" # MInfo.MX : VPseudoTernaryNoMask<RetClass, Op1Class, Op2Class, Constraint>;
+    def "_" # MInfo.MX # "_MASK" : XVPseudoBinaryMaskNoPolicy<RetClass, Op1Class, Op2Class, Constraint>,
+                                   RISCVMaskedPseudo<MaskIdx=3>;
   }
 }
 
@@ -1665,6 +1696,16 @@ multiclass XVPseudoBinaryVNSHT_VX<LMULInfo m> {
 multiclass XVPseudoBinaryVNSHT_VI<LMULInfo m> {
   defm _VI : XVPseudoBinary<m.vrclass, m.wvrclass, uimm5, m,
                             !if(!ge(m.octuple, 8), "@earlyclobber $rd", "")>;
+}
+
+multiclass XVPseudoTernaryV_VV_AAXA<LMULInfo m, string Constraint = ""> {
+  defm _VV : XVPseudoTernaryNoPolicy<m.vrclass, m.vrclass, m.vrclass, m,
+                                      Constraint, Commutable=1>;
+}
+
+multiclass XVPseudoTernaryV_VX_AAXA<LMULInfo m, string Constraint = ""> {
+  defm _VX : XVPseudoTernaryNoPolicy<m.vrclass, GPR, m.vrclass, m,
+                                        Constraint, Commutable=1>;
 }
 
 multiclass XVPseudoVALU_VV_VX_VI<Operand ImmType = simm5, string Constraint = ""> {
@@ -1958,6 +1999,23 @@ multiclass XVPseudoVWMUL_VV_VX {
               Sched<[WriteVIWMulV_MX, ReadVIWMulV_MX, ReadVIWMulV_MX, ReadVMask]>;
     defm "" : XVPseudoBinaryW_VX<m>,
               Sched<[WriteVIWMulX_MX, ReadVIWMulV_MX, ReadVIWMulX_MX, ReadVMask]>;
+  }
+}
+
+multiclass XVPseudoVMAC_VV_VX_AAXA<string Constraint = ""> {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVIMulAddV_MX = !cast<SchedWrite>("WriteVIMulAddV_" # mx);
+    defvar WriteVIMulAddX_MX = !cast<SchedWrite>("WriteVIMulAddX_" # mx);
+    defvar ReadVIMulAddV_MX = !cast<SchedRead>("ReadVIMulAddV_" # mx);
+    defvar ReadVIMulAddX_MX = !cast<SchedRead>("ReadVIMulAddX_" # mx);
+
+    defm "" : XVPseudoTernaryV_VV_AAXA<m, Constraint>,
+              Sched<[WriteVIMulAddV_MX, ReadVIMulAddV_MX, ReadVIMulAddV_MX,
+                     ReadVIMulAddV_MX, ReadVMask]>;
+    defm "" : XVPseudoTernaryV_VX_AAXA<m, Constraint>,
+              Sched<[WriteVIMulAddX_MX, ReadVIMulAddV_MX, ReadVIMulAddV_MX,
+                     ReadVIMulAddX_MX, ReadVMask]>;
   }
 }
 
@@ -2331,6 +2389,27 @@ multiclass XVPseudoVMINMAX_VV_VX {
   }
 }
 
+multiclass XVPatTernaryV_VV_AAXA<string intrinsic, string instruction,
+                                 list<VTypeInfo> vtilist> {
+  foreach vti = vtilist in
+    let Predicates = GetXVTypePredicates<vti>.Predicates in
+    defm : VPatTernary<intrinsic, instruction, "VV",
+                       vti.Vector, vti.Vector, vti.Vector, vti.Mask,
+                       vti.Log2SEW, vti.LMul, vti.RegClass,
+                       vti.RegClass, vti.RegClass>;
+}
+
+multiclass XVPatTernaryV_VX_AAXA<string intrinsic, string instruction,
+                                 list<VTypeInfo> vtilist> {
+  foreach vti = vtilist in
+    let Predicates = GetXVTypePredicates<vti>.Predicates in
+    defm : VPatTernary<intrinsic, instruction,
+                       "V"#vti.ScalarSuffix,
+                       vti.Vector, vti.Scalar, vti.Vector, vti.Mask,
+                       vti.Log2SEW, vti.LMul, vti.RegClass,
+                       vti.ScalarRegClass, vti.RegClass>;
+}
+
 multiclass XVPatBinaryV_VV_VX_VI<string intrinsic, string instruction,
                                  list<VTypeInfo> vtilist, Operand ImmType = simm5>
     : XVPatBinaryV_VV<intrinsic, instruction, vtilist>,
@@ -2396,6 +2475,11 @@ multiclass XVPatBinaryM_VX_VI<string intrinsic, string instruction,
                               list<VTypeInfo> vtilist>
     : XVPatBinaryM_VX<intrinsic, instruction, vtilist>,
       XVPatBinaryM_VI<intrinsic, instruction, vtilist>;
+
+multiclass XVPatTernaryV_VV_VX_AAXA<string intrinsic, string instruction,
+                               list<VTypeInfo> vtilist>
+    : XVPatTernaryV_VV_AAXA<intrinsic, instruction, vtilist>,
+      XVPatTernaryV_VX_AAXA<intrinsic, instruction, vtilist>;
 
 //===----------------------------------------------------------------------===//
 // 12.1. Vector Single-Width Saturating Add and Subtract
@@ -2672,6 +2756,23 @@ let Predicates = [HasVendorXTHeadV] in {
   defm : XVPatBinaryW_VV_VX<"int_riscv_th_vwmul", "PseudoTH_VWMUL", AllWidenableIntXVectors>;
   defm : XVPatBinaryW_VV_VX<"int_riscv_th_vwmulu", "PseudoTH_VWMULU", AllWidenableIntXVectors>;
   defm : XVPatBinaryW_VV_VX<"int_riscv_th_vwmulsu", "PseudoTH_VWMULSU", AllWidenableIntXVectors>;
+} // Predicates = [HasVendorXTHeadV]
+
+//===----------------------------------------------------------------------===//
+// 12.12. Vector Single-Width Integer Multiply-Add Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VMACC  : XVPseudoVMAC_VV_VX_AAXA;
+  defm PseudoTH_VNMSAC : XVPseudoVMAC_VV_VX_AAXA;
+  defm PseudoTH_VMADD  : XVPseudoVMAC_VV_VX_AAXA;
+  defm PseudoTH_VNMSUB : XVPseudoVMAC_VV_VX_AAXA;
+} // Predicates = [HasVendorXTHeadV]
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatTernaryV_VV_VX_AAXA<"int_riscv_th_vmadd", "PseudoTH_VMADD", AllIntegerXVectors>;
+  defm : XVPatTernaryV_VV_VX_AAXA<"int_riscv_th_vnmsub", "PseudoTH_VNMSUB", AllIntegerXVectors>;
+  defm : XVPatTernaryV_VV_VX_AAXA<"int_riscv_th_vmacc", "PseudoTH_VMACC", AllIntegerXVectors>;
+  defm : XVPatTernaryV_VV_VX_AAXA<"int_riscv_th_vnmsac", "PseudoTH_VNMSAC", AllIntegerXVectors>;
 } // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
