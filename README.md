@@ -49,6 +49,7 @@ Any feature not listed below but present in the specification should be consider
     - (Done) `12.10. Vector Integer Divide Instructions`
     - (Done) `12.11. Vector Widening Integer Multiply Instructions`
     - (Done) `12.12. Vector Single-Width Integer Multiply-Add Instructions`
+    - (Done) `12.13. Vector Widening Integer Multiply-Add Instructions`
 - (WIP) Clang intrinsics related to the `XTHeadVector` extension:
   - (WIP) `6. Configuration-Setting and Utility`
     - (Done) `6.1. Set vl and vtype`
