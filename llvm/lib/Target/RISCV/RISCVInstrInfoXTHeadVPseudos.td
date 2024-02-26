@@ -1981,6 +1981,21 @@ multiclass XVPseudoVMSGE_VX_VI {
   }
 }
 
+multiclass XVPseudoVMUL_VV_VX {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVIMulV_MX = !cast<SchedWrite>("WriteVIMulV_" # mx);
+    defvar WriteVIMulX_MX = !cast<SchedWrite>("WriteVIMulX_" # mx);
+    defvar ReadVIMulV_MX = !cast<SchedRead>("ReadVIMulV_" # mx);
+    defvar ReadVIMulX_MX = !cast<SchedRead>("ReadVIMulX_" # mx);
+
+    defm "" : XVPseudoBinaryV_VV<m>,
+              Sched<[WriteVIMulV_MX, ReadVIMulV_MX, ReadVIMulV_MX, ReadVMask]>;
+    defm "" : XVPseudoBinaryV_VX<m>,
+              Sched<[WriteVIMulX_MX, ReadVIMulV_MX, ReadVIMulX_MX, ReadVMask]>;
+  }
+}
+
 multiclass XVPseudoVDIV_VV_VX {
   foreach m = MxListXTHeadV in {
     defvar mx = m.MX;
@@ -2801,6 +2816,27 @@ let Predicates = [HasVendorXTHeadV] in {
   defm : XVPatBinaryV_VV_VX<"int_riscv_th_vmaxu", "PseudoTH_VMAXU", AllIntegerXVectors>;
   defm : XVPatBinaryV_VV_VX<"int_riscv_th_vmax", "PseudoTH_VMAX", AllIntegerXVectors>;
 }
+
+//===----------------------------------------------------------------------===//
+// 12.9. Vector Single-Width Integer Multiply Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VMUL    : XVPseudoVMUL_VV_VX;
+  defm PseudoTH_VMULH   : XVPseudoVMUL_VV_VX;
+  defm PseudoTH_VMULHU  : XVPseudoVMUL_VV_VX;
+  defm PseudoTH_VMULHSU : XVPseudoVMUL_VV_VX;
+} // Predicates = [HasVendorXTHeadV]
+
+// In RVV 1.0 vmulh, vmulhu, vmulhsu are not included for EEW=64 in Zve64*.
+// However the RVV 0.7.1 spec does not have the Zve* extension and
+// HasVInstructionsFullMultiply is always true when +xtheadvector is set,
+// That is, these instruction always exist in the xthead extension.
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryV_VV_VX<"int_riscv_th_vmul", "PseudoTH_VMUL", AllIntegerXVectors>;
+  defm : XVPatBinaryV_VV_VX<"int_riscv_th_vmulh", "PseudoTH_VMULH", AllIntegerXVectors>;
+  defm : XVPatBinaryV_VV_VX<"int_riscv_th_vmulhu", "PseudoTH_VMULHU", AllIntegerXVectors>;
+  defm : XVPatBinaryV_VV_VX<"int_riscv_th_vmulhsu", "PseudoTH_VMULHSU", AllIntegerXVectors>;
+} // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
 // 12.10. Vector Integer Divide Instructions
