@@ -140,6 +140,30 @@ multiclass RVVCarryOutInBuiltinSet<string intrinsic_name>
                            ["vvm", "Uvm", "mUvUvm"],
                            ["vxm", "Uvm", "mUvUem"]]>;
 
+multiclass RVVSignedShiftBuiltinSet
+    : RVVOutOp1BuiltinSet<NAME, "csil",
+                          [["vv", "v", "vvUv"],
+                           ["vx", "v", "vvz"]]>;
+
+multiclass RVVSignedShiftBuiltinSetRoundingMode
+    : RVVOutOp1BuiltinSet<NAME, "csil",
+                          [["vv", "v", "vvUvu"],
+                           ["vx", "v", "vvzu"]]>;
+
+multiclass RVVUnsignedShiftBuiltinSet
+    : RVVOutOp1BuiltinSet<NAME, "csil",
+                          [["vv", "Uv", "UvUvUv"],
+                           ["vx", "Uv", "UvUvz"]]>;
+
+multiclass RVVUnsignedShiftBuiltinSetRoundingMode
+    : RVVOutOp1BuiltinSet<NAME, "csil",
+                          [["vv", "Uv", "UvUvUvu"],
+                           ["vx", "Uv", "UvUvzu"]]>;
+
+multiclass RVVShiftBuiltinSet
+    : RVVSignedShiftBuiltinSet,
+      RVVUnsignedShiftBuiltinSet;
+
 //===----------------------------------------------------------------------===//
 // 6. Configuration-Setting and Utility
 //===----------------------------------------------------------------------===//
@@ -968,5 +992,12 @@ let UnMaskedPolicyScheme = HasPassthruOperand in {
   defm th_vor  : RVVIntBinBuiltinSet;
 }
 defm th_vnot_v : RVVPseudoVNotBuiltin<"th_vxor", "csil">;
+
+// 12.5. Vector Single-Width Bit Shift Operations
+let UnMaskedPolicyScheme = HasPassthruOperand in {
+  defm th_vsll : RVVShiftBuiltinSet;
+  defm th_vsrl : RVVUnsignedShiftBuiltinSet;
+  defm th_vsra : RVVSignedShiftBuiltinSet;
+}
 
 include "riscv_vector_xtheadv_wrappers.td"
