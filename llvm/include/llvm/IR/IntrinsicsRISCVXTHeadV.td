@@ -742,6 +742,12 @@ let TargetPrefix = "riscv" in {
   defm th_vmaxu : XVBinaryAAX;
   defm th_vmax : XVBinaryAAX;
 
+  // 12.9. Vector Single-Width Integer Multiply Instructions
+  defm th_vmul : XVBinaryAAX;
+  defm th_vmulh : XVBinaryAAX;
+  defm th_vmulhu : XVBinaryAAX;
+  defm th_vmulhsu : XVBinaryAAX;
+
   // 12.10 Vector Integer Divide Instructions
   defm th_vdivu : XVBinaryAAX;
   defm th_vdiv : XVBinaryAAX;
