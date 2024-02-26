@@ -1708,6 +1708,18 @@ multiclass XVPseudoTernaryV_VX_AAXA<LMULInfo m, string Constraint = ""> {
                                         Constraint, Commutable=1>;
 }
 
+multiclass XVPseudoTernaryW_VV<LMULInfo m> {
+  defvar constraint = "@earlyclobber $rd";
+  defm _VV : XVPseudoTernaryNoPolicy<m.wvrclass, m.vrclass, m.vrclass, m,
+                                     constraint>;
+}
+
+multiclass XVPseudoTernaryW_VX<LMULInfo m> {
+  defvar constraint = "@earlyclobber $rd";
+  defm _VX : XVPseudoTernaryNoPolicy<m.wvrclass, GPR, m.vrclass, m,
+                                     constraint>;
+}
+
 multiclass XVPseudoVALU_VV_VX_VI<Operand ImmType = simm5, string Constraint = ""> {
   foreach m = MxListXTHeadV in {
     defvar mx = m.MX;
@@ -2016,6 +2028,36 @@ multiclass XVPseudoVMAC_VV_VX_AAXA<string Constraint = ""> {
     defm "" : XVPseudoTernaryV_VX_AAXA<m, Constraint>,
               Sched<[WriteVIMulAddX_MX, ReadVIMulAddV_MX, ReadVIMulAddV_MX,
                      ReadVIMulAddX_MX, ReadVMask]>;
+  }
+}
+
+multiclass XVPseudoVWMAC_VV_VX {
+  foreach m = MxListWXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVIWMulAddV_MX = !cast<SchedWrite>("WriteVIWMulAddV_" # mx);
+    defvar WriteVIWMulAddX_MX = !cast<SchedWrite>("WriteVIWMulAddX_" # mx);
+    defvar ReadVIWMulAddV_MX = !cast<SchedRead>("ReadVIWMulAddV_" # mx);
+    defvar ReadVIWMulAddX_MX = !cast<SchedRead>("ReadVIWMulAddX_" # mx);
+
+    defm "" : XVPseudoTernaryW_VV<m>,
+              Sched<[WriteVIWMulAddV_MX, ReadVIWMulAddV_MX, ReadVIWMulAddV_MX,
+                     ReadVIWMulAddV_MX, ReadVMask]>;
+    defm "" : XVPseudoTernaryW_VX<m>,
+              Sched<[WriteVIWMulAddX_MX, ReadVIWMulAddV_MX, ReadVIWMulAddV_MX,
+                     ReadVIWMulAddX_MX, ReadVMask]>;
+  }
+}
+
+multiclass XVPseudoVWMAC_VX {
+  foreach m = MxListWXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVIWMulAddX_MX = !cast<SchedWrite>("WriteVIWMulAddX_" # mx);
+    defvar ReadVIWMulAddV_MX= !cast<SchedRead>("ReadVIWMulAddV_" # mx);
+    defvar ReadVIWMulAddX_MX = !cast<SchedRead>("ReadVIWMulAddX_" # mx);
+
+    defm "" : XVPseudoTernaryW_VX<m>,
+              Sched<[WriteVIWMulAddX_MX, ReadVIWMulAddV_MX, ReadVIWMulAddV_MX,
+                     ReadVIWMulAddX_MX, ReadVMask]>;
   }
 }
 
@@ -2410,6 +2452,35 @@ multiclass XVPatTernaryV_VX_AAXA<string intrinsic, string instruction,
                        vti.ScalarRegClass, vti.RegClass>;
 }
 
+multiclass XVPatTernaryW_VV<string intrinsic, string instruction,
+                            list<VTypeInfoToWide> vtilist> {
+  foreach vtiToWti = vtilist in {
+    defvar vti = vtiToWti.Vti;
+    defvar wti = vtiToWti.Wti;
+    let Predicates = !listconcat(GetXVTypePredicates<vti>.Predicates,
+                                 GetXVTypePredicates<wti>.Predicates) in
+    defm : VPatTernary<intrinsic, instruction, "VV",
+                       wti.Vector, vti.Vector, vti.Vector,
+                       vti.Mask, vti.Log2SEW, vti.LMul,
+                       wti.RegClass, vti.RegClass, vti.RegClass>;
+  }
+}
+
+multiclass XVPatTernaryW_VX<string intrinsic, string instruction,
+                            list<VTypeInfoToWide> vtilist> {
+  foreach vtiToWti = vtilist in {
+    defvar vti = vtiToWti.Vti;
+    defvar wti = vtiToWti.Wti;
+    let Predicates = !listconcat(GetXVTypePredicates<vti>.Predicates,
+                                 GetXVTypePredicates<wti>.Predicates) in
+    defm : VPatTernary<intrinsic, instruction,
+                       "V"#vti.ScalarSuffix,
+                       wti.Vector, vti.Scalar, vti.Vector,
+                       vti.Mask, vti.Log2SEW, vti.LMul,
+                       wti.RegClass, vti.ScalarRegClass, vti.RegClass>;
+  }
+}
+
 multiclass XVPatBinaryV_VV_VX_VI<string intrinsic, string instruction,
                                  list<VTypeInfo> vtilist, Operand ImmType = simm5>
     : XVPatBinaryV_VV<intrinsic, instruction, vtilist>,
@@ -2480,6 +2551,11 @@ multiclass XVPatTernaryV_VV_VX_AAXA<string intrinsic, string instruction,
                                list<VTypeInfo> vtilist>
     : XVPatTernaryV_VV_AAXA<intrinsic, instruction, vtilist>,
       XVPatTernaryV_VX_AAXA<intrinsic, instruction, vtilist>;
+
+multiclass XVPatTernaryW_VV_VX<string intrinsic, string instruction,
+                               list<VTypeInfoToWide> vtilist>
+    : XVPatTernaryW_VV<intrinsic, instruction, vtilist>,
+      XVPatTernaryW_VX<intrinsic, instruction, vtilist>;
 
 //===----------------------------------------------------------------------===//
 // 12.1. Vector Single-Width Saturating Add and Subtract
@@ -2773,6 +2849,23 @@ let Predicates = [HasVendorXTHeadV] in {
   defm : XVPatTernaryV_VV_VX_AAXA<"int_riscv_th_vnmsub", "PseudoTH_VNMSUB", AllIntegerXVectors>;
   defm : XVPatTernaryV_VV_VX_AAXA<"int_riscv_th_vmacc", "PseudoTH_VMACC", AllIntegerXVectors>;
   defm : XVPatTernaryV_VV_VX_AAXA<"int_riscv_th_vnmsac", "PseudoTH_VNMSAC", AllIntegerXVectors>;
+} // Predicates = [HasVendorXTHeadV]
+
+//===----------------------------------------------------------------------===//
+// 12.13. Vector Widening Integer Multiply-Add Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VWMACCU  : XVPseudoVWMAC_VV_VX;
+  defm PseudoTH_VWMACC   : XVPseudoVWMAC_VV_VX;
+  defm PseudoTH_VWMACCSU : XVPseudoVWMAC_VV_VX;
+  defm PseudoTH_VWMACCUS : XVPseudoVWMAC_VX;
+} // Predicates = [HasVendorXTHeadV]
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatTernaryW_VV_VX<"int_riscv_th_vwmaccu", "PseudoTH_VWMACCU", AllWidenableIntXVectors>;
+  defm : XVPatTernaryW_VV_VX<"int_riscv_th_vwmacc", "PseudoTH_VWMACC", AllWidenableIntXVectors>;
+  defm : XVPatTernaryW_VV_VX<"int_riscv_th_vwmaccsu", "PseudoTH_VWMACCSU", AllWidenableIntXVectors>;
+  defm : XVPatTernaryW_VX<"int_riscv_th_vwmaccus", "PseudoTH_VWMACCUS", AllWidenableIntXVectors>;
 } // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
