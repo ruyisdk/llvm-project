@@ -104,11 +104,11 @@ static const RISCVSupportedExtension SupportedExtensions[] = {
     {"xtheadmemidx", {1, 0}},
     {"xtheadmempair", {1, 0}},
     {"xtheadsync", {1, 0}},
-    // T-Head vector extension (namely Vector extension 0.7.1) series.
-    {"xtheadv", {0, 7}},
     // T-Head vector extension series: Zvamo
     {"xtheadvamo", {0, 7}},
     {"xtheadvdot", {1, 0}},
+    // T-Head vector extension (namely Vector extension 0.7.1) series.
+    {"xtheadvector", {0, 7}},
     // T-Head vector extension series: Zvediv
     {"xtheadvediv", {0, 7}},
     // T-Head vector extension series: Zvlsseg
@@ -1053,10 +1053,10 @@ Error RISCVISAInfo::checkDependency() {
         errc::invalid_argument,
         "'xtheadvamo' requires 'a' extension to also be specified");
 
-  if (Exts.count("xtheadv") && HasVector)
+  if (Exts.count("xtheadvector") && HasVector)
     return createStringError(
         errc::invalid_argument,
-        "'xtheadv' extension is incompatible with 'v' or 'zve*' extension");
+        "'xtheadvector' extension is incompatible with 'v' or 'zve*' extension");
 
   return Error::success();
 }
