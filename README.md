@@ -46,6 +46,7 @@ Any feature not listed below but present in the specification should be consider
     - (Done) `12.6. Vector Narrowing Integer Right Shift Instructions`
     - (Done) `12.7 Vector Integer Comparison Instructions`
     - (Done) `12.8. Vector Integer Min/Max Instructions`
+    - (Done) `12.9. Vector Single-Width Integer Multiply Instructions`
     - (Done) `12.10. Vector Integer Divide Instructions`
     - (Done) `12.11. Vector Widening Integer Multiply Instructions`
     - (Done) `12.12. Vector Single-Width Integer Multiply-Add Instructions`
