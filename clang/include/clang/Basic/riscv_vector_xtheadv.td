@@ -776,15 +776,24 @@ defm th_vneg_v : RVVPseudoUnaryBuiltin<"th_vrsub", "csil">;
 
 // 12.2. Vector Widening Integer Add/Subtract Operations
 let UnMaskedPolicyScheme = HasPassthruOperand in {
-defm th_vwaddu : RVVUnsignedWidenBinBuiltinSet;
-defm th_vwaddu : RVVUnsignedWidenOp0BinBuiltinSet;
-defm th_vwsubu : RVVUnsignedWidenBinBuiltinSet;
-defm th_vwsubu : RVVUnsignedWidenOp0BinBuiltinSet;
-defm th_vwadd : RVVSignedWidenBinBuiltinSet;
-defm th_vwadd : RVVSignedWidenOp0BinBuiltinSet;
-defm th_vwsub : RVVSignedWidenBinBuiltinSet;
-defm th_vwsub : RVVSignedWidenOp0BinBuiltinSet;
+  defm th_vwaddu : RVVUnsignedWidenBinBuiltinSet;
+  defm th_vwaddu : RVVUnsignedWidenOp0BinBuiltinSet;
+  defm th_vwsubu : RVVUnsignedWidenBinBuiltinSet;
+  defm th_vwsubu : RVVUnsignedWidenOp0BinBuiltinSet;
+  defm th_vwadd : RVVSignedWidenBinBuiltinSet;
+  defm th_vwadd : RVVSignedWidenOp0BinBuiltinSet;
+  defm th_vwsub : RVVSignedWidenBinBuiltinSet;
+  defm th_vwsub : RVVSignedWidenOp0BinBuiltinSet;
 }
 
+// 12.3. Vector Integer Add-with-Carry / Subtract-with-Borrow Operations
+let HasMasked = false, MaskedPolicyScheme = NonePolicy in {
+  let UnMaskedPolicyScheme = HasPassthruOperand in {
+    defm th_vadc : RVVCarryinBuiltinSet;
+    defm th_vsbc : RVVCarryinBuiltinSet;
+  }
+  defm th_vmadc : RVVCarryOutInBuiltinSet<"th_vmadc_carry_in">;
+  defm th_vmsbc : RVVCarryOutInBuiltinSet<"th_vmsbc_borrow_in">;
+}
 
 include "riscv_vector_xtheadv_wrappers.td"
