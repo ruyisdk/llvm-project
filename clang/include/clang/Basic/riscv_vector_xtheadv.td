@@ -49,6 +49,10 @@ multiclass RVVOutOp1BuiltinSet<string intrinsic_name, string type_range,
                                list<list<string>> suffixes_prototypes>
     : RVVBuiltinSet<intrinsic_name, type_range, suffixes_prototypes, [-1, 1]>;
 
+multiclass RVVOp0Op1BuiltinSet<string intrinsic_name, string type_range,
+                               list<list<string>> suffixes_prototypes>
+    : RVVBuiltinSet<intrinsic_name, type_range, suffixes_prototypes, [0, 1]>;
+
 multiclass RVVSignedBinBuiltinSet
     : RVVOutOp1BuiltinSet<NAME, "csil",
                           [["vv", "v", "vvv"],
@@ -119,6 +123,20 @@ defvar EEWList = [["8", "(Log2EEW:3)"],
                   ["16", "(Log2EEW:4)"],
                   ["32", "(Log2EEW:5)"],
                   ["64", "(Log2EEW:6)"]];
+
+multiclass RVVCarryinBuiltinSet
+    : RVVOutOp1BuiltinSet<NAME, "csil",
+                          [["vvm", "v", "vvvm"],
+                           ["vxm", "v", "vvem"],
+                           ["vvm", "Uv", "UvUvUvm"],
+                           ["vxm", "Uv", "UvUvUem"]]>;
+
+multiclass RVVCarryOutInBuiltinSet<string intrinsic_name>
+    : RVVOp0Op1BuiltinSet<intrinsic_name, "csil",
+                          [["vvm", "vm", "mvvm"],
+                           ["vxm", "vm", "mvem"],
+                           ["vvm", "Uvm", "mUvUvm"],
+                           ["vxm", "Uvm", "mUvUem"]]>;
 
 //===----------------------------------------------------------------------===//
 // 6. Configuration-Setting and Utility
@@ -882,15 +900,24 @@ defm th_vneg_v : RVVPseudoUnaryBuiltin<"th_vrsub", "csil">;
 
 // 12.2. Vector Widening Integer Add/Subtract Operations
 let UnMaskedPolicyScheme = HasPassthruOperand in {
-defm th_vwaddu : RVVUnsignedWidenBinBuiltinSet;
-defm th_vwaddu : RVVUnsignedWidenOp0BinBuiltinSet;
-defm th_vwsubu : RVVUnsignedWidenBinBuiltinSet;
-defm th_vwsubu : RVVUnsignedWidenOp0BinBuiltinSet;
-defm th_vwadd : RVVSignedWidenBinBuiltinSet;
-defm th_vwadd : RVVSignedWidenOp0BinBuiltinSet;
-defm th_vwsub : RVVSignedWidenBinBuiltinSet;
-defm th_vwsub : RVVSignedWidenOp0BinBuiltinSet;
+  defm th_vwaddu : RVVUnsignedWidenBinBuiltinSet;
+  defm th_vwaddu : RVVUnsignedWidenOp0BinBuiltinSet;
+  defm th_vwsubu : RVVUnsignedWidenBinBuiltinSet;
+  defm th_vwsubu : RVVUnsignedWidenOp0BinBuiltinSet;
+  defm th_vwadd : RVVSignedWidenBinBuiltinSet;
+  defm th_vwadd : RVVSignedWidenOp0BinBuiltinSet;
+  defm th_vwsub : RVVSignedWidenBinBuiltinSet;
+  defm th_vwsub : RVVSignedWidenOp0BinBuiltinSet;
 }
 
+// 12.3. Vector Integer Add-with-Carry / Subtract-with-Borrow Operations
+let HasMasked = false, MaskedPolicyScheme = NonePolicy in {
+  let UnMaskedPolicyScheme = HasPassthruOperand in {
+    defm th_vadc : RVVCarryinBuiltinSet;
+    defm th_vsbc : RVVCarryinBuiltinSet;
+  }
+  defm th_vmadc : RVVCarryOutInBuiltinSet<"th_vmadc_carry_in">;
+  defm th_vmsbc : RVVCarryOutInBuiltinSet<"th_vmsbc_borrow_in">;
+}
 
 include "riscv_vector_xtheadv_wrappers.td"
