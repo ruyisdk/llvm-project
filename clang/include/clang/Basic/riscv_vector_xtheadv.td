@@ -12,6 +12,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+// TODO: IsMasked always caused "calling function with bad signature" error.
+
 include "riscv_vector_common.td"
 
 class RVVOutBuiltin<string suffix, string prototype, string type_range>
@@ -888,6 +890,45 @@ multiclass RVVPseudoUnaryBuiltin<string ir, string type_range> {
   }
 }
 
+multiclass RVVPseudoVNotBuiltin<string ir, string type_range> {
+  let Name = NAME,
+      IRName = ir,
+      MaskedIRName = ir # "_mask",
+      UnMaskedPolicyScheme = HasPassthruOperand,
+      ManualCodegen = [{
+      {
+        if (IsMasked) {
+          std::rotate(Ops.begin(), Ops.begin() + 1, Ops.end() - 1);
+          if ((PolicyAttrs & RVV_VTA) && (PolicyAttrs & RVV_VMA))
+            Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType));
+        } else {
+          if (PolicyAttrs & RVV_VTA)
+            Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType));
+        }
+        auto ElemTy = cast<llvm::VectorType>(ResultType)->getElementType();
+        Ops.insert(Ops.begin() + 2,
+                   llvm::Constant::getAllOnesValue(ElemTy));
+        if (IsMasked) {
+          // TODO: no policy in LLVM side for masked intrinsics.
+          Ops.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+          // maskedoff, op1, po2, mask, vl, policy
+          IntrinsicTypes = {ResultType,
+                            ElemTy,
+                            Ops[4]->getType()};
+        } else {
+          // passthru, op1, op2, vl
+          IntrinsicTypes = {ResultType,
+                            ElemTy,
+                            Ops[3]->getType()};
+        }
+        break;
+      }
+      }] in {
+        def : RVVBuiltin<"v", "vv", type_range>;
+        def : RVVBuiltin<"Uv", "UvUv", type_range>;
+  }
+}
+
 // 12.1. Vector Single-Width Integer Add and Subtract
 let UnMaskedPolicyScheme = HasPassthruOperand in {
   defm th_vadd : RVVIntBinBuiltinSet;
@@ -919,5 +960,13 @@ let HasMasked = false, MaskedPolicyScheme = NonePolicy in {
   defm th_vmadc : RVVCarryOutInBuiltinSet<"th_vmadc_carry_in">;
   defm th_vmsbc : RVVCarryOutInBuiltinSet<"th_vmsbc_borrow_in">;
 }
+
+// 12.4. Vector Bitwise Logical Instructions
+let UnMaskedPolicyScheme = HasPassthruOperand in {
+  defm th_vand : RVVIntBinBuiltinSet;
+  defm th_vxor : RVVIntBinBuiltinSet;
+  defm th_vor  : RVVIntBinBuiltinSet;
+}
+defm th_vnot_v : RVVPseudoVNotBuiltin<"th_vxor", "csil">;
 
 include "riscv_vector_xtheadv_wrappers.td"
