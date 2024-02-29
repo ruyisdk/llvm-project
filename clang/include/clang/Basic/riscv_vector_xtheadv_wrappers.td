@@ -1495,3 +1495,166 @@ let HeaderCode =
 
 }] in
 def th_bitwise_logical_wrapper_macros: RVVHeader;
+
+let HeaderCode =
+[{
+// Vector Single Width Integer Bit Shift Operations
+#define __riscv_vsll_vv_i8m1(op1_v, shift_v, vl) __riscv_th_vsll_vv_i8m1(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_i8m2(op1_v, shift_v, vl) __riscv_th_vsll_vv_i8m2(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_i8m4(op1_v, shift_v, vl) __riscv_th_vsll_vv_i8m4(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_i8m8(op1_v, shift_v, vl) __riscv_th_vsll_vv_i8m8(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_i16m1(op1_v, shift_v, vl) __riscv_th_vsll_vv_i16m1(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_i16m2(op1_v, shift_v, vl) __riscv_th_vsll_vv_i16m2(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_i16m4(op1_v, shift_v, vl) __riscv_th_vsll_vv_i16m4(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_i16m8(op1_v, shift_v, vl) __riscv_th_vsll_vv_i16m8(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_i32m1(op1_v, shift_v, vl) __riscv_th_vsll_vv_i32m1(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_i32m2(op1_v, shift_v, vl) __riscv_th_vsll_vv_i32m2(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_i32m4(op1_v, shift_v, vl) __riscv_th_vsll_vv_i32m4(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_i32m8(op1_v, shift_v, vl) __riscv_th_vsll_vv_i32m8(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_i64m1(op1_v, shift_v, vl) __riscv_th_vsll_vv_i64m1(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_i64m2(op1_v, shift_v, vl) __riscv_th_vsll_vv_i64m2(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_i64m4(op1_v, shift_v, vl) __riscv_th_vsll_vv_i64m4(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_i64m8(op1_v, shift_v, vl) __riscv_th_vsll_vv_i64m8(op1_v, shift_v, vl)
+
+#define __riscv_vsll_vv_u8m1(op1_v, shift_v, vl) __riscv_th_vsll_vv_u8m1(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_u8m2(op1_v, shift_v, vl) __riscv_th_vsll_vv_u8m2(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_u8m4(op1_v, shift_v, vl) __riscv_th_vsll_vv_u8m4(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_u8m8(op1_v, shift_v, vl) __riscv_th_vsll_vv_u8m8(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_u16m1(op1_v, shift_v, vl) __riscv_th_vsll_vv_u16m1(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_u16m2(op1_v, shift_v, vl) __riscv_th_vsll_vv_u16m2(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_u16m4(op1_v, shift_v, vl) __riscv_th_vsll_vv_u16m4(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_u16m8(op1_v, shift_v, vl) __riscv_th_vsll_vv_u16m8(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_u32m1(op1_v, shift_v, vl) __riscv_th_vsll_vv_u32m1(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_u32m2(op1_v, shift_v, vl) __riscv_th_vsll_vv_u32m2(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_u32m4(op1_v, shift_v, vl) __riscv_th_vsll_vv_u32m4(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_u32m8(op1_v, shift_v, vl) __riscv_th_vsll_vv_u32m8(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_u64m1(op1_v, shift_v, vl) __riscv_th_vsll_vv_u64m1(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_u64m2(op1_v, shift_v, vl) __riscv_th_vsll_vv_u64m2(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_u64m4(op1_v, shift_v, vl) __riscv_th_vsll_vv_u64m4(op1_v, shift_v, vl)
+#define __riscv_vsll_vv_u64m8(op1_v, shift_v, vl) __riscv_th_vsll_vv_u64m8(op1_v, shift_v, vl)
+
+#define __riscv_vsll_vx_i8m1(op1_v, shift_x, vl) __riscv_th_vsll_vx_i8m1(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_i8m2(op1_v, shift_x, vl) __riscv_th_vsll_vx_i8m2(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_i8m4(op1_v, shift_x, vl) __riscv_th_vsll_vx_i8m4(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_i8m8(op1_v, shift_x, vl) __riscv_th_vsll_vx_i8m8(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_i16m1(op1_v, shift_x, vl) __riscv_th_vsll_vx_i16m1(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_i16m2(op1_v, shift_x, vl) __riscv_th_vsll_vx_i16m2(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_i16m4(op1_v, shift_x, vl) __riscv_th_vsll_vx_i16m4(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_i16m8(op1_v, shift_x, vl) __riscv_th_vsll_vx_i16m8(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_i32m1(op1_v, shift_x, vl) __riscv_th_vsll_vx_i32m1(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_i32m2(op1_v, shift_x, vl) __riscv_th_vsll_vx_i32m2(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_i32m4(op1_v, shift_x, vl) __riscv_th_vsll_vx_i32m4(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_i32m8(op1_v, shift_x, vl) __riscv_th_vsll_vx_i32m8(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_i64m1(op1_v, shift_x, vl) __riscv_th_vsll_vx_i64m1(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_i64m2(op1_v, shift_x, vl) __riscv_th_vsll_vx_i64m2(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_i64m4(op1_v, shift_x, vl) __riscv_th_vsll_vx_i64m4(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_i64m8(op1_v, shift_x, vl) __riscv_th_vsll_vx_i64m8(op1_v, shift_x, vl)
+
+#define __riscv_vsll_vx_u8m1(op1_v, shift_x, vl) __riscv_th_vsll_vx_u8m1(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_u8m2(op1_v, shift_x, vl) __riscv_th_vsll_vx_u8m2(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_u8m4(op1_v, shift_x, vl) __riscv_th_vsll_vx_u8m4(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_u8m8(op1_v, shift_x, vl) __riscv_th_vsll_vx_u8m8(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_u16m1(op1_v, shift_x, vl) __riscv_th_vsll_vx_u16m1(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_u16m2(op1_v, shift_x, vl) __riscv_th_vsll_vx_u16m2(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_u16m4(op1_v, shift_x, vl) __riscv_th_vsll_vx_u16m4(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_u16m8(op1_v, shift_x, vl) __riscv_th_vsll_vx_u16m8(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_u32m1(op1_v, shift_x, vl) __riscv_th_vsll_vx_u32m1(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_u32m2(op1_v, shift_x, vl) __riscv_th_vsll_vx_u32m2(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_u32m4(op1_v, shift_x, vl) __riscv_th_vsll_vx_u32m4(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_u32m8(op1_v, shift_x, vl) __riscv_th_vsll_vx_u32m8(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_u64m1(op1_v, shift_x, vl) __riscv_th_vsll_vx_u64m1(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_u64m2(op1_v, shift_x, vl) __riscv_th_vsll_vx_u64m2(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_u64m4(op1_v, shift_x, vl) __riscv_th_vsll_vx_u64m4(op1_v, shift_x, vl)
+#define __riscv_vsll_vx_u64m8(op1_v, shift_x, vl) __riscv_th_vsll_vx_u64m8(op1_v, shift_x, vl)
+
+#define __riscv_vsrl_vv_u8m1(op1_v, shift_v, vl) __riscv_th_vsrl_vv_u8m1(op1_v, shift_v, vl)
+#define __riscv_vsrl_vv_u8m2(op1_v, shift_v, vl) __riscv_th_vsrl_vv_u8m2(op1_v, shift_v, vl)
+#define __riscv_vsrl_vv_u8m4(op1_v, shift_v, vl) __riscv_th_vsrl_vv_u8m4(op1_v, shift_v, vl)
+#define __riscv_vsrl_vv_u8m8(op1_v, shift_v, vl) __riscv_th_vsrl_vv_u8m8(op1_v, shift_v, vl)
+#define __riscv_vsrl_vv_u16m1(op1_v, shift_v, vl) __riscv_th_vsrl_vv_u16m1(op1_v, shift_v, vl)
+#define __riscv_vsrl_vv_u16m2(op1_v, shift_v, vl) __riscv_th_vsrl_vv_u16m2(op1_v, shift_v, vl)
+#define __riscv_vsrl_vv_u16m4(op1_v, shift_v, vl) __riscv_th_vsrl_vv_u16m4(op1_v, shift_v, vl)
+#define __riscv_vsrl_vv_u16m8(op1_v, shift_v, vl) __riscv_th_vsrl_vv_u16m8(op1_v, shift_v, vl)
+#define __riscv_vsrl_vv_u32m1(op1_v, shift_v, vl) __riscv_th_vsrl_vv_u32m1(op1_v, shift_v, vl)
+#define __riscv_vsrl_vv_u32m2(op1_v, shift_v, vl) __riscv_th_vsrl_vv_u32m2(op1_v, shift_v, vl)
+#define __riscv_vsrl_vv_u32m4(op1_v, shift_v, vl) __riscv_th_vsrl_vv_u32m4(op1_v, shift_v, vl)
+#define __riscv_vsrl_vv_u32m8(op1_v, shift_v, vl) __riscv_th_vsrl_vv_u32m8(op1_v, shift_v, vl)
+#define __riscv_vsrl_vv_u64m1(op1_v, shift_v, vl) __riscv_th_vsrl_vv_u64m1(op1_v, shift_v, vl)
+#define __riscv_vsrl_vv_u64m2(op1_v, shift_v, vl) __riscv_th_vsrl_vv_u64m2(op1_v, shift_v, vl)
+#define __riscv_vsrl_vv_u64m4(op1_v, shift_v, vl) __riscv_th_vsrl_vv_u64m4(op1_v, shift_v, vl)
+#define __riscv_vsrl_vv_u64m8(op1_v, shift_v, vl) __riscv_th_vsrl_vv_u64m8(op1_v, shift_v, vl)
+
+#define __riscv_vsrl_vx_u8m1(op1_v, shift_x, vl) __riscv_th_vsrl_vx_u8m1(op1_v, shift_x, vl)
+#define __riscv_vsrl_vx_u8m2(op1_v, shift_x, vl) __riscv_th_vsrl_vx_u8m2(op1_v, shift_x, vl)
+#define __riscv_vsrl_vx_u8m4(op1_v, shift_x, vl) __riscv_th_vsrl_vx_u8m4(op1_v, shift_x, vl)
+#define __riscv_vsrl_vx_u8m8(op1_v, shift_x, vl) __riscv_th_vsrl_vx_u8m8(op1_v, shift_x, vl)
+#define __riscv_vsrl_vx_u16m1(op1_v, shift_x, vl) __riscv_th_vsrl_vx_u16m1(op1_v, shift_x, vl)
+#define __riscv_vsrl_vx_u16m2(op1_v, shift_x, vl) __riscv_th_vsrl_vx_u16m2(op1_v, shift_x, vl)
+#define __riscv_vsrl_vx_u16m4(op1_v, shift_x, vl) __riscv_th_vsrl_vx_u16m4(op1_v, shift_x, vl)
+#define __riscv_vsrl_vx_u16m8(op1_v, shift_x, vl) __riscv_th_vsrl_vx_u16m8(op1_v, shift_x, vl)
+#define __riscv_vsrl_vx_u32m1(op1_v, shift_x, vl) __riscv_th_vsrl_vx_u32m1(op1_v, shift_x, vl)
+#define __riscv_vsrl_vx_u32m2(op1_v, shift_x, vl) __riscv_th_vsrl_vx_u32m2(op1_v, shift_x, vl)
+#define __riscv_vsrl_vx_u32m4(op1_v, shift_x, vl) __riscv_th_vsrl_vx_u32m4(op1_v, shift_x, vl)
+#define __riscv_vsrl_vx_u32m8(op1_v, shift_x, vl) __riscv_th_vsrl_vx_u32m8(op1_v, shift_x, vl)
+#define __riscv_vsrl_vx_u64m1(op1_v, shift_x, vl) __riscv_th_vsrl_vx_u64m1(op1_v, shift_x, vl)
+#define __riscv_vsrl_vx_u64m2(op1_v, shift_x, vl) __riscv_th_vsrl_vx_u64m2(op1_v, shift_x, vl)
+#define __riscv_vsrl_vx_u64m4(op1_v, shift_x, vl) __riscv_th_vsrl_vx_u64m4(op1_v, shift_x, vl)
+#define __riscv_vsrl_vx_u64m8(op1_v, shift_x, vl) __riscv_th_vsrl_vx_u64m8(op1_v, shift_x, vl)
+
+#define __riscv_vsra_vv_i8m1(op1_v, shift_v, vl) __riscv_th_vsra_vv_i8m1(op1_v, shift_v, vl)
+#define __riscv_vsra_vv_i8m2(op1_v, shift_v, vl) __riscv_th_vsra_vv_i8m2(op1_v, shift_v, vl)
+#define __riscv_vsra_vv_i8m4(op1_v, shift_v, vl) __riscv_th_vsra_vv_i8m4(op1_v, shift_v, vl)
+#define __riscv_vsra_vv_i8m8(op1_v, shift_v, vl) __riscv_th_vsra_vv_i8m8(op1_v, shift_v, vl)
+#define __riscv_vsra_vv_i16m1(op1_v, shift_v, vl) __riscv_th_vsra_vv_i16m1(op1_v, shift_v, vl)
+#define __riscv_vsra_vv_i16m2(op1_v, shift_v, vl) __riscv_th_vsra_vv_i16m2(op1_v, shift_v, vl)
+#define __riscv_vsra_vv_i16m4(op1_v, shift_v, vl) __riscv_th_vsra_vv_i16m4(op1_v, shift_v, vl)
+#define __riscv_vsra_vv_i16m8(op1_v, shift_v, vl) __riscv_th_vsra_vv_i16m8(op1_v, shift_v, vl)
+#define __riscv_vsra_vv_i32m1(op1_v, shift_v, vl) __riscv_th_vsra_vv_i32m1(op1_v, shift_v, vl)
+#define __riscv_vsra_vv_i32m2(op1_v, shift_v, vl) __riscv_th_vsra_vv_i32m2(op1_v, shift_v, vl)
+#define __riscv_vsra_vv_i32m4(op1_v, shift_v, vl) __riscv_th_vsra_vv_i32m4(op1_v, shift_v, vl)
+#define __riscv_vsra_vv_i32m8(op1_v, shift_v, vl) __riscv_th_vsra_vv_i32m8(op1_v, shift_v, vl)
+#define __riscv_vsra_vv_i64m1(op1_v, shift_v, vl) __riscv_th_vsra_vv_i64m1(op1_v, shift_v, vl)
+#define __riscv_vsra_vv_i64m2(op1_v, shift_v, vl) __riscv_th_vsra_vv_i64m2(op1_v, shift_v, vl)
+#define __riscv_vsra_vv_i64m4(op1_v, shift_v, vl) __riscv_th_vsra_vv_i64m4(op1_v, shift_v, vl)
+#define __riscv_vsra_vv_i64m8(op1_v, shift_v, vl) __riscv_th_vsra_vv_i64m8(op1_v, shift_v, vl)
+
+#define __riscv_vsra_vx_i8m1(op1_v, shift_x, vl) __riscv_th_vsra_vx_i8m1(op1_v, shift_x, vl)
+#define __riscv_vsra_vx_i8m2(op1_v, shift_x, vl) __riscv_th_vsra_vx_i8m2(op1_v, shift_x, vl)
+#define __riscv_vsra_vx_i8m4(op1_v, shift_x, vl) __riscv_th_vsra_vx_i8m4(op1_v, shift_x, vl)
+#define __riscv_vsra_vx_i8m8(op1_v, shift_x, vl) __riscv_th_vsra_vx_i8m8(op1_v, shift_x, vl)
+#define __riscv_vsra_vx_i16m1(op1_v, shift_x, vl) __riscv_th_vsra_vx_i16m1(op1_v, shift_x, vl)
+#define __riscv_vsra_vx_i16m2(op1_v, shift_x, vl) __riscv_th_vsra_vx_i16m2(op1_v, shift_x, vl)
+#define __riscv_vsra_vx_i16m4(op1_v, shift_x, vl) __riscv_th_vsra_vx_i16m4(op1_v, shift_x, vl)
+#define __riscv_vsra_vx_i16m8(op1_v, shift_x, vl) __riscv_th_vsra_vx_i16m8(op1_v, shift_x, vl)
+#define __riscv_vsra_vx_i32m1(op1_v, shift_x, vl) __riscv_th_vsra_vx_i32m1(op1_v, shift_x, vl)
+#define __riscv_vsra_vx_i32m2(op1_v, shift_x, vl) __riscv_th_vsra_vx_i32m2(op1_v, shift_x, vl)
+#define __riscv_vsra_vx_i32m4(op1_v, shift_x, vl) __riscv_th_vsra_vx_i32m4(op1_v, shift_x, vl)
+#define __riscv_vsra_vx_i32m8(op1_v, shift_x, vl) __riscv_th_vsra_vx_i32m8(op1_v, shift_x, vl)
+#define __riscv_vsra_vx_i64m1(op1_v, shift_x, vl) __riscv_th_vsra_vx_i64m1(op1_v, shift_x, vl)
+#define __riscv_vsra_vx_i64m2(op1_v, shift_x, vl) __riscv_th_vsra_vx_i64m2(op1_v, shift_x, vl)
+#define __riscv_vsra_vx_i64m4(op1_v, shift_x, vl) __riscv_th_vsra_vx_i64m4(op1_v, shift_x, vl)
+#define __riscv_vsra_vx_i64m8(op1_v, shift_x, vl) __riscv_th_vsra_vx_i64m8(op1_v, shift_x, vl)
+
+}] in
+def th_single_width_integer_bit_shift_wrapper_macros: RVVHeader;
+
+// 12.6. Vector Narrowing Integer Right Shift Operations
+
+// 12.7. Vector Integer Comparison Operations
+
+// 12.8. Vector Integer Min/Max Operations
+
+// 12.9. Vector Single-Width Integer Multiply Operations
+
+// 12.10. Vector Integer Divide Operations
+
+// 12.11. Vector Widening Integer Multiply Operations
+
+// 12.12. Vector Single-Width Integer Multiply-Add Operations
+
+// 12.13. Vector Widening Integer Multiply-Add Operations
+
+// 12.14. Vector Integer Merge Operations
+
+// 12.15. Vector Integer Move Operations
+
