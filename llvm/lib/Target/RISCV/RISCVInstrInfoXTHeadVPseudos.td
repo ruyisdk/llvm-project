@@ -2907,6 +2907,30 @@ let Predicates = [HasVendorXTHeadV] in {
 //===----------------------------------------------------------------------===//
 // 12.14. Vector Integer Merge and Move Instructions
 //===----------------------------------------------------------------------===//
+multiclass XVPseudoVMRG_VM_XM_IM {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVIMergeV_MX = !cast<SchedWrite>("WriteVIMergeV_" # mx);
+    defvar WriteVIMergeX_MX = !cast<SchedWrite>("WriteVIMergeX_" # mx);
+    defvar WriteVIMergeI_MX = !cast<SchedWrite>("WriteVIMergeI_" # mx);
+    defvar ReadVIMergeV_MX = !cast<SchedRead>("ReadVIMergeV_" # mx);
+    defvar ReadVIMergeX_MX = !cast<SchedRead>("ReadVIMergeX_" # mx);
+
+    def "_VVM" # "_" # m.MX:
+      VPseudoTiedBinaryCarryIn<GetVRegNoV0<m.vrclass>.R,
+                               m.vrclass, m.vrclass, m, 1, "">,
+      Sched<[WriteVIMergeV_MX, ReadVIMergeV_MX, ReadVIMergeV_MX, ReadVMask]>;
+    def "_VXM" # "_" # m.MX:
+      VPseudoTiedBinaryCarryIn<GetVRegNoV0<m.vrclass>.R,
+                               m.vrclass, GPR, m, 1, "">,
+      Sched<[WriteVIMergeX_MX, ReadVIMergeV_MX, ReadVIMergeX_MX, ReadVMask]>;
+    def "_VIM" # "_" # m.MX:
+      VPseudoTiedBinaryCarryIn<GetVRegNoV0<m.vrclass>.R,
+                               m.vrclass, simm5, m, 1, "">,
+      Sched<[WriteVIMergeI_MX, ReadVIMergeV_MX, ReadVMask]>;
+  }
+}
+
 multiclass XVPseudoUnaryVMV_V_X_I {
   foreach m = MxListXTHeadV in {
     let VLMul = m.value in {
@@ -2930,22 +2954,23 @@ multiclass XVPseudoUnaryVMV_V_X_I {
 }
 
 let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VMERGE : XVPseudoVMRG_VM_XM_IM;
   defm PseudoTH_VMV_V : XVPseudoUnaryVMV_V_X_I;
 } // Predicates = [HasVendorXTHeadV]
 
-// Patterns for `int_riscv_vmv_v_v` -> `PseudoTH_VMV_V_V_<LMUL>`
-foreach vti = AllXVectors in {
-  let Predicates = GetXVTypePredicates<vti>.Predicates in {
-    // vmv.v.v
-    def : Pat<(vti.Vector (int_riscv_th_vmv_v_v (vti.Vector vti.RegClass:$passthru),
-                                                (vti.Vector vti.RegClass:$rs1),
-                                                 VLOpFrag)),
-              (!cast<Instruction>("PseudoTH_VMV_V_V_"#vti.LMul.MX)
-               $passthru, $rs1, GPR:$vl, vti.Log2SEW, TU_MU)>;
-
-    // TODO: vmv.v.x, vmv.v.i
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryV_VM_XM_IM<"int_riscv_th_vmerge", "PseudoTH_VMERGE">;
+  // Define patterns for vmerge intrinsics with float-point arguments.
+  foreach vti = AllFloatXVectors in {
+    let Predicates = GetXVTypePredicates<vti>.Predicates in {
+      defm : VPatBinaryCarryInTAIL<"int_riscv_th_vmerge", "PseudoTH_VMERGE", "VVM",
+                                    vti.Vector,
+                                    vti.Vector, vti.Vector, vti.Mask,
+                                    vti.Log2SEW, vti.LMul, vti.RegClass,
+                                    vti.RegClass, vti.RegClass>;
+    }
   }
-}
+} // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
 // 12.14. Vector Integer Merge and Move Instructions
