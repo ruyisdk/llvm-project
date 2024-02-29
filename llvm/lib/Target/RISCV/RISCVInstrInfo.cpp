@@ -479,7 +479,8 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
         const MCInstrDesc &Desc = DefMBBI->getDesc();
         MIB.add(DefMBBI->getOperand(RISCVII::getVLOpNum(Desc))); // AVL
         MIB.add(DefMBBI->getOperand(RISCVII::getSEWOpNum(Desc))); // SEW
-        MIB.addImm(0); // tu, mu
+        if (!XTHeadV)
+          MIB.addImm(0); // tu, mu
         MIB.addReg(RISCV::VL, RegState::Implicit);
         MIB.addReg(RISCV::VTYPE, RegState::Implicit);
       }
@@ -513,7 +514,8 @@ void RISCVInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
           const MCInstrDesc &Desc = DefMBBI->getDesc();
           MIB.add(DefMBBI->getOperand(RISCVII::getVLOpNum(Desc))); // AVL
           MIB.add(DefMBBI->getOperand(RISCVII::getSEWOpNum(Desc))); // SEW
-          MIB.addImm(0);  // tu, mu
+          if (!XTHeadV)
+            MIB.addImm(0);  // tu, mu
           MIB.addReg(RISCV::VL, RegState::Implicit);
           MIB.addReg(RISCV::VTYPE, RegState::Implicit);
         }
