@@ -1000,4 +1000,24 @@ let UnMaskedPolicyScheme = HasPassthruOperand in {
   defm th_vsra : RVVSignedShiftBuiltinSet;
 }
 
+// 12.6. Vector Narrowing Integer Right Shift Operations
+
+// 12.7. Vector Integer Comparison Operations
+
+// 12.8. Vector Integer Min/Max Operations
+
+// 12.9. Vector Single-Width Integer Multiply Operations
+
+// 12.10. Vector Integer Divide Operations
+
+// 12.11. Vector Widening Integer Multiply Operations
+
+// 12.12. Vector Single-Width Integer Multiply-Add Operations
+
+// 12.13. Vector Widening Integer Multiply-Add Operations
+
+// 12.14. Vector Integer Merge Operations
+
+// 12.15. Vector Integer Move Operations
+
 include "riscv_vector_xtheadv_wrappers.td"
