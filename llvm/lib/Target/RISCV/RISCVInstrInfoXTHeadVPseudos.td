@@ -1601,6 +1601,19 @@ class XVPseudoBinaryMaskNoPolicy<VReg RetClass,
   let HasSEWOp = 1;
 }
 
+class XVPseudoUnaryNoMask<DAGOperand RetClass, DAGOperand OpClass,
+                          string Constraint = ""> :
+      Pseudo<(outs RetClass:$rd),
+        (ins RetClass:$merge, OpClass:$rs2, AVL:$vl, ixlenimm:$sew), []>,
+        RISCVVPseudo {
+  let mayLoad = 0;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let Constraints = !interleave([Constraint, "$rd = $merge"], ",");
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+}
+
 multiclass XVPseudoBinary<VReg RetClass,
                           VReg Op1Class,
                           DAGOperand Op2Class,
@@ -2942,11 +2955,11 @@ multiclass XVPseudoUnaryVMV_V_X_I {
       defvar ReadVIMovX_MX = !cast<SchedRead>("ReadVIMovX_" # mx);
 
       let VLMul = m.value in {
-        def "_V_" # mx : VPseudoUnaryNoMask<m.vrclass, m.vrclass>,
+        def "_V_" # mx : XVPseudoUnaryNoMask<m.vrclass, m.vrclass>,
                            Sched<[WriteVIMovV_MX, ReadVIMovV_MX]>;
-        def "_X_" # mx : VPseudoUnaryNoMask<m.vrclass, GPR>,
+        def "_X_" # mx : XVPseudoUnaryNoMask<m.vrclass, GPR>,
                            Sched<[WriteVIMovX_MX, ReadVIMovX_MX]>;
-        def "_I_" # mx : VPseudoUnaryNoMask<m.vrclass, simm5>,
+        def "_I_" # mx : XVPseudoUnaryNoMask<m.vrclass, simm5>,
                            Sched<[WriteVIMovI_MX]>;
       }
     }
@@ -2968,6 +2981,20 @@ let Predicates = [HasVendorXTHeadV] in {
                                     vti.Vector, vti.Vector, vti.Mask,
                                     vti.Log2SEW, vti.LMul, vti.RegClass,
                                     vti.RegClass, vti.RegClass>;
+    }
+  }
+
+  // Patterns for `int_riscv_vmv_v_v` -> `PseudoTH_VMV_V_V_<LMUL>`
+  foreach vti = AllXVectors in {
+    let Predicates = GetXVTypePredicates<vti>.Predicates in {
+      // vmv.v.v
+      def : Pat<(vti.Vector (int_riscv_th_vmv_v_v (vti.Vector vti.RegClass:$passthru),
+                                                  (vti.Vector vti.RegClass:$rs1),
+                                                  VLOpFrag)),
+                (!cast<Instruction>("PseudoTH_VMV_V_V_"#vti.LMul.MX)
+               $passthru, $rs1, GPR:$vl, vti.Log2SEW)>;
+      // Patterns for vmv.v.x and vmv.v.i are defined
+      // in RISCVInstrInfoXTHeadVVLPatterns.td
     }
   }
 } // Predicates = [HasVendorXTHeadV]
@@ -2992,3 +3019,5 @@ let Predicates = [HasVendorXTHeadV] in {
     def PseudoTH_VMV8R_V : XVPseudoWholeMove<TH_VMV_V_V, V_M8, VRM8>;
   }
 } // Predicates = [HasVendorXTHeadV]
+
+include "RISCVInstrInfoXTHeadVVLPatterns.td"
