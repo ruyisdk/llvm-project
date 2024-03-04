@@ -770,10 +770,10 @@ let TargetPrefix = "riscv" in {
   defm th_vwmacc   : XVTernaryWide;
   defm th_vwmaccus : XVTernaryWide;
   defm th_vwmaccsu : XVTernaryWide;
-} // TargetPrefix = "riscv"
 
-let TargetPrefix = "riscv" in {
   // 12.14. Vector Integer Merge and Move Instructions
+  defm th_vmerge : RISCVBinaryWithV0;
+
   // Output: (vector)
   // Input: (passthru, vector_in, vl)
   def int_riscv_th_vmv_v_v : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
@@ -781,6 +781,16 @@ let TargetPrefix = "riscv" in {
                                                     LLVMMatchType<0>,
                                                     llvm_anyint_ty],
                                                    [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 2;
+  }
+  // Output: (vector)
+  // Input: (passthru, scalar, vl)
+  def int_riscv_th_vmv_v_x : DefaultAttrsIntrinsic<[llvm_anyint_ty],
+                                                   [LLVMMatchType<0>,
+                                                    LLVMVectorElementType<0>,
+                                                    llvm_anyint_ty],
+                                                   [IntrNoMem]>, RISCVVIntrinsic {
+    let ScalarOperand = 1;
     let VLOperand = 2;
   }
 } // TargetPrefix = "riscv"
