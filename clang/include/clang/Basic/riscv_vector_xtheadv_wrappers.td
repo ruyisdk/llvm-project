@@ -1640,6 +1640,52 @@ def th_single_width_integer_bit_shift_wrapper_macros: RVVHeader;
 
 // 12.6. Vector Narrowing Integer Right Shift Operations
 
+let HeaderCode =
+[{
+// Vector Narrowing Integer Right Shift Operations
+#define __riscv_vnsrl_wv_u8m1(op1_v, shift_v, vl) __riscv_th_vnsrl_wv_u8m1(op1_v, shift_v, vl)
+#define __riscv_vnsrl_wv_u8m2(op1_v, shift_v, vl) __riscv_th_vnsrl_wv_u8m2(op1_v, shift_v, vl)
+#define __riscv_vnsrl_wv_u8m4(op1_v, shift_v, vl) __riscv_th_vnsrl_wv_u8m4(op1_v, shift_v, vl)
+#define __riscv_vnsrl_wv_u16m1(op1_v, shift_v, vl) __riscv_th_vnsrl_wv_u16m1(op1_v, shift_v, vl)
+#define __riscv_vnsrl_wv_u16m2(op1_v, shift_v, vl) __riscv_th_vnsrl_wv_u16m2(op1_v, shift_v, vl)
+#define __riscv_vnsrl_wv_u16m4(op1_v, shift_v, vl) __riscv_th_vnsrl_wv_u16m4(op1_v, shift_v, vl)
+#define __riscv_vnsrl_wv_u32m1(op1_v, shift_v, vl) __riscv_th_vnsrl_wv_u32m1(op1_v, shift_v, vl)
+#define __riscv_vnsrl_wv_u32m2(op1_v, shift_v, vl) __riscv_th_vnsrl_wv_u32m2(op1_v, shift_v, vl)
+#define __riscv_vnsrl_wv_u32m4(op1_v, shift_v, vl) __riscv_th_vnsrl_wv_u32m4(op1_v, shift_v, vl)
+
+#define __riscv_vnsrl_wx_u8m1(op1_v, shift_x, vl) __riscv_th_vnsrl_wx_u8m1(op1_v, shift_x, vl)
+#define __riscv_vnsrl_wx_u8m2(op1_v, shift_x, vl) __riscv_th_vnsrl_wx_u8m2(op1_v, shift_x, vl)
+#define __riscv_vnsrl_wx_u8m4(op1_v, shift_x, vl) __riscv_th_vnsrl_wx_u8m4(op1_v, shift_x, vl)
+#define __riscv_vnsrl_wx_u16m1(op1_v, shift_x, vl) __riscv_th_vnsrl_wx_u16m1(op1_v, shift_x, vl)
+#define __riscv_vnsrl_wx_u16m2(op1_v, shift_x, vl) __riscv_th_vnsrl_wx_u16m2(op1_v, shift_x, vl)
+#define __riscv_vnsrl_wx_u16m4(op1_v, shift_x, vl) __riscv_th_vnsrl_wx_u16m4(op1_v, shift_x, vl)
+#define __riscv_vnsrl_wx_u32m1(op1_v, shift_x, vl) __riscv_th_vnsrl_wx_u32m1(op1_v, shift_x, vl)
+#define __riscv_vnsrl_wx_u32m2(op1_v, shift_x, vl) __riscv_th_vnsrl_wx_u32m2(op1_v, shift_x, vl)
+#define __riscv_vnsrl_wx_u32m4(op1_v, shift_x, vl) __riscv_th_vnsrl_wx_u32m4(op1_v, shift_x, vl)
+
+#define __riscv_vnsra_wv_i8m1(op1_v, shift_v, vl) __riscv_th_vnsra_wv_i8m1(op1_v, shift_v, vl)
+#define __riscv_vnsra_wv_i8m2(op1_v, shift_v, vl) __riscv_th_vnsra_wv_i8m2(op1_v, shift_v, vl)
+#define __riscv_vnsra_wv_i8m4(op1_v, shift_v, vl) __riscv_th_vnsra_wv_i8m4(op1_v, shift_v, vl)
+#define __riscv_vnsra_wv_i16m1(op1_v, shift_v, vl) __riscv_th_vnsra_wv_i16m1(op1_v, shift_v, vl)
+#define __riscv_vnsra_wv_i16m2(op1_v, shift_v, vl) __riscv_th_vnsra_wv_i16m2(op1_v, shift_v, vl)
+#define __riscv_vnsra_wv_i16m4(op1_v, shift_v, vl) __riscv_th_vnsra_wv_i16m4(op1_v, shift_v, vl)
+#define __riscv_vnsra_wv_i32m1(op1_v, shift_v, vl) __riscv_th_vnsra_wv_i32m1(op1_v, shift_v, vl)
+#define __riscv_vnsra_wv_i32m2(op1_v, shift_v, vl) __riscv_th_vnsra_wv_i32m2(op1_v, shift_v, vl)
+#define __riscv_vnsra_wv_i32m4(op1_v, shift_v, vl) __riscv_th_vnsra_wv_i32m4(op1_v, shift_v, vl)
+
+#define __riscv_vnsra_wx_i8m1(op1_v, shift_x, vl) __riscv_th_vnsra_wx_i8m1(op1_v, shift_x, vl)
+#define __riscv_vnsra_wx_i8m2(op1_v, shift_x, vl) __riscv_th_vnsra_wx_i8m2(op1_v, shift_x, vl)
+#define __riscv_vnsra_wx_i8m4(op1_v, shift_x, vl) __riscv_th_vnsra_wx_i8m4(op1_v, shift_x, vl)
+#define __riscv_vnsra_wx_i16m1(op1_v, shift_x, vl) __riscv_th_vnsra_wx_i16m1(op1_v, shift_x, vl)
+#define __riscv_vnsra_wx_i16m2(op1_v, shift_x, vl) __riscv_th_vnsra_wx_i16m2(op1_v, shift_x, vl)
+#define __riscv_vnsra_wx_i16m4(op1_v, shift_x, vl) __riscv_th_vnsra_wx_i16m4(op1_v, shift_x, vl)
+#define __riscv_vnsra_wx_i32m1(op1_v, shift_x, vl) __riscv_th_vnsra_wx_i32m1(op1_v, shift_x, vl)
+#define __riscv_vnsra_wx_i32m2(op1_v, shift_x, vl) __riscv_th_vnsra_wx_i32m2(op1_v, shift_x, vl)
+#define __riscv_vnsra_wx_i32m4(op1_v, shift_x, vl) __riscv_th_vnsra_wx_i32m4(op1_v, shift_x, vl)
+
+}] in
+def th_narrowing_integer_right_shift_wrapper_macros: RVVHeader;
+
 // 12.7. Vector Integer Comparison Operations
 
 // 12.8. Vector Integer Min/Max Operations
