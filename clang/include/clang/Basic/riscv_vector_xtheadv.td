@@ -860,6 +860,10 @@ let UnMaskedPolicyScheme = HasPassthruOperand in {
 }
 
 // 12.6. Vector Narrowing Integer Right Shift Operations
+let UnMaskedPolicyScheme = HasPassthruOperand in {
+  defm th_vnsrl : RVVUnsignedNShiftBuiltinSet;
+  defm th_vnsra : RVVSignedNShiftBuiltinSet;
+}
 
 // 12.7. Vector Integer Comparison Operations
 
