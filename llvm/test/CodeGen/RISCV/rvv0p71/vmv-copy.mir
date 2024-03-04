@@ -39,7 +39,7 @@ body:             |
     ; CHECK-NEXT: {{  $}}
     ; CHECK-NEXT: $x0 = PseudoTH_VSETVLI $x14, 10, implicit-def $vl, implicit-def $vtype
     ; CHECK-NEXT: $v28m4 = PseudoTH_VLW_V_E32_M4 undef $v28m4, killed $x16, $noreg, 5 /* e32 */, implicit $vl, implicit $vtype, implicit $vl, implicit $vtype
-    ; CHECK-NEXT: $v12m4 = PseudoTH_VMV_V_V_M4 undef $v12m4, $v28m4, $noreg, 5 /* e32 */, 0 /* tu, mu */, implicit $vl, implicit $vtype
+    ; CHECK-NEXT: $v12m4 = PseudoTH_VMV_V_V_M4 undef $v12m4, $v28m4, $noreg, 5 /* e32 */, implicit $vl, implicit $vtype
     $x15 = PseudoTH_VSETVLI $x14, 10, implicit-def $vl, implicit-def $vtype
     $v28m4 = PseudoTH_VLW_V_E32_M4 undef $v28m4, killed $x16, $noreg, 5, implicit $vl, implicit $vtype
     $v12m4 = COPY $v28m4
@@ -54,10 +54,10 @@ body:             |
     ; CHECK: liveins: $x14
     ; CHECK-NEXT: {{  $}}
     ; CHECK-NEXT: $x0 = PseudoTH_VSETVLI $x14, 10, implicit-def $vl, implicit-def $vtype
-    ; CHECK-NEXT: $v28m4 = PseudoTH_VMV_V_I_M4 undef $v28m4, 0, $noreg, 5 /* e32 */, 0 /* tu, mu */, implicit $vl, implicit $vtype, implicit $vl, implicit $vtype
-    ; CHECK-NEXT: $v12m4 = PseudoTH_VMV_V_I_M4 undef $v12m4, 0, $noreg, 5 /* e32 */, 0 /* tu, mu */, implicit $vl, implicit $vtype
+    ; CHECK-NEXT: $v28m4 = PseudoTH_VMV_V_I_M4 undef $v28m4, 0, $noreg, 5 /* e32 */, implicit $vl, implicit $vtype, implicit $vl, implicit $vtype
+    ; CHECK-NEXT: $v12m4 = PseudoTH_VMV_V_I_M4 undef $v12m4, 0, $noreg, 5 /* e32 */, implicit $vl, implicit $vtype
     $x15 = PseudoTH_VSETVLI $x14, 10, implicit-def $vl, implicit-def $vtype
-    $v28m4 = PseudoTH_VMV_V_I_M4 undef $v28m4, 0, $noreg, 5, 0, implicit $vl, implicit $vtype
+    $v28m4 = PseudoTH_VMV_V_I_M4 undef $v28m4, 0, $noreg, 5, implicit $vl, implicit $vtype
     $v12m4 = COPY $v28m4
 ...
 ---
@@ -93,7 +93,7 @@ body:             |
     ; CHECK: liveins: $x14, $x16
     ; CHECK-NEXT: {{  $}}
     ; CHECK-NEXT: $x0 = PseudoTH_VSETVLI $x14, 10, implicit-def $vl, implicit-def $vtype
-    ; CHECK-NEXT: $v28m4 = PseudoTH_VMV_V_I_M4 undef $v28m4, 0, $noreg, 5 /* e32 */, 0 /* tu, mu */, implicit $vl, implicit $vtype, implicit $vl, implicit $vtype
+    ; CHECK-NEXT: $v28m4 = PseudoTH_VMV_V_I_M4 undef $v28m4, 0, $noreg, 5 /* e32 */, implicit $vl, implicit $vtype, implicit $vl, implicit $vtype
     ; CHECK-NEXT: $v4m4, $x0 = PseudoTH_VLEFF_V_E32_M4 undef $v4m4, $x16, $noreg, 5 /* e32 */, implicit-def $vl, implicit $vl, implicit $vtype
     ; CHECK-NEXT: [[CSRRS:%[0-9]+]]:gpr = CSRRS 3104, $x0
     ; CHECK-NEXT: [[CSRRS1:%[0-9]+]]:gpr = CSRRS 3105, $x0
@@ -104,7 +104,7 @@ body:             |
     ; CHECK-NEXT: $v15 = TH_VMV_V_V $v31, implicit $vtype, implicit $vl
     ; CHECK-NEXT: dead $x0 = TH_VSETVL killed [[CSRRS]], killed [[CSRRS1]], implicit-def $vtype, implicit-def $vl
     $x15 = PseudoTH_VSETVLI $x14, 10, implicit-def $vl, implicit-def $vtype
-    $v28m4 = PseudoTH_VMV_V_I_M4 undef $v28m4, 0, $noreg, 5, 0, implicit $vl, implicit $vtype
+    $v28m4 = PseudoTH_VMV_V_I_M4 undef $v28m4, 0, $noreg, 5, implicit $vl, implicit $vtype
     $v4m4,$x0 = PseudoTH_VLEFF_V_E32_M4 undef $v4m4, $x16, $noreg, 5, implicit-def $vl
     $v12m4 = COPY $v28m4
 ...
@@ -164,8 +164,8 @@ body:             |
     ; CHECK-NEXT: {{  $}}
     ; CHECK-NEXT: $x0 = PseudoTH_VSETVLI $x14, 8, implicit-def $vl, implicit-def $vtype
     ; CHECK-NEXT: $v8_v9 = PseudoTH_VLSEG2E_V_E32_M1 undef $v8_v9, killed $x16, $noreg, 5 /* e32 */, implicit $vl, implicit $vtype, implicit $vl, implicit $vtype
-    ; CHECK-NEXT: $v10 = PseudoTH_VMV_V_V_M1 undef $v10, $v8, $noreg, 5 /* e32 */, 0 /* tu, mu */, implicit $vl, implicit $vtype
-    ; CHECK-NEXT: $v11 = PseudoTH_VMV_V_V_M1 undef $v11, $v9, $noreg, 5 /* e32 */, 0 /* tu, mu */, implicit $vl, implicit $vtype
+    ; CHECK-NEXT: $v10 = PseudoTH_VMV_V_V_M1 undef $v10, $v8, $noreg, 5 /* e32 */, implicit $vl, implicit $vtype
+    ; CHECK-NEXT: $v11 = PseudoTH_VMV_V_V_M1 undef $v11, $v9, $noreg, 5 /* e32 */, implicit $vl, implicit $vtype
     $x15 = PseudoTH_VSETVLI $x14, 8, implicit-def $vl, implicit-def $vtype
     $v8_v9 = PseudoTH_VLSEG2E_V_E32_M1 undef $v8_v9, killed $x16, $noreg, 5, implicit $vl, implicit $vtype
     $v10_v11 = COPY $v8_v9
