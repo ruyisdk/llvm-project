@@ -151,6 +151,7 @@ enum NodeType : unsigned {
   // for the VL value to be used for the operation. The first operand is
   // passthru operand.
   VMV_V_X_VL,
+  TH_VMV_V_X_VL,
   // VFMV_V_F_VL matches the semantics of vfmv.v.f but includes an extra operand
   // for the VL value to be used for the operation. The first operand is
   // passthru operand.

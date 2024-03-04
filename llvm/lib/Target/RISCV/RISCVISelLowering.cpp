@@ -3554,7 +3554,7 @@ static SDValue lowerBUILD_VECTOR(SDValue Op, SelectionDAG &DAG,
 
 static SDValue splatPartsI64WithVL(const SDLoc &DL, MVT VT, SDValue Passthru,
                                    SDValue Lo, SDValue Hi, SDValue VL,
-                                   SelectionDAG &DAG) {
+                                   SelectionDAG &DAG, bool HasVendorXTHeadV) {
   if (!Passthru)
     Passthru = DAG.getUNDEF(VT);
   if (isa<ConstantSDNode>(Lo) && isa<ConstantSDNode>(Hi)) {
@@ -3563,7 +3563,9 @@ static SDValue splatPartsI64WithVL(const SDLoc &DL, MVT VT, SDValue Passthru,
     // If Hi constant is all the same sign bit as Lo, lower this as a custom
     // node in order to try and match RVV vector/scalar instructions.
     if ((LoC >> 31) == HiC)
-      return DAG.getNode(RISCVISD::VMV_V_X_VL, DL, VT, Passthru, Lo, VL);
+      return DAG.getNode(HasVendorXTHeadV ?
+                            RISCVISD::TH_VMV_V_X_VL : RISCVISD::VMV_V_X_VL,
+                         DL, VT, Passthru, Lo, VL);
 
     // If vl is equal to XLEN_MAX and Hi constant is equal to Lo, we could use
     // vmv.v.x whose EEW = 32 to lower it.
@@ -3572,8 +3574,8 @@ static SDValue splatPartsI64WithVL(const SDLoc &DL, MVT VT, SDValue Passthru,
       // TODO: if vl <= min(VLMAX), we can also do this. But we could not
       // access the subtarget here now.
       auto InterVec = DAG.getNode(
-          RISCVISD::VMV_V_X_VL, DL, InterVT, DAG.getUNDEF(InterVT), Lo,
-                                  DAG.getRegister(RISCV::X0, MVT::i32));
+          HasVendorXTHeadV ? RISCVISD::TH_VMV_V_X_VL : RISCVISD::VMV_V_X_VL,
+            DL, InterVT, DAG.getUNDEF(InterVT), Lo, DAG.getRegister(RISCV::X0, MVT::i32));
       return DAG.getNode(ISD::BITCAST, DL, VT, InterVec);
     }
   }
@@ -3588,11 +3590,11 @@ static SDValue splatPartsI64WithVL(const SDLoc &DL, MVT VT, SDValue Passthru,
 // of the halves.
 static SDValue splatSplitI64WithVL(const SDLoc &DL, MVT VT, SDValue Passthru,
                                    SDValue Scalar, SDValue VL,
-                                   SelectionDAG &DAG) {
+                                   SelectionDAG &DAG, bool HasVendorXTHeadV) {
   assert(Scalar.getValueType() == MVT::i64 && "Unexpected VT!");
   SDValue Lo, Hi;
   std::tie(Lo, Hi) = DAG.SplitScalar(Scalar, DL, MVT::i32, MVT::i32);
-  return splatPartsI64WithVL(DL, VT, Passthru, Lo, Hi, VL, DAG);
+  return splatPartsI64WithVL(DL, VT, Passthru, Lo, Hi, VL, DAG, HasVendorXTHeadV);
 }
 
 // This function lowers a splat of a scalar operand Splat with the vector
@@ -3628,7 +3630,9 @@ static SDValue lowerScalarSplat(SDValue Passthru, SDValue Scalar, SDValue VL,
     if (isOneConstant(VL) &&
         (!Const || isNullConstant(Scalar) || !isInt<5>(Const->getSExtValue())))
       return DAG.getNode(RISCVISD::VMV_S_X_VL, DL, VT, Passthru, Scalar, VL);
-    return DAG.getNode(RISCVISD::VMV_V_X_VL, DL, VT, Passthru, Scalar, VL);
+    return DAG.getNode(
+      Subtarget.hasVendorXTHeadV() ? RISCVISD::TH_VMV_V_X_VL : RISCVISD::VMV_V_X_VL,
+      DL, VT, Passthru, Scalar, VL);
   }
 
   assert(XLenVT == MVT::i32 && Scalar.getValueType() == MVT::i64 &&
@@ -3639,7 +3643,8 @@ static SDValue lowerScalarSplat(SDValue Passthru, SDValue Scalar, SDValue VL,
                        DAG.getConstant(0, DL, XLenVT), VL);
 
   // Otherwise use the more complicated splatting algorithm.
-  return splatSplitI64WithVL(DL, VT, Passthru, Scalar, VL, DAG);
+  return splatSplitI64WithVL(DL, VT, Passthru, Scalar, VL,
+                             DAG, Subtarget.hasVendorXTHeadV());
 }
 
 static MVT getLMUL1VT(MVT VT) {
@@ -6637,7 +6642,8 @@ SDValue RISCVTargetLowering::lowerSPLAT_VECTOR_PARTS(SDValue Op,
     auto VL = getDefaultVLOps(VecVT, ContainerVT, DL, DAG, Subtarget).second;
 
     SDValue Res =
-        splatPartsI64WithVL(DL, ContainerVT, SDValue(), Lo, Hi, VL, DAG);
+        splatPartsI64WithVL(DL, ContainerVT, SDValue(), Lo, Hi, VL,
+                            DAG, Subtarget.hasVendorXTHeadV());
     return convertFromScalableVector(VecVT, Res, DAG, Subtarget);
   }
 
@@ -7369,7 +7375,8 @@ static SDValue lowerVectorIntrinsicScalars(SDValue Op, SelectionDAG &DAG,
   // We need to convert the scalar to a splat vector.
   SDValue VL = getVLOperand(Op);
   assert(VL.getValueType() == XLenVT);
-  ScalarOp = splatSplitI64WithVL(DL, VT, SDValue(), ScalarOp, VL, DAG);
+  ScalarOp = splatSplitI64WithVL(DL, VT, SDValue(), ScalarOp, VL,
+                                 DAG, Subtarget.hasVendorXTHeadV());
   return DAG.getNode(Op->getOpcode(), DL, Op->getVTList(), Operands);
 }
 
@@ -7483,6 +7490,7 @@ SDValue RISCVTargetLowering::LowerINTRINSIC_WO_CHAIN(SDValue Op,
     return DAG.getNode(ISD::EXTRACT_VECTOR_ELT, DL, Op.getValueType(),
                        Op.getOperand(1), DAG.getConstant(0, DL, XLenVT));
   case Intrinsic::riscv_vmv_v_x:
+  case Intrinsic::riscv_th_vmv_v_x:
     return lowerScalarSplat(Op.getOperand(1), Op.getOperand(2),
                             Op.getOperand(3), Op.getSimpleValueType(), DL, DAG,
                             Subtarget);
@@ -7519,7 +7527,8 @@ SDValue RISCVTargetLowering::LowerINTRINSIC_WO_CHAIN(SDValue Op,
     SDValue Vec = Op.getOperand(1);
     SDValue VL = getVLOperand(Op);
 
-    SDValue SplattedVal = splatSplitI64WithVL(DL, VT, SDValue(), Scalar, VL, DAG);
+    SDValue SplattedVal = splatSplitI64WithVL(DL, VT, SDValue(), Scalar, VL,
+                                              DAG, Subtarget.hasVendorXTHeadV());
     if (Op.getOperand(1).isUndef())
       return SplattedVal;
     SDValue SplattedIdx =
@@ -16429,6 +16438,7 @@ const char *RISCVTargetLowering::getTargetNodeName(unsigned Opcode) const {
   NODE_NAME_CASE(TH_SDD)
   NODE_NAME_CASE(VMV_V_V_VL)
   NODE_NAME_CASE(VMV_V_X_VL)
+  NODE_NAME_CASE(TH_VMV_V_X_VL)
   NODE_NAME_CASE(VFMV_V_F_VL)
   NODE_NAME_CASE(VMV_X_S)
   NODE_NAME_CASE(VMV_S_X_VL)
