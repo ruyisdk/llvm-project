@@ -46,6 +46,12 @@ multiclass RVVBuiltinSet<string intrinsic_name, string type_range,
   }
 }
 
+// IntrinsicTypes is output, op0, op1 [-1, 0, 1]
+multiclass RVVOutOp0Op1BuiltinSet<string intrinsic_name, string type_range,
+                                  list<list<string>> suffixes_prototypes>
+    : RVVBuiltinSet<intrinsic_name, type_range, suffixes_prototypes,
+                            [-1, 0, 1]>;
+
 // IntrinsicTypes is output, op1 [-1, 1]
 multiclass RVVOutOp1BuiltinSet<string intrinsic_name, string type_range,
                                list<list<string>> suffixes_prototypes>
@@ -163,6 +169,18 @@ multiclass RVVUnsignedShiftBuiltinSetRoundingMode
 multiclass RVVShiftBuiltinSet
     : RVVSignedShiftBuiltinSet,
       RVVUnsignedShiftBuiltinSet;
+
+let Log2LMUL = [-3, -2, -1, 0, 1, 2] in {
+  multiclass RVVSignedNShiftBuiltinSet
+      : RVVOutOp0Op1BuiltinSet<NAME, "csil",
+                                     [["wv", "v", "vwUv"],
+                                      ["wx", "v", "vwz"]]>;
+
+  multiclass RVVUnsignedNShiftBuiltinSet
+      : RVVOutOp0Op1BuiltinSet<NAME, "csil",
+                                     [["wv", "Uv", "UvUwUv"],
+                                      ["wx", "Uv", "UvUwz"]]>;
+}
 
 //===----------------------------------------------------------------------===//
 // 6. Configuration-Setting and Utility
@@ -1001,6 +1019,10 @@ let UnMaskedPolicyScheme = HasPassthruOperand in {
 }
 
 // 12.6. Vector Narrowing Integer Right Shift Operations
+let UnMaskedPolicyScheme = HasPassthruOperand in {
+  defm th_vnsrl : RVVUnsignedNShiftBuiltinSet;
+  defm th_vnsra : RVVSignedNShiftBuiltinSet;
+}
 
 // 12.7. Vector Integer Comparison Operations
 
