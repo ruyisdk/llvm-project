@@ -2089,6 +2089,21 @@ multiclass XVPseudoVWMAC_VX {
   }
 }
 
+multiclass XVPseudoVAALU_VV_VX {
+  foreach m = MxList in {
+    defvar mx = m.MX;
+    defvar WriteVAALUV_MX = !cast<SchedWrite>("WriteVAALUV_" # mx);
+    defvar WriteVAALUX_MX = !cast<SchedWrite>("WriteVAALUX_" # mx);
+    defvar ReadVAALUV_MX = !cast<SchedRead>("ReadVAALUV_" # mx);
+    defvar ReadVAALUX_MX = !cast<SchedRead>("ReadVAALUX_" # mx);
+
+    defm "" : XVPseudoBinaryV_VV<m>,
+              Sched<[WriteVAALUV_MX, ReadVAALUV_MX, ReadVAALUV_MX, ReadVMask]>;
+    defm "" : XVPseudoBinaryV_VX<m>,
+              Sched<[WriteVAALUX_MX, ReadVAALUV_MX, ReadVAALUX_MX, ReadVMask]>;
+  }
+}
+
 multiclass XVPseudoVSMUL_VV_VX {
   foreach m = MxListXTHeadV in {
     defvar mx = m.MX;
@@ -3034,6 +3049,19 @@ let Predicates = [HasVendorXTHeadV] in {
     def PseudoTH_VMV8R_V : XVPseudoWholeMove<TH_VMV_V_V, V_M8, VRM8>;
   }
 } // Predicates = [HasVendorXTHeadV]
+
+//===----------------------------------------------------------------------===//
+// 13.2. Vector Single-Width Averaging Add and Subtract
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VAADD : XVPseudoVAALU_VV_VX;
+  defm PseudoTH_VASUB : XVPseudoVAALU_VV_VX;
+}
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryV_VV_VX<"int_riscv_th_vaadd", "PseudoTH_VAADD", AllIntegerXVectors>;
+  defm : XVPatBinaryV_VV_VX<"int_riscv_th_vasub", "PseudoTH_VASUB", AllIntegerXVectors>;
+}
 
 //===----------------------------------------------------------------------===//
 // 13.3. Vector Single-Width Fractional Multiply with Rounding and

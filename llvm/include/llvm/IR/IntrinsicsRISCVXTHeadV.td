@@ -774,6 +774,10 @@ let TargetPrefix = "riscv" in {
   // 12.14. Vector Integer Merge and Move Instructions
   defm th_vmerge : RISCVBinaryWithV0;
 
+  // 13.2. Vector Single-Width Averaging Add and Subtract
+  defm th_vaadd : XVBinaryAAX;
+  defm th_vasub : XVBinaryAAX;
+
   // Output: (vector)
   // Input: (passthru, vector_in, vl)
   def int_riscv_th_vmv_v_v : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
