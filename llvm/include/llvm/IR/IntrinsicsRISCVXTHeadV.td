@@ -576,6 +576,18 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 4;
   }
 
+  // For destination vector type is the same as first source vector (with mask).
+  // Input: (maskedoff, vector_in, vector_in/scalar_in, mask, frm, vl)
+  class XVBinaryAAXMaskedRoundingMode
+       : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                   [LLVMMatchType<0>, LLVMMatchType<0>, llvm_any_ty,
+                    LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty,
+                    LLVMMatchType<2>],
+                   [ImmArg<ArgIndex<4>>, IntrNoMem]>, RISCVVIntrinsic {
+    let ScalarOperand = 2;
+    let VLOperand = 5;
+  }
+
   // For destination vector type is NOT the same as
   // first source vector (with mask but no policy).
   // Input: (maskedoff, vector_in, vector_in/scalar_in, mask, vl)
@@ -659,6 +671,11 @@ let TargetPrefix = "riscv" in {
   multiclass XVBinaryAAX {
     def "int_riscv_" # NAME : RISCVBinaryAAXUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVBinaryAAXMasked;
+  }
+
+  multiclass XVBinaryAAXRoundingMode {
+    def "int_riscv_" # NAME : RISCVBinaryAAXUnMaskedRoundingMode;
+    def "int_riscv_" # NAME # "_mask" : XVBinaryAAXMaskedRoundingMode;
   }
 
   multiclass XVBinaryABX {
@@ -775,8 +792,8 @@ let TargetPrefix = "riscv" in {
   defm th_vmerge : RISCVBinaryWithV0;
 
   // 13.2. Vector Single-Width Averaging Add and Subtract
-  defm th_vaadd : XVBinaryAAX;
-  defm th_vasub : XVBinaryAAX;
+  defm th_vaadd : XVBinaryAAXRoundingMode;
+  defm th_vasub : XVBinaryAAXRoundingMode;
 
   // Output: (vector)
   // Input: (passthru, vector_in, vl)

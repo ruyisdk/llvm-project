@@ -1551,6 +1551,45 @@ class XVPseudoBinaryNoMask<VReg RetClass,
   let HasSEWOp = 1;
 }
 
+class XVPseudoBinaryNoMaskRoundingMode<VReg RetClass,
+                                       VReg Op1Class,
+                                       DAGOperand Op2Class,
+                                       string Constraint,
+                                       int UsesVXRM_ = 1> :
+        Pseudo<(outs RetClass:$rd),
+               (ins RetClass:$merge, Op1Class:$rs2, Op2Class:$rs1, ixlenimm:$rm,
+                AVL:$vl, ixlenimm:$sew), []>,
+        RISCVVPseudo {
+  let mayLoad = 0;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let Constraints = !interleave([Constraint, "$rd = $merge"], ",");
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+  let HasRoundModeOp = 1;
+  let UsesVXRM = UsesVXRM_;
+}
+
+class XVPseudoBinaryMaskRoundingMode<VReg RetClass,
+                                     RegisterClass Op1Class,
+                                     DAGOperand Op2Class,
+                                     string Constraint,
+                                     int UsesVXRM_ = 1> :
+        Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd),
+                (ins GetVRegNoV0<RetClass>.R:$merge,
+                     Op1Class:$rs2, Op2Class:$rs1,
+                     VMaskOp:$vm, ixlenimm:$rm, AVL:$vl, ixlenimm:$sew), []>,
+        RISCVVPseudo {
+  let mayLoad = 0;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let Constraints = !interleave([Constraint, "$rd = $merge"], ",");
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+  let HasRoundModeOp = 1;
+  let UsesVXRM = UsesVXRM_;
+}
+
 class XVPseudoTiedBinaryNoMask<VReg RetClass,
                                DAGOperand Op2Class,
                                string Constraint> :
@@ -1630,6 +1669,23 @@ multiclass XVPseudoBinary<VReg RetClass,
   }
 }
 
+multiclass XVPseudoBinaryRoundingMode<VReg RetClass,
+                                      VReg Op1Class,
+                                      DAGOperand Op2Class,
+                                      LMULInfo MInfo,
+                                      string Constraint = "",
+                                      int sew = 0,
+                                      int UsesVXRM = 1> {
+  let VLMul = MInfo.value, SEW=sew in {
+    defvar suffix = !if(sew, "_" # MInfo.MX # "_E" # sew, "_" # MInfo.MX);
+    def suffix : XVPseudoBinaryNoMaskRoundingMode<RetClass, Op1Class, Op2Class,
+                                                  Constraint, UsesVXRM>;
+    def suffix # "_MASK" : XVPseudoBinaryMaskRoundingMode<RetClass, Op1Class, Op2Class,
+                                                          Constraint, UsesVXRM>,
+                           RISCVMaskedPseudo<MaskIdx=3>;
+  }
+}
+
 multiclass XVPseudoTiedBinary<VReg RetClass,
                               DAGOperand Op2Class,
                               LMULInfo MInfo,
@@ -1660,8 +1716,16 @@ multiclass XVPseudoBinaryV_VV<LMULInfo m, string Constraint = "", int sew = 0> {
   defm _VV : XVPseudoBinary<m.vrclass, m.vrclass, m.vrclass, m, Constraint, sew>;
 }
 
+multiclass XVPseudoBinaryV_VV_RM<LMULInfo m, string Constraint = "", int sew = 0> {
+  defm _VV : XVPseudoBinaryRoundingMode<m.vrclass, m.vrclass, m.vrclass, m, Constraint, sew>;
+}
+
 multiclass XVPseudoBinaryV_VX<LMULInfo m, string Constraint = "", int sew = 0> {
   defm _VX : XVPseudoBinary<m.vrclass, m.vrclass, GPR, m, Constraint, sew>;
+}
+
+multiclass XVPseudoBinaryV_VX_RM<LMULInfo m, string Constraint = "", int sew = 0> {
+  defm _VX : XVPseudoBinaryRoundingMode<m.vrclass, m.vrclass, GPR, m, Constraint, sew>;
 }
 
 multiclass XVPseudoBinaryV_VI<Operand ImmType = simm5, LMULInfo m, string Constraint = ""> {
@@ -2089,7 +2153,7 @@ multiclass XVPseudoVWMAC_VX {
   }
 }
 
-multiclass XVPseudoVAALU_VV_VX {
+multiclass XVPseudoVAALU_VV_VX_RM {
   foreach m = MxList in {
     defvar mx = m.MX;
     defvar WriteVAALUV_MX = !cast<SchedWrite>("WriteVAALUV_" # mx);
@@ -2097,9 +2161,9 @@ multiclass XVPseudoVAALU_VV_VX {
     defvar ReadVAALUV_MX = !cast<SchedRead>("ReadVAALUV_" # mx);
     defvar ReadVAALUX_MX = !cast<SchedRead>("ReadVAALUX_" # mx);
 
-    defm "" : XVPseudoBinaryV_VV<m>,
+    defm "" : XVPseudoBinaryV_VV_RM<m>,
               Sched<[WriteVAALUV_MX, ReadVAALUV_MX, ReadVAALUV_MX, ReadVMask]>;
-    defm "" : XVPseudoBinaryV_VX<m>,
+    defm "" : XVPseudoBinaryV_VX_RM<m>,
               Sched<[WriteVAALUX_MX, ReadVAALUV_MX, ReadVAALUX_MX, ReadVMask]>;
   }
 }
@@ -2123,6 +2187,31 @@ multiclass XVPseudoVSMUL_VV_VX {
 // Helpers to define the intrinsic patterns for the XTHeadVector extension.
 //===----------------------------------------------------------------------===//
 
+class XVPatBinaryMaskRoundingMode<string intrinsic_name,
+                                  string inst,
+                                  ValueType result_type,
+                                  ValueType op1_type,
+                                  ValueType op2_type,
+                                  ValueType mask_type,
+                                  int sew,
+                                  VReg result_reg_class,
+                                  VReg op1_reg_class,
+                                  DAGOperand op2_kind> :
+  Pat<(result_type (!cast<Intrinsic>(intrinsic_name#"_mask")
+                   (result_type result_reg_class:$merge),
+                   (op1_type op1_reg_class:$rs1),
+                   (op2_type op2_kind:$rs2),
+                   (mask_type V0),
+                   (XLenVT timm:$round),
+                   VLOpFrag)),
+                   (!cast<Instruction>(inst#"_MASK")
+                   (result_type result_reg_class:$merge),
+                   (op1_type op1_reg_class:$rs1),
+                   (op2_type op2_kind:$rs2),
+                   (mask_type V0),
+                   (XLenVT timm:$round),
+                   GPR:$vl, sew)>;
+
 class XVPatBinaryNoMask<string intrinsic_name,
                          string inst,
                          ValueType result_type,
@@ -2141,6 +2230,27 @@ class XVPatBinaryNoMask<string intrinsic_name,
                    (result_type result_reg_class:$merge),
                    (op1_type op1_reg_class:$rs1),
                    (op2_type op2_kind:$rs2),
+                   GPR:$vl, sew)>;
+
+class XVPatBinaryNoMaskRoundingMode<string intrinsic_name,
+                                    string inst,
+                                    ValueType result_type,
+                                    ValueType op1_type,
+                                    ValueType op2_type,
+                                    int sew,
+                                    VReg op1_reg_class,
+                                    DAGOperand op2_kind> :
+  Pat<(result_type (!cast<Intrinsic>(intrinsic_name)
+                   (result_type (undef)),
+                   (op1_type op1_reg_class:$rs1),
+                   (op2_type op2_kind:$rs2),
+                   (XLenVT timm:$round),
+                   VLOpFrag)),
+                   (!cast<Instruction>(inst)
+                   (result_type (IMPLICIT_DEF)),
+                   (op1_type op1_reg_class:$rs1),
+                   (op2_type op2_kind:$rs2),
+                   (XLenVT timm:$round),
                    GPR:$vl, sew)>;
 
 class XVPatTiedBinaryNoMask<string intrinsic_name,
@@ -2194,6 +2304,23 @@ multiclass XVPatBinary<string intrinsic,
                        op2_kind>;
 }
 
+multiclass XVPatBinaryRoundingMode<string intrinsic,
+                                   string inst,
+                                   ValueType result_type,
+                                   ValueType op1_type,
+                                   ValueType op2_type,
+                                   ValueType mask_type,
+                                   int sew,
+                                   VReg result_reg_class,
+                                   VReg op1_reg_class,
+                                   DAGOperand op2_kind> {
+  def : XVPatBinaryNoMaskRoundingMode<intrinsic, inst, result_type, op1_type,
+                                      op2_type, sew, op1_reg_class, op2_kind>;
+  def : XVPatBinaryMaskRoundingMode<intrinsic, inst, result_type, op1_type,
+                                    op2_type, mask_type, sew, result_reg_class,
+                                    op1_reg_class, op2_kind>;
+}
+
 multiclass XVPatBinaryV_VV<string intrinsic, string instruction,
                            list<VTypeInfo> vtilist, bit isSEWAware = 0> {
   foreach vti = vtilist in
@@ -2205,6 +2332,19 @@ multiclass XVPatBinaryV_VV<string intrinsic, string instruction,
                       vti.Vector, vti.Vector, vti.Vector,vti.Mask,
                       vti.Log2SEW, vti.RegClass,
                       vti.RegClass, vti.RegClass>;
+}
+
+multiclass XVPatBinaryV_VV_RM<string intrinsic, string instruction,
+                              list<VTypeInfo> vtilist, bit isSEWAware = 0> {
+  foreach vti = vtilist in
+    let Predicates = GetXVTypePredicates<vti>.Predicates in
+    defm : XVPatBinaryRoundingMode<intrinsic,
+                                   !if(isSEWAware,
+                                       instruction # "_VV_" # vti.LMul.MX # "_E" # vti.SEW,
+                                       instruction # "_VV_" # vti.LMul.MX),
+                                   vti.Vector, vti.Vector, vti.Vector,vti.Mask,
+                                   vti.Log2SEW, vti.RegClass,
+                                   vti.RegClass, vti.RegClass>;
 }
 
 multiclass XVPatBinaryV_VX<string intrinsic, string instruction,
@@ -2219,6 +2359,21 @@ multiclass XVPatBinaryV_VX<string intrinsic, string instruction,
                        vti.Vector, vti.Vector, vti.Scalar, vti.Mask,
                        vti.Log2SEW, vti.RegClass,
                        vti.RegClass, vti.ScalarRegClass>;
+  }
+}
+
+multiclass XVPatBinaryV_VX_RM<string intrinsic, string instruction,
+                              list<VTypeInfo> vtilist, bit isSEWAware = 0> {
+  foreach vti = vtilist in {
+    defvar kind = "V"#vti.ScalarSuffix;
+    let Predicates = GetXVTypePredicates<vti>.Predicates in
+    defm : XVPatBinaryRoundingMode<intrinsic,
+                                   !if(isSEWAware,
+                                       instruction#"_"#kind#"_"#vti.LMul.MX#"_E"#vti.SEW,
+                                       instruction#"_"#kind#"_"#vti.LMul.MX),
+                                   vti.Vector, vti.Vector, vti.Scalar, vti.Mask,
+                                   vti.Log2SEW, vti.RegClass,
+                                   vti.RegClass, vti.ScalarRegClass>;
   }
 }
 
@@ -2549,6 +2704,11 @@ multiclass XVPatBinaryV_VV_VX<string intrinsic, string instruction,
                               list<VTypeInfo> vtilist, bit isSEWAware = 0>
     : XVPatBinaryV_VV<intrinsic, instruction, vtilist, isSEWAware>,
       XVPatBinaryV_VX<intrinsic, instruction, vtilist, isSEWAware>;
+
+multiclass XVPatBinaryV_VV_VX_RM<string intrinsic, string instruction,
+                                 list<VTypeInfo> vtilist, bit isSEWAware = 0>
+    : XVPatBinaryV_VV_RM<intrinsic, instruction, vtilist, isSEWAware>,
+      XVPatBinaryV_VX_RM<intrinsic, instruction, vtilist, isSEWAware>;
 
 multiclass XVPatBinaryV_VX_VI<string intrinsic, string instruction,
                               list<VTypeInfo> vtilist>
@@ -3054,13 +3214,13 @@ let Predicates = [HasVendorXTHeadV] in {
 // 13.2. Vector Single-Width Averaging Add and Subtract
 //===----------------------------------------------------------------------===//
 let Predicates = [HasVendorXTHeadV] in {
-  defm PseudoTH_VAADD : XVPseudoVAALU_VV_VX;
-  defm PseudoTH_VASUB : XVPseudoVAALU_VV_VX;
+  defm PseudoTH_VAADD : XVPseudoVAALU_VV_VX_RM;
+  defm PseudoTH_VASUB : XVPseudoVAALU_VV_VX_RM;
 }
 
 let Predicates = [HasVendorXTHeadV] in {
-  defm : XVPatBinaryV_VV_VX<"int_riscv_th_vaadd", "PseudoTH_VAADD", AllIntegerXVectors>;
-  defm : XVPatBinaryV_VV_VX<"int_riscv_th_vasub", "PseudoTH_VASUB", AllIntegerXVectors>;
+  defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vaadd", "PseudoTH_VAADD", AllIntegerXVectors>;
+  defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vasub", "PseudoTH_VASUB", AllIntegerXVectors>;
 }
 
 //===----------------------------------------------------------------------===//
