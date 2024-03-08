@@ -2089,6 +2089,21 @@ multiclass XVPseudoVWMAC_VX {
   }
 }
 
+multiclass XVPseudoVSMUL_VV_VX {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVSIMulV_MX = !cast<SchedWrite>("WriteVSMulV_" # mx);
+    defvar WriteVSIMulX_MX = !cast<SchedWrite>("WriteVSMulX_" # mx);
+    defvar ReadVSIMulV_MX = !cast<SchedRead>("ReadVSMulV_" # mx);
+    defvar ReadVSIMulX_MX = !cast<SchedRead>("ReadVSMulX_" # mx);
+
+    defm "" : XVPseudoBinaryV_VV<m>,
+              Sched<[WriteVSIMulV_MX, ReadVSIMulV_MX, ReadVSIMulV_MX, ReadVMask]>;
+    defm "" : XVPseudoBinaryV_VX<m>,
+              Sched<[WriteVSIMulX_MX, ReadVSIMulV_MX, ReadVSIMulX_MX, ReadVMask]>;
+  }
+}
+
 //===----------------------------------------------------------------------===//
 // Helpers to define the intrinsic patterns for the XTHeadVector extension.
 //===----------------------------------------------------------------------===//
@@ -3018,6 +3033,20 @@ let Predicates = [HasVendorXTHeadV] in {
     def PseudoTH_VMV4R_V : XVPseudoWholeMove<TH_VMV_V_V, V_M4, VRM4>;
     def PseudoTH_VMV8R_V : XVPseudoWholeMove<TH_VMV_V_V, V_M8, VRM8>;
   }
+} // Predicates = [HasVendorXTHeadV]
+
+//===----------------------------------------------------------------------===//
+// 13.3. Vector Single-Width Fractional Multiply with Rounding and
+// Saturation Instructions
+//===----------------------------------------------------------------------===//
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VSMUL  : XVPseudoVSMUL_VV_VX;
+} // Predicates = [HasVendorXTHeadV]
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryV_VV_VX<"int_riscv_th_vsmul", "PseudoTH_VSMUL", AllIntegerXVectors>;
+  // defm : XVPatBinaryV_VV_VX<"int_riscv_th_vsmul", "PseudoTH_VSMUL", AllIntegerXVectors, isSEWAware=1>;
 } // Predicates = [HasVendorXTHeadV]
 
 include "RISCVInstrInfoXTHeadVVLPatterns.td"
