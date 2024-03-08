@@ -66,6 +66,11 @@ multiclass RVVSignedBinBuiltinSet
                           [["vv", "v", "vvv"],
                            ["vx", "v", "vve"]]>;
 
+multiclass RVVSignedBinBuiltinSetRoundingMode
+    : RVVOutOp1BuiltinSet<NAME, "csil",
+                          [["vv", "v", "vvvu"],
+                           ["vx", "v", "vveu"]]>;
+
 multiclass RVVUnsignedBinBuiltinSet
     : RVVOutOp1BuiltinSet<NAME, "csil",
                           [["vv", "Uv", "UvUvUv"],
@@ -1041,5 +1046,61 @@ let UnMaskedPolicyScheme = HasPassthruOperand in {
 // 12.14. Vector Integer Merge Operations
 
 // 12.15. Vector Integer Move Operations
+
+// 13. Vector Fixed-Point Arithmetic Instructions
+let HeaderCode =
+[{
+enum __RISCV_VXRM {
+  __RISCV_VXRM_RNU = 0,
+  __RISCV_VXRM_RNE = 1,
+  __RISCV_VXRM_RDN = 2,
+  __RISCV_VXRM_ROD = 3,
+};
+}] in
+def vxrm_enum : RVVHeader;
+
+let ManualCodegen = [{
+  {
+    // LLVM intrinsic
+    // Unmasked: (passthru, op0, op1, round_mode, vl)
+    // Masked:   (passthru, vector_in, vector_in/scalar_in, mask, vxrm, vl, policy)
+
+    SmallVector<llvm::Value*, 7> Operands;
+    bool HasMaskedOff = !(
+        (IsMasked && (PolicyAttrs & RVV_VTA) && (PolicyAttrs & RVV_VMA)) ||
+        (!IsMasked && PolicyAttrs & RVV_VTA));
+    unsigned Offset = IsMasked ?
+        (HasMaskedOff ? 2 : 1) : (HasMaskedOff ? 1 : 0);
+
+    if (!HasMaskedOff)
+      Operands.push_back(llvm::PoisonValue::get(ResultType));
+    else
+      Operands.push_back(Ops[IsMasked ? 1 : 0]);
+
+    Operands.push_back(Ops[Offset]); // op0
+    Operands.push_back(Ops[Offset + 1]); // op1
+
+    if (IsMasked)
+      Operands.push_back(Ops[0]); // mask
+
+    Operands.push_back(Ops[Offset + 2]); // vxrm
+    Operands.push_back(Ops[Offset + 3]); // vl
+
+    if (IsMasked) {
+      // TODO: no policy in LLVM side for masked intrinsics.
+      // Operands.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+      IntrinsicTypes = {ResultType, Ops[Offset + 1]->getType(), Ops[Offset + 3]->getType()};
+    } else {
+      IntrinsicTypes = {ResultType, Ops[Offset + 1]->getType(), Ops.back()->getType()};
+    }
+
+    llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
+    return Builder.CreateCall(F, Operands, "");
+  }
+}] in {
+  // 13.2. Vector Single-Width Averaging Add and Subtract
+  defm th_vaadd : RVVSignedBinBuiltinSetRoundingMode;
+  defm th_vasub : RVVSignedBinBuiltinSetRoundingMode;
+}
 
 include "riscv_vector_xtheadv_wrappers.td"
