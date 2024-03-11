@@ -1843,3 +1843,45 @@ let HeaderCode =
 
 }] in
 def th_single_width_averaging_add_and_subtract_wrapper_macros: RVVHeader;
+
+// 13.3.  Vector Single-Width Fractional Multiply with Rounding and Saturation
+
+let HeaderCode =
+[{
+
+#define __riscv_vsmul_vv_i8m1(op1_v, op2_v, vl) __riscv_th_vsmul_vv_i8m1(op1_v, op2_v, vl)
+#define __riscv_vsmul_vv_i8m2(op1_v, op2_v, vl) __riscv_th_vsmul_vv_i8m2(op1_v, op2_v, vl)
+#define __riscv_vsmul_vv_i8m4(op1_v, op2_v, vl) __riscv_th_vsmul_vv_i8m4(op1_v, op2_v, vl)
+#define __riscv_vsmul_vv_i8m8(op1_v, op2_v, vl) __riscv_th_vsmul_vv_i8m8(op1_v, op2_v, vl)
+#define __riscv_vsmul_vv_i16m1(op1_v, op2_v, vl) __riscv_th_vsmul_vv_i16m1(op1_v, op2_v, vl)
+#define __riscv_vsmul_vv_i16m2(op1_v, op2_v, vl) __riscv_th_vsmul_vv_i16m2(op1_v, op2_v, vl)
+#define __riscv_vsmul_vv_i16m4(op1_v, op2_v, vl) __riscv_th_vsmul_vv_i16m4(op1_v, op2_v, vl)
+#define __riscv_vsmul_vv_i16m8(op1_v, op2_v, vl) __riscv_th_vsmul_vv_i16m8(op1_v, op2_v, vl)
+#define __riscv_vsmul_vv_i32m1(op1_v, op2_v, vl) __riscv_th_vsmul_vv_i32m1(op1_v, op2_v, vl)
+#define __riscv_vsmul_vv_i32m2(op1_v, op2_v, vl) __riscv_th_vsmul_vv_i32m2(op1_v, op2_v, vl)
+#define __riscv_vsmul_vv_i32m4(op1_v, op2_v, vl) __riscv_th_vsmul_vv_i32m4(op1_v, op2_v, vl)
+#define __riscv_vsmul_vv_i32m8(op1_v, op2_v, vl) __riscv_th_vsmul_vv_i32m8(op1_v, op2_v, vl)
+#define __riscv_vsmul_vv_i64m1(op1_v, op2_v, vl) __riscv_th_vsmul_vv_i64m1(op1_v, op2_v, vl)
+#define __riscv_vsmul_vv_i64m2(op1_v, op2_v, vl) __riscv_th_vsmul_vv_i64m2(op1_v, op2_v, vl)
+#define __riscv_vsmul_vv_i64m4(op1_v, op2_v, vl) __riscv_th_vsmul_vv_i64m4(op1_v, op2_v, vl)
+#define __riscv_vsmul_vv_i64m8(op1_v, op2_v, vl) __riscv_th_vsmul_vv_i64m8(op1_v, op2_v, vl)
+
+#define __riscv_vsmul_vx_i8m1(op1_v, op2_x, vl) __riscv_th_vsmul_vx_i8m1(op1_v, op2_x, vl)
+#define __riscv_vsmul_vx_i8m2(op1_v, op2_x, vl) __riscv_th_vsmul_vx_i8m2(op1_v, op2_x, vl)
+#define __riscv_vsmul_vx_i8m4(op1_v, op2_x, vl) __riscv_th_vsmul_vx_i8m4(op1_v, op2_x, vl)
+#define __riscv_vsmul_vx_i8m8(op1_v, op2_x, vl) __riscv_th_vsmul_vx_i8m8(op1_v, op2_x, vl)
+#define __riscv_vsmul_vx_i16m1(op1_v, op2_x, vl) __riscv_th_vsmul_vx_i16m1(op1_v, op2_x, vl)
+#define __riscv_vsmul_vx_i16m2(op1_v, op2_x, vl) __riscv_th_vsmul_vx_i16m2(op1_v, op2_x, vl)
+#define __riscv_vsmul_vx_i16m4(op1_v, op2_x, vl) __riscv_th_vsmul_vx_i16m4(op1_v, op2_x, vl)
+#define __riscv_vsmul_vx_i16m8(op1_v, op2_x, vl) __riscv_th_vsmul_vx_i16m8(op1_v, op2_x, vl)
+#define __riscv_vsmul_vx_i32m1(op1_v, op2_x, vl) __riscv_th_vsmul_vx_i32m1(op1_v, op2_x, vl)
+#define __riscv_vsmul_vx_i32m2(op1_v, op2_x, vl) __riscv_th_vsmul_vx_i32m2(op1_v, op2_x, vl)
+#define __riscv_vsmul_vx_i32m4(op1_v, op2_x, vl) __riscv_th_vsmul_vx_i32m4(op1_v, op2_x, vl)
+#define __riscv_vsmul_vx_i32m8(op1_v, op2_x, vl) __riscv_th_vsmul_vx_i32m8(op1_v, op2_x, vl)
+#define __riscv_vsmul_vx_i64m1(op1_v, op2_x, vl) __riscv_th_vsmul_vx_i64m1(op1_v, op2_x, vl)
+#define __riscv_vsmul_vx_i64m2(op1_v, op2_x, vl) __riscv_th_vsmul_vx_i64m2(op1_v, op2_x, vl)
+#define __riscv_vsmul_vx_i64m4(op1_v, op2_x, vl) __riscv_th_vsmul_vx_i64m4(op1_v, op2_x, vl)
+#define __riscv_vsmul_vx_i64m8(op1_v, op2_x, vl) __riscv_th_vsmul_vx_i64m8(op1_v, op2_x, vl)
+
+}] in
+def th_single_width_fractional_multiply_with_rounding_and_saturation_wrapper_macros: RVVHeader;

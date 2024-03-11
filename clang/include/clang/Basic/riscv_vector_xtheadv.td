@@ -1101,6 +1101,35 @@ let ManualCodegen = [{
   // 13.2. Vector Single-Width Averaging Add and Subtract
   defm th_vaadd : RVVSignedBinBuiltinSetRoundingMode;
   defm th_vasub : RVVSignedBinBuiltinSetRoundingMode;
+  }
+
+// 13.3. Vector Single-Width Fractional Multiply with Rounding and Saturation Operations
+
+let IntrinsicTypes = [-1,0,1], ManualCodegen = [{
+  {
+    // LLVM intrinsic
+    // Unmasked: (passthru, op0, op1, vl)
+    // Masked:   ??
+
+    SmallVector<llvm::Value*, 4> Operands;
+    if (IsMasked){
+        // TODO: add support for masked vsmul
+    }
+    else {
+        Operands.push_back(llvm::PoisonValue::get(ResultType));
+        Operands.push_back(Ops[0]);
+        Operands.push_back(Ops[1]);
+        Operands.push_back(Ops[2]);
+        IntrinsicTypes = {Ops[0]->getType(), Ops[1]->getType(), Ops[2]->getType()};
+        llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
+        return Builder.CreateCall(F, Operands, "");
+    }
+  }
+}] in {
+
+   defm th_vsmul : RVVOutOp1BuiltinSet<"th_vsmul", "csil",
+                                [["vv", "v", "vvv"],
+                                ["vx", "v", "vve"]]>;
 }
 
 include "riscv_vector_xtheadv_wrappers.td"
