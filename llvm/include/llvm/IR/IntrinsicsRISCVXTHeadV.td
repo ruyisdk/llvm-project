@@ -816,6 +816,6 @@ let TargetPrefix = "riscv" in {
   }
 
   // 13.3.  Vector Single-Width Fractional Multiply with Rounding and Saturation Instructions
-  defm th_vsmul : XVBinaryABX;
+  defm th_vsmul : XVBinaryAAX;
 
 } // TargetPrefix = "riscv"
