@@ -61,6 +61,10 @@ multiclass RVVOp0Op1BuiltinSet<string intrinsic_name, string type_range,
                                list<list<string>> suffixes_prototypes>
     : RVVBuiltinSet<intrinsic_name, type_range, suffixes_prototypes, [0, 1]>;
 
+multiclass RVVOutOp1Op2BuiltinSet<string intrinsic_name, string type_range,
+                                  list<list<string>> suffixes_prototypes>
+    : RVVBuiltinSet<intrinsic_name, type_range, suffixes_prototypes, [-1, 1, 2]>;
+
 multiclass RVVSignedBinBuiltinSet
     : RVVOutOp1BuiltinSet<NAME, "csil",
                           [["vv", "v", "vvv"],
@@ -1122,6 +1126,21 @@ let MaskedPolicyScheme = NonePolicy,
 }
 
 // 12.13. Vector Widening Integer Multiply-Add Operations
+let UnMaskedPolicyScheme = HasPolicyOperand,
+    HasMaskedOffOperand = false,
+    Log2LMUL = [-3, -2, -1, 0, 1, 2] in {
+  defm th_vwmaccu : RVVOutOp1Op2BuiltinSet<"vwmaccu", "csi",
+                                           [["vv", "Uw", "UwUwUvUv"],
+                                            ["vx", "Uw", "UwUwUeUv"]]>;
+  defm th_vwmacc : RVVOutOp1Op2BuiltinSet<"vwmacc", "csi",
+                                          [["vv", "w", "wwvv"],
+                                           ["vx", "w", "wwev"]]>;
+  defm th_vwmaccsu : RVVOutOp1Op2BuiltinSet<"vwmaccsu", "csi",
+                                            [["vv", "w", "wwvUv"],
+                                             ["vx", "w", "wweUv"]]>;
+  defm th_vwmaccus : RVVOutOp1Op2BuiltinSet<"vwmaccus", "csi",
+                                            [["vx", "w", "wwUev"]]>;
+}
 
 // 12.14. Vector Integer Merge Operations
 
