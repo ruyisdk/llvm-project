@@ -1036,7 +1036,8 @@ let UnMaskedPolicyScheme = HasPassthruOperand in {
 // 12.9. Vector Single-Width Integer Multiply Operations
 
 // 12.10. Vector Integer Divide Operations
-let UnMaskedPolicyScheme = HasPassthruOperand in {
+let MaskedPolicyScheme = HasPassthruOperand,
+    UnMaskedPolicyScheme = HasPassthruOperand in {
   defm th_vdivu : RVVUnsignedBinBuiltinSet;
   defm th_vdiv : RVVSignedBinBuiltinSet;
   defm th_vremu : RVVUnsignedBinBuiltinSet;
