@@ -1126,19 +1126,20 @@ let MaskedPolicyScheme = NonePolicy,
 }
 
 // 12.13. Vector Widening Integer Multiply-Add Operations
-let UnMaskedPolicyScheme = HasPolicyOperand,
+let MaskedPolicyScheme = NonePolicy,
+    UnMaskedPolicyScheme = NonePolicy,
     HasMaskedOffOperand = false,
     Log2LMUL = [-3, -2, -1, 0, 1, 2] in {
-  defm th_vwmaccu : RVVOutOp1Op2BuiltinSet<"vwmaccu", "csi",
+  defm th_vwmaccu : RVVOutOp1Op2BuiltinSet<"th_vwmaccu", "csi",
                                            [["vv", "Uw", "UwUwUvUv"],
                                             ["vx", "Uw", "UwUwUeUv"]]>;
-  defm th_vwmacc : RVVOutOp1Op2BuiltinSet<"vwmacc", "csi",
+  defm th_vwmacc : RVVOutOp1Op2BuiltinSet<"th_vwmacc", "csi",
                                           [["vv", "w", "wwvv"],
                                            ["vx", "w", "wwev"]]>;
-  defm th_vwmaccsu : RVVOutOp1Op2BuiltinSet<"vwmaccsu", "csi",
+  defm th_vwmaccsu : RVVOutOp1Op2BuiltinSet<"th_vwmaccsu", "csi",
                                             [["vv", "w", "wwvUv"],
                                              ["vx", "w", "wweUv"]]>;
-  defm th_vwmaccus : RVVOutOp1Op2BuiltinSet<"vwmaccus", "csi",
+  defm th_vwmaccus : RVVOutOp1Op2BuiltinSet<"th_vwmaccus", "csi",
                                             [["vx", "w", "wwUev"]]>;
 }
 
