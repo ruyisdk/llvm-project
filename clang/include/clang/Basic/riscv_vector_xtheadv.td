@@ -1135,7 +1135,7 @@ let HasMasked = false,
       IntrinsicTypes = {ResultType, Ops[2]->getType(), Ops.back()->getType()};
     }
     }] in {
-  defm th_vmerge : RVVOutOp1BuiltinSet<"vmerge", "csil",
+  defm th_vmerge : RVVOutOp1BuiltinSet<"th_vmerge", "csil",
                                        [["vvm", "v", "vvvm"],
                                         ["vxm", "v", "vvem"],
                                         ["vvm", "Uv", "UvUvUvm"],
