@@ -1100,7 +1100,8 @@ let MaskedPolicyScheme = HasPassthruOperand,
 // 12.11. Vector Widening Integer Multiply Operations
 
 // 12.12. Vector Single-Width Integer Multiply-Add Operations
-let UnMaskedPolicyScheme = HasPolicyOperand in {
+let MaskedPolicyScheme = NonePolicy,
+    UnMaskedPolicyScheme = NonePolicy in {
   defm th_vmacc  : RVVIntTerBuiltinSet;
   defm th_vnmsac : RVVIntTerBuiltinSet;
   defm th_vmadd  : RVVIntTerBuiltinSet;
