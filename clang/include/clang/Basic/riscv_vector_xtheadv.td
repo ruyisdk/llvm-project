@@ -201,6 +201,16 @@ multiclass RVVIntMaskOutBuiltinSet
     : RVVSignedMaskOutBuiltinSet,
       RVVUnsignedMaskOutBuiltinSet;
 
+let HasMaskedOffOperand = false in {
+  multiclass RVVIntTerBuiltinSet {
+    defm "" : RVVOutOp1BuiltinSet<NAME, "csil",
+                                  [["vv", "v", "vvvv"],
+                                   ["vx", "v", "vvev"],
+                                   ["vv", "Uv", "UvUvUvUv"],
+                                   ["vx", "Uv", "UvUvUeUv"]]>;
+  }
+}
+
 //===----------------------------------------------------------------------===//
 // 6. Configuration-Setting and Utility
 //===----------------------------------------------------------------------===//
@@ -1090,6 +1100,12 @@ let MaskedPolicyScheme = HasPassthruOperand,
 // 12.11. Vector Widening Integer Multiply Operations
 
 // 12.12. Vector Single-Width Integer Multiply-Add Operations
+let UnMaskedPolicyScheme = HasPolicyOperand in {
+  defm th_vmacc  : RVVIntTerBuiltinSet;
+  defm th_vnmsac : RVVIntTerBuiltinSet;
+  defm th_vmadd  : RVVIntTerBuiltinSet;
+  defm th_vnmsub : RVVIntTerBuiltinSet;
+}
 
 // 12.13. Vector Widening Integer Multiply-Add Operations
 
