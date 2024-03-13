@@ -1034,11 +1034,12 @@ let UnMaskedPolicyScheme = HasPassthruOperand in {
 // 12.8. Vector Integer Min/Max Operations
 
 // 12.9. Vector Single-Width Integer Multiply Operations
-let UnMaskedPolicyScheme = HasPassthruOperand in {
+let MaskedPolicyScheme = HasPassthruOperand,
+    UnMaskedPolicyScheme = HasPassthruOperand in {
   defm th_vmul : RVVIntBinBuiltinSet;
   defm th_vmulh : RVVSignedBinBuiltinSet;
   defm th_vmulhu : RVVUnsignedBinBuiltinSet;
-  defm th_vmulhsu : RVVOutOp1BuiltinSet<"vmulhsu", "csil",
+  defm th_vmulhsu : RVVOutOp1BuiltinSet<"th_vmulhsu", "csil",
                                         [["vv", "v", "vvUv"],
                                          ["vx", "v", "vvUe"]]>;
 }
