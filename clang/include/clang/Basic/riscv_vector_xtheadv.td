@@ -1079,6 +1079,13 @@ let MaskedPolicyScheme = HasPassthruOperand,
 }
 
 // 12.10. Vector Integer Divide Operations
+let MaskedPolicyScheme = HasPassthruOperand,
+    UnMaskedPolicyScheme = HasPassthruOperand in {
+  defm th_vdivu : RVVUnsignedBinBuiltinSet;
+  defm th_vdiv : RVVSignedBinBuiltinSet;
+  defm th_vremu : RVVUnsignedBinBuiltinSet;
+  defm th_vrem : RVVSignedBinBuiltinSet;
+}
 
 // 12.11. Vector Widening Integer Multiply Operations
 
