@@ -1041,6 +1041,15 @@ let MaskedPolicyScheme = HasPassthruOperand,
 }
 
 // 12.9. Vector Single-Width Integer Multiply Operations
+let MaskedPolicyScheme = HasPassthruOperand,
+    UnMaskedPolicyScheme = HasPassthruOperand in {
+  defm th_vmul : RVVIntBinBuiltinSet;
+  defm th_vmulh : RVVSignedBinBuiltinSet;
+  defm th_vmulhu : RVVUnsignedBinBuiltinSet;
+  defm th_vmulhsu : RVVOutOp1BuiltinSet<"th_vmulhsu", "csil",
+                                        [["vv", "v", "vvUv"],
+                                         ["vx", "v", "vvUe"]]>;
+}
 
 // 12.10. Vector Integer Divide Operations
 
