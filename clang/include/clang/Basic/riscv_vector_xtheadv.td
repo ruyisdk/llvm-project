@@ -866,6 +866,19 @@ let UnMaskedPolicyScheme = HasPassthruOperand in {
 }
 
 // 12.7. Vector Integer Comparison Operations
+let MaskedPolicyScheme = HasPassthruOperand,
+    HasTailPolicy = false in {
+  defm th_vmseq : RVVIntMaskOutBuiltinSet;
+  defm th_vmsne : RVVIntMaskOutBuiltinSet;
+  defm th_vmsltu : RVVUnsignedMaskOutBuiltinSet;
+  defm th_vmslt : RVVSignedMaskOutBuiltinSet;
+  defm th_vmsleu : RVVUnsignedMaskOutBuiltinSet;
+  defm th_vmsle : RVVSignedMaskOutBuiltinSet;
+  defm th_vmsgtu : RVVUnsignedMaskOutBuiltinSet;
+  defm th_vmsgt : RVVSignedMaskOutBuiltinSet;
+  defm th_vmsgeu : RVVUnsignedMaskOutBuiltinSet;
+  defm th_vmsge : RVVSignedMaskOutBuiltinSet;
+}
 
 // 12.8. Vector Integer Min/Max Operations
 let MaskedPolicyScheme = HasPassthruOperand,
