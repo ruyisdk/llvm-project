@@ -187,6 +187,20 @@ let Log2LMUL = [-3, -2, -1, 0, 1, 2] in {
                                       ["wx", "Uv", "UvUwz"]]>;
 }
 
+multiclass RVVSignedMaskOutBuiltinSet
+    : RVVOp0Op1BuiltinSet<NAME, "csil",
+                          [["vv", "vm", "mvv"],
+                           ["vx", "vm", "mve"]]>;
+
+multiclass RVVUnsignedMaskOutBuiltinSet
+    : RVVOp0Op1BuiltinSet<NAME, "csil",
+                          [["vv", "Uvm", "mUvUv"],
+                           ["vx", "Uvm", "mUvUe"]]>;
+
+multiclass RVVIntMaskOutBuiltinSet
+    : RVVSignedMaskOutBuiltinSet,
+      RVVUnsignedMaskOutBuiltinSet;
+
 //===----------------------------------------------------------------------===//
 // 6. Configuration-Setting and Utility
 //===----------------------------------------------------------------------===//
@@ -1030,6 +1044,19 @@ let UnMaskedPolicyScheme = HasPassthruOperand in {
 }
 
 // 12.7. Vector Integer Comparison Operations
+let MaskedPolicyScheme = HasPassthruOperand,
+    HasTailPolicy = false in {
+  defm th_vmseq : RVVIntMaskOutBuiltinSet;
+  defm th_vmsne : RVVIntMaskOutBuiltinSet;
+  defm th_vmsltu : RVVUnsignedMaskOutBuiltinSet;
+  defm th_vmslt : RVVSignedMaskOutBuiltinSet;
+  defm th_vmsleu : RVVUnsignedMaskOutBuiltinSet;
+  defm th_vmsle : RVVSignedMaskOutBuiltinSet;
+  defm th_vmsgtu : RVVUnsignedMaskOutBuiltinSet;
+  defm th_vmsgt : RVVSignedMaskOutBuiltinSet;
+  defm th_vmsgeu : RVVUnsignedMaskOutBuiltinSet;
+  defm th_vmsge : RVVSignedMaskOutBuiltinSet;
+}
 
 // 12.8. Vector Integer Min/Max Operations
 let MaskedPolicyScheme = HasPassthruOperand,
