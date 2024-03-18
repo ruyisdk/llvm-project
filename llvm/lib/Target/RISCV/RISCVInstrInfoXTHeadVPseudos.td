@@ -2168,7 +2168,7 @@ multiclass XVPseudoVAALU_VV_VX_RM {
   }
 }
 
-multiclass XVPseudoVSMUL_VV_VX {
+multiclass XVPseudoVSMUL_VV_VX_RM {
   foreach m = MxListXTHeadV in {
     defvar mx = m.MX;
     defvar WriteVSIMulV_MX = !cast<SchedWrite>("WriteVSMulV_" # mx);
@@ -2176,9 +2176,9 @@ multiclass XVPseudoVSMUL_VV_VX {
     defvar ReadVSIMulV_MX = !cast<SchedRead>("ReadVSMulV_" # mx);
     defvar ReadVSIMulX_MX = !cast<SchedRead>("ReadVSMulX_" # mx);
 
-    defm "" : XVPseudoBinaryV_VV<m>,
+    defm "" : XVPseudoBinaryV_VV_RM<m>,
               Sched<[WriteVSIMulV_MX, ReadVSIMulV_MX, ReadVSIMulV_MX, ReadVMask]>;
-    defm "" : XVPseudoBinaryV_VX<m>,
+    defm "" : XVPseudoBinaryV_VX_RM<m>,
               Sched<[WriteVSIMulX_MX, ReadVSIMulV_MX, ReadVSIMulX_MX, ReadVMask]>;
   }
 }
@@ -3229,12 +3229,11 @@ let Predicates = [HasVendorXTHeadV] in {
 //===----------------------------------------------------------------------===//
 
 let Predicates = [HasVendorXTHeadV] in {
-  defm PseudoTH_VSMUL  : XVPseudoVSMUL_VV_VX;
+  defm PseudoTH_VSMUL  : XVPseudoVSMUL_VV_VX_RM;
 } // Predicates = [HasVendorXTHeadV]
 
 let Predicates = [HasVendorXTHeadV] in {
-  defm : XVPatBinaryV_VV_VX<"int_riscv_th_vsmul", "PseudoTH_VSMUL", AllIntegerXVectors>;
-  // defm : XVPatBinaryV_VV_VX<"int_riscv_th_vsmul", "PseudoTH_VSMUL", AllIntegerXVectors, isSEWAware=1>;
+  defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vsmul", "PseudoTH_VSMUL", AllIntegerXVectors>;
 } // Predicates = [HasVendorXTHeadV]
 
 include "RISCVInstrInfoXTHeadVVLPatterns.td"

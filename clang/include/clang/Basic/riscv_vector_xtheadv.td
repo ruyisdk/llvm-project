@@ -1151,6 +1151,9 @@ let ManualCodegen = [{
   // 13.2. Vector Single-Width Averaging Add and Subtract
   defm th_vaadd : RVVSignedBinBuiltinSetRoundingMode;
   defm th_vasub : RVVSignedBinBuiltinSetRoundingMode;
+  // 13.3. Vector Single-Width Fractional Multiply with Rounding and Saturation Operations
+  defm th_vsmul : RVVSignedBinBuiltinSetRoundingMode;
 }
+
 
 include "riscv_vector_xtheadv_wrappers.td"
