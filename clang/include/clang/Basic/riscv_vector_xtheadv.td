@@ -1088,6 +1088,19 @@ let MaskedPolicyScheme = HasPassthruOperand,
 }
 
 // 12.11. Vector Widening Integer Multiply Operations
+let Log2LMUL = [-3, -2, -1, 0, 1, 2],
+    MaskedPolicyScheme = HasPassthruOperand,
+    UnMaskedPolicyScheme = HasPassthruOperand in {
+  defm th_vwmul : RVVOutOp0Op1BuiltinSet<"th_vwmul", "csi",
+                                         [["vv", "w", "wvv"],
+                                          ["vx", "w", "wve"]]>;
+  defm th_vwmulu : RVVOutOp0Op1BuiltinSet<"th_vwmulu", "csi",
+                                          [["vv", "Uw", "UwUvUv"],
+                                           ["vx", "Uw", "UwUvUe"]]>;
+  defm th_vwmulsu : RVVOutOp0Op1BuiltinSet<"th_vwmulsu", "csi",
+                                           [["vv", "w", "wvUv"],
+                                            ["vx", "w", "wvUe"]]>;
+}
 
 // 12.12. Vector Single-Width Integer Multiply-Add Operations
 
