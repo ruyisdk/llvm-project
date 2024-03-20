@@ -925,6 +925,13 @@ let Log2LMUL = [-3, -2, -1, 0, 1, 2],
 }
 
 // 12.12. Vector Single-Width Integer Multiply-Add Operations
+let MaskedPolicyScheme = NonePolicy,
+    UnMaskedPolicyScheme = NonePolicy in {
+  defm th_vmacc  : RVVIntTerBuiltinSet;
+  defm th_vnmsac : RVVIntTerBuiltinSet;
+  defm th_vmadd  : RVVIntTerBuiltinSet;
+  defm th_vnmsub : RVVIntTerBuiltinSet;
+}
 
 // 12.13. Vector Widening Integer Multiply-Add Operations
 
