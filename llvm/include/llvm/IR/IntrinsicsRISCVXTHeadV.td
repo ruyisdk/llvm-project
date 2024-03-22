@@ -680,6 +680,20 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 4;
   }
 
+  // For Saturating binary operations with mask but no policy.
+  // The destination vector type is NOT the same as first source vector (with mask).
+  // The second source operand matches the destination type or is an XLen scalar.
+  // Input: (maskedoff, vector_in, vector_in/scalar_in, mask, vxrm, vl)
+  class XVSaturatingBinaryABShiftMaskedRoundingMode
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, llvm_anyvector_ty, llvm_any_ty,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty,
+                     LLVMMatchType<3>],
+                    [ImmArg<ArgIndex<4>>, IntrNoMem, IntrHasSideEffects]>,
+                    RISCVVIntrinsic {
+    let VLOperand = 5;
+  }
+
   multiclass XVBinaryAAX {
     def "int_riscv_" # NAME : RISCVBinaryAAXUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVBinaryAAXMasked;
@@ -718,6 +732,11 @@ let TargetPrefix = "riscv" in {
   multiclass XVSaturatingBinaryAAX {
     def "int_riscv_" # NAME : RISCVSaturatingBinaryAAXUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVSaturatingBinaryAAXMasked;
+  }
+
+  multiclass XVSaturatingBinaryABShiftRoundingMode {
+    def "int_riscv_" # NAME : RISCVSaturatingBinaryABShiftUnMaskedRoundingMode;
+    def "int_riscv_" # NAME # "_mask" : XVSaturatingBinaryABShiftMaskedRoundingMode;
   }
 }
 
@@ -840,5 +859,9 @@ let TargetPrefix = "riscv" in {
 
   // 13.3.  Vector Single-Width Fractional Multiply with Rounding and Saturation Instructions
   defm th_vsmul : XVBinaryAAXRoundingMode;
+
+  // 13.6. Vector Narrowing Fixed-Point Clip Instructions
+  defm th_vnclipu : XVSaturatingBinaryABShiftRoundingMode;
+  defm th_vnclip : XVSaturatingBinaryABShiftRoundingMode;
 
 } // TargetPrefix = "riscv"
