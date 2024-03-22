@@ -53,6 +53,7 @@ Any feature not listed below but present in the specification should be consider
     - (Done) `12.13. Vector Widening Integer Multiply-Add Instructions`
     - (Done) `12.14. Vector Integer Merge and Move Instructions`
   - (WIP) `13. Vector Fixed-Point Arithmetic Instructions`
+    - (Done) `13.1. Vector Single-Width Saturating Add and Subtract`
     - (Done) `13.2. Vector Single-Width Averaging Add and Subtract`
     - (Done) `13.3. Vector Single-Width Fractional Multiply with Rounding and Saturation`
 - (WIP) Clang intrinsics related to the `XTHeadVector` extension:

@@ -668,6 +668,18 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 4;
   }
 
+  // For Saturating binary operations with mask but no policy.
+  // The destination vector type is the same as first source vector.
+  // Input: (maskedoff, vector_in, vector_in/scalar_in, mask, vl)
+  class XVSaturatingBinaryAAXMasked
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, LLVMMatchType<0>, llvm_any_ty,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty],
+                    [IntrNoMem, IntrHasSideEffects]>, RISCVVIntrinsic {
+    let ScalarOperand = 2;
+    let VLOperand = 4;
+  }
+
   multiclass XVBinaryAAX {
     def "int_riscv_" # NAME : RISCVBinaryAAXUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVBinaryAAXMasked;
@@ -701,6 +713,11 @@ let TargetPrefix = "riscv" in {
   multiclass XVTernaryWide {
     def "int_riscv_" # NAME : XVTernaryWideUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVTernaryWideMasked;
+  }
+
+  multiclass XVSaturatingBinaryAAX {
+    def "int_riscv_" # NAME : RISCVSaturatingBinaryAAXUnMasked;
+    def "int_riscv_" # NAME # "_mask" : XVSaturatingBinaryAAXMasked;
   }
 }
 
@@ -790,6 +807,12 @@ let TargetPrefix = "riscv" in {
 
   // 12.14. Vector Integer Merge and Move Instructions
   defm th_vmerge : RISCVBinaryWithV0;
+
+  // 13.1. Vector Single-Width Saturating Add and Subtract
+  defm th_vsaddu : XVSaturatingBinaryAAX;
+  defm th_vsadd : XVSaturatingBinaryAAX;
+  defm th_vssubu : XVSaturatingBinaryAAX;
+  defm th_vssub : XVSaturatingBinaryAAX;
 
   // 13.2. Vector Single-Width Averaging Add and Subtract
   defm th_vaadd : XVBinaryAAXRoundingMode;
