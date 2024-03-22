@@ -2694,6 +2694,39 @@ multiclass XVPatTernaryW_VX<string intrinsic, string instruction,
   }
 }
 
+multiclass XVPseudoVSALU_VV_VX_VI<Operand ImmType = simm5, string Constraint = ""> {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVSALUV_MX = !cast<SchedWrite>("WriteVSALUV_" # mx);
+    defvar WriteVSALUX_MX = !cast<SchedWrite>("WriteVSALUX_" # mx);
+    defvar WriteVSALUI_MX = !cast<SchedWrite>("WriteVSALUI_" # mx);
+    defvar ReadVSALUV_MX = !cast<SchedRead>("ReadVSALUV_" # mx);
+    defvar ReadVSALUX_MX = !cast<SchedRead>("ReadVSALUX_" # mx);
+
+    defm "" : XVPseudoBinaryV_VV<m, Constraint>,
+              Sched<[WriteVSALUV_MX, ReadVSALUV_MX, ReadVSALUV_MX, ReadVMask]>;
+    defm "" : XVPseudoBinaryV_VX<m, Constraint>,
+              Sched<[WriteVSALUX_MX, ReadVSALUV_MX, ReadVSALUX_MX, ReadVMask]>;
+    defm "" : XVPseudoBinaryV_VI<ImmType, m, Constraint>,
+              Sched<[WriteVSALUI_MX, ReadVSALUV_MX, ReadVMask]>;
+  }
+}
+
+multiclass XVPseudoVSALU_VV_VX {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVSALUV_MX = !cast<SchedWrite>("WriteVSALUV_" # mx);
+    defvar WriteVSALUX_MX = !cast<SchedWrite>("WriteVSALUX_" # mx);
+    defvar ReadVSALUV_MX = !cast<SchedRead>("ReadVSALUV_" # mx);
+    defvar ReadVSALUX_MX = !cast<SchedRead>("ReadVSALUX_" # mx);
+
+    defm "" : XVPseudoBinaryV_VV<m>,
+              Sched<[WriteVSALUV_MX, ReadVSALUV_MX, ReadVSALUV_MX, ReadVMask]>;
+    defm "" : XVPseudoBinaryV_VX<m>,
+              Sched<[WriteVSALUX_MX, ReadVSALUV_MX, ReadVSALUX_MX, ReadVMask]>;
+  }
+}
+
 multiclass XVPatBinaryV_VV_VX_VI<string intrinsic, string instruction,
                                  list<VTypeInfo> vtilist, Operand ImmType = simm5>
     : XVPatBinaryV_VV<intrinsic, instruction, vtilist>,
@@ -3209,6 +3242,23 @@ let Predicates = [HasVendorXTHeadV] in {
     def PseudoTH_VMV8R_V : XVPseudoWholeMove<TH_VMV_V_V, V_M8, VRM8>;
   }
 } // Predicates = [HasVendorXTHeadV]
+
+//===----------------------------------------------------------------------===//
+// 13.1. Vector Single-Width Averaging Add and Subtract
+//===----------------------------------------------------------------------===//
+let Defs = [VXSAT], hasSideEffects = 1, Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VSADDU : XVPseudoVSALU_VV_VX_VI;
+  defm PseudoTH_VSADD  : XVPseudoVSALU_VV_VX_VI;
+  defm PseudoTH_VSSUBU : XVPseudoVSALU_VV_VX;
+  defm PseudoTH_VSSUB  : XVPseudoVSALU_VV_VX;
+} // Predicates = [HasVendorXTHeadV]
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryV_VV_VX_VI<"int_riscv_th_vsaddu", "PseudoTH_VSADDU", AllIntegerXVectors>;
+  defm : XVPatBinaryV_VV_VX_VI<"int_riscv_th_vsadd", "PseudoTH_VSADD", AllIntegerXVectors>;
+  defm : XVPatBinaryV_VV_VX<"int_riscv_th_vssubu", "PseudoTH_VSSUBU", AllIntegerXVectors>;
+  defm : XVPatBinaryV_VV_VX<"int_riscv_th_vssub", "PseudoTH_VSSUB", AllIntegerXVectors>;
+}
 
 //===----------------------------------------------------------------------===//
 // 13.2. Vector Single-Width Averaging Add and Subtract
