@@ -1144,6 +1144,23 @@ let MaskedPolicyScheme = NonePolicy,
 }
 
 // 12.14. Vector Integer Merge Operations
+let HasMasked = false,
+    UnMaskedPolicyScheme = HasPassthruOperand,
+    MaskedPolicyScheme = NonePolicy,
+    ManualCodegen = [{
+    {
+      // Builtin: (mask, op1, op2, vl), Intrinsic: (passthru, op1, op2, mask, vl)
+      if (PolicyAttrs & RVV_VTA)
+        Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType)); // passthru
+      IntrinsicTypes = {ResultType, Ops[2]->getType(), Ops.back()->getType()};
+    }
+    }] in {
+  defm th_vmerge : RVVOutOp1BuiltinSet<"th_vmerge", "csil",
+                                       [["vvm", "v", "vvvm"],
+                                        ["vxm", "v", "vvem"],
+                                        ["vvm", "Uv", "UvUvUvm"],
+                                        ["vxm", "Uv", "UvUvUem"]]>;
+}
 
 // 12.15. Vector Integer Move Operations
 
