@@ -1797,6 +1797,24 @@ multiclass XVPseudoTernaryW_VX<LMULInfo m> {
                                      constraint>;
 }
 
+multiclass XVPseudoBinaryV_WV_RM<LMULInfo m> {
+  defm _WV : XVPseudoBinaryRoundingMode<m.vrclass, m.wvrclass, m.vrclass, m,
+                                        !if(!ge(m.octuple, 8),
+                                        "@earlyclobber $rd", "")>;
+}
+
+multiclass XVPseudoBinaryV_WX_RM<LMULInfo m> {
+  defm _WX : XVPseudoBinaryRoundingMode<m.vrclass, m.wvrclass, GPR, m,
+                                        !if(!ge(m.octuple, 8),
+                                        "@earlyclobber $rd", "")>;
+}
+
+multiclass XVPseudoBinaryV_WI_RM<LMULInfo m> {
+  defm _WI : XVPseudoBinaryRoundingMode<m.vrclass, m.wvrclass, uimm5, m,
+                                        !if(!ge(m.octuple, 8),
+                                        "@earlyclobber $rd", "")>;
+}
+
 multiclass XVPseudoVALU_VV_VX_VI<Operand ImmType = simm5, string Constraint = ""> {
   foreach m = MxListXTHeadV in {
     defvar mx = m.MX;
@@ -2180,6 +2198,24 @@ multiclass XVPseudoVSMUL_VV_VX_RM {
               Sched<[WriteVSIMulV_MX, ReadVSIMulV_MX, ReadVSIMulV_MX, ReadVMask]>;
     defm "" : XVPseudoBinaryV_VX_RM<m>,
               Sched<[WriteVSIMulX_MX, ReadVSIMulV_MX, ReadVSIMulX_MX, ReadVMask]>;
+  }
+}
+
+multiclass XVPseudoVNCLP_WV_WX_WI_RM {
+  foreach m = MxListWXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVNClipV_MX = !cast<SchedWrite>("WriteVNClipV_" # mx);
+    defvar WriteVNClipX_MX = !cast<SchedWrite>("WriteVNClipX_" # mx);
+    defvar WriteVNClipI_MX = !cast<SchedWrite>("WriteVNClipI_" # mx);
+    defvar ReadVNClipV_MX = !cast<SchedRead>("ReadVNClipV_" # mx);
+    defvar ReadVNClipX_MX = !cast<SchedRead>("ReadVNClipX_" # mx);
+
+    defm "" : XVPseudoBinaryV_WV_RM<m>,
+              Sched<[WriteVNClipV_MX, ReadVNClipV_MX, ReadVNClipV_MX, ReadVMask]>;
+    defm "" : XVPseudoBinaryV_WX_RM<m>,
+              Sched<[WriteVNClipX_MX, ReadVNClipV_MX, ReadVNClipX_MX, ReadVMask]>;
+    defm "" : XVPseudoBinaryV_WI_RM<m>,
+              Sched<[WriteVNClipI_MX, ReadVNClipV_MX, ReadVMask]>;
   }
 }
 
@@ -2727,6 +2763,52 @@ multiclass XVPseudoVSALU_VV_VX {
   }
 }
 
+multiclass XVPatBinaryV_WV_RM<string intrinsic, string instruction,
+                              list<VTypeInfoToWide> vtilist> {
+  foreach VtiToWti = vtilist in {
+    defvar Vti = VtiToWti.Vti;
+    defvar Wti = VtiToWti.Wti;
+    let Predicates = !listconcat(GetXVTypePredicates<Vti>.Predicates,
+                                 GetXVTypePredicates<Wti>.Predicates) in
+    defm : XVPatBinaryRoundingMode<intrinsic,
+                                   instruction # "_WV_" # Vti.LMul.MX,
+                                   Vti.Vector, Wti.Vector, Vti.Vector, Vti.Mask,
+                                   Vti.Log2SEW, Vti.RegClass,
+                                   Wti.RegClass, Vti.RegClass>;
+  }
+}
+
+multiclass XVPatBinaryV_WX_RM<string intrinsic, string instruction,
+                              list<VTypeInfoToWide> vtilist> {
+  foreach VtiToWti = vtilist in {
+    defvar Vti = VtiToWti.Vti;
+    defvar Wti = VtiToWti.Wti;
+    defvar kind = "W"#Vti.ScalarSuffix;
+    let Predicates = !listconcat(GetXVTypePredicates<Vti>.Predicates,
+                                 GetXVTypePredicates<Wti>.Predicates) in
+    defm : XVPatBinaryRoundingMode<intrinsic,
+                                   instruction#"_"#kind#"_"#Vti.LMul.MX,
+                                   Vti.Vector, Wti.Vector, Vti.Scalar, Vti.Mask,
+                                   Vti.Log2SEW, Vti.RegClass,
+                                   Wti.RegClass, Vti.ScalarRegClass>;
+  }
+}
+
+multiclass XVPatBinaryV_WI_RM<string intrinsic, string instruction,
+                              list<VTypeInfoToWide> vtilist> {
+  foreach VtiToWti = vtilist in {
+    defvar Vti = VtiToWti.Vti;
+    defvar Wti = VtiToWti.Wti;
+    let Predicates = !listconcat(GetXVTypePredicates<Vti>.Predicates,
+                                 GetXVTypePredicates<Wti>.Predicates) in
+    defm : XVPatBinaryRoundingMode<intrinsic,
+                                   instruction # "_WI_" # Vti.LMul.MX,
+                                   Vti.Vector, Wti.Vector, XLenVT, Vti.Mask,
+                                   Vti.Log2SEW, Vti.RegClass,
+                                   Wti.RegClass, uimm5>;
+  }
+}
+
 multiclass XVPatBinaryV_VV_VX_VI<string intrinsic, string instruction,
                                  list<VTypeInfo> vtilist, Operand ImmType = simm5>
     : XVPatBinaryV_VV<intrinsic, instruction, vtilist>,
@@ -2807,6 +2889,12 @@ multiclass XVPatTernaryW_VV_VX<string intrinsic, string instruction,
                                list<VTypeInfoToWide> vtilist>
     : XVPatTernaryW_VV<intrinsic, instruction, vtilist>,
       XVPatTernaryW_VX<intrinsic, instruction, vtilist>;
+
+multiclass XVPatBinaryV_WV_WX_WI_RM<string intrinsic, string instruction,
+                                    list<VTypeInfoToWide> vtilist>
+    : XVPatBinaryV_WV_RM<intrinsic, instruction, vtilist>,
+      XVPatBinaryV_WX_RM<intrinsic, instruction, vtilist>,
+      XVPatBinaryV_WI_RM<intrinsic, instruction, vtilist>;
 
 //===----------------------------------------------------------------------===//
 // 12.1. Vector Single-Width Saturating Add and Subtract
@@ -3284,6 +3372,21 @@ let Predicates = [HasVendorXTHeadV] in {
 
 let Predicates = [HasVendorXTHeadV] in {
   defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vsmul", "PseudoTH_VSMUL", AllIntegerXVectors>;
+} // Predicates = [HasVendorXTHeadV]
+
+//===----------------------------------------------------------------------===//
+// 13.6. Vector Narrowing Fixed-Point Clip Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV], Defs = [VXSAT], hasSideEffects = 1 in {
+  defm PseudoTH_VNCLIP  : XVPseudoVNCLP_WV_WX_WI_RM;
+  defm PseudoTH_VNCLIPU : XVPseudoVNCLP_WV_WX_WI_RM;
+} // Predicates = [HasVendorXTHeadV]
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryV_WV_WX_WI_RM<"int_riscv_th_vnclipu", "PseudoTH_VNCLIPU",
+                                  AllWidenableIntXVectors>;
+  defm : XVPatBinaryV_WV_WX_WI_RM<"int_riscv_th_vnclip", "PseudoTH_VNCLIP",
+                                   AllWidenableIntXVectors>;
 } // Predicates = [HasVendorXTHeadV]
 
 include "RISCVInstrInfoXTHeadVVLPatterns.td"
