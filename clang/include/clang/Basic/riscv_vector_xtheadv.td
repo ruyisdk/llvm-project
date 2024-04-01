@@ -1176,6 +1176,15 @@ enum __RISCV_VXRM {
 }] in
 def vxrm_enum : RVVHeader;
 
+// 13.1. Vector Single-Width Saturating Add and Subtract
+let UnMaskedPolicyScheme = HasPassthruOperand,
+    MaskedPolicyScheme = HasPassthruOperand in {
+  defm th_vsaddu : RVVUnsignedBinBuiltinSet;
+  defm th_vsadd : RVVSignedBinBuiltinSet;
+  defm th_vssubu : RVVUnsignedBinBuiltinSet;
+  defm th_vssub : RVVSignedBinBuiltinSet;
+}
+
 let UnMaskedPolicyScheme = HasPassthruOperand,
     MaskedPolicyScheme = HasPassthruOperand,
     ManualCodegen = [{
