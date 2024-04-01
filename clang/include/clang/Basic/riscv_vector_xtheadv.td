@@ -1176,7 +1176,9 @@ enum __RISCV_VXRM {
 }] in
 def vxrm_enum : RVVHeader;
 
-let ManualCodegen = [{
+let UnMaskedPolicyScheme = HasPassthruOperand,
+    MaskedPolicyScheme = HasPassthruOperand,
+    ManualCodegen = [{
   {
     // LLVM intrinsic
     // Unmasked: (passthru, op0, op1, round_mode, vl)
