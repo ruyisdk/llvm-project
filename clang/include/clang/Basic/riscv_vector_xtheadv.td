@@ -185,10 +185,20 @@ let Log2LMUL = [-3, -2, -1, 0, 1, 2] in {
                                      [["wv", "v", "vwUv"],
                                       ["wx", "v", "vwz"]]>;
 
+  multiclass RVVSignedNShiftBuiltinSetRoundingMode
+        : RVVOutOp0Op1BuiltinSet<NAME, "csil",
+                                       [["wv", "v", "vwUvu"],
+                                        ["wx", "v", "vwzu"]]>;
+
   multiclass RVVUnsignedNShiftBuiltinSet
       : RVVOutOp0Op1BuiltinSet<NAME, "csil",
                                      [["wv", "Uv", "UvUwUv"],
                                       ["wx", "Uv", "UvUwz"]]>;
+
+  multiclass RVVUnsignedNShiftBuiltinSetRoundingMode
+        : RVVOutOp0Op1BuiltinSet<NAME, "csil",
+                                       [["wv", "Uv", "UvUwUvu"],
+                                        ["wx", "Uv", "UvUwzu"]]>;
 }
 
 multiclass RVVSignedMaskOutBuiltinSet
@@ -1222,5 +1232,53 @@ let ManualCodegen = [{
   defm th_vsmul : RVVSignedBinBuiltinSetRoundingMode;
 }
 
+// 13.5 Vector Narrowing Fixed-Point Clip Operations
+let UnMaskedPolicyScheme = HasPassthruOperand,
+        MaskedPolicyScheme = HasPassthruOperand,
+        ManualCodegen = [{
+  {
+    // LLVM intrinsic
+    // Unmasked: (passthru, op0, op1, vxrm, vl)
+    // Masked:   (passthru, vector_in, vector_in/scalar_in, mask, vxrm, vl)
+
+    // Clang builtin
+    // Unmask:   (op1, op2, vxrm, vl)
+    // Mask:     (mask, op1, op2, vxrm, vl)
+
+    SmallVector<llvm::Value*, 7> Operands;
+    bool HasMaskedOff = !(
+        (IsMasked && (PolicyAttrs & RVV_VTA) && (PolicyAttrs & RVV_VMA)) ||
+        (!IsMasked && PolicyAttrs & RVV_VTA));
+    unsigned Offset = IsMasked ?
+        (HasMaskedOff ? 2 : 1) : (HasMaskedOff ? 1 : 0);
+
+    if (!HasMaskedOff)
+      Operands.push_back(llvm::PoisonValue::get(ResultType));
+    else
+      Operands.push_back(Ops[IsMasked ? 1 : 0]);
+
+    Operands.push_back(Ops[Offset]); // op0
+    Operands.push_back(Ops[Offset + 1]); // op1
+
+    if (IsMasked)
+      Operands.push_back(Ops[0]); // mask
+
+    Operands.push_back(Ops[Offset + 2]); // vxrm
+    Operands.push_back(Ops[Offset + 3]); // vl
+
+    // TODO: no policy in LLVM side for masked intrinsics.
+    // if (IsMasked)
+    //  Operands.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+
+    IntrinsicTypes = {ResultType, Ops[Offset]->getType(), Ops[Offset + 1]->getType(),
+                      Ops.back()->getType()};
+    llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
+    return Builder.CreateCall(F, Operands, "");
+  }
+}] in {
+  // 13.5. Vector Narrowing Fixed-Point Clip Instructions
+  defm th_vnclipu : RVVUnsignedNShiftBuiltinSetRoundingMode;
+  defm th_vnclip  : RVVSignedNShiftBuiltinSetRoundingMode;
+}
 
 include "riscv_vector_xtheadv_wrappers.td"
