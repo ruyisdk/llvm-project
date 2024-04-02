@@ -21,6 +21,20 @@ defvar MxListXTHeadV = [V_M1, V_M2, V_M4, V_M8];
 // Used to iterate over all possible extendable LMULs in RVV 0.7.1.
 defvar MxListWXTHeadV = [V_M1, V_M2, V_M4];
 
+class FPR_InfoXTHeadV<int sew> {
+  RegisterClass fprclass = !cast<RegisterClass>("FPR" # sew);
+  string FX = "F" # sew;
+  int SEW = sew;
+  list<LMULInfo> MxList = [V_M1, V_M2, V_M4, V_M8];
+  list<LMULInfo> MxListFW = !if(!eq(sew, 64), [], !listremove(MxList, [V_M8]));
+}
+
+def SCALAR_F16XTHeadV : FPR_InfoXTHeadV<16>;
+def SCALAR_F32XTHeadV : FPR_InfoXTHeadV<32>;
+def SCALAR_F64XTHeadV : FPR_InfoXTHeadV<64>;
+
+defvar FPListXTHeadV = [SCALAR_F16XTHeadV, SCALAR_F32XTHeadV, SCALAR_F64XTHeadV];
+
 // Redefine `AllIntegerVectors` from RISCVInstrInfoVPseudos.td to remove fractionally-grouped register groups
 // like MF2, MF4, MF8, which are not supported by the 'V' extension 0.7.1.
 defset list<VTypeInfo> AllXVectors = {
@@ -1352,11 +1366,11 @@ multiclass XVPatUSLoadStoreWholeVRSDNode<ValueType type,
 }
 
 // Explicitly define the expected instruction selection result for each vector type
-foreach vti = [XVI8M1, XVI16M1, XVI32M1, XVI64M1] in
+foreach vti = [XVI8M1, XVI16M1, XVI32M1, XVI64M1, XVF16M1, XVF32M1, XVF64M1] in
   let Predicates = GetXVTypePredicates<vti>.Predicates in
   defm : XVPatUSLoadStoreWholeVRSDNode<vti.Vector, vti.Log2SEW, vti.LMul,
                                        vti.RegClass>;
-foreach vti = GroupIntegerXVectors in
+foreach vti = !listconcat(GroupIntegerXVectors, GroupFloatXVectors) in
   let Predicates = GetXVTypePredicates<vti>.Predicates in
   defm : XVPatUSLoadStoreWholeVRSDNode<vti.Vector, vti.Log2SEW, vti.LMul,
                                        vti.RegClass>;
@@ -1815,6 +1829,18 @@ multiclass XVPseudoBinaryV_WI_RM<LMULInfo m> {
                                         "@earlyclobber $rd", "")>;
 }
 
+multiclass XVPseudoBinaryFV_VV_RM<LMULInfo m, string Constraint = "", int sew = 0> {
+  defm _VV : XVPseudoBinaryRoundingMode<m.vrclass, m.vrclass, m.vrclass, m,
+                                       Constraint, sew,
+                                       UsesVXRM=0>;
+}
+
+multiclass XVPseudoBinaryV_VF_RM<LMULInfo m, FPR_InfoXTHeadV f, string Constraint = "", int sew = 0> {
+  defm _V # f.FX : XVPseudoBinaryRoundingMode<m.vrclass, m.vrclass,
+                                              f.fprclass, m, Constraint, sew,
+                                              UsesVXRM=0>;
+}
+
 multiclass XVPseudoVALU_VV_VX_VI<Operand ImmType = simm5, string Constraint = ""> {
   foreach m = MxListXTHeadV in {
     defvar mx = m.MX;
@@ -2216,6 +2242,42 @@ multiclass XVPseudoVNCLP_WV_WX_WI_RM {
               Sched<[WriteVNClipX_MX, ReadVNClipV_MX, ReadVNClipX_MX, ReadVMask]>;
     defm "" : XVPseudoBinaryV_WI_RM<m>,
               Sched<[WriteVNClipI_MX, ReadVNClipV_MX, ReadVMask]>;
+  }
+}
+
+multiclass XVPseudoVALU_VV_VF_RM {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVFALUV_MX = !cast<SchedWrite>("WriteVFALUV_" # mx);
+    defvar ReadVFALUV_MX = !cast<SchedRead>("ReadVFALUV_" # mx);
+
+    defm "" : XVPseudoBinaryFV_VV_RM<m>,
+              Sched<[WriteVFALUV_MX, ReadVFALUV_MX, ReadVFALUV_MX, ReadVMask]>;
+  }
+
+  foreach f = FPListXTHeadV in {
+    foreach m = f.MxList in {
+      defvar mx = m.MX;
+      defvar WriteVFALUF_MX = !cast<SchedWrite>("WriteVFALUF_" # mx);
+      defvar ReadVFALUV_MX = !cast<SchedRead>("ReadVFALUV_" # mx);
+      defvar ReadVFALUF_MX = !cast<SchedRead>("ReadVFALUF_" # mx);
+      defm "" : XVPseudoBinaryV_VF_RM<m, f>,
+                Sched<[WriteVFALUF_MX, ReadVFALUV_MX, ReadVFALUF_MX, ReadVMask]>;
+    }
+  }
+}
+
+multiclass XVPseudoVALU_VF_RM {
+  foreach f = FPListXTHeadV in {
+    foreach m = f.MxList in {
+      defvar mx = m.MX;
+      defvar WriteVFALUF_MX = !cast<SchedWrite>("WriteVFALUF_" # mx);
+      defvar ReadVFALUV_MX = !cast<SchedRead>("ReadVFALUV_" # mx);
+      defvar ReadVFALUF_MX = !cast<SchedRead>("ReadVFALUF_" # mx);
+
+      defm "" : XVPseudoBinaryV_VF_RM<m, f>,
+                Sched<[WriteVFALUF_MX, ReadVFALUV_MX, ReadVFALUF_MX, ReadVMask]>;
+    }
   }
 }
 
@@ -3388,5 +3450,22 @@ let Predicates = [HasVendorXTHeadV] in {
   defm : XVPatBinaryV_WV_WX_WI_RM<"int_riscv_th_vnclip", "PseudoTH_VNCLIP",
                                    AllWidenableIntXVectors>;
 } // Predicates = [HasVendorXTHeadV]
+
+//===----------------------------------------------------------------------===//
+// 14.2. Vector Single-Width Floating-Point Add/Subtract Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true, hasPostISelHook = 1 in {
+  defm PseudoTH_VFADD  : XVPseudoVALU_VV_VF_RM;
+  defm PseudoTH_VFSUB  : XVPseudoVALU_VV_VF_RM;
+  defm PseudoTH_VFRSUB : XVPseudoVALU_VF_RM;
+}
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfadd", "PseudoTH_VFADD",
+                               AllFloatXVectors>;
+  defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfsub", "PseudoTH_VFSUB",
+                               AllFloatXVectors>;
+  defm : XVPatBinaryV_VX_RM<"int_riscv_th_vfrsub", "PseudoTH_VFRSUB", AllFloatXVectors>;
+}
 
 include "RISCVInstrInfoXTHeadVVLPatterns.td"
