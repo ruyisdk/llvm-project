@@ -864,4 +864,8 @@ let TargetPrefix = "riscv" in {
   defm th_vnclipu : XVSaturatingBinaryABShiftRoundingMode;
   defm th_vnclip : XVSaturatingBinaryABShiftRoundingMode;
 
+  // 14.2. Vector Single-Width Floating-Point Add/Subtract Instructions
+  defm th_vfadd : XVBinaryAAXRoundingMode;
+  defm th_vfsub : XVBinaryAAXRoundingMode;
+  defm th_vfrsub : XVBinaryAAXRoundingMode;
 } // TargetPrefix = "riscv"
