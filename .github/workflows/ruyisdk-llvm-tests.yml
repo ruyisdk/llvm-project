@@ -6,6 +6,7 @@ on:
     ignore-forks: true
     branches:
       - 'xtheadvector'
+      - 'rebase-*'
     paths:
       - 'llvm/**'
       - 'clang/**'
@@ -15,6 +16,7 @@ on:
     ignore-forks: true
     branches:
       - 'xtheadvector'
+      - 'rebase-*'
     paths:
       - 'llvm/**'
       - 'clang/**'
