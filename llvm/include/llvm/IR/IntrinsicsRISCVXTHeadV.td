@@ -868,4 +868,9 @@ let TargetPrefix = "riscv" in {
   defm th_vfadd : XVBinaryAAXRoundingMode;
   defm th_vfsub : XVBinaryAAXRoundingMode;
   defm th_vfrsub : XVBinaryAAXRoundingMode;
+
+  // 14.4. Vector Single-Width Floating-Point Multiply/Divide Instructions
+  defm th_vfmul : XVBinaryAAXRoundingMode;
+  defm th_vfdiv : XVBinaryAAXRoundingMode;
+  defm th_vfrdiv : XVBinaryAAXRoundingMode;
 } // TargetPrefix = "riscv"
