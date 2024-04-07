@@ -59,6 +59,7 @@ Any feature not listed below but present in the specification should be consider
     - (Done) `13.6. Vector Narrowing Fixed-Point Clip Instructions`
   - (WIP) `14. Vector Floating-Point Instructions`
     - (Done) `14.2. Vector Single-Width Floating-Point Add/Subtract Instructions`
+    - (Done) `14.4. Vector Single-Width Floating-Point Multiply/Divide Instructions`
 - (WIP) Clang intrinsics related to the `XTHeadVector` extension:
   - (WIP) `6. Configuration-Setting and Utility`
     - (Done) `6.1. Set vl and vtype`
