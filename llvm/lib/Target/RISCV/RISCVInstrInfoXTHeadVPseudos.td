@@ -2281,6 +2281,69 @@ multiclass XVPseudoVALU_VF_RM {
   }
 }
 
+multiclass XVPseudoVFMUL_VV_VF_RM {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVFMulV_MX = !cast<SchedWrite>("WriteVFMulV_" # mx);
+    defvar ReadVFMulV_MX = !cast<SchedRead>("ReadVFMulV_" # mx);
+
+    defm "" : XVPseudoBinaryFV_VV_RM<m>,
+              Sched<[WriteVFMulV_MX, ReadVFMulV_MX, ReadVFMulV_MX, ReadVMask]>;
+  }
+
+  foreach f = FPListXTHeadV in {
+    foreach m = f.MxList in {
+      defvar mx = m.MX;
+      defvar WriteVFMulF_MX = !cast<SchedWrite>("WriteVFMulF_" # mx);
+      defvar ReadVFMulV_MX = !cast<SchedRead>("ReadVFMulV_" # mx);
+      defvar ReadVFMulF_MX = !cast<SchedRead>("ReadVFMulF_" # mx);
+
+      defm "" : XVPseudoBinaryV_VF_RM<m, f>,
+                Sched<[WriteVFMulF_MX, ReadVFMulV_MX, ReadVFMulF_MX, ReadVMask]>;
+    }
+  }
+}
+
+multiclass XVPseudoVFDIV_VV_VF_RM {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar sews = SchedSEWSet<mx, isF=1>.val;
+    foreach e = sews in {
+      defvar WriteVFDivV_MX_E = !cast<SchedWrite>("WriteVFDivV_" # mx # "_E" # e);
+      defvar ReadVFDivV_MX_E = !cast<SchedRead>("ReadVFDivV_" # mx # "_E" # e);
+
+      defm "" : XVPseudoBinaryFV_VV_RM<m, "", e>,
+                Sched<[WriteVFDivV_MX_E, ReadVFDivV_MX_E, ReadVFDivV_MX_E, ReadVMask]>;
+    }
+  }
+
+  foreach f = FPListXTHeadV in {
+    foreach m = f.MxList in {
+      defvar mx = m.MX;
+      defvar WriteVFDivF_MX_E = !cast<SchedWrite>("WriteVFDivF_" # mx # "_E" # f.SEW);
+      defvar ReadVFDivV_MX_E = !cast<SchedRead>("ReadVFDivV_" # mx # "_E" # f.SEW);
+      defvar ReadVFDivF_MX_E = !cast<SchedRead>("ReadVFDivF_" # mx # "_E" # f.SEW);
+
+      defm "" : XVPseudoBinaryV_VF_RM<m, f, "", f.SEW>,
+                Sched<[WriteVFDivF_MX_E, ReadVFDivV_MX_E, ReadVFDivF_MX_E, ReadVMask]>;
+    }
+  }
+}
+
+multiclass XVPseudoVFRDIV_VF_RM {
+  foreach f = FPListXTHeadV in {
+    foreach m = f.MxList in {
+      defvar mx = m.MX;
+      defvar WriteVFDivF_MX_E = !cast<SchedWrite>("WriteVFDivF_" # mx # "_E" # f.SEW);
+      defvar ReadVFDivV_MX_E = !cast<SchedRead>("ReadVFDivV_" # mx # "_E" # f.SEW);
+      defvar ReadVFDivF_MX_E = !cast<SchedRead>("ReadVFDivF_" # mx # "_E" # f.SEW);
+
+      defm "" : XVPseudoBinaryV_VF_RM<m, f, "", f.SEW>,
+                Sched<[WriteVFDivF_MX_E, ReadVFDivV_MX_E, ReadVFDivF_MX_E, ReadVMask]>;
+    }
+  }
+}
+
 //===----------------------------------------------------------------------===//
 // Helpers to define the intrinsic patterns for the XTHeadVector extension.
 //===----------------------------------------------------------------------===//
@@ -3467,5 +3530,24 @@ let Predicates = [HasVendorXTHeadV] in {
                                AllFloatXVectors>;
   defm : XVPatBinaryV_VX_RM<"int_riscv_th_vfrsub", "PseudoTH_VFRSUB", AllFloatXVectors>;
 }
+
+//===----------------------------------------------------------------------===//
+// 14.4. Vector Single-Width Floating-Point Multiply/Divide Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true,
+    hasSideEffects = 0, hasPostISelHook = 1 in {
+  defm PseudoTH_VFMUL  : XVPseudoVFMUL_VV_VF_RM;
+  defm PseudoTH_VFDIV  : XVPseudoVFDIV_VV_VF_RM;
+  defm PseudoTH_VFRDIV : XVPseudoVFRDIV_VF_RM;
+} // Predicates = [HasVendorXTHeadV]
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfmul", "PseudoTH_VFMUL", 
+                               AllFloatXVectors>;
+  defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfdiv", "PseudoTH_VFDIV",
+                               AllFloatXVectors, isSEWAware=1>;
+  defm : XVPatBinaryV_VX_RM<"int_riscv_th_vfrdiv", "PseudoTH_VFRDIV",
+                            AllFloatXVectors, isSEWAware=1>;
+} // Predicates = [HasVendorXTHeadV]
 
 include "RISCVInstrInfoXTHeadVVLPatterns.td"
