@@ -600,6 +600,19 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 4;
   }
 
+  // For destination vector type is NOT the same as first source vector
+  // (with mask but no policy).
+  // Input: (maskedoff, vector_in, vector_in/scalar_in, mask, frm, vl)
+  class XVBinaryABXMaskedRoundingMode
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, llvm_anyvector_ty, llvm_any_ty,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty,
+                     LLVMMatchType<3>],
+                    [ImmArg<ArgIndex<4>>, IntrNoMem]>, RISCVVIntrinsic {
+    let ScalarOperand = 2;
+    let VLOperand = 5;
+  }
+
   // For destination vector type is the same as
   // first source vector (with mask but no policy).
   // The second source operand must match the destination type or be an XLen scalar.
@@ -702,6 +715,11 @@ let TargetPrefix = "riscv" in {
   multiclass XVBinaryAAXRoundingMode {
     def "int_riscv_" # NAME : RISCVBinaryAAXUnMaskedRoundingMode;
     def "int_riscv_" # NAME # "_mask" : XVBinaryAAXMaskedRoundingMode;
+  }
+
+  multiclass XVBinaryABXRoundingMode {
+    def "int_riscv_" # NAME : RISCVBinaryABXUnMaskedRoundingMode;
+    def "int_riscv_" # NAME # "_mask" : XVBinaryABXMaskedRoundingMode;
   }
 
   multiclass XVBinaryABX {
@@ -868,6 +886,12 @@ let TargetPrefix = "riscv" in {
   defm th_vfadd : XVBinaryAAXRoundingMode;
   defm th_vfsub : XVBinaryAAXRoundingMode;
   defm th_vfrsub : XVBinaryAAXRoundingMode;
+
+  // 14.3. Vector Widening Floating-Point Add/Subtract Instructions
+  defm th_vfwadd : XVBinaryABXRoundingMode;
+  defm th_vfwsub : XVBinaryABXRoundingMode;
+  defm th_vfwadd_w : XVBinaryAAXRoundingMode;
+  defm th_vfwsub_w : XVBinaryAAXRoundingMode;
 
   // 14.4. Vector Single-Width Floating-Point Multiply/Divide Instructions
   defm th_vfmul : XVBinaryAAXRoundingMode;
