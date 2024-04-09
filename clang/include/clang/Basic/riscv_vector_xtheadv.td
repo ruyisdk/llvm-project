@@ -225,6 +225,21 @@ let HasMaskedOffOperand = false in {
   }
 }
 
+class RVVMaskBinBuiltin : RVVOutBuiltin<"m", "mmm", "c"> {
+  let Name = NAME # "_mm";
+  let HasMasked = false;
+}
+
+class RVVMaskUnaryBuiltin : RVVOutBuiltin<"m", "mm", "c"> {
+  let Name = NAME # "_m";
+}
+
+class RVVMaskNullaryBuiltin : RVVOutBuiltin<"m", "m", "c"> {
+  let Name = NAME # "_m";
+  let HasMasked = false;
+  let SupportOverloading = false;
+}
+
 //===----------------------------------------------------------------------===//
 // 6. Configuration-Setting and Utility
 //===----------------------------------------------------------------------===//
@@ -1291,5 +1306,38 @@ let UnMaskedPolicyScheme = HasPassthruOperand,
   defm th_vnclipu : RVVUnsignedNShiftBuiltinSetRoundingMode;
   defm th_vnclip  : RVVSignedNShiftBuiltinSetRoundingMode;
 }
+
+// 16. Vector Mask Instructions
+
+// 16.1. Vector Mask-Register Logical Instructions
+multiclass RVVPseudoMaskBuiltin<string IR, string type_range> {
+  let Name = NAME,
+      IRName = IR,
+      HasMasked = false,
+      ManualCodegen = [{
+      {
+        // op1, vl
+        IntrinsicTypes = {ResultType,
+                          Ops[1]->getType()};
+        Ops.insert(Ops.begin() + 1, Ops[0]);
+        break;
+      }
+      }] in {
+        def : RVVBuiltin<"m", "mm", type_range>;
+  }
+}
+
+def  th_vmand     : RVVMaskBinBuiltin;
+def  th_vmnand    : RVVMaskBinBuiltin;
+def  th_vmandnot  : RVVMaskBinBuiltin;
+def  th_vmxor     : RVVMaskBinBuiltin;
+def  th_vmor      : RVVMaskBinBuiltin;
+def  th_vmnor     : RVVMaskBinBuiltin;
+def  th_vmornot   : RVVMaskBinBuiltin;
+def  th_vmxnor    : RVVMaskBinBuiltin;
+def  th_vmclr     : RVVMaskNullaryBuiltin;
+def  th_vmset     : RVVMaskNullaryBuiltin;
+defm th_vmmv_m    : RVVPseudoMaskBuiltin<"th_vmand", "c">;
+defm th_vmnot_m   : RVVPseudoMaskBuiltin<"th_vmnand", "c">;
 
 include "riscv_vector_xtheadv_wrappers.td"
