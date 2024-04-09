@@ -146,6 +146,18 @@ bool RISCVExpandPseudo::expandMI(MachineBasicBlock &MBB,
   case RISCV::PseudoVMSET_M_B64:
     // vmset.m vd => vmxnor.mm vd, vd, vd
     return expandVMSET_VMCLR(MBB, MBBI, RISCV::VMXNOR_MM);
+  case RISCV::PseudoTH_VMCLR_M_B8:
+  case RISCV::PseudoTH_VMCLR_M_B16:
+  case RISCV::PseudoTH_VMCLR_M_B32:
+  case RISCV::PseudoTH_VMCLR_M_B64:
+      // th.vmclr.m vd => th.vmxor.mm vd, vd, vd
+      return expandVMSET_VMCLR(MBB, MBBI, RISCV::TH_VMXOR_MM);
+  case RISCV::PseudoTH_VMSET_M_B8:
+  case RISCV::PseudoTH_VMSET_M_B16:
+  case RISCV::PseudoTH_VMSET_M_B32:
+  case RISCV::PseudoTH_VMSET_M_B64:
+      // th.vmset.m vd => th.vmxnor.mm vd, vd, vd
+      return expandVMSET_VMCLR(MBB, MBBI, RISCV::TH_VMXNOR_MM);
   }
 
   return false;
