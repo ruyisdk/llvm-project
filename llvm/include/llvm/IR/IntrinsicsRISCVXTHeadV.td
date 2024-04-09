@@ -898,6 +898,9 @@ let TargetPrefix = "riscv" in {
   defm th_vfdiv : XVBinaryAAXRoundingMode;
   defm th_vfrdiv : XVBinaryAAXRoundingMode;
 
+  // 14.5. Vector Widening Floating-Point Multiply
+  defm th_vfwmul : XVBinaryABXRoundingMode;
+
   // 16.1. Vector Mask-Register Logical Operations
   def int_riscv_th_vmand: RISCVBinaryAAAUnMasked;
   def int_riscv_th_vmnand: RISCVBinaryAAAUnMasked;
