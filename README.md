@@ -61,6 +61,7 @@ Any feature not listed below but present in the specification should be consider
     - (Done) `14.2. Vector Single-Width Floating-Point Add/Subtract Instructions`
     - (Done) `14.3. Vector Widening Floating-Point Add/Subtract Instructions`
     - (Done) `14.4. Vector Single-Width Floating-Point Multiply/Divide Instructions`
+    - (Done) `14.5. Vector Widening Floating-Point Multiply`
 - (WIP) Clang intrinsics related to the `XTHeadVector` extension:
   - (WIP) `6. Configuration-Setting and Utility`
     - (Done) `6.1. Set vl and vtype`
