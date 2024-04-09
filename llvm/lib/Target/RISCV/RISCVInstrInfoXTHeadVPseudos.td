@@ -124,6 +124,17 @@ defset list<VTypeInfoToWide> AllWidenableFloatXVectors = {
   def : VTypeInfoToWide<VF32M4, VF64M8>;
 }
 
+// Redefine `AllMasks` from RISCVInstrInfoVPseudos.td to remove fractionally-grouped register groups.
+// TODO: riscv-v-intrinsics.pdf declares there are functions accepting vbool<16,32,64>_t, but they need
+//  to be connected to MF2, MF4, MF8, which are not supported by the 'V' extension 0.7.1.
+defset list<MTypeInfo> AllXMasks = {
+  // vbool<n>_t, <n> = SEW/LMUL, we assume SEW=8 and corresponding LMUL.
+  def : MTypeInfo<vbool8_t, V_M1, "B8">;
+  def : MTypeInfo<vbool4_t, V_M2, "B16">;
+  def : MTypeInfo<vbool2_t, V_M4, "B32">;
+  def : MTypeInfo<vbool1_t, V_M8, "B64">;
+}
+
 class GetXVTypePredicates<VTypeInfo vti> {
   // TODO: distinguish different types (like F16, F32, F64, AnyF)? Is it needed?
   list<Predicate> Predicates = !cond(!eq(vti.Scalar, f16) : [HasVendorXTHeadV],
@@ -1666,6 +1677,19 @@ class XVPseudoBinaryMaskNoPolicy<VReg RetClass,
   let HasSEWOp = 1;
 }
 
+multiclass XVPseudoNullaryPseudoM <string BaseInst> {
+  foreach mti = AllXMasks in {
+    defvar mx = mti.LMul.MX;
+    defvar WriteVMALUV_MX = !cast<SchedWrite>("WriteVMALUV_" # mx);
+    defvar ReadVMALUV_MX = !cast<SchedRead>("ReadVMALUV_" # mx);
+
+    let VLMul = mti.LMul.value in {
+      def "_M_" # mti.BX : VPseudoNullaryPseudoM<BaseInst # "_MM">,
+        Sched<[WriteVMALUV_MX, ReadVMALUV_MX, ReadVMALUV_MX]>;
+    }
+  }
+}
+
 class XVPseudoUnaryNoMask<DAGOperand RetClass, DAGOperand OpClass,
                           string Constraint = ""> :
       Pseudo<(outs RetClass:$rd),
@@ -2480,6 +2504,19 @@ multiclass XVPseudoVFRDIV_VF_RM {
   }
 }
 
+multiclass XVPseudoVALU_MM {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVMALUV_MX = !cast<SchedWrite>("WriteVMALUV_" # mx);
+    defvar ReadVMALUV_MX = !cast<SchedRead>("ReadVMALUV_" # mx);
+
+    let VLMul = m.value in {
+      def "_MM_" # mx : VPseudoBinaryNoMask<VR, VR, VR, "">,
+                          Sched<[WriteVMALUV_MX, ReadVMALUV_MX, ReadVMALUV_MX]>;
+    }
+  }
+}
+
 //===----------------------------------------------------------------------===//
 // Helpers to define the intrinsic patterns for the XTHeadVector extension.
 //===----------------------------------------------------------------------===//
@@ -2941,6 +2978,21 @@ multiclass XVPatBinaryM_VI<string intrinsic, string instruction,
                        vti.Mask, vti.Vector, XLenVT, vti.Mask,
                        vti.Log2SEW, VR,
                        vti.RegClass, simm5>;
+}
+
+multiclass XVPatBinaryM_MM<string intrinsic, string instruction> {
+  foreach mti = AllXMasks in
+    def : VPatBinaryM<intrinsic, instruction # "_MM_" # mti.LMul.MX,
+                      mti.Mask, mti.Mask, mti.Mask,
+                      mti.Log2SEW, VR, VR>;
+}
+
+multiclass XVPatNullaryM<string intrinsic, string inst> {
+  foreach mti = AllXMasks in
+    def : Pat<(mti.Mask (!cast<Intrinsic>(intrinsic)
+                        VLOpFrag)),
+                        (!cast<Instruction>(inst#"_M_"#mti.BX)
+                        GPR:$vl, mti.Log2SEW)>;
 }
 
 multiclass XVPatCompare_VI<string intrinsic, string inst,
@@ -3818,12 +3870,45 @@ let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true,
 } // Predicates = [HasVendorXTHeadV]
 
 let Predicates = [HasVendorXTHeadV] in {
-  defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfmul", "PseudoTH_VFMUL", 
+  defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfmul", "PseudoTH_VFMUL",
                                AllFloatXVectors>;
   defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfdiv", "PseudoTH_VFDIV",
                                AllFloatXVectors, isSEWAware=1>;
   defm : XVPatBinaryV_VX_RM<"int_riscv_th_vfrdiv", "PseudoTH_VFRDIV",
                             AllFloatXVectors, isSEWAware=1>;
 } // Predicates = [HasVendorXTHeadV]
+
+//===----------------------------------------------------------------------===//
+// 16.1. Vector Mask-Register Logical Operations
+//===----------------------------------------------------------------------===//
+
+defm PseudoTH_VMAND: XVPseudoVALU_MM;
+defm PseudoTH_VMNAND: XVPseudoVALU_MM;
+defm PseudoTH_VMANDN: XVPseudoVALU_MM;
+defm PseudoTH_VMXOR: XVPseudoVALU_MM;
+defm PseudoTH_VMOR: XVPseudoVALU_MM;
+defm PseudoTH_VMNOR: XVPseudoVALU_MM;
+defm PseudoTH_VMORN: XVPseudoVALU_MM;
+defm PseudoTH_VMXNOR: XVPseudoVALU_MM;
+
+// Pseudo instructions, processed by the RISCVExpandPseudoInsts pass.
+defm PseudoTH_VMCLR : XVPseudoNullaryPseudoM<"TH_VMXOR">;
+defm PseudoTH_VMSET : XVPseudoNullaryPseudoM<"TH_VMXNOR">;
+
+// Patterns
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryM_MM<"int_riscv_th_vmand", "PseudoTH_VMAND">;
+  defm : XVPatBinaryM_MM<"int_riscv_th_vmnand", "PseudoTH_VMNAND">;
+  defm : XVPatBinaryM_MM<"int_riscv_th_vmandnot", "PseudoTH_VMANDN">;
+  defm : XVPatBinaryM_MM<"int_riscv_th_vmxor", "PseudoTH_VMXOR">;
+  defm : XVPatBinaryM_MM<"int_riscv_th_vmor", "PseudoTH_VMOR">;
+  defm : XVPatBinaryM_MM<"int_riscv_th_vmnor", "PseudoTH_VMNOR">;
+  defm : XVPatBinaryM_MM<"int_riscv_th_vmornot", "PseudoTH_VMORN">;
+  defm : XVPatBinaryM_MM<"int_riscv_th_vmxnor", "PseudoTH_VMXNOR">;
+
+  // pseudo instructions
+  defm : XVPatNullaryM<"int_riscv_th_vmclr", "PseudoTH_VMCLR">;
+  defm : XVPatNullaryM<"int_riscv_th_vmset", "PseudoTH_VMSET">;
+}
 
 include "RISCVInstrInfoXTHeadVVLPatterns.td"
