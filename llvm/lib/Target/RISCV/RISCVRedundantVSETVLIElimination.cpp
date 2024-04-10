@@ -76,7 +76,7 @@ bool RISCVRedundantVSETVLIElimination::optimizeBlock(MachineBasicBlock &MBB) {
 
   bool Changed = false;
 
-  // Remove redundant Copy instructions unless TargetReg is modified.
+  // Remove redundant VTYPE preserving blocks unless it has some side effects.
   for (MachineBasicBlock::iterator I = MBB.begin(), E = MBB.end(); I != E;) {
     MachineInstr *MI = &*I;
     ++I;
