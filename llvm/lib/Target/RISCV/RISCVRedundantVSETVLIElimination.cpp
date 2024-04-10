@@ -107,6 +107,9 @@ bool RISCVRedundantVSETVLIElimination::optimizeBlock(MachineBasicBlock &MBB) {
     }
 
     if (NowState == BACKUP_VTYPE) {
+      // Ok, the backup is done. We should be changing the VL and VTYPE to
+      // the desired values. Let's see if we can find the sequence that
+      // depends on the new VL and VTYPE.
       if (MI->getOpcode() == RISCV::TH_VSETVL ||
           MI->getOpcode() == RISCV::TH_VSETVLI ||
           MI->getOpcode() == RISCV::PseudoTH_VSETVLI ||
@@ -118,12 +121,17 @@ bool RISCVRedundantVSETVLIElimination::optimizeBlock(MachineBasicBlock &MBB) {
     }
 
     if (NowState == SEQUENCE) {
+      // Currently, we believe vsetvl and vsetvli do not depend on
+      // the new VL or VTYPE. Let's see if we can find more vsetvl/vsetvli.
       if (MI->getOpcode() == RISCV::TH_VSETVLI ||
           MI->getOpcode() == RISCV::PseudoTH_VSETVLI ||
           MI->getOpcode() == RISCV::PseudoTH_VSETVLIX0) {
         continue;
       }
 
+      // If this is the restoring instruction?
+      // See also: RISCVInsertVSETVLI::insertVSETVLIForCOPY
+      // See also: RISCVISelLowering::emitXWholeLoadStore
       if (MI->getOpcode() == RISCV::TH_VSETVL) {
         // Check if this is a restore point
         if (MI->getOperand(0).getReg() == RISCV::X0 &&
@@ -142,11 +150,17 @@ bool RISCVRedundantVSETVLIElimination::optimizeBlock(MachineBasicBlock &MBB) {
           // Don't forget to erase the restoring vsetvl
           MI->eraseFromParent();
           ++NumVSETVLIRemoved;
+          // Now try to find more
           NowState = OTHER;
         }
+
+        // If this is not a restore point, wait and see if the next instruction
+        // is a restore point.
         continue;
       }
 
+      // Oops, VL or VTYPE may affect instructions in this sequence.
+      // Do not touch anything here!
       NowState = OTHER;
     }
   }
