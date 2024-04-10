@@ -1757,6 +1757,29 @@ class XVPseudoUnaryMask<VReg RetClass, VReg OpClass, string Constraint = ""> :
   let HasSEWOp = 1;
 }
 
+class XVPseudoNullaryNoMask<VReg RegClass>:
+      Pseudo<(outs RegClass:$rd),
+             (ins RegClass:$merge, AVL:$vl, ixlenimm:$sew), []>, RISCVVPseudo {
+  let mayLoad = 0;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let Constraints = "$rd = $merge";
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+}
+
+class XVPseudoNullaryMask<VReg RegClass>:
+      Pseudo<(outs GetVRegNoV0<RegClass>.R:$rd),
+             (ins GetVRegNoV0<RegClass>.R:$merge, VMaskOp:$vm, AVL:$vl,
+              ixlenimm:$sew), []>, RISCVVPseudo {
+  let mayLoad = 0;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let Constraints ="$rd = $merge";
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+}
+
 multiclass XVPseudoBinary<VReg RetClass,
                           VReg Op1Class,
                           DAGOperand Op2Class,
@@ -2573,6 +2596,38 @@ multiclass XVPseudoVSFS_M {
   }
 }
 
+multiclass XVPseudoVIOT_M {
+  defvar constraint = "@earlyclobber $rd";
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVMIotV_MX = !cast<SchedWrite>("WriteVMIotV_" # mx);
+    defvar ReadVMIotV_MX = !cast<SchedRead>("ReadVMIotV_" # mx);
+    let VLMul = m.value in {
+      def "_" # m.MX : XVPseudoUnaryNoMask<m.vrclass, VR, constraint>,
+                       Sched<[WriteVMIotV_MX, ReadVMIotV_MX, ReadVMask]>;
+      def "_" # m.MX # "_MASK" : XVPseudoUnaryMask<m.vrclass, VR, constraint>,
+                                 RISCVMaskedPseudo<MaskIdx=2>,
+                                 Sched<[WriteVMIotV_MX, ReadVMIotV_MX, ReadVMask]>;
+    }
+  }
+}
+
+multiclass XVPseudoVID_V {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVMIdxV_MX = !cast<SchedWrite>("WriteVMIdxV_" # mx);
+    defvar ReadVMIdxV_MX = !cast<SchedRead>("ReadVMIdxV_" # mx);
+
+    let VLMul = m.value in {
+      def "_V_" # m.MX : XVPseudoNullaryNoMask<m.vrclass>,
+                         Sched<[WriteVMIdxV_MX, ReadVMask]>;
+      def "_V_" # m.MX # "_MASK" : XVPseudoNullaryMask<m.vrclass>,
+                                   RISCVMaskedPseudo<MaskIdx=1>,
+                                   Sched<[WriteVMIdxV_MX, ReadVMask]>;
+    }
+  }
+}
+
 //===----------------------------------------------------------------------===//
 // Helpers to define the intrinsic patterns for the XTHeadVector extension.
 //===----------------------------------------------------------------------===//
@@ -3043,6 +3098,24 @@ multiclass XVPatBinaryM_MM<string intrinsic, string instruction> {
                       mti.Log2SEW, VR, VR>;
 }
 
+multiclass XVPatNullaryV<string intrinsic, string instruction> {
+  foreach vti = AllIntegerXVectors in {
+    let Predicates = GetXVTypePredicates<vti>.Predicates in {
+      def : Pat<(vti.Vector (!cast<Intrinsic>(intrinsic)
+                            (vti.Vector vti.RegClass:$merge),
+                            VLOpFrag)),
+                            (!cast<Instruction>(instruction#"_V_" # vti.LMul.MX)
+                            vti.RegClass:$merge, GPR:$vl, vti.Log2SEW)>;
+      def : Pat<(vti.Vector (!cast<Intrinsic>(intrinsic # "_mask")
+                            (vti.Vector vti.RegClass:$merge),
+                            (vti.Mask V0), VLOpFrag)),
+                            (!cast<Instruction>(instruction#"_V_" # vti.LMul.MX # "_MASK")
+                            vti.RegClass:$merge, (vti.Mask V0),
+                            GPR:$vl, vti.Log2SEW)>;
+    }
+  }
+}
+
 multiclass XVPatNullaryM<string intrinsic, string inst> {
   foreach mti = AllXMasks in
     def : Pat<(mti.Mask (!cast<Intrinsic>(intrinsic)
@@ -3094,6 +3167,63 @@ multiclass XVPatUnaryM_M<string intrinsic,
   foreach mti = AllXMasks in {
     def : XVPatMaskUnaryNoMask<intrinsic, inst, mti>;
     def : XVPatMaskUnaryMask<intrinsic, inst, mti>;
+  }
+}
+
+class XVPatUnaryNoMask<string intrinsic_name,
+                      string inst,
+                      string kind,
+                      ValueType result_type,
+                      ValueType op2_type,
+                      int log2sew,
+                      LMULInfo vlmul,
+                      VReg result_reg_class,
+                      VReg op2_reg_class,
+                      bit isSEWAware = 0> :
+  Pat<(result_type (!cast<Intrinsic>(intrinsic_name)
+                   (result_type result_reg_class:$merge),
+                   (op2_type op2_reg_class:$rs2),
+                   VLOpFrag)),
+                   (!cast<Instruction>(
+                      !if(isSEWAware,
+                          inst#"_"#kind#"_"#vlmul.MX#"_E"#!shl(1, log2sew),
+                          inst#"_"#kind#"_"#vlmul.MX))
+                   (result_type result_reg_class:$merge),
+                   (op2_type op2_reg_class:$rs2),
+                   GPR:$vl, log2sew)>;
+
+class XVPatUnaryMask<string intrinsic_name,
+                    string inst,
+                    string kind,
+                    ValueType result_type,
+                    ValueType op2_type,
+                    ValueType mask_type,
+                    int log2sew,
+                    LMULInfo vlmul,
+                    VReg result_reg_class,
+                    VReg op2_reg_class,
+                    bit isSEWAware = 0> :
+  Pat<(result_type (!cast<Intrinsic>(intrinsic_name#"_mask")
+                   (result_type result_reg_class:$merge),
+                   (op2_type op2_reg_class:$rs2),
+                   (mask_type V0),
+                   VLOpFrag)),
+                   (!cast<Instruction>(
+                      !if(isSEWAware,
+                          inst#"_"#kind#"_"#vlmul.MX#"_E"#!shl(1, log2sew)#"_MASK",
+                          inst#"_"#kind#"_"#vlmul.MX#"_MASK"))
+                   (result_type result_reg_class:$merge),
+                   (op2_type op2_reg_class:$rs2),
+                   (mask_type V0), GPR:$vl, log2sew)>;
+
+multiclass XVPatUnaryV_M<string intrinsic, string instruction> {
+  foreach vti = AllIntegerXVectors in {
+    let Predicates = GetXVTypePredicates<vti>.Predicates in {
+      def : XVPatUnaryNoMask<intrinsic, instruction, "M", vti.Vector, vti.Mask,
+                            vti.Log2SEW, vti.LMul, vti.RegClass, VR>;
+      def : XVPatUnaryMask<intrinsic, instruction, "M", vti.Vector, vti.Mask,
+                          vti.Mask, vti.Log2SEW, vti.LMul, vti.RegClass, VR>;
+    }
   }
 }
 
@@ -4033,5 +4163,16 @@ defm : XVPatUnaryS_M<"int_riscv_th_vmfirst", "PseudoTH_VMFIRST">;
 defm : XVPatUnaryM_M<"int_riscv_th_vmsbf", "PseudoTH_VMSBF">;
 defm : XVPatUnaryM_M<"int_riscv_th_vmsif", "PseudoTH_VMSIF">;
 defm : XVPatUnaryM_M<"int_riscv_th_vmsof", "PseudoTH_VMSOF">;
+
+//===----------------------------------------------------------------------===//
+// 16.7. Vector Iota Operations
+// 16.8. Vector Element Index Operations
+//===----------------------------------------------------------------------===//
+defm PseudoTH_VIOTA_M: XVPseudoVIOT_M;
+defm PseudoTH_VID : XVPseudoVID_V;
+
+// Patterns
+defm : XVPatUnaryV_M<"int_riscv_th_viota", "PseudoTH_VIOTA">;
+defm : XVPatNullaryV<"int_riscv_th_vid", "PseudoTH_VID">;
 
 include "RISCVInstrInfoXTHeadVVLPatterns.td"
