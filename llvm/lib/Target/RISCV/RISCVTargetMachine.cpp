@@ -399,8 +399,10 @@ void RISCVPassConfig::addOptimizedRegAlloc() {
 }
 
 void RISCVPassConfig::addPostRegAlloc() {
-  if (TM->getOptLevel() != CodeGenOpt::None && EnableRedundantCopyElimination)
+  if (TM->getOptLevel() != CodeGenOpt::None && EnableRedundantCopyElimination) {
     addPass(createRISCVRedundantCopyEliminationPass());
+    addPass(createRISCVRedundantVSETVLIEliminationPass());
+  }
 }
 
 yaml::MachineFunctionInfo *
