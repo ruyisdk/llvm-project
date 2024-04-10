@@ -139,6 +139,7 @@ bool RISCVRedundantVSETVLIElimination::optimizeBlock(MachineBasicBlock &MBB) {
             ++NumVSETVLIRemoved;
             Changed = true;
           }
+          // Don't forget to erase the restoring vsetvl
           MI->eraseFromParent();
           ++NumVSETVLIRemoved;
           NowState = OTHER;
