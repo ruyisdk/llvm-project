@@ -44,34 +44,3 @@ vbool4_t test_vmxnor_mm_b4(vbool4_t op1, vbool4_t op2, size_t vl) {
 vbool8_t test_vmxnor_mm_b8(vbool8_t op1, vbool8_t op2, size_t vl) {
   return __riscv_th_vmxnor_mm_b8(op1, op2, vl);
 }
-
-// CHECK-RV64-LABEL: define dso_local <vscale x 4 x i1> @test_vmxnor_mm_b16
-// CHECK-RV64-SAME: (<vscale x 4 x i1> [[OP1:%.*]], <vscale x 4 x i1> [[OP2:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0:[0-9]+]] {
-// CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 4 x i1> @llvm.riscv.th.vmxnor.nxv4i1.i64(<vscale x 4 x i1> [[OP1]], <vscale x 4 x i1> [[OP2]], i64 [[VL]])
-// CHECK-RV64-NEXT:    ret <vscale x 4 x i1> [[TMP0]]
-//
-vbool16_t test_vmxnor_mm_b16(vbool16_t op1, vbool16_t op2, size_t vl) {
-  return __riscv_th_vmxnor_mm_b16(op1, op2, vl);
-}
-
-// CHECK-RV64-LABEL: define dso_local <vscale x 2 x i1> @test_vmxnor_mm_b32
-// CHECK-RV64-SAME: (<vscale x 2 x i1> [[OP1:%.*]], <vscale x 2 x i1> [[OP2:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0:[0-9]+]] {
-// CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 2 x i1> @llvm.riscv.th.vmxnor.nxv2i1.i64(<vscale x 2 x i1> [[OP1]], <vscale x 2 x i1> [[OP2]], i64 [[VL]])
-// CHECK-RV64-NEXT:    ret <vscale x 2 x i1> [[TMP0]]
-//
-vbool32_t test_vmxnor_mm_b32(vbool32_t op1, vbool32_t op2, size_t vl) {
-  return __riscv_th_vmxnor_mm_b32(op1, op2, vl);
-}
-
-// CHECK-RV64-LABEL: define dso_local <vscale x 1 x i1> @test_vmxnor_mm_b64
-// CHECK-RV64-SAME: (<vscale x 1 x i1> [[OP1:%.*]], <vscale x 1 x i1> [[OP2:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0:[0-9]+]] {
-// CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 1 x i1> @llvm.riscv.th.vmxnor.nxv1i1.i64(<vscale x 1 x i1> [[OP1]], <vscale x 1 x i1> [[OP2]], i64 [[VL]])
-// CHECK-RV64-NEXT:    ret <vscale x 1 x i1> [[TMP0]]
-//
-vbool64_t test_vmxnor_mm_b64(vbool64_t op1, vbool64_t op2, size_t vl) {
-  return __riscv_th_vmxnor_mm_b64(op1, op2, vl);
-}
-

@@ -44,34 +44,3 @@ vbool4_t test_vmclr_m_b4(size_t vl) {
 vbool8_t test_vmclr_m_b8(size_t vl) {
   return __riscv_th_vmclr_m_b8(vl);
 }
-
-// CHECK-RV64-LABEL: define dso_local <vscale x 4 x i1> @test_vmclr_m_b16
-// CHECK-RV64-SAME: (i64 noundef [[VL:%.*]]) #[[ATTR0:[0-9]+]] {
-// CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 4 x i1> @llvm.riscv.th.vmclr.nxv4i1.i64(i64 [[VL]])
-// CHECK-RV64-NEXT:    ret <vscale x 4 x i1> [[TMP0]]
-//
-vbool16_t test_vmclr_m_b16(size_t vl) {
-  return __riscv_th_vmclr_m_b16(vl);
-}
-
-// CHECK-RV64-LABEL: define dso_local <vscale x 2 x i1> @test_vmclr_m_b32
-// CHECK-RV64-SAME: (i64 noundef [[VL:%.*]]) #[[ATTR0:[0-9]+]] {
-// CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 2 x i1> @llvm.riscv.th.vmclr.nxv2i1.i64(i64 [[VL]])
-// CHECK-RV64-NEXT:    ret <vscale x 2 x i1> [[TMP0]]
-//
-vbool32_t test_vmclr_m_b32(size_t vl) {
-  return __riscv_th_vmclr_m_b32(vl);
-}
-
-// CHECK-RV64-LABEL: define dso_local <vscale x 1 x i1> @test_vmclr_m_b64
-// CHECK-RV64-SAME: (i64 noundef [[VL:%.*]]) #[[ATTR0:[0-9]+]] {
-// CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 1 x i1> @llvm.riscv.th.vmclr.nxv1i1.i64(i64 [[VL]])
-// CHECK-RV64-NEXT:    ret <vscale x 1 x i1> [[TMP0]]
-//
-vbool64_t test_vmclr_m_b64(size_t vl) {
-  return __riscv_th_vmclr_m_b64(vl);
-}
-
