@@ -1744,6 +1744,19 @@ class XVPseudoTiedBinaryMaskRoundingMode<VReg RetClass,
   let UsesVXRM = 0;
 }
 
+class XVPseudoUnaryMask<VReg RetClass, VReg OpClass, string Constraint = ""> :
+        Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd),
+               (ins GetVRegNoV0<RetClass>.R:$merge, OpClass:$rs2,
+                    VMaskOp:$vm, AVL:$vl, ixlenimm:$sew), []>,
+        RISCVVPseudo {
+  let mayLoad = 0;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let Constraints = !interleave([Constraint, "$rd = $merge"], ",");
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+}
+
 multiclass XVPseudoBinary<VReg RetClass,
                           VReg Op1Class,
                           DAGOperand Op2Class,
@@ -2517,6 +2530,49 @@ multiclass XVPseudoVALU_MM {
   }
 }
 
+multiclass XVPseudoVPOP_M {
+  foreach mti = AllXMasks in {
+    defvar mx = mti.LMul.MX;
+    defvar WriteVMPopV_MX = !cast<SchedWrite>("WriteVMPopV_" # mx);
+    defvar ReadVMPopV_MX = !cast<SchedRead>("ReadVMPopV_" # mx);
+    let VLMul = mti.LMul.value in {
+      def "_M_" # mti.BX : VPseudoUnaryNoMaskGPROut,
+                           Sched<[WriteVMPopV_MX, ReadVMPopV_MX, ReadVMPopV_MX]>;
+      def "_M_" # mti.BX # "_MASK" : VPseudoUnaryMaskGPROut,
+                                     Sched<[WriteVMPopV_MX, ReadVMPopV_MX, ReadVMPopV_MX]>;
+    }
+  }
+}
+
+multiclass XVPseudoV1ST_M {
+  foreach mti = AllXMasks in {
+    defvar mx = mti.LMul.MX;
+    defvar WriteVMFFSV_MX = !cast<SchedWrite>("WriteVMFFSV_" # mx);
+    defvar ReadVMFFSV_MX = !cast<SchedRead>("ReadVMFFSV_" # mx);
+    let VLMul = mti.LMul.value in {
+      def "_M_" # mti.BX : VPseudoUnaryNoMaskGPROut,
+                           Sched<[WriteVMFFSV_MX, ReadVMFFSV_MX, ReadVMFFSV_MX]>;
+      def "_M_" # mti.BX # "_MASK" : VPseudoUnaryMaskGPROut,
+                                     Sched<[WriteVMFFSV_MX, ReadVMFFSV_MX, ReadVMFFSV_MX]>;
+    }
+  }
+}
+
+multiclass XVPseudoVSFS_M {
+  defvar constraint = "@earlyclobber $rd";
+  foreach mti = AllXMasks in {
+    defvar mx = mti.LMul.MX;
+    defvar WriteVMSFSV_MX = !cast<SchedWrite>("WriteVMSFSV_" # mx);
+    defvar ReadVMSFSV_MX = !cast<SchedRead>("ReadVMSFSV_" # mx);
+    let VLMul = mti.LMul.value in {
+      def "_M_" # mti.BX : XVPseudoUnaryNoMask<VR, VR, constraint>,
+                           Sched<[WriteVMSFSV_MX, ReadVMSFSV_MX, ReadVMask]>;
+      def "_M_" # mti.BX # "_MASK" : XVPseudoUnaryMask<VR, VR, constraint>,
+                                     Sched<[WriteVMSFSV_MX, ReadVMSFSV_MX, ReadVMask]>;
+    }
+  }
+}
+
 //===----------------------------------------------------------------------===//
 // Helpers to define the intrinsic patterns for the XTHeadVector extension.
 //===----------------------------------------------------------------------===//
@@ -2993,6 +3049,52 @@ multiclass XVPatNullaryM<string intrinsic, string inst> {
                         VLOpFrag)),
                         (!cast<Instruction>(inst#"_M_"#mti.BX)
                         GPR:$vl, mti.Log2SEW)>;
+}
+
+multiclass XVPatUnaryS_M<string intrinsic_name,
+                             string inst> {
+  foreach mti = AllXMasks in {
+    def : Pat<(XLenVT (!cast<Intrinsic>(intrinsic_name)
+                      (mti.Mask VR:$rs1), VLOpFrag)),
+                      (!cast<Instruction>(inst#"_M_"#mti.BX) $rs1,
+                      GPR:$vl, mti.Log2SEW)>;
+    def : Pat<(XLenVT (!cast<Intrinsic>(intrinsic_name # "_mask")
+                      (mti.Mask VR:$rs1), (mti.Mask V0), VLOpFrag)),
+                      (!cast<Instruction>(inst#"_M_"#mti.BX#"_MASK") $rs1,
+                      (mti.Mask V0), GPR:$vl, mti.Log2SEW)>;
+  }
+}
+
+class XVPatMaskUnaryNoMask<string intrinsic_name,
+                          string inst,
+                          MTypeInfo mti> :
+  Pat<(mti.Mask (!cast<Intrinsic>(intrinsic_name)
+                (mti.Mask VR:$rs2),
+                VLOpFrag)),
+                (!cast<Instruction>(inst#"_M_"#mti.BX)
+                (mti.Mask (IMPLICIT_DEF)),
+                (mti.Mask VR:$rs2),
+                GPR:$vl, mti.Log2SEW)>;
+
+class XVPatMaskUnaryMask<string intrinsic_name,
+                        string inst,
+                        MTypeInfo mti> :
+  Pat<(mti.Mask (!cast<Intrinsic>(intrinsic_name#"_mask")
+                (mti.Mask VR:$merge),
+                (mti.Mask VR:$rs2),
+                (mti.Mask V0),
+                VLOpFrag)),
+                (!cast<Instruction>(inst#"_M_"#mti.BX#"_MASK")
+                (mti.Mask VR:$merge),
+                (mti.Mask VR:$rs2),
+                (mti.Mask V0), GPR:$vl, mti.Log2SEW)>;
+
+multiclass XVPatUnaryM_M<string intrinsic,
+                         string inst> {
+  foreach mti = AllXMasks in {
+    def : XVPatMaskUnaryNoMask<intrinsic, inst, mti>;
+    def : XVPatMaskUnaryMask<intrinsic, inst, mti>;
+  }
 }
 
 multiclass XVPatCompare_VI<string intrinsic, string inst,
@@ -3910,5 +4012,26 @@ let Predicates = [HasVendorXTHeadV] in {
   defm : XVPatNullaryM<"int_riscv_th_vmclr", "PseudoTH_VMCLR">;
   defm : XVPatNullaryM<"int_riscv_th_vmset", "PseudoTH_VMSET">;
 }
+
+//===----------------------------------------------------------------------===//
+// 16.2. Vector mask population count vpopc
+// 16.3. vfirst find-first-set mask bit
+// 16.4. vmsbf.m set-before-first mask bit
+// 16.5. vmsif.m set-including-first mask bit
+// 16.6. vmsof.m set-only-first mask bit
+//===----------------------------------------------------------------------===//
+
+defm PseudoTH_VMPOPC: XVPseudoVPOP_M;
+defm PseudoTH_VMFIRST: XVPseudoV1ST_M;
+defm PseudoTH_VMSBF: XVPseudoVSFS_M;
+defm PseudoTH_VMSIF: XVPseudoVSFS_M;
+defm PseudoTH_VMSOF: XVPseudoVSFS_M;
+
+// Patterns
+defm : XVPatUnaryS_M<"int_riscv_th_vmpopc", "PseudoTH_VMPOPC">;
+defm : XVPatUnaryS_M<"int_riscv_th_vmfirst", "PseudoTH_VMFIRST">;
+defm : XVPatUnaryM_M<"int_riscv_th_vmsbf", "PseudoTH_VMSBF">;
+defm : XVPatUnaryM_M<"int_riscv_th_vmsif", "PseudoTH_VMSIF">;
+defm : XVPatUnaryM_M<"int_riscv_th_vmsof", "PseudoTH_VMSOF">;
 
 include "RISCVInstrInfoXTHeadVVLPatterns.td"
