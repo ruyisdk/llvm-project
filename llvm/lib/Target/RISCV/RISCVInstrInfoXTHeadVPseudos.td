@@ -2517,6 +2517,29 @@ multiclass XVPseudoVFRDIV_VF_RM {
   }
 }
 
+multiclass XVPseudoVWMUL_VV_VF_RM {
+  foreach m = MxListWXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVFWMulV_MX = !cast<SchedWrite>("WriteVFWMulV_" # mx);
+    defvar ReadVFWMulV_MX = !cast<SchedRead>("ReadVFWMulV_" # mx);
+
+    defm "" : XVPseudoBinaryW_VV_RM<m>,
+              Sched<[WriteVFWMulV_MX, ReadVFWMulV_MX, ReadVFWMulV_MX, ReadVMask]>;
+  }
+
+  foreach f = FPListXTHeadV in {
+    foreach m = f.MxListFW in {
+      defvar mx = m.MX;
+      defvar WriteVFWMulF_MX = !cast<SchedWrite>("WriteVFWMulF_" # mx);
+      defvar ReadVFWMulV_MX = !cast<SchedRead>("ReadVFWMulV_" # mx);
+      defvar ReadVFWMulF_MX = !cast<SchedRead>("ReadVFWMulF_" # mx);
+
+      defm "" : XVPseudoBinaryW_VF_RM<m, f>,
+                Sched<[WriteVFWMulF_MX, ReadVFWMulV_MX, ReadVFWMulF_MX, ReadVMask]>;
+    }
+  }
+}
+
 multiclass XVPseudoVALU_MM {
   foreach m = MxListXTHeadV in {
     defvar mx = m.MX;
@@ -3979,6 +4002,18 @@ let Predicates = [HasVendorXTHeadV] in {
   defm : XVPatBinaryV_VX_RM<"int_riscv_th_vfrdiv", "PseudoTH_VFRDIV",
                             AllFloatXVectors, isSEWAware=1>;
 } // Predicates = [HasVendorXTHeadV]
+
+//===----------------------------------------------------------------------===//
+// 14.5. Vector Single-Width Floating-Point Add/Subtract Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true, hasSideEffects = 0 in {
+  defm PseudoTH_VFWMUL : XVPseudoVWMUL_VV_VF_RM;
+}
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryW_VV_VX_RM<"int_riscv_th_vfwmul", "PseudoTH_VFWMUL",
+                               AllWidenableFloatXVectors>;
+}
 
 //===----------------------------------------------------------------------===//
 // 16.1. Vector Mask-Register Logical Operations
