@@ -897,4 +897,17 @@ let TargetPrefix = "riscv" in {
   defm th_vfmul : XVBinaryAAXRoundingMode;
   defm th_vfdiv : XVBinaryAAXRoundingMode;
   defm th_vfrdiv : XVBinaryAAXRoundingMode;
+
+  // 16.1. Vector Mask-Register Logical Operations
+  def int_riscv_th_vmand: RISCVBinaryAAAUnMasked;
+  def int_riscv_th_vmnand: RISCVBinaryAAAUnMasked;
+  def int_riscv_th_vmandnot: RISCVBinaryAAAUnMasked;
+  def int_riscv_th_vmxor: RISCVBinaryAAAUnMasked;
+  def int_riscv_th_vmor: RISCVBinaryAAAUnMasked;
+  def int_riscv_th_vmnor: RISCVBinaryAAAUnMasked;
+  def int_riscv_th_vmornot: RISCVBinaryAAAUnMasked;
+  def int_riscv_th_vmxnor: RISCVBinaryAAAUnMasked;
+  def int_riscv_th_vmclr : RISCVNullaryIntrinsic;
+  def int_riscv_th_vmset : RISCVNullaryIntrinsic;
+
 } // TargetPrefix = "riscv"
