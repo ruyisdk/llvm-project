@@ -910,4 +910,15 @@ let TargetPrefix = "riscv" in {
   def int_riscv_th_vmclr : RISCVNullaryIntrinsic;
   def int_riscv_th_vmset : RISCVNullaryIntrinsic;
 
+  // 16.2. Vector mask population count vpopc
+  defm th_vmpopc : RISCVMaskedUnarySOut;
+  // 16.3. vfirst find-first-set mask bit
+  defm th_vmfirst : RISCVMaskedUnarySOut;
+  // 16.4. vmsbf.m set-before-first mask bit
+  defm th_vmsbf : RISCVMaskedUnaryMOut;
+  // 16.5. vmsif.m set-including-first mask bit
+  defm th_vmsif : RISCVMaskedUnaryMOut;
+  // 16.6. vmsof.m set-only-first mask bit
+  defm th_vmsof : RISCVMaskedUnaryMOut;
+
 } // TargetPrefix = "riscv"
