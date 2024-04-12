@@ -2273,3 +2273,61 @@ let HeaderCode =
 
 }] in
 def th_narrowing_width_fixed_point_clip_wrapper_macros: RVVHeader;
+
+// 16. Vector Mask Instructions
+
+let HeaderCode =
+[{
+// Vector Mask Instructions
+#define __riscv_vmand_mm_b1(op1, op2, vl) __riscv_th_vmand_mm_b1(op1, op2, vl)
+#define __riscv_vmand_mm_b2(op1, op2, vl) __riscv_th_vmand_mm_b2(op1, op2, vl)
+#define __riscv_vmand_mm_b4(op1, op2, vl) __riscv_th_vmand_mm_b4(op1, op2, vl)
+#define __riscv_vmand_mm_b8(op1, op2, vl) __riscv_th_vmand_mm_b8(op1, op2, vl)
+#define __riscv_vmandnot_mm_b1(op1, op2, vl) __riscv_th_vmandnot_mm_b1(op1, op2, vl)
+#define __riscv_vmandnot_mm_b2(op1, op2, vl) __riscv_th_vmandnot_mm_b2(op1, op2, vl)
+#define __riscv_vmandnot_mm_b4(op1, op2, vl) __riscv_th_vmandnot_mm_b4(op1, op2, vl)
+#define __riscv_vmandnot_mm_b8(op1, op2, vl) __riscv_th_vmandnot_mm_b8(op1, op2, vl)
+#define __riscv_vmnand_mm_b1(op1, op2, vl) __riscv_th_vmnand_mm_b1(op1, op2, vl)
+#define __riscv_vmnand_mm_b2(op1, op2, vl) __riscv_th_vmnand_mm_b2(op1, op2, vl)
+#define __riscv_vmnand_mm_b4(op1, op2, vl) __riscv_th_vmnand_mm_b4(op1, op2, vl)
+#define __riscv_vmnand_mm_b8(op1, op2, vl) __riscv_th_vmnand_mm_b8(op1, op2, vl)
+#define __riscv_vmnor_mm_b1(op1, op2, vl) __riscv_th_vmnor_mm_b1(op1, op2, vl)
+#define __riscv_vmnor_mm_b2(op1, op2, vl) __riscv_th_vmnor_mm_b2(op1, op2, vl)
+#define __riscv_vmnor_mm_b4(op1, op2, vl) __riscv_th_vmnor_mm_b4(op1, op2, vl)
+#define __riscv_vmnor_mm_b8(op1, op2, vl) __riscv_th_vmnor_mm_b8(op1, op2, vl)
+#define __riscv_vmor_mm_b1(op1, op2, vl) __riscv_th_vmor_mm_b1(op1, op2, vl)
+#define __riscv_vmor_mm_b2(op1, op2, vl) __riscv_th_vmor_mm_b2(op1, op2, vl)
+#define __riscv_vmor_mm_b4(op1, op2, vl) __riscv_th_vmor_mm_b4(op1, op2, vl)
+#define __riscv_vmor_mm_b8(op1, op2, vl) __riscv_th_vmor_mm_b8(op1, op2, vl)
+#define __riscv_vmornot_mm_b1(op1, op2, vl) __riscv_th_vmornot_mm_b1(op1, op2, vl)
+#define __riscv_vmornot_mm_b2(op1, op2, vl) __riscv_th_vmornot_mm_b2(op1, op2, vl)
+#define __riscv_vmornot_mm_b4(op1, op2, vl) __riscv_th_vmornot_mm_b4(op1, op2, vl)
+#define __riscv_vmornot_mm_b8(op1, op2, vl) __riscv_th_vmornot_mm_b8(op1, op2, vl)
+#define __riscv_vmxnor_mm_b1(op1, op2, vl) __riscv_th_vmxnor_mm_b1(op1, op2, vl)
+#define __riscv_vmxnor_mm_b2(op1, op2, vl) __riscv_th_vmxnor_mm_b2(op1, op2, vl)
+#define __riscv_vmxnor_mm_b4(op1, op2, vl) __riscv_th_vmxnor_mm_b4(op1, op2, vl)
+#define __riscv_vmxnor_mm_b8(op1, op2, vl) __riscv_th_vmxnor_mm_b8(op1, op2, vl)
+#define __riscv_vmxor_mm_b1(op1, op2, vl) __riscv_th_vmxor_mm_b1(op1, op2, vl)
+#define __riscv_vmxor_mm_b2(op1, op2, vl) __riscv_th_vmxor_mm_b2(op1, op2, vl)
+#define __riscv_vmxor_mm_b4(op1, op2, vl) __riscv_th_vmxor_mm_b4(op1, op2, vl)
+#define __riscv_vmxor_mm_b8(op1, op2, vl) __riscv_th_vmxor_mm_b8(op1, op2, vl)
+
+#define __riscv_vmclr_m_b1(vl) __riscv_th_vmclr_m_b1(vl)
+#define __riscv_vmclr_m_b2(vl) __riscv_th_vmclr_m_b2(vl)
+#define __riscv_vmclr_m_b4(vl) __riscv_th_vmclr_m_b4(vl)
+#define __riscv_vmclr_m_b8(vl) __riscv_th_vmclr_m_b8(vl)
+#define __riscv_vmset_m_b1(vl) __riscv_th_vmset_m_b1(vl)
+#define __riscv_vmset_m_b2(vl) __riscv_th_vmset_m_b2(vl)
+#define __riscv_vmset_m_b4(vl) __riscv_th_vmset_m_b4(vl)
+#define __riscv_vmset_m_b8(vl) __riscv_th_vmset_m_b8(vl)
+#define __riscv_vmmv_m_b1(op1, vl) __riscv_th_vmmv_m_b1(op1, vl)
+#define __riscv_vmmv_m_b2(op1, vl) __riscv_th_vmmv_m_b2(op1, vl)
+#define __riscv_vmmv_m_b4(op1, vl) __riscv_th_vmmv_m_b4(op1, vl)
+#define __riscv_vmmv_m_b8(op1, vl) __riscv_th_vmmv_m_b8(op1, vl)
+#define __riscv_vmnot_m_b1(op1, vl) __riscv_th_vmnot_m_b1(op1, vl)
+#define __riscv_vmnot_m_b2(op1, vl) __riscv_th_vmnot_m_b2(op1, vl)
+#define __riscv_vmnot_m_b4(op1, vl) __riscv_th_vmnot_m_b4(op1, vl)
+#define __riscv_vmnot_m_b8(op1, vl) __riscv_th_vmnot_m_b8(op1, vl)
+}] in
+def th_vector_mask_wrapper_macros: RVVHeader;
+
