@@ -924,4 +924,48 @@ let TargetPrefix = "riscv" in {
   // 16.6. vmsof.m set-only-first mask bit
   defm th_vmsof : RISCVMaskedUnaryMOut;
 
+  // 16.7. Vector Iota Operations
+  // Output: (vector)
+  // Input: (passthru, mask type input, vl)
+  def int_riscv_th_viota
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                                [LLVMMatchType<0>,
+                                 LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>,
+                                 llvm_anyint_ty],
+                                [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 2;
+  }
+  // Output: (vector)
+  // Input: (maskedoff, mask type vector_in, mask, vl)
+  def int_riscv_th_viota_mask
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                                [LLVMMatchType<0>,
+                                 LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>,
+                                 LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>,
+                                 llvm_anyint_ty],
+                                [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 3;
+  }
+
+  // 16.8. Vector Element Index Operations
+  // Output: (vector)
+  // Input: (passthru, vl)
+  def int_riscv_th_vid
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                                [LLVMMatchType<0>, llvm_anyint_ty],
+                                [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 1;
+  }
+
+  // Output: (vector)
+  // Input: (maskedoff, mask, vl)
+  def int_riscv_th_vid_mask
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                                [LLVMMatchType<0>,
+                                 LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>,
+                                 llvm_anyint_ty],
+                                [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 2;
+  }
+
 } // TargetPrefix = "riscv"
