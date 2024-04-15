@@ -15,10 +15,6 @@ define <vscale x 4 x i16> @intrinsic_vlsseg2h_v_nxv4i16_nxv4i16(<vscale x 4 x i1
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg2h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg2h.nxv4i16.nxv4i16(
@@ -44,22 +40,10 @@ define <vscale x 4 x i16> @intrinsic_vlsseg2h_mask_v_nxv4i16_nxv4i16(<vscale x 4
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg2h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg2h.mask.nxv4i16.nxv4i16(
@@ -84,10 +68,6 @@ define <vscale x 4 x i16> @intrinsic_vlsseg2hu_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg2hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg2hu.nxv4i16.nxv4i16(
@@ -113,22 +93,10 @@ define <vscale x 4 x i16> @intrinsic_vlsseg2hu_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg2hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg2hu.mask.nxv4i16.nxv4i16(
@@ -153,10 +121,6 @@ define <vscale x 4 x i16> @intrinsic_vlsseg3h_v_nxv4i16_nxv4i16(<vscale x 4 x i1
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg3h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg3h.nxv4i16.nxv4i16(
@@ -182,23 +146,11 @@ define <vscale x 4 x i16> @intrinsic_vlsseg3h_mask_v_nxv4i16_nxv4i16(<vscale x 4
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg3h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg3h.mask.nxv4i16.nxv4i16(
@@ -223,10 +175,6 @@ define <vscale x 4 x i16> @intrinsic_vlsseg3hu_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg3hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg3hu.nxv4i16.nxv4i16(
@@ -252,23 +200,11 @@ define <vscale x 4 x i16> @intrinsic_vlsseg3hu_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg3hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg3hu.mask.nxv4i16.nxv4i16(
@@ -293,10 +229,6 @@ define <vscale x 4 x i16> @intrinsic_vlsseg4h_v_nxv4i16_nxv4i16(<vscale x 4 x i1
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg4h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg4h.nxv4i16.nxv4i16(
@@ -322,24 +254,12 @@ define <vscale x 4 x i16> @intrinsic_vlsseg4h_mask_v_nxv4i16_nxv4i16(<vscale x 4
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg4h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg4h.mask.nxv4i16.nxv4i16(
@@ -364,10 +284,6 @@ define <vscale x 4 x i16> @intrinsic_vlsseg4hu_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg4hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg4hu.nxv4i16.nxv4i16(
@@ -393,24 +309,12 @@ define <vscale x 4 x i16> @intrinsic_vlsseg4hu_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg4hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg4hu.mask.nxv4i16.nxv4i16(
@@ -435,10 +339,6 @@ define <vscale x 4 x i16> @intrinsic_vlsseg5h_v_nxv4i16_nxv4i16(<vscale x 4 x i1
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg5h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg5h.nxv4i16.nxv4i16(
@@ -464,25 +364,13 @@ define <vscale x 4 x i16> @intrinsic_vlsseg5h_mask_v_nxv4i16_nxv4i16(<vscale x 4
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vmv.v.v v11, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg5h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg5h.mask.nxv4i16.nxv4i16(
@@ -507,10 +395,6 @@ define <vscale x 4 x i16> @intrinsic_vlsseg5hu_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg5hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg5hu.nxv4i16.nxv4i16(
@@ -536,25 +420,13 @@ define <vscale x 4 x i16> @intrinsic_vlsseg5hu_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vmv.v.v v11, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg5hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg5hu.mask.nxv4i16.nxv4i16(
@@ -579,10 +451,6 @@ define <vscale x 4 x i16> @intrinsic_vlsseg6h_v_nxv4i16_nxv4i16(<vscale x 4 x i1
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg6h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg6h.nxv4i16.nxv4i16(
@@ -608,26 +476,14 @@ define <vscale x 4 x i16> @intrinsic_vlsseg6h_mask_v_nxv4i16_nxv4i16(<vscale x 4
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vmv.v.v v11, v8
 ; CHECK-NEXT:    th.vmv.v.v v12, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg6h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg6h.mask.nxv4i16.nxv4i16(
@@ -652,10 +508,6 @@ define <vscale x 4 x i16> @intrinsic_vlsseg6hu_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg6hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg6hu.nxv4i16.nxv4i16(
@@ -681,26 +533,14 @@ define <vscale x 4 x i16> @intrinsic_vlsseg6hu_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vmv.v.v v11, v8
 ; CHECK-NEXT:    th.vmv.v.v v12, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg6hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg6hu.mask.nxv4i16.nxv4i16(
@@ -725,10 +565,6 @@ define <vscale x 4 x i16> @intrinsic_vlsseg7h_v_nxv4i16_nxv4i16(<vscale x 4 x i1
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg7h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg7h.nxv4i16.nxv4i16(
@@ -754,10 +590,6 @@ define <vscale x 4 x i16> @intrinsic_vlsseg7h_mask_v_nxv4i16_nxv4i16(<vscale x 4
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
@@ -765,16 +597,8 @@ define <vscale x 4 x i16> @intrinsic_vlsseg7h_mask_v_nxv4i16_nxv4i16(<vscale x 4
 ; CHECK-NEXT:    th.vmv.v.v v12, v8
 ; CHECK-NEXT:    th.vmv.v.v v13, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg7h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg7h.mask.nxv4i16.nxv4i16(
@@ -799,10 +623,6 @@ define <vscale x 4 x i16> @intrinsic_vlsseg7hu_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg7hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg7hu.nxv4i16.nxv4i16(
@@ -828,10 +648,6 @@ define <vscale x 4 x i16> @intrinsic_vlsseg7hu_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
@@ -839,16 +655,8 @@ define <vscale x 4 x i16> @intrinsic_vlsseg7hu_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; CHECK-NEXT:    th.vmv.v.v v12, v8
 ; CHECK-NEXT:    th.vmv.v.v v13, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg7hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg7hu.mask.nxv4i16.nxv4i16(
@@ -873,10 +681,6 @@ define <vscale x 4 x i16> @intrinsic_vlsseg8h_v_nxv4i16_nxv4i16(<vscale x 4 x i1
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg8h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg8h.nxv4i16.nxv4i16(
@@ -902,10 +706,6 @@ define <vscale x 4 x i16> @intrinsic_vlsseg8h_mask_v_nxv4i16_nxv4i16(<vscale x 4
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
@@ -914,16 +714,8 @@ define <vscale x 4 x i16> @intrinsic_vlsseg8h_mask_v_nxv4i16_nxv4i16(<vscale x 4
 ; CHECK-NEXT:    th.vmv.v.v v13, v8
 ; CHECK-NEXT:    th.vmv.v.v v14, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg8h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg8h.mask.nxv4i16.nxv4i16(
@@ -948,10 +740,6 @@ define <vscale x 4 x i16> @intrinsic_vlsseg8hu_v_nxv4i16_nxv4i16(<vscale x 4 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg8hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg8hu.nxv4i16.nxv4i16(
@@ -977,10 +765,6 @@ define <vscale x 4 x i16> @intrinsic_vlsseg8hu_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
@@ -989,16 +773,8 @@ define <vscale x 4 x i16> @intrinsic_vlsseg8hu_mask_v_nxv4i16_nxv4i16(<vscale x 
 ; CHECK-NEXT:    th.vmv.v.v v13, v8
 ; CHECK-NEXT:    th.vmv.v.v v14, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m1, d1
 ; CHECK-NEXT:    th.vlsseg8hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16>, <vscale x 4 x i16> } @llvm.riscv.th.vlsseg8hu.mask.nxv4i16.nxv4i16(
@@ -1023,10 +799,6 @@ define <vscale x 8 x i16> @intrinsic_vlsseg2h_v_nxv8i16_nxv8i16(<vscale x 8 x i1
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m2, d1
 ; CHECK-NEXT:    th.vlsseg2h.v v6, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i16>, <vscale x 8 x i16> } @llvm.riscv.th.vlsseg2h.nxv8i16.nxv8i16(
@@ -1052,23 +824,11 @@ define <vscale x 8 x i16> @intrinsic_vlsseg2h_mask_v_nxv8i16_nxv8i16(<vscale x 8
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v6, v8
 ; CHECK-NEXT:    th.vmv.v.v v7, v9
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m2, d1
 ; CHECK-NEXT:    th.vlsseg2h.v v6, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i16>, <vscale x 8 x i16> } @llvm.riscv.th.vlsseg2h.mask.nxv8i16.nxv8i16(
@@ -1093,10 +853,6 @@ define <vscale x 8 x i16> @intrinsic_vlsseg2hu_v_nxv8i16_nxv8i16(<vscale x 8 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m2, d1
 ; CHECK-NEXT:    th.vlsseg2hu.v v6, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i16>, <vscale x 8 x i16> } @llvm.riscv.th.vlsseg2hu.nxv8i16.nxv8i16(
@@ -1122,23 +878,11 @@ define <vscale x 8 x i16> @intrinsic_vlsseg2hu_mask_v_nxv8i16_nxv8i16(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v6, v8
 ; CHECK-NEXT:    th.vmv.v.v v7, v9
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m2, d1
 ; CHECK-NEXT:    th.vlsseg2hu.v v6, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i16>, <vscale x 8 x i16> } @llvm.riscv.th.vlsseg2hu.mask.nxv8i16.nxv8i16(
@@ -1163,10 +907,6 @@ define <vscale x 8 x i16> @intrinsic_vlsseg3h_v_nxv8i16_nxv8i16(<vscale x 8 x i1
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m2, d1
 ; CHECK-NEXT:    th.vlsseg3h.v v6, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16> } @llvm.riscv.th.vlsseg3h.nxv8i16.nxv8i16(
@@ -1192,25 +932,13 @@ define <vscale x 8 x i16> @intrinsic_vlsseg3h_mask_v_nxv8i16_nxv8i16(<vscale x 8
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v6, v8
 ; CHECK-NEXT:    th.vmv.v.v v7, v9
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vmv.v.v v11, v9
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m2, d1
 ; CHECK-NEXT:    th.vlsseg3h.v v6, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16> } @llvm.riscv.th.vlsseg3h.mask.nxv8i16.nxv8i16(
@@ -1235,10 +963,6 @@ define <vscale x 8 x i16> @intrinsic_vlsseg3hu_v_nxv8i16_nxv8i16(<vscale x 8 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m2, d1
 ; CHECK-NEXT:    th.vlsseg3hu.v v6, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16> } @llvm.riscv.th.vlsseg3hu.nxv8i16.nxv8i16(
@@ -1264,25 +988,13 @@ define <vscale x 8 x i16> @intrinsic_vlsseg3hu_mask_v_nxv8i16_nxv8i16(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v6, v8
 ; CHECK-NEXT:    th.vmv.v.v v7, v9
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vmv.v.v v11, v9
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m2, d1
 ; CHECK-NEXT:    th.vlsseg3hu.v v6, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16> } @llvm.riscv.th.vlsseg3hu.mask.nxv8i16.nxv8i16(
@@ -1307,10 +1019,6 @@ define <vscale x 8 x i16> @intrinsic_vlsseg4h_v_nxv8i16_nxv8i16(<vscale x 8 x i1
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m2, d1
 ; CHECK-NEXT:    th.vlsseg4h.v v6, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16> } @llvm.riscv.th.vlsseg4h.nxv8i16.nxv8i16(
@@ -1336,10 +1044,6 @@ define <vscale x 8 x i16> @intrinsic_vlsseg4h_mask_v_nxv8i16_nxv8i16(<vscale x 8
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v6, v8
 ; CHECK-NEXT:    th.vmv.v.v v7, v9
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
@@ -1347,16 +1051,8 @@ define <vscale x 8 x i16> @intrinsic_vlsseg4h_mask_v_nxv8i16_nxv8i16(<vscale x 8
 ; CHECK-NEXT:    th.vmv.v.v v12, v8
 ; CHECK-NEXT:    th.vmv.v.v v13, v9
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m2, d1
 ; CHECK-NEXT:    th.vlsseg4h.v v6, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16> } @llvm.riscv.th.vlsseg4h.mask.nxv8i16.nxv8i16(
@@ -1381,10 +1077,6 @@ define <vscale x 8 x i16> @intrinsic_vlsseg4hu_v_nxv8i16_nxv8i16(<vscale x 8 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m2, d1
 ; CHECK-NEXT:    th.vlsseg4hu.v v6, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16> } @llvm.riscv.th.vlsseg4hu.nxv8i16.nxv8i16(
@@ -1410,10 +1102,6 @@ define <vscale x 8 x i16> @intrinsic_vlsseg4hu_mask_v_nxv8i16_nxv8i16(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v6, v8
 ; CHECK-NEXT:    th.vmv.v.v v7, v9
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
@@ -1421,16 +1109,8 @@ define <vscale x 8 x i16> @intrinsic_vlsseg4hu_mask_v_nxv8i16_nxv8i16(<vscale x 
 ; CHECK-NEXT:    th.vmv.v.v v12, v8
 ; CHECK-NEXT:    th.vmv.v.v v13, v9
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m2, d1
 ; CHECK-NEXT:    th.vlsseg4hu.v v6, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16>, <vscale x 8 x i16> } @llvm.riscv.th.vlsseg4hu.mask.nxv8i16.nxv8i16(
@@ -1455,10 +1135,6 @@ define <vscale x 16 x i16> @intrinsic_vlsseg2h_v_nxv16i16_nxv16i16(<vscale x 16 
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m4, d1
 ; CHECK-NEXT:    th.vlsseg2h.v v4, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 16 x i16>, <vscale x 16 x i16> } @llvm.riscv.th.vlsseg2h.nxv16i16.nxv16i16(
@@ -1484,25 +1160,13 @@ define <vscale x 16 x i16> @intrinsic_vlsseg2h_mask_v_nxv16i16_nxv16i16(<vscale 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v4, v8
 ; CHECK-NEXT:    th.vmv.v.v v5, v9
 ; CHECK-NEXT:    th.vmv.v.v v6, v10
 ; CHECK-NEXT:    th.vmv.v.v v7, v11
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m4, d1
 ; CHECK-NEXT:    th.vlsseg2h.v v4, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 16 x i16>, <vscale x 16 x i16> } @llvm.riscv.th.vlsseg2h.mask.nxv16i16.nxv16i16(
@@ -1527,10 +1191,6 @@ define <vscale x 16 x i16> @intrinsic_vlsseg2hu_v_nxv16i16_nxv16i16(<vscale x 16
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m4, d1
 ; CHECK-NEXT:    th.vlsseg2hu.v v4, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 16 x i16>, <vscale x 16 x i16> } @llvm.riscv.th.vlsseg2hu.nxv16i16.nxv16i16(
@@ -1556,25 +1216,13 @@ define <vscale x 16 x i16> @intrinsic_vlsseg2hu_mask_v_nxv16i16_nxv16i16(<vscale
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v4, v8
 ; CHECK-NEXT:    th.vmv.v.v v5, v9
 ; CHECK-NEXT:    th.vmv.v.v v6, v10
 ; CHECK-NEXT:    th.vmv.v.v v7, v11
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e16, m4, d1
 ; CHECK-NEXT:    th.vlsseg2hu.v v4, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 16 x i16>, <vscale x 16 x i16> } @llvm.riscv.th.vlsseg2hu.mask.nxv16i16.nxv16i16(
@@ -1599,10 +1247,6 @@ define <vscale x 2 x i32> @intrinsic_vlsseg2h_v_nxv2i32_nxv2i32(<vscale x 2 x i3
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg2h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg2h.nxv2i32.nxv2i32(
@@ -1628,22 +1272,10 @@ define <vscale x 2 x i32> @intrinsic_vlsseg2h_mask_v_nxv2i32_nxv2i32(<vscale x 2
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg2h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg2h.mask.nxv2i32.nxv2i32(
@@ -1668,10 +1300,6 @@ define <vscale x 2 x i32> @intrinsic_vlsseg2hu_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg2hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg2hu.nxv2i32.nxv2i32(
@@ -1697,22 +1325,10 @@ define <vscale x 2 x i32> @intrinsic_vlsseg2hu_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg2hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg2hu.mask.nxv2i32.nxv2i32(
@@ -1737,10 +1353,6 @@ define <vscale x 2 x i32> @intrinsic_vlsseg3h_v_nxv2i32_nxv2i32(<vscale x 2 x i3
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg3h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg3h.nxv2i32.nxv2i32(
@@ -1766,23 +1378,11 @@ define <vscale x 2 x i32> @intrinsic_vlsseg3h_mask_v_nxv2i32_nxv2i32(<vscale x 2
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg3h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg3h.mask.nxv2i32.nxv2i32(
@@ -1807,10 +1407,6 @@ define <vscale x 2 x i32> @intrinsic_vlsseg3hu_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg3hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg3hu.nxv2i32.nxv2i32(
@@ -1836,23 +1432,11 @@ define <vscale x 2 x i32> @intrinsic_vlsseg3hu_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg3hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg3hu.mask.nxv2i32.nxv2i32(
@@ -1877,10 +1461,6 @@ define <vscale x 2 x i32> @intrinsic_vlsseg4h_v_nxv2i32_nxv2i32(<vscale x 2 x i3
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg4h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg4h.nxv2i32.nxv2i32(
@@ -1906,24 +1486,12 @@ define <vscale x 2 x i32> @intrinsic_vlsseg4h_mask_v_nxv2i32_nxv2i32(<vscale x 2
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg4h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg4h.mask.nxv2i32.nxv2i32(
@@ -1948,10 +1516,6 @@ define <vscale x 2 x i32> @intrinsic_vlsseg4hu_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg4hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg4hu.nxv2i32.nxv2i32(
@@ -1977,24 +1541,12 @@ define <vscale x 2 x i32> @intrinsic_vlsseg4hu_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg4hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg4hu.mask.nxv2i32.nxv2i32(
@@ -2019,10 +1571,6 @@ define <vscale x 2 x i32> @intrinsic_vlsseg5h_v_nxv2i32_nxv2i32(<vscale x 2 x i3
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg5h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg5h.nxv2i32.nxv2i32(
@@ -2048,25 +1596,13 @@ define <vscale x 2 x i32> @intrinsic_vlsseg5h_mask_v_nxv2i32_nxv2i32(<vscale x 2
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vmv.v.v v11, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg5h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg5h.mask.nxv2i32.nxv2i32(
@@ -2091,10 +1627,6 @@ define <vscale x 2 x i32> @intrinsic_vlsseg5hu_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg5hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg5hu.nxv2i32.nxv2i32(
@@ -2120,25 +1652,13 @@ define <vscale x 2 x i32> @intrinsic_vlsseg5hu_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vmv.v.v v11, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg5hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg5hu.mask.nxv2i32.nxv2i32(
@@ -2163,10 +1683,6 @@ define <vscale x 2 x i32> @intrinsic_vlsseg6h_v_nxv2i32_nxv2i32(<vscale x 2 x i3
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg6h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg6h.nxv2i32.nxv2i32(
@@ -2192,26 +1708,14 @@ define <vscale x 2 x i32> @intrinsic_vlsseg6h_mask_v_nxv2i32_nxv2i32(<vscale x 2
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vmv.v.v v11, v8
 ; CHECK-NEXT:    th.vmv.v.v v12, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg6h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg6h.mask.nxv2i32.nxv2i32(
@@ -2236,10 +1740,6 @@ define <vscale x 2 x i32> @intrinsic_vlsseg6hu_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg6hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg6hu.nxv2i32.nxv2i32(
@@ -2265,26 +1765,14 @@ define <vscale x 2 x i32> @intrinsic_vlsseg6hu_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vmv.v.v v11, v8
 ; CHECK-NEXT:    th.vmv.v.v v12, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg6hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg6hu.mask.nxv2i32.nxv2i32(
@@ -2309,10 +1797,6 @@ define <vscale x 2 x i32> @intrinsic_vlsseg7h_v_nxv2i32_nxv2i32(<vscale x 2 x i3
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg7h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg7h.nxv2i32.nxv2i32(
@@ -2338,10 +1822,6 @@ define <vscale x 2 x i32> @intrinsic_vlsseg7h_mask_v_nxv2i32_nxv2i32(<vscale x 2
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
@@ -2349,16 +1829,8 @@ define <vscale x 2 x i32> @intrinsic_vlsseg7h_mask_v_nxv2i32_nxv2i32(<vscale x 2
 ; CHECK-NEXT:    th.vmv.v.v v12, v8
 ; CHECK-NEXT:    th.vmv.v.v v13, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg7h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg7h.mask.nxv2i32.nxv2i32(
@@ -2383,10 +1855,6 @@ define <vscale x 2 x i32> @intrinsic_vlsseg7hu_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg7hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg7hu.nxv2i32.nxv2i32(
@@ -2412,10 +1880,6 @@ define <vscale x 2 x i32> @intrinsic_vlsseg7hu_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
@@ -2423,16 +1887,8 @@ define <vscale x 2 x i32> @intrinsic_vlsseg7hu_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; CHECK-NEXT:    th.vmv.v.v v12, v8
 ; CHECK-NEXT:    th.vmv.v.v v13, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg7hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg7hu.mask.nxv2i32.nxv2i32(
@@ -2457,10 +1913,6 @@ define <vscale x 2 x i32> @intrinsic_vlsseg8h_v_nxv2i32_nxv2i32(<vscale x 2 x i3
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg8h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg8h.nxv2i32.nxv2i32(
@@ -2486,10 +1938,6 @@ define <vscale x 2 x i32> @intrinsic_vlsseg8h_mask_v_nxv2i32_nxv2i32(<vscale x 2
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
@@ -2498,16 +1946,8 @@ define <vscale x 2 x i32> @intrinsic_vlsseg8h_mask_v_nxv2i32_nxv2i32(<vscale x 2
 ; CHECK-NEXT:    th.vmv.v.v v13, v8
 ; CHECK-NEXT:    th.vmv.v.v v14, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg8h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg8h.mask.nxv2i32.nxv2i32(
@@ -2532,10 +1972,6 @@ define <vscale x 2 x i32> @intrinsic_vlsseg8hu_v_nxv2i32_nxv2i32(<vscale x 2 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg8hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg8hu.nxv2i32.nxv2i32(
@@ -2561,10 +1997,6 @@ define <vscale x 2 x i32> @intrinsic_vlsseg8hu_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
@@ -2573,16 +2005,8 @@ define <vscale x 2 x i32> @intrinsic_vlsseg8hu_mask_v_nxv2i32_nxv2i32(<vscale x 
 ; CHECK-NEXT:    th.vmv.v.v v13, v8
 ; CHECK-NEXT:    th.vmv.v.v v14, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m1, d1
 ; CHECK-NEXT:    th.vlsseg8hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32>, <vscale x 2 x i32> } @llvm.riscv.th.vlsseg8hu.mask.nxv2i32.nxv2i32(
@@ -2607,10 +2031,6 @@ define <vscale x 4 x i32> @intrinsic_vlsseg2h_v_nxv4i32_nxv4i32(<vscale x 4 x i3
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m2, d1
 ; CHECK-NEXT:    th.vlsseg2h.v v6, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i32>, <vscale x 4 x i32> } @llvm.riscv.th.vlsseg2h.nxv4i32.nxv4i32(
@@ -2636,23 +2056,11 @@ define <vscale x 4 x i32> @intrinsic_vlsseg2h_mask_v_nxv4i32_nxv4i32(<vscale x 4
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v6, v8
 ; CHECK-NEXT:    th.vmv.v.v v7, v9
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m2, d1
 ; CHECK-NEXT:    th.vlsseg2h.v v6, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i32>, <vscale x 4 x i32> } @llvm.riscv.th.vlsseg2h.mask.nxv4i32.nxv4i32(
@@ -2677,10 +2085,6 @@ define <vscale x 4 x i32> @intrinsic_vlsseg2hu_v_nxv4i32_nxv4i32(<vscale x 4 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m2, d1
 ; CHECK-NEXT:    th.vlsseg2hu.v v6, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i32>, <vscale x 4 x i32> } @llvm.riscv.th.vlsseg2hu.nxv4i32.nxv4i32(
@@ -2706,23 +2110,11 @@ define <vscale x 4 x i32> @intrinsic_vlsseg2hu_mask_v_nxv4i32_nxv4i32(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v6, v8
 ; CHECK-NEXT:    th.vmv.v.v v7, v9
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m2, d1
 ; CHECK-NEXT:    th.vlsseg2hu.v v6, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i32>, <vscale x 4 x i32> } @llvm.riscv.th.vlsseg2hu.mask.nxv4i32.nxv4i32(
@@ -2747,10 +2139,6 @@ define <vscale x 4 x i32> @intrinsic_vlsseg3h_v_nxv4i32_nxv4i32(<vscale x 4 x i3
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m2, d1
 ; CHECK-NEXT:    th.vlsseg3h.v v6, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32> } @llvm.riscv.th.vlsseg3h.nxv4i32.nxv4i32(
@@ -2776,25 +2164,13 @@ define <vscale x 4 x i32> @intrinsic_vlsseg3h_mask_v_nxv4i32_nxv4i32(<vscale x 4
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v6, v8
 ; CHECK-NEXT:    th.vmv.v.v v7, v9
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vmv.v.v v11, v9
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m2, d1
 ; CHECK-NEXT:    th.vlsseg3h.v v6, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32> } @llvm.riscv.th.vlsseg3h.mask.nxv4i32.nxv4i32(
@@ -2819,10 +2195,6 @@ define <vscale x 4 x i32> @intrinsic_vlsseg3hu_v_nxv4i32_nxv4i32(<vscale x 4 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m2, d1
 ; CHECK-NEXT:    th.vlsseg3hu.v v6, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32> } @llvm.riscv.th.vlsseg3hu.nxv4i32.nxv4i32(
@@ -2848,25 +2220,13 @@ define <vscale x 4 x i32> @intrinsic_vlsseg3hu_mask_v_nxv4i32_nxv4i32(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v6, v8
 ; CHECK-NEXT:    th.vmv.v.v v7, v9
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vmv.v.v v11, v9
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m2, d1
 ; CHECK-NEXT:    th.vlsseg3hu.v v6, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32> } @llvm.riscv.th.vlsseg3hu.mask.nxv4i32.nxv4i32(
@@ -2891,10 +2251,6 @@ define <vscale x 4 x i32> @intrinsic_vlsseg4h_v_nxv4i32_nxv4i32(<vscale x 4 x i3
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m2, d1
 ; CHECK-NEXT:    th.vlsseg4h.v v6, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32> } @llvm.riscv.th.vlsseg4h.nxv4i32.nxv4i32(
@@ -2920,10 +2276,6 @@ define <vscale x 4 x i32> @intrinsic_vlsseg4h_mask_v_nxv4i32_nxv4i32(<vscale x 4
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v6, v8
 ; CHECK-NEXT:    th.vmv.v.v v7, v9
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
@@ -2931,16 +2283,8 @@ define <vscale x 4 x i32> @intrinsic_vlsseg4h_mask_v_nxv4i32_nxv4i32(<vscale x 4
 ; CHECK-NEXT:    th.vmv.v.v v12, v8
 ; CHECK-NEXT:    th.vmv.v.v v13, v9
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m2, d1
 ; CHECK-NEXT:    th.vlsseg4h.v v6, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32> } @llvm.riscv.th.vlsseg4h.mask.nxv4i32.nxv4i32(
@@ -2965,10 +2309,6 @@ define <vscale x 4 x i32> @intrinsic_vlsseg4hu_v_nxv4i32_nxv4i32(<vscale x 4 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m2, d1
 ; CHECK-NEXT:    th.vlsseg4hu.v v6, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32> } @llvm.riscv.th.vlsseg4hu.nxv4i32.nxv4i32(
@@ -2994,10 +2334,6 @@ define <vscale x 4 x i32> @intrinsic_vlsseg4hu_mask_v_nxv4i32_nxv4i32(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v6, v8
 ; CHECK-NEXT:    th.vmv.v.v v7, v9
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
@@ -3005,16 +2341,8 @@ define <vscale x 4 x i32> @intrinsic_vlsseg4hu_mask_v_nxv4i32_nxv4i32(<vscale x 
 ; CHECK-NEXT:    th.vmv.v.v v12, v8
 ; CHECK-NEXT:    th.vmv.v.v v13, v9
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m2, d1
 ; CHECK-NEXT:    th.vlsseg4hu.v v6, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32>, <vscale x 4 x i32> } @llvm.riscv.th.vlsseg4hu.mask.nxv4i32.nxv4i32(
@@ -3039,10 +2367,6 @@ define <vscale x 8 x i32> @intrinsic_vlsseg2h_v_nxv8i32_nxv8i32(<vscale x 8 x i3
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m4, d1
 ; CHECK-NEXT:    th.vlsseg2h.v v4, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i32>, <vscale x 8 x i32> } @llvm.riscv.th.vlsseg2h.nxv8i32.nxv8i32(
@@ -3068,25 +2392,13 @@ define <vscale x 8 x i32> @intrinsic_vlsseg2h_mask_v_nxv8i32_nxv8i32(<vscale x 8
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v4, v8
 ; CHECK-NEXT:    th.vmv.v.v v5, v9
 ; CHECK-NEXT:    th.vmv.v.v v6, v10
 ; CHECK-NEXT:    th.vmv.v.v v7, v11
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m4, d1
 ; CHECK-NEXT:    th.vlsseg2h.v v4, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i32>, <vscale x 8 x i32> } @llvm.riscv.th.vlsseg2h.mask.nxv8i32.nxv8i32(
@@ -3111,10 +2423,6 @@ define <vscale x 8 x i32> @intrinsic_vlsseg2hu_v_nxv8i32_nxv8i32(<vscale x 8 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m4, d1
 ; CHECK-NEXT:    th.vlsseg2hu.v v4, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i32>, <vscale x 8 x i32> } @llvm.riscv.th.vlsseg2hu.nxv8i32.nxv8i32(
@@ -3140,25 +2448,13 @@ define <vscale x 8 x i32> @intrinsic_vlsseg2hu_mask_v_nxv8i32_nxv8i32(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v4, v8
 ; CHECK-NEXT:    th.vmv.v.v v5, v9
 ; CHECK-NEXT:    th.vmv.v.v v6, v10
 ; CHECK-NEXT:    th.vmv.v.v v7, v11
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e32, m4, d1
 ; CHECK-NEXT:    th.vlsseg2hu.v v4, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 8 x i32>, <vscale x 8 x i32> } @llvm.riscv.th.vlsseg2hu.mask.nxv8i32.nxv8i32(
@@ -3183,10 +2479,6 @@ define <vscale x 1 x i64> @intrinsic_vlsseg2h_v_nxv1i64_nxv1i64(<vscale x 1 x i6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg2h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg2h.nxv1i64.nxv1i64(
@@ -3212,22 +2504,10 @@ define <vscale x 1 x i64> @intrinsic_vlsseg2h_mask_v_nxv1i64_nxv1i64(<vscale x 1
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg2h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg2h.mask.nxv1i64.nxv1i64(
@@ -3252,10 +2532,6 @@ define <vscale x 1 x i64> @intrinsic_vlsseg2hu_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg2hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg2hu.nxv1i64.nxv1i64(
@@ -3281,22 +2557,10 @@ define <vscale x 1 x i64> @intrinsic_vlsseg2hu_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg2hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg2hu.mask.nxv1i64.nxv1i64(
@@ -3321,10 +2585,6 @@ define <vscale x 1 x i64> @intrinsic_vlsseg3h_v_nxv1i64_nxv1i64(<vscale x 1 x i6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg3h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg3h.nxv1i64.nxv1i64(
@@ -3350,23 +2610,11 @@ define <vscale x 1 x i64> @intrinsic_vlsseg3h_mask_v_nxv1i64_nxv1i64(<vscale x 1
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg3h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg3h.mask.nxv1i64.nxv1i64(
@@ -3391,10 +2639,6 @@ define <vscale x 1 x i64> @intrinsic_vlsseg3hu_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg3hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg3hu.nxv1i64.nxv1i64(
@@ -3420,23 +2664,11 @@ define <vscale x 1 x i64> @intrinsic_vlsseg3hu_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg3hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg3hu.mask.nxv1i64.nxv1i64(
@@ -3461,10 +2693,6 @@ define <vscale x 1 x i64> @intrinsic_vlsseg4h_v_nxv1i64_nxv1i64(<vscale x 1 x i6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg4h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg4h.nxv1i64.nxv1i64(
@@ -3490,24 +2718,12 @@ define <vscale x 1 x i64> @intrinsic_vlsseg4h_mask_v_nxv1i64_nxv1i64(<vscale x 1
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg4h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg4h.mask.nxv1i64.nxv1i64(
@@ -3532,10 +2748,6 @@ define <vscale x 1 x i64> @intrinsic_vlsseg4hu_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg4hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg4hu.nxv1i64.nxv1i64(
@@ -3561,24 +2773,12 @@ define <vscale x 1 x i64> @intrinsic_vlsseg4hu_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg4hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg4hu.mask.nxv1i64.nxv1i64(
@@ -3603,10 +2803,6 @@ define <vscale x 1 x i64> @intrinsic_vlsseg5h_v_nxv1i64_nxv1i64(<vscale x 1 x i6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg5h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg5h.nxv1i64.nxv1i64(
@@ -3632,25 +2828,13 @@ define <vscale x 1 x i64> @intrinsic_vlsseg5h_mask_v_nxv1i64_nxv1i64(<vscale x 1
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vmv.v.v v11, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg5h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg5h.mask.nxv1i64.nxv1i64(
@@ -3675,10 +2859,6 @@ define <vscale x 1 x i64> @intrinsic_vlsseg5hu_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg5hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg5hu.nxv1i64.nxv1i64(
@@ -3704,25 +2884,13 @@ define <vscale x 1 x i64> @intrinsic_vlsseg5hu_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vmv.v.v v11, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg5hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg5hu.mask.nxv1i64.nxv1i64(
@@ -3747,10 +2915,6 @@ define <vscale x 1 x i64> @intrinsic_vlsseg6h_v_nxv1i64_nxv1i64(<vscale x 1 x i6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg6h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg6h.nxv1i64.nxv1i64(
@@ -3776,26 +2940,14 @@ define <vscale x 1 x i64> @intrinsic_vlsseg6h_mask_v_nxv1i64_nxv1i64(<vscale x 1
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vmv.v.v v11, v8
 ; CHECK-NEXT:    th.vmv.v.v v12, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg6h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg6h.mask.nxv1i64.nxv1i64(
@@ -3820,10 +2972,6 @@ define <vscale x 1 x i64> @intrinsic_vlsseg6hu_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg6hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg6hu.nxv1i64.nxv1i64(
@@ -3849,26 +2997,14 @@ define <vscale x 1 x i64> @intrinsic_vlsseg6hu_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vmv.v.v v11, v8
 ; CHECK-NEXT:    th.vmv.v.v v12, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg6hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg6hu.mask.nxv1i64.nxv1i64(
@@ -3893,10 +3029,6 @@ define <vscale x 1 x i64> @intrinsic_vlsseg7h_v_nxv1i64_nxv1i64(<vscale x 1 x i6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg7h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg7h.nxv1i64.nxv1i64(
@@ -3922,10 +3054,6 @@ define <vscale x 1 x i64> @intrinsic_vlsseg7h_mask_v_nxv1i64_nxv1i64(<vscale x 1
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
@@ -3933,16 +3061,8 @@ define <vscale x 1 x i64> @intrinsic_vlsseg7h_mask_v_nxv1i64_nxv1i64(<vscale x 1
 ; CHECK-NEXT:    th.vmv.v.v v12, v8
 ; CHECK-NEXT:    th.vmv.v.v v13, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg7h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg7h.mask.nxv1i64.nxv1i64(
@@ -3967,10 +3087,6 @@ define <vscale x 1 x i64> @intrinsic_vlsseg7hu_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg7hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg7hu.nxv1i64.nxv1i64(
@@ -3996,10 +3112,6 @@ define <vscale x 1 x i64> @intrinsic_vlsseg7hu_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
@@ -4007,16 +3119,8 @@ define <vscale x 1 x i64> @intrinsic_vlsseg7hu_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; CHECK-NEXT:    th.vmv.v.v v12, v8
 ; CHECK-NEXT:    th.vmv.v.v v13, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg7hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg7hu.mask.nxv1i64.nxv1i64(
@@ -4041,10 +3145,6 @@ define <vscale x 1 x i64> @intrinsic_vlsseg8h_v_nxv1i64_nxv1i64(<vscale x 1 x i6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg8h.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg8h.nxv1i64.nxv1i64(
@@ -4070,10 +3170,6 @@ define <vscale x 1 x i64> @intrinsic_vlsseg8h_mask_v_nxv1i64_nxv1i64(<vscale x 1
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
@@ -4082,16 +3178,8 @@ define <vscale x 1 x i64> @intrinsic_vlsseg8h_mask_v_nxv1i64_nxv1i64(<vscale x 1
 ; CHECK-NEXT:    th.vmv.v.v v13, v8
 ; CHECK-NEXT:    th.vmv.v.v v14, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg8h.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg8h.mask.nxv1i64.nxv1i64(
@@ -4116,10 +3204,6 @@ define <vscale x 1 x i64> @intrinsic_vlsseg8hu_v_nxv1i64_nxv1i64(<vscale x 1 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg8hu.v v7, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg8hu.nxv1i64.nxv1i64(
@@ -4145,10 +3229,6 @@ define <vscale x 1 x i64> @intrinsic_vlsseg8hu_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v7, v8
 ; CHECK-NEXT:    th.vmv.v.v v9, v8
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
@@ -4157,16 +3237,8 @@ define <vscale x 1 x i64> @intrinsic_vlsseg8hu_mask_v_nxv1i64_nxv1i64(<vscale x 
 ; CHECK-NEXT:    th.vmv.v.v v13, v8
 ; CHECK-NEXT:    th.vmv.v.v v14, v8
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m1, d1
 ; CHECK-NEXT:    th.vlsseg8hu.v v7, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64>, <vscale x 1 x i64> } @llvm.riscv.th.vlsseg8hu.mask.nxv1i64.nxv1i64(
@@ -4191,10 +3263,6 @@ define <vscale x 2 x i64> @intrinsic_vlsseg2h_v_nxv2i64_nxv2i64(<vscale x 2 x i6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m2, d1
 ; CHECK-NEXT:    th.vlsseg2h.v v6, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i64>, <vscale x 2 x i64> } @llvm.riscv.th.vlsseg2h.nxv2i64.nxv2i64(
@@ -4220,23 +3288,11 @@ define <vscale x 2 x i64> @intrinsic_vlsseg2h_mask_v_nxv2i64_nxv2i64(<vscale x 2
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v6, v8
 ; CHECK-NEXT:    th.vmv.v.v v7, v9
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m2, d1
 ; CHECK-NEXT:    th.vlsseg2h.v v6, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i64>, <vscale x 2 x i64> } @llvm.riscv.th.vlsseg2h.mask.nxv2i64.nxv2i64(
@@ -4261,10 +3317,6 @@ define <vscale x 2 x i64> @intrinsic_vlsseg2hu_v_nxv2i64_nxv2i64(<vscale x 2 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m2, d1
 ; CHECK-NEXT:    th.vlsseg2hu.v v6, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i64>, <vscale x 2 x i64> } @llvm.riscv.th.vlsseg2hu.nxv2i64.nxv2i64(
@@ -4290,23 +3342,11 @@ define <vscale x 2 x i64> @intrinsic_vlsseg2hu_mask_v_nxv2i64_nxv2i64(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v6, v8
 ; CHECK-NEXT:    th.vmv.v.v v7, v9
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m2, d1
 ; CHECK-NEXT:    th.vlsseg2hu.v v6, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i64>, <vscale x 2 x i64> } @llvm.riscv.th.vlsseg2hu.mask.nxv2i64.nxv2i64(
@@ -4331,10 +3371,6 @@ define <vscale x 2 x i64> @intrinsic_vlsseg3h_v_nxv2i64_nxv2i64(<vscale x 2 x i6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m2, d1
 ; CHECK-NEXT:    th.vlsseg3h.v v6, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i64>, <vscale x 2 x i64>, <vscale x 2 x i64> } @llvm.riscv.th.vlsseg3h.nxv2i64.nxv2i64(
@@ -4360,25 +3396,13 @@ define <vscale x 2 x i64> @intrinsic_vlsseg3h_mask_v_nxv2i64_nxv2i64(<vscale x 2
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v6, v8
 ; CHECK-NEXT:    th.vmv.v.v v7, v9
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vmv.v.v v11, v9
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m2, d1
 ; CHECK-NEXT:    th.vlsseg3h.v v6, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i64>, <vscale x 2 x i64>, <vscale x 2 x i64> } @llvm.riscv.th.vlsseg3h.mask.nxv2i64.nxv2i64(
@@ -4403,10 +3427,6 @@ define <vscale x 2 x i64> @intrinsic_vlsseg3hu_v_nxv2i64_nxv2i64(<vscale x 2 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m2, d1
 ; CHECK-NEXT:    th.vlsseg3hu.v v6, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i64>, <vscale x 2 x i64>, <vscale x 2 x i64> } @llvm.riscv.th.vlsseg3hu.nxv2i64.nxv2i64(
@@ -4432,25 +3452,13 @@ define <vscale x 2 x i64> @intrinsic_vlsseg3hu_mask_v_nxv2i64_nxv2i64(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v6, v8
 ; CHECK-NEXT:    th.vmv.v.v v7, v9
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
 ; CHECK-NEXT:    th.vmv.v.v v11, v9
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m2, d1
 ; CHECK-NEXT:    th.vlsseg3hu.v v6, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i64>, <vscale x 2 x i64>, <vscale x 2 x i64> } @llvm.riscv.th.vlsseg3hu.mask.nxv2i64.nxv2i64(
@@ -4475,10 +3483,6 @@ define <vscale x 2 x i64> @intrinsic_vlsseg4h_v_nxv2i64_nxv2i64(<vscale x 2 x i6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m2, d1
 ; CHECK-NEXT:    th.vlsseg4h.v v6, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i64>, <vscale x 2 x i64>, <vscale x 2 x i64>, <vscale x 2 x i64> } @llvm.riscv.th.vlsseg4h.nxv2i64.nxv2i64(
@@ -4504,10 +3508,6 @@ define <vscale x 2 x i64> @intrinsic_vlsseg4h_mask_v_nxv2i64_nxv2i64(<vscale x 2
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v6, v8
 ; CHECK-NEXT:    th.vmv.v.v v7, v9
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
@@ -4515,16 +3515,8 @@ define <vscale x 2 x i64> @intrinsic_vlsseg4h_mask_v_nxv2i64_nxv2i64(<vscale x 2
 ; CHECK-NEXT:    th.vmv.v.v v12, v8
 ; CHECK-NEXT:    th.vmv.v.v v13, v9
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m2, d1
 ; CHECK-NEXT:    th.vlsseg4h.v v6, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i64>, <vscale x 2 x i64>, <vscale x 2 x i64>, <vscale x 2 x i64> } @llvm.riscv.th.vlsseg4h.mask.nxv2i64.nxv2i64(
@@ -4549,10 +3541,6 @@ define <vscale x 2 x i64> @intrinsic_vlsseg4hu_v_nxv2i64_nxv2i64(<vscale x 2 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m2, d1
 ; CHECK-NEXT:    th.vlsseg4hu.v v6, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i64>, <vscale x 2 x i64>, <vscale x 2 x i64>, <vscale x 2 x i64> } @llvm.riscv.th.vlsseg4hu.nxv2i64.nxv2i64(
@@ -4578,10 +3566,6 @@ define <vscale x 2 x i64> @intrinsic_vlsseg4hu_mask_v_nxv2i64_nxv2i64(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v6, v8
 ; CHECK-NEXT:    th.vmv.v.v v7, v9
 ; CHECK-NEXT:    th.vmv.v.v v10, v8
@@ -4589,16 +3573,8 @@ define <vscale x 2 x i64> @intrinsic_vlsseg4hu_mask_v_nxv2i64_nxv2i64(<vscale x 
 ; CHECK-NEXT:    th.vmv.v.v v12, v8
 ; CHECK-NEXT:    th.vmv.v.v v13, v9
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m2, d1
 ; CHECK-NEXT:    th.vlsseg4hu.v v6, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 2 x i64>, <vscale x 2 x i64>, <vscale x 2 x i64>, <vscale x 2 x i64> } @llvm.riscv.th.vlsseg4hu.mask.nxv2i64.nxv2i64(
@@ -4623,10 +3599,6 @@ define <vscale x 4 x i64> @intrinsic_vlsseg2h_v_nxv4i64_nxv4i64(<vscale x 4 x i6
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m4, d1
 ; CHECK-NEXT:    th.vlsseg2h.v v4, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i64>, <vscale x 4 x i64> } @llvm.riscv.th.vlsseg2h.nxv4i64.nxv4i64(
@@ -4652,25 +3624,13 @@ define <vscale x 4 x i64> @intrinsic_vlsseg2h_mask_v_nxv4i64_nxv4i64(<vscale x 4
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v4, v8
 ; CHECK-NEXT:    th.vmv.v.v v5, v9
 ; CHECK-NEXT:    th.vmv.v.v v6, v10
 ; CHECK-NEXT:    th.vmv.v.v v7, v11
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m4, d1
 ; CHECK-NEXT:    th.vlsseg2h.v v4, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i64>, <vscale x 4 x i64> } @llvm.riscv.th.vlsseg2h.mask.nxv4i64.nxv4i64(
@@ -4695,10 +3655,6 @@ define <vscale x 4 x i64> @intrinsic_vlsseg2hu_v_nxv4i64_nxv4i64(<vscale x 4 x i
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m4, d1
 ; CHECK-NEXT:    th.vlsseg2hu.v v4, (a0), a1
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i64>, <vscale x 4 x i64> } @llvm.riscv.th.vlsseg2hu.nxv4i64.nxv4i64(
@@ -4724,25 +3680,13 @@ define <vscale x 4 x i64> @intrinsic_vlsseg2hu_mask_v_nxv4i64_nxv4i64(<vscale x 
 ; CHECK-NEXT:    csrr a3, vl
 ; CHECK-NEXT:    csrr a4, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
 ; CHECK-NEXT:    th.vmv.v.v v4, v8
 ; CHECK-NEXT:    th.vmv.v.v v5, v9
 ; CHECK-NEXT:    th.vmv.v.v v6, v10
 ; CHECK-NEXT:    th.vmv.v.v v7, v11
 ; CHECK-NEXT:    th.vsetvl zero, a3, a4
-; CHECK-NEXT:    csrr a3, vl
-; CHECK-NEXT:    csrr a4, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a3, a4
 ; CHECK-NEXT:    th.vsetvli zero, a2, e64, m4, d1
 ; CHECK-NEXT:    th.vlsseg2hu.v v4, (a0), a1, v0.t
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call { <vscale x 4 x i64>, <vscale x 4 x i64> } @llvm.riscv.th.vlsseg2hu.mask.nxv4i64.nxv4i64(

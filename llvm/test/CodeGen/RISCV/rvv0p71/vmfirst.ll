@@ -11,10 +11,6 @@ declare iXLen @llvm.riscv.th.vmfirst.iXLen.nxv8i1(
 define iXLen @intrinsic_vmfirst_m_nxv8i1(<vscale x 8 x i1> %0, iXLen %1) nounwind {
 ; CHECK-LABEL: intrinsic_vmfirst_m_nxv8i1:
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    csrr a1, vl
-; CHECK-NEXT:    csrr a2, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a1, a2
 ; CHECK-NEXT:    th.vsetvli zero, a0, e8, m1, d1
 ; CHECK-NEXT:    th.vmfirst.m a0, v0
 ; CHECK-NEXT:    ret
@@ -34,10 +30,6 @@ declare iXLen @llvm.riscv.th.vmfirst.mask.iXLen.nxv8i1(
 define iXLen @intrinsic_vmfirst_mask_m_nxv8i1(<vscale x 8 x i1> %0, <vscale x 8 x i1> %1, iXLen %2) nounwind {
 ; CHECK-LABEL: intrinsic_vmfirst_mask_m_nxv8i1:
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    csrr a1, vl
-; CHECK-NEXT:    csrr a2, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a1, a2
 ; CHECK-NEXT:    csrr a1, vl
 ; CHECK-NEXT:    csrr a2, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
@@ -67,10 +59,6 @@ declare iXLen @llvm.riscv.th.vmfirst.iXLen.nxv16i1(
 define iXLen @intrinsic_vmfirst_m_nxv16i1(<vscale x 16 x i1> %0, iXLen %1) nounwind {
 ; CHECK-LABEL: intrinsic_vmfirst_m_nxv16i1:
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    csrr a1, vl
-; CHECK-NEXT:    csrr a2, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a1, a2
 ; CHECK-NEXT:    th.vsetvli zero, a0, e8, m2, d1
 ; CHECK-NEXT:    th.vmfirst.m a0, v0
 ; CHECK-NEXT:    ret
@@ -90,10 +78,6 @@ declare iXLen @llvm.riscv.th.vmfirst.mask.iXLen.nxv16i1(
 define iXLen @intrinsic_vmfirst_mask_m_nxv16i1(<vscale x 16 x i1> %0, <vscale x 16 x i1> %1, iXLen %2) nounwind {
 ; CHECK-LABEL: intrinsic_vmfirst_mask_m_nxv16i1:
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    csrr a1, vl
-; CHECK-NEXT:    csrr a2, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a1, a2
 ; CHECK-NEXT:    csrr a1, vl
 ; CHECK-NEXT:    csrr a2, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
@@ -123,10 +107,6 @@ declare iXLen @llvm.riscv.th.vmfirst.iXLen.nxv32i1(
 define iXLen @intrinsic_vmfirst_m_nxv32i1(<vscale x 32 x i1> %0, iXLen %1) nounwind {
 ; CHECK-LABEL: intrinsic_vmfirst_m_nxv32i1:
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    csrr a1, vl
-; CHECK-NEXT:    csrr a2, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a1, a2
 ; CHECK-NEXT:    th.vsetvli zero, a0, e8, m4, d1
 ; CHECK-NEXT:    th.vmfirst.m a0, v0
 ; CHECK-NEXT:    ret
@@ -146,10 +126,6 @@ declare iXLen @llvm.riscv.th.vmfirst.mask.iXLen.nxv32i1(
 define iXLen @intrinsic_vmfirst_mask_m_nxv32i1(<vscale x 32 x i1> %0, <vscale x 32 x i1> %1, iXLen %2) nounwind {
 ; CHECK-LABEL: intrinsic_vmfirst_mask_m_nxv32i1:
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    csrr a1, vl
-; CHECK-NEXT:    csrr a2, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a1, a2
 ; CHECK-NEXT:    csrr a1, vl
 ; CHECK-NEXT:    csrr a2, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
@@ -179,10 +155,6 @@ declare iXLen @llvm.riscv.th.vmfirst.iXLen.nxv64i1(
 define iXLen @intrinsic_vmfirst_m_nxv64i1(<vscale x 64 x i1> %0, iXLen %1) nounwind {
 ; CHECK-LABEL: intrinsic_vmfirst_m_nxv64i1:
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    csrr a1, vl
-; CHECK-NEXT:    csrr a2, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a1, a2
 ; CHECK-NEXT:    th.vsetvli zero, a0, e8, m8, d1
 ; CHECK-NEXT:    th.vmfirst.m a0, v0
 ; CHECK-NEXT:    ret
@@ -202,10 +174,6 @@ declare iXLen @llvm.riscv.th.vmfirst.mask.iXLen.nxv64i1(
 define iXLen @intrinsic_vmfirst_mask_m_nxv64i1(<vscale x 64 x i1> %0, <vscale x 64 x i1> %1, iXLen %2) nounwind {
 ; CHECK-LABEL: intrinsic_vmfirst_mask_m_nxv64i1:
 ; CHECK:       # %bb.0: # %entry
-; CHECK-NEXT:    csrr a1, vl
-; CHECK-NEXT:    csrr a2, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a1, a2
 ; CHECK-NEXT:    csrr a1, vl
 ; CHECK-NEXT:    csrr a2, vtype
 ; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
