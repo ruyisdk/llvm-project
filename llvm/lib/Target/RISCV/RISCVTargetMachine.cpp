@@ -42,6 +42,11 @@ static cl::opt<bool> EnableRedundantCopyElimination(
     cl::desc("Enable the redundant copy elimination pass"), cl::init(true),
     cl::Hidden);
 
+static cl::opt<bool> EnableRedundantVSEVLIElimination(
+    "riscv-enable-vsetvli-elim",
+    cl::desc("Enable the redundant VSETVLI elimination pass"), cl::init(true),
+    cl::Hidden);
+
 // FIXME: Unify control over GlobalMerge.
 static cl::opt<cl::boolOrDefault>
     EnableGlobalMerge("riscv-enable-global-merge", cl::Hidden,
@@ -401,6 +406,9 @@ void RISCVPassConfig::addOptimizedRegAlloc() {
 void RISCVPassConfig::addPostRegAlloc() {
   if (TM->getOptLevel() != CodeGenOpt::None && EnableRedundantCopyElimination) {
     addPass(createRISCVRedundantCopyEliminationPass());
+  }
+  if (TM->getOptLevel() != CodeGenOpt::None &&
+      EnableRedundantVSEVLIElimination) {
     addPass(createRISCVRedundantVSETVLIEliminationPass());
   }
 }
