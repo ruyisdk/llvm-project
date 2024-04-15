@@ -66,6 +66,9 @@ void initializeRISCVInsertReadWriteCSRPass(PassRegistry &);
 FunctionPass *createRISCVRedundantCopyEliminationPass();
 void initializeRISCVRedundantCopyEliminationPass(PassRegistry &);
 
+FunctionPass *createRISCVRedundantVSETVLIEliminationPass();
+void initializeRISCVRedundantVSETVLIEliminationPass(PassRegistry &);
+
 FunctionPass *createRISCVInitUndefPass();
 void initializeRISCVInitUndefPass(PassRegistry &);
 extern char &RISCVInitUndefID;

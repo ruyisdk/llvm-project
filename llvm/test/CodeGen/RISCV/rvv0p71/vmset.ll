@@ -28,10 +28,6 @@ define <vscale x 16 x i1> @intrinsic_vmset_m_pseudo_nxv16i1(iXLen %0) nounwind {
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a0, e8, m2, d1
 ; CHECK-NEXT:    th.vmset.m v0
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call <vscale x 16 x i1> @llvm.riscv.th.vmset.nxv16i1(
@@ -48,10 +44,6 @@ define <vscale x 32 x i1> @intrinsic_vmset_m_pseudo_nxv32i1(iXLen %0) nounwind {
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a0, e8, m4, d1
 ; CHECK-NEXT:    th.vmset.m v0
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call <vscale x 32 x i1> @llvm.riscv.th.vmset.nxv32i1(
@@ -68,10 +60,6 @@ define <vscale x 64 x i1> @intrinsic_vmset_m_pseudo_nxv64i1(iXLen %0) nounwind {
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a0, e8, m8, d1
 ; CHECK-NEXT:    th.vmset.m v0
-; CHECK-NEXT:    csrr a0, vl
-; CHECK-NEXT:    csrr a1, vtype
-; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
-; CHECK-NEXT:    th.vsetvl zero, a0, a1
 ; CHECK-NEXT:    ret
 entry:
   %a = call <vscale x 64 x i1> @llvm.riscv.th.vmset.nxv64i1(
