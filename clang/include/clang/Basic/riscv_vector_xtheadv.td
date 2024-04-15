@@ -21,6 +21,11 @@ class RVVOutBuiltin<string suffix, string prototype, string type_range>
   let IntrinsicTypes = [-1];
 }
 
+class RVVOp0Builtin<string suffix, string prototype, string type_range>
+    : RVVBuiltin<suffix, prototype, type_range> {
+  let IntrinsicTypes = [0];
+}
+
 class RVVOutOp1Builtin<string suffix, string prototype, string type_range>
     : RVVBuiltin<suffix, prototype, type_range> {
   let IntrinsicTypes = [-1, 1];
@@ -51,6 +56,10 @@ multiclass RVVOutOp0Op1BuiltinSet<string intrinsic_name, string type_range,
                                   list<list<string>> suffixes_prototypes>
     : RVVBuiltinSet<intrinsic_name, type_range, suffixes_prototypes,
                             [-1, 0, 1]>;
+
+multiclass RVVOutBuiltinSet<string intrinsic_name, string type_range,
+                            list<list<string>> suffixes_prototypes>
+    : RVVBuiltinSet<intrinsic_name, type_range, suffixes_prototypes, [-1]>;
 
 // IntrinsicTypes is output, op1 [-1, 1]
 multiclass RVVOutOp1BuiltinSet<string intrinsic_name, string type_range,
@@ -238,6 +247,13 @@ class RVVMaskNullaryBuiltin : RVVOutBuiltin<"m", "m", "c"> {
   let Name = NAME # "_m";
   let HasMasked = false;
   let SupportOverloading = false;
+}
+
+class RVVMaskOp0Builtin<string ir, string prototype> : RVVOp0Builtin<"m", prototype, "c"> {
+  let Name = NAME # "_m";
+  let IRName = ir;
+  let MaskedIRName = ir # "_mask";
+  let HasMaskedOffOperand = false;
 }
 
 //===----------------------------------------------------------------------===//
@@ -1339,5 +1355,33 @@ def  th_vmclr     : RVVMaskNullaryBuiltin;
 def  th_vmset     : RVVMaskNullaryBuiltin;
 defm th_vmmv_m    : RVVPseudoMaskBuiltin<"th_vmand", "c">;
 defm th_vmnot_m   : RVVPseudoMaskBuiltin<"th_vmnand", "c">;
+
+let MaskedPolicyScheme = NonePolicy in {
+  // 16.2. Vector count population in mask vcpop.m
+  def th_vcpop : RVVMaskOp0Builtin<"th_vmpopc", "um">;
+  // 16.3. vfirst find-first-set mask bit
+  def th_vfirst : RVVMaskOp0Builtin<"th_vmfirst", "lm">;
+}
+
+let MaskedPolicyScheme = HasPassthruOperand,
+    HasTailPolicy = false in {
+  // 16.4. vmsbf.m set-before-first mask bit
+  def th_vmsbf : RVVMaskUnaryBuiltin;
+  // 16.5. vmsif.m set-including-first mask bit
+  def th_vmsif : RVVMaskUnaryBuiltin;
+  // 16.6. vmsof.m set-only-first mask bit
+  def th_vmsof : RVVMaskUnaryBuiltin;
+}
+
+let UnMaskedPolicyScheme = HasPassthruOperand,
+    MaskedPolicyScheme = HasPassthruOperand,
+    SupportOverloading = false in {
+  // 16.7. Vector Iota Instruction
+  defm th_viota : RVVOutBuiltinSet<"th_viota", "csil", [["m", "Uv", "Uvm"]]>;
+  // 16.8. Vector Element Index Instruction
+  defm th_vid : RVVOutBuiltinSet<"th_vid", "csil", [["v", "v", "v"],
+                                                    ["v", "Uv", "Uv"]]>;
+}
+
 
 include "riscv_vector_xtheadv_wrappers.td"
