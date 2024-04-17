@@ -4586,7 +4586,7 @@ defm : XVPatReductionW_VS<"int_riscv_th_vwredsum", "PseudoTH_VWREDSUM">;
 
 let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true, hasSideEffects = 0 in {
   defm PseudoTH_VFREDOSUM : XVPseudoVFREDO_VS_RM;
-  defm PseudoTH_VFREDUSUM : XVPseudoVFRED_VS_RM;
+  defm PseudoTH_VFREDSUM  : XVPseudoVFRED_VS_RM;
 }
 
 let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true in {
@@ -4595,7 +4595,7 @@ let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true in {
 }
 
 defm : XVPatReductionV_VS_RM<"int_riscv_th_vfredosum", "PseudoTH_VFREDOSUM", IsFloat=1>;
-defm : XVPatReductionV_VS_RM<"int_riscv_th_vfredusum", "PseudoTH_VFREDUSUM", IsFloat=1>;
+defm : XVPatReductionV_VS_RM<"int_riscv_th_vfredsum",  "PseudoTH_VFREDSUM", IsFloat=1>;
 defm : XVPatReductionV_VS<"int_riscv_th_vfredmin", "PseudoTH_VFREDMIN", IsFloat=1>;
 defm : XVPatReductionV_VS<"int_riscv_th_vfredmax", "PseudoTH_VFREDMAX", IsFloat=1>;
 
@@ -4603,11 +4603,11 @@ defm : XVPatReductionV_VS<"int_riscv_th_vfredmax", "PseudoTH_VFREDMAX", IsFloat=
 // 15.4. Vector Widening Floating-Point Reduction Instructions
 //===----------------------------------------------------------------------===//
 let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true, hasSideEffects = 0 in {
-  defm PseudoTH_VFWREDUSUM  : XVPseudoVFWRED_VS_RM;
   defm PseudoTH_VFWREDOSUM  : XVPseudoVFWRED_VS_RM;
+  defm PseudoTH_VFWREDSUM   : XVPseudoVFWRED_VS_RM;
 }
 
-defm : XVPatReductionW_VS_RM<"int_riscv_th_vfwredusum", "PseudoTH_VFWREDUSUM", IsFloat=1>;
+defm : XVPatReductionW_VS_RM<"int_riscv_th_vfwredsum",  "PseudoTH_VFWREDSUM", IsFloat=1>;
 defm : XVPatReductionW_VS_RM<"int_riscv_th_vfwredosum", "PseudoTH_VFWREDOSUM", IsFloat=1>;
 
 //===----------------------------------------------------------------------===//

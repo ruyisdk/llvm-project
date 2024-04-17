@@ -917,12 +917,12 @@ let TargetPrefix = "riscv" in {
 
   // 15.3. Vector Single-Width Floating-Point Reduction
   defm th_vfredosum : RISCVReductionRoundingMode;
-  defm th_vfredusum : RISCVReductionRoundingMode;
+  defm th_vfredsum : RISCVReductionRoundingMode;
   defm th_vfredmin : RISCVReduction;
   defm th_vfredmax : RISCVReduction;
 
   // 15.4. Vector Widening Floating-Point Reduction
-  defm th_vfwredusum : RISCVReductionRoundingMode;
+  defm th_vfwredsum  : RISCVReductionRoundingMode;
   defm th_vfwredosum : RISCVReductionRoundingMode;
 
   // 16.1. Vector Mask-Register Logical Operations
