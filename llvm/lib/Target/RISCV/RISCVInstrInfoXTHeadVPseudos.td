@@ -3769,6 +3769,220 @@ multiclass XVPatBinaryW_WV_WX_RM<string intrinsic, string instruction,
     : XVPatBinaryW_WV_RM<intrinsic, instruction, vtilist>,
       XVPatBinaryW_WX_RM<intrinsic, instruction, vtilist>;
 
+// Can't reuse `VPatTernaryNoMask`, the name of the instruction is different
+// from `VPatTernaryNoMaskTA`.
+class XVPatTernaryNoMaskNoTA<string intrinsic,
+                             string inst,
+                             string kind,
+                             ValueType result_type,
+                             ValueType op1_type,
+                             ValueType op2_type,
+                             int log2sew,
+                             LMULInfo vlmul,
+                             VReg result_reg_class,
+                             RegisterClass op1_reg_class,
+                             DAGOperand op2_kind> :
+  Pat<(result_type (!cast<Intrinsic>(intrinsic)
+                    (result_type result_reg_class:$rs3),
+                    (op1_type op1_reg_class:$rs1),
+                    (op2_type op2_kind:$rs2),
+                    VLOpFrag)),
+                   (!cast<Instruction>(inst#"_"#kind#"_"#vlmul.MX#"_E"#!shl(1, log2sew))
+                    result_reg_class:$rs3,
+                    (op1_type op1_reg_class:$rs1),
+                    op2_kind:$rs2,
+                    GPR:$vl, log2sew)>;
+
+class XVPatTernaryNoMaskNoTARoundingMode<string intrinsic,
+                                         string inst,
+                                         string kind,
+                                         ValueType result_type,
+                                         ValueType op1_type,
+                                         ValueType op2_type,
+                                         int log2sew,
+                                         LMULInfo vlmul,
+                                         VReg result_reg_class,
+                                         RegisterClass op1_reg_class,
+                                         DAGOperand op2_kind> :
+  Pat<(result_type (!cast<Intrinsic>(intrinsic)
+                    (result_type result_reg_class:$rs3),
+                    (op1_type op1_reg_class:$rs1),
+                    (op2_type op2_kind:$rs2),
+                    (XLenVT timm:$round),
+                    VLOpFrag)),
+                   (!cast<Instruction>(inst#"_"#kind#"_"#vlmul.MX#"_E"#!shl(1, log2sew))
+                    result_reg_class:$rs3,
+                    (op1_type op1_reg_class:$rs1),
+                    op2_kind:$rs2,
+                    (XLenVT timm:$round),
+                    GPR:$vl, log2sew)>;
+
+// Can't reuse `VPatTernaryMask`, the name of the instruction is different
+// from `VPatTernaryMaskTA`.
+class XVPatTernaryMaskNoTA<string intrinsic,
+                           string inst,
+                           string kind,
+                           ValueType result_type,
+                           ValueType op1_type,
+                           ValueType op2_type,
+                           ValueType mask_type,
+                           int log2sew,
+                           LMULInfo vlmul,
+                           VReg result_reg_class,
+                           RegisterClass op1_reg_class,
+                           DAGOperand op2_kind> :
+  Pat<(result_type (!cast<Intrinsic>(intrinsic#"_mask")
+                    (result_type result_reg_class:$rs3),
+                    (op1_type op1_reg_class:$rs1),
+                    (op2_type op2_kind:$rs2),
+                    (mask_type V0),
+                    VLOpFrag)),
+                   (!cast<Instruction>(inst#"_"#kind#"_"#vlmul.MX#"_E"#!shl(1, log2sew)# "_MASK")
+                    result_reg_class:$rs3,
+                    (op1_type op1_reg_class:$rs1),
+                    op2_kind:$rs2,
+                    (mask_type V0),
+                    GPR:$vl, log2sew)>;
+
+class XVPatTernaryMaskNoTARoundingMode<string intrinsic,
+                                       string inst,
+                                       string kind,
+                                       ValueType result_type,
+                                       ValueType op1_type,
+                                       ValueType op2_type,
+                                       ValueType mask_type,
+                                       int log2sew,
+                                       LMULInfo vlmul,
+                                       VReg result_reg_class,
+                                       RegisterClass op1_reg_class,
+                                       DAGOperand op2_kind> :
+  Pat<(result_type (!cast<Intrinsic>(intrinsic#"_mask")
+                    (result_type result_reg_class:$rs3),
+                    (op1_type op1_reg_class:$rs1),
+                    (op2_type op2_kind:$rs2),
+                    (mask_type V0),
+                    (XLenVT timm:$round),
+                    VLOpFrag)),
+                   (!cast<Instruction>(inst#"_"#kind#"_"#vlmul.MX#"_E"#!shl(1, log2sew)# "_MASK")
+                    result_reg_class:$rs3,
+                    (op1_type op1_reg_class:$rs1),
+                    op2_kind:$rs2,
+                    (mask_type V0),
+                    (XLenVT timm:$round),
+                    GPR:$vl, log2sew)>;
+
+multiclass XVPatTernary<string intrinsic,
+                        string inst,
+                        string kind,
+                        ValueType result_type,
+                        ValueType op1_type,
+                        ValueType op2_type,
+                        ValueType mask_type,
+                        int log2sew,
+                        LMULInfo vlmul,
+                        VReg result_reg_class,
+                        RegisterClass op1_reg_class,
+                        DAGOperand op2_kind> {
+  def : XVPatTernaryNoMaskNoTA<intrinsic, inst, kind, result_type, op1_type,
+                               op2_type, log2sew, vlmul, result_reg_class,
+                               op1_reg_class, op2_kind>;
+  def : XVPatTernaryMaskNoTA<intrinsic, inst, kind, result_type, op1_type,
+                             op2_type, mask_type, log2sew, vlmul,
+                             result_reg_class, op1_reg_class, op2_kind>;
+}
+
+multiclass XVPatTernaryRoundingMode<string intrinsic,
+                                    string inst,
+                                    string kind,
+                                    ValueType result_type,
+                                    ValueType op1_type,
+                                    ValueType op2_type,
+                                    ValueType mask_type,
+                                    int log2sew,
+                                    LMULInfo vlmul,
+                                    VReg result_reg_class,
+                                    RegisterClass op1_reg_class,
+                                    DAGOperand op2_kind> {
+  def : XVPatTernaryNoMaskNoTARoundingMode<intrinsic, inst, kind, result_type, op1_type,
+                                           op2_type, log2sew, vlmul, result_reg_class,
+                                           op1_reg_class, op2_kind>;
+  def : XVPatTernaryMaskNoTARoundingMode<intrinsic, inst, kind, result_type, op1_type,
+                                         op2_type, mask_type, log2sew, vlmul,
+                                         result_reg_class, op1_reg_class, op2_kind>;
+}
+
+multiclass XVPatReductionV_VS<string intrinsic, string instruction, bit IsFloat = 0> {
+  foreach vti = !if(IsFloat, NoGroupFloatXVectors, NoGroupIntegerXVectors) in {
+    defvar vectorM1 = !cast<VTypeInfo>(!if(IsFloat, "VF", "VI") # vti.SEW # "M1");
+    let Predicates = GetXVTypePredicates<vti>.Predicates in
+    defm : XVPatTernary<intrinsic, instruction, "VS",
+                         vectorM1.Vector, vti.Vector,
+                         vectorM1.Vector, vti.Mask,
+                         vti.Log2SEW, vti.LMul,
+                         VR, vti.RegClass, VR>;
+  }
+  foreach gvti = !if(IsFloat, GroupFloatXVectors, GroupIntegerXVectors) in {
+    let Predicates = GetXVTypePredicates<gvti>.Predicates in
+    defm : XVPatTernary<intrinsic, instruction, "VS",
+                         gvti.VectorM1, gvti.Vector,
+                         gvti.VectorM1, gvti.Mask,
+                         gvti.Log2SEW, gvti.LMul,
+                         VR, gvti.RegClass, VR>;
+  }
+}
+
+multiclass XVPatReductionV_VS_RM<string intrinsic, string instruction, bit IsFloat = 0> {
+  foreach vti = !if(IsFloat, NoGroupFloatXVectors, NoGroupIntegerXVectors) in {
+    defvar vectorM1 = !cast<VTypeInfo>(!if(IsFloat, "VF", "VI") # vti.SEW # "M1");
+    let Predicates = GetXVTypePredicates<vti>.Predicates in
+    defm : XVPatTernaryRoundingMode<intrinsic, instruction, "VS",
+                                     vectorM1.Vector, vti.Vector,
+                                     vectorM1.Vector, vti.Mask,
+                                     vti.Log2SEW, vti.LMul,
+                                     VR, vti.RegClass, VR>;
+  }
+  foreach gvti = !if(IsFloat, GroupFloatXVectors, GroupIntegerXVectors) in {
+    let Predicates = GetXVTypePredicates<gvti>.Predicates in
+    defm : XVPatTernaryRoundingMode<intrinsic, instruction, "VS",
+                                     gvti.VectorM1, gvti.Vector,
+                                     gvti.VectorM1, gvti.Mask,
+                                     gvti.Log2SEW, gvti.LMul,
+                                     VR, gvti.RegClass, VR>;
+  }
+}
+
+multiclass XVPatReductionW_VS<string intrinsic, string instruction, bit IsFloat = 0> {
+  foreach vti = !if(IsFloat, AllFloatXVectors, AllIntegerXVectors) in {
+    defvar wtiSEW = !mul(vti.SEW, 2);
+    if !le(wtiSEW, 64) then {
+      defvar wtiM1 = !cast<VTypeInfo>(!if(IsFloat, "VF", "VI") # wtiSEW # "M1");
+      let Predicates = GetXVTypePredicates<vti>.Predicates in
+      defm : XVPatTernary<intrinsic, instruction, "VS",
+                           wtiM1.Vector, vti.Vector,
+                           wtiM1.Vector, vti.Mask,
+                           vti.Log2SEW, vti.LMul,
+                           wtiM1.RegClass, vti.RegClass,
+                           wtiM1.RegClass>;
+    }
+  }
+}
+
+multiclass XVPatReductionW_VS_RM<string intrinsic, string instruction, bit IsFloat = 0> {
+  foreach vti = !if(IsFloat, AllFloatXVectors, AllIntegerXVectors) in {
+    defvar wtiSEW = !mul(vti.SEW, 2);
+    if !le(wtiSEW, 64) then {
+      defvar wtiM1 = !cast<VTypeInfo>(!if(IsFloat, "VF", "VI") # wtiSEW # "M1");
+      let Predicates = GetXVTypePredicates<vti>.Predicates in
+      defm : XVPatTernaryRoundingMode<intrinsic, instruction, "VS",
+                                      wtiM1.Vector, vti.Vector,
+                                      wtiM1.Vector, vti.Mask,
+                                      vti.Log2SEW, vti.LMul,
+                                      wtiM1.RegClass, vti.RegClass,
+                                      wtiM1.RegClass>;
+    }
+  }
+}
+
 //===----------------------------------------------------------------------===//
 // 12.1. Vector Single-Width Saturating Add and Subtract
 //===----------------------------------------------------------------------===//
@@ -4346,6 +4560,15 @@ let Predicates = [HasVendorXTHeadV] in {
   defm PseudoTH_VREDMAX  : XVPseudoVREDMINMAX_VS;
 }
 
+defm : XVPatReductionV_VS<"int_riscv_th_vredsum", "PseudoTH_VREDSUM">;
+defm : XVPatReductionV_VS<"int_riscv_th_vredand", "PseudoTH_VREDAND">;
+defm : XVPatReductionV_VS<"int_riscv_th_vredor", "PseudoTH_VREDOR">;
+defm : XVPatReductionV_VS<"int_riscv_th_vredxor", "PseudoTH_VREDXOR">;
+defm : XVPatReductionV_VS<"int_riscv_th_vredminu", "PseudoTH_VREDMINU">;
+defm : XVPatReductionV_VS<"int_riscv_th_vredmin", "PseudoTH_VREDMIN">;
+defm : XVPatReductionV_VS<"int_riscv_th_vredmaxu", "PseudoTH_VREDMAXU">;
+defm : XVPatReductionV_VS<"int_riscv_th_vredmax", "PseudoTH_VREDMAX">;
+
 //===----------------------------------------------------------------------===//
 // 15.2. Vector Widening Integer Reduction Instructions
 //===----------------------------------------------------------------------===//
@@ -4353,6 +4576,9 @@ let Predicates = [HasVendorXTHeadV] in {
   defm PseudoTH_VWREDSUMU   : XVPseudoVWRED_VS;
   defm PseudoTH_VWREDSUM    : XVPseudoVWRED_VS;
 }
+
+defm : XVPatReductionW_VS<"int_riscv_th_vwredsumu", "PseudoTH_VWREDSUMU">;
+defm : XVPatReductionW_VS<"int_riscv_th_vwredsum", "PseudoTH_VWREDSUM">;
 
 //===----------------------------------------------------------------------===//
 // 15.3. Vector Single-Width Floating-Point Reduction Instructions
@@ -4368,6 +4594,11 @@ let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true in {
   defm PseudoTH_VFREDMAX  : XVPseudoVFREDMINMAX_VS;
 }
 
+defm : XVPatReductionV_VS_RM<"int_riscv_th_vfredosum", "PseudoTH_VFREDOSUM", IsFloat=1>;
+defm : XVPatReductionV_VS_RM<"int_riscv_th_vfredusum", "PseudoTH_VFREDUSUM", IsFloat=1>;
+defm : XVPatReductionV_VS<"int_riscv_th_vfredmin", "PseudoTH_VFREDMIN", IsFloat=1>;
+defm : XVPatReductionV_VS<"int_riscv_th_vfredmax", "PseudoTH_VFREDMAX", IsFloat=1>;
+
 //===----------------------------------------------------------------------===//
 // 15.4. Vector Widening Floating-Point Reduction Instructions
 //===----------------------------------------------------------------------===//
@@ -4375,6 +4606,9 @@ let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true, hasSideEffects 
   defm PseudoTH_VFWREDUSUM  : XVPseudoVFWRED_VS_RM;
   defm PseudoTH_VFWREDOSUM  : XVPseudoVFWRED_VS_RM;
 }
+
+defm : XVPatReductionW_VS_RM<"int_riscv_th_vfwredusum", "PseudoTH_VFWREDUSUM", IsFloat=1>;
+defm : XVPatReductionW_VS_RM<"int_riscv_th_vfwredosum", "PseudoTH_VFWREDOSUM", IsFloat=1>;
 
 //===----------------------------------------------------------------------===//
 // 16.1. Vector Mask-Register Logical Operations
