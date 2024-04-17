@@ -17,6 +17,11 @@
 
 // Used to iterate over all possible LMULs in RVV 0.7.1
 defvar MxListXTHeadV = [V_M1, V_M2, V_M4, V_M8];
+defvar MxListFXTHeadV = MxListXTHeadV;
+// Used for widening reductions.
+defvar MxListWRedXTHeadV = MxListXTHeadV;
+// For widening floating-point Reduction.
+defvar MxListFWRedXTHeadV = MxListXTHeadV;
 
 // Used to iterate over all possible extendable LMULs in RVV 0.7.1.
 defvar MxListWXTHeadV = [V_M1, V_M2, V_M4];
@@ -1677,6 +1682,63 @@ class XVPseudoBinaryMaskNoPolicy<VReg RetClass,
   let HasSEWOp = 1;
 }
 
+class XVPseudoTernaryMaskNoPolicy<VReg RetClass,
+                                  RegisterClass Op1Class,
+                                  DAGOperand Op2Class,
+                                  string Constraint> :
+        Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd),
+                (ins GetVRegNoV0<RetClass>.R:$merge,
+                     Op1Class:$rs2, Op2Class:$rs1,
+                     VMaskOp:$vm, AVL:$vl, ixlenimm:$sew), []>,
+        RISCVVPseudo {
+  let mayLoad = 0;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let Constraints = !interleave([Constraint, "$rd = $merge"], ",");
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+}
+
+class XVPseudoTernaryMaskNoPolicyRoundingMode<VReg RetClass,
+                                              RegisterClass Op1Class,
+                                              DAGOperand Op2Class,
+                                              string Constraint> :
+        Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd),
+                (ins GetVRegNoV0<RetClass>.R:$merge,
+                     Op1Class:$rs2, Op2Class:$rs1,
+                     VMaskOp:$vm,
+                     ixlenimm:$rm,
+                     AVL:$vl, ixlenimm:$sew), []>,
+        RISCVVPseudo {
+  let mayLoad = 0;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let Constraints = !interleave([Constraint, "$rd = $merge"], ",");
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+  let HasRoundModeOp = 1;
+  let UsesVXRM = 0;
+}
+
+class XVPseudoTernaryNoMaskNoPolicyRoundingMode<VReg RetClass,
+                                                RegisterClass Op1Class,
+                                                DAGOperand Op2Class,
+                                                string Constraint> :
+        Pseudo<(outs RetClass:$rd),
+               (ins RetClass:$rs3, Op1Class:$rs1, Op2Class:$rs2,
+                    ixlenimm:$rm, AVL:$vl, ixlenimm:$sew),
+               []>,
+        RISCVVPseudo {
+  let mayLoad = 0;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let Constraints = !interleave([Constraint, "$rd = $rs3"], ",");
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+  let HasRoundModeOp = 1;
+  let UsesVXRM = 0;
+}
+
 multiclass XVPseudoNullaryPseudoM <string BaseInst> {
   foreach mti = AllXMasks in {
     defvar mx = mti.LMul.MX;
@@ -1836,6 +1898,42 @@ multiclass XVPseudoTernaryNoPolicy<VReg RetClass,
     def "_" # MInfo.MX : VPseudoTernaryNoMask<RetClass, Op1Class, Op2Class, Constraint>;
     def "_" # MInfo.MX # "_MASK" : XVPseudoBinaryMaskNoPolicy<RetClass, Op1Class, Op2Class, Constraint>,
                                    RISCVMaskedPseudo<MaskIdx=3>;
+  }
+}
+
+multiclass XVPseudoTernaryNoTailPolicy<VReg RetClass,
+                                       RegisterClass Op1Class,
+                                       DAGOperand Op2Class,
+                                       LMULInfo MInfo,
+                                       int sew,
+                                       string Constraint = "",
+                                       bit Commutable = 0> {
+  let VLMul = MInfo.value in {
+    defvar mx = MInfo.MX;
+    let isCommutable = Commutable in
+    def "_" # mx # "_E" # sew
+        : VPseudoTernaryNoMask<RetClass, Op1Class, Op2Class, Constraint>;
+    def "_" # mx # "_E" # sew # "_MASK"
+        : XVPseudoTernaryMaskNoPolicy<RetClass, Op1Class, Op2Class, Constraint>;
+  }
+}
+
+multiclass XVPseudoTernaryNoTailPolicyRoundingMode<VReg RetClass,
+                                                   RegisterClass Op1Class,
+                                                   DAGOperand Op2Class,
+                                                   LMULInfo MInfo,
+                                                   int sew,
+                                                   string Constraint = "",
+                                                   bit Commutable = 0> {
+  let VLMul = MInfo.value in {
+    defvar mx = MInfo.MX;
+    let isCommutable = Commutable in
+    def "_" # mx # "_E" # sew
+        : XVPseudoTernaryNoMaskNoPolicyRoundingMode<RetClass, Op1Class,
+                                                    Op2Class, Constraint>;
+    def "_" # mx # "_E" # sew # "_MASK"
+        : XVPseudoTernaryMaskNoPolicyRoundingMode<RetClass, Op1Class,
+                                                  Op2Class, Constraint>;
   }
 }
 
@@ -2647,6 +2745,95 @@ multiclass XVPseudoVID_V {
       def "_V_" # m.MX # "_MASK" : XVPseudoNullaryMask<m.vrclass>,
                                    RISCVMaskedPseudo<MaskIdx=1>,
                                    Sched<[WriteVMIdxV_MX, ReadVMask]>;
+    }
+  }
+}
+
+multiclass XVPseudoVRED_VS {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    foreach e = SchedSEWSet<mx>.val in {
+      defvar WriteVIRedV_From_MX_E = !cast<SchedWrite>("WriteVIRedV_From_" # mx # "_E" # e);
+      defm _VS : XVPseudoTernaryNoTailPolicy<V_M1.vrclass, m.vrclass, V_M1.vrclass, m, e>,
+                 Sched<[WriteVIRedV_From_MX_E, ReadVIRedV, ReadVIRedV, ReadVIRedV,
+                        ReadVMask]>;
+    }
+  }
+}
+
+multiclass XVPseudoVREDMINMAX_VS {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    foreach e = SchedSEWSet<mx>.val in {
+      defvar WriteVIRedMinMaxV_From_MX_E = !cast<SchedWrite>("WriteVIRedMinMaxV_From_" # mx # "_E" # e);
+      defm _VS : XVPseudoTernaryNoTailPolicy<V_M1.vrclass, m.vrclass, V_M1.vrclass, m, e>,
+                 Sched<[WriteVIRedMinMaxV_From_MX_E, ReadVIRedV, ReadVIRedV,
+                        ReadVIRedV, ReadVMask]>;
+    }
+  }
+}
+
+multiclass XVPseudoVWRED_VS {
+  foreach m = MxListWRedXTHeadV in {
+    defvar mx = m.MX;
+    foreach e = SchedSEWSet<mx, isWidening=1>.val in {
+      defvar WriteVIWRedV_From_MX_E = !cast<SchedWrite>("WriteVIWRedV_From_" # mx # "_E" # e);
+      defm _VS : XVPseudoTernaryNoTailPolicy<V_M1.vrclass, m.vrclass, V_M1.vrclass, m, e>,
+                 Sched<[WriteVIWRedV_From_MX_E, ReadVIWRedV, ReadVIWRedV,
+                        ReadVIWRedV, ReadVMask]>;
+    }
+  }
+}
+
+multiclass XVPseudoVFRED_VS_RM {
+  foreach m = MxListFXTHeadV in {
+    defvar mx = m.MX;
+    foreach e = SchedSEWSet<mx, isF=1>.val in {
+      defvar WriteVFRedV_From_MX_E = !cast<SchedWrite>("WriteVFRedV_From_" # mx # "_E" # e);
+      defm _VS
+          : XVPseudoTernaryNoTailPolicyRoundingMode<V_M1.vrclass, m.vrclass,
+                                                    V_M1.vrclass, m, e>,
+                 Sched<[WriteVFRedV_From_MX_E, ReadVFRedV, ReadVFRedV, ReadVFRedV,
+                        ReadVMask]>;
+    }
+  }
+}
+
+multiclass XVPseudoVFREDMINMAX_VS {
+  foreach m = MxListFXTHeadV in {
+    defvar mx = m.MX;
+    foreach e = SchedSEWSet<mx, isF=1>.val in {
+      defvar WriteVFRedMinMaxV_From_MX_E = !cast<SchedWrite>("WriteVFRedMinMaxV_From_" # mx # "_E" # e);
+      defm _VS : XVPseudoTernaryNoTailPolicy<V_M1.vrclass, m.vrclass, V_M1.vrclass, m, e>,
+                 Sched<[WriteVFRedMinMaxV_From_MX_E, ReadVFRedV, ReadVFRedV, ReadVFRedV,
+                        ReadVMask]>;
+    }
+  }
+}
+
+multiclass XVPseudoVFREDO_VS_RM {
+  foreach m = MxListFXTHeadV in {
+    defvar mx = m.MX;
+    foreach e = SchedSEWSet<mx, isF=1>.val in {
+      defvar WriteVFRedOV_From_MX_E = !cast<SchedWrite>("WriteVFRedOV_From_" # mx # "_E" # e);
+      defm _VS : XVPseudoTernaryNoTailPolicyRoundingMode<V_M1.vrclass, m.vrclass,
+                                                         V_M1.vrclass, m, e>,
+                 Sched<[WriteVFRedOV_From_MX_E, ReadVFRedOV, ReadVFRedOV,
+                        ReadVFRedOV, ReadVMask]>;
+    }
+  }
+}
+
+multiclass XVPseudoVFWRED_VS_RM {
+  foreach m = MxListFWRedXTHeadV in {
+    defvar mx = m.MX;
+    foreach e = SchedSEWSet<mx, isF=1, isWidening=1>.val in {
+      defvar WriteVFWRedV_From_MX_E = !cast<SchedWrite>("WriteVFWRedV_From_" # mx # "_E" # e);
+      defm _VS
+          : XVPseudoTernaryNoTailPolicyRoundingMode<V_M1.vrclass, m.vrclass,
+                                                    V_M1.vrclass, m, e>,
+                 Sched<[WriteVFWRedV_From_MX_E, ReadVFWRedV, ReadVFWRedV,
+                        ReadVFWRedV, ReadVMask]>;
     }
   }
 }
@@ -4143,6 +4330,50 @@ let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true, hasSideEffects 
 let Predicates = [HasVendorXTHeadV] in {
   defm : XVPatBinaryW_VV_VX_RM<"int_riscv_th_vfwmul", "PseudoTH_VFWMUL",
                                AllWidenableFloatXVectors>;
+}
+
+//===----------------------------------------------------------------------===//
+// 15.1. Vector Single-Width Integer Reduction Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VREDSUM  : XVPseudoVRED_VS;
+  defm PseudoTH_VREDAND  : XVPseudoVRED_VS;
+  defm PseudoTH_VREDOR   : XVPseudoVRED_VS;
+  defm PseudoTH_VREDXOR  : XVPseudoVRED_VS;
+  defm PseudoTH_VREDMINU : XVPseudoVREDMINMAX_VS;
+  defm PseudoTH_VREDMIN  : XVPseudoVREDMINMAX_VS;
+  defm PseudoTH_VREDMAXU : XVPseudoVREDMINMAX_VS;
+  defm PseudoTH_VREDMAX  : XVPseudoVREDMINMAX_VS;
+}
+
+//===----------------------------------------------------------------------===//
+// 15.2. Vector Widening Integer Reduction Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VWREDSUMU   : XVPseudoVWRED_VS;
+  defm PseudoTH_VWREDSUM    : XVPseudoVWRED_VS;
+}
+
+//===----------------------------------------------------------------------===//
+// 15.3. Vector Single-Width Floating-Point Reduction Instructions
+//===----------------------------------------------------------------------===//
+
+let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true, hasSideEffects = 0 in {
+  defm PseudoTH_VFREDOSUM : XVPseudoVFREDO_VS_RM;
+  defm PseudoTH_VFREDUSUM : XVPseudoVFRED_VS_RM;
+}
+
+let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true in {
+  defm PseudoTH_VFREDMIN  : XVPseudoVFREDMINMAX_VS;
+  defm PseudoTH_VFREDMAX  : XVPseudoVFREDMINMAX_VS;
+}
+
+//===----------------------------------------------------------------------===//
+// 15.4. Vector Widening Floating-Point Reduction Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true, hasSideEffects = 0 in {
+  defm PseudoTH_VFWREDUSUM  : XVPseudoVFWRED_VS_RM;
+  defm PseudoTH_VFWREDOSUM  : XVPseudoVFWRED_VS_RM;
 }
 
 //===----------------------------------------------------------------------===//
