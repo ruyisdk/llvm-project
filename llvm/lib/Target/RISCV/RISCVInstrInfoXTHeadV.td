@@ -745,7 +745,7 @@ let Predicates = [HasVendorXTHeadV, HasStdExtF] in {
 let RVVConstraint = NoConstraint in {
 let Uses = [FRM], mayRaiseFPException = true in {
 defm TH_VFREDOSUM : VREDO_FV_V<"th.vfredosum", 0b000011>;
-defm TH_VFREDUSUM : VRED_FV_V<"th.vfredsum", 0b000001>;
+defm TH_VFREDSUM  : VRED_FV_V<"th.vfredsum", 0b000001>;
 }
 let mayRaiseFPException = true in {
 defm TH_VFREDMAX : VRED_FV_V<"th.vfredmax", 0b000111>;
@@ -761,7 +761,7 @@ let Constraints = "@earlyclobber $vd", RVVConstraint = NoConstraint in {
 // overlap with the first (wide) operand.
 let Uses = [FRM], mayRaiseFPException = true in {
 defm TH_VFWREDOSUM : VWREDO_FV_V<"th.vfwredosum", 0b110011>;
-defm TH_VFWREDUSUM : VWRED_FV_V<"th.vfwredsum", 0b110001>;
+defm TH_VFWREDSUM  : VWRED_FV_V<"th.vfwredsum", 0b110001>;
 }
 } // Constraints = "@earlyclobber $vd", RVVConstraint = NoConstraint
 } // Predicates = [HasVendorXTHeadV, HasStdExtF]
