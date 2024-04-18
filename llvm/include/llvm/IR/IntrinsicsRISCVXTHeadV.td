@@ -901,6 +901,30 @@ let TargetPrefix = "riscv" in {
   // 14.5. Vector Widening Floating-Point Multiply
   defm th_vfwmul : XVBinaryABXRoundingMode;
 
+  // 15.1. Vector Single-Width Integer Reduction
+  defm th_vredsum : RISCVReduction;
+  defm th_vredand : RISCVReduction;
+  defm th_vredor : RISCVReduction;
+  defm th_vredxor : RISCVReduction;
+  defm th_vredminu : RISCVReduction;
+  defm th_vredmin : RISCVReduction;
+  defm th_vredmaxu : RISCVReduction;
+  defm th_vredmax : RISCVReduction;
+
+  // 15.2. Vector Widening Integer Reduction
+  defm th_vwredsumu : RISCVReduction;
+  defm th_vwredsum : RISCVReduction;
+
+  // 15.3. Vector Single-Width Floating-Point Reduction
+  defm th_vfredosum : RISCVReductionRoundingMode;
+  defm th_vfredsum : RISCVReductionRoundingMode;
+  defm th_vfredmin : RISCVReduction;
+  defm th_vfredmax : RISCVReduction;
+
+  // 15.4. Vector Widening Floating-Point Reduction
+  defm th_vfwredsum  : RISCVReductionRoundingMode;
+  defm th_vfwredosum : RISCVReductionRoundingMode;
+
   // 16.1. Vector Mask-Register Logical Operations
   def int_riscv_th_vmand: RISCVBinaryAAAUnMasked;
   def int_riscv_th_vmnand: RISCVBinaryAAAUnMasked;
