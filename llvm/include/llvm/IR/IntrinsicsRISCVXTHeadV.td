@@ -732,6 +732,31 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 5;
   }
 
+  // UnMasked Widening Vector Multiply-Add operations, its first operand can not be undef.
+  // Input: (vector_in, vector_in/scalar, vector_in, frm, vl)
+  class XVTernaryWideUnMaskedRoundingMode
+        : DefaultAttrsIntrinsic< [llvm_anyvector_ty],
+                     [LLVMMatchType<0>, llvm_any_ty, llvm_anyvector_ty,
+                      llvm_anyint_ty, LLVMMatchType<3>],
+                     [ImmArg<ArgIndex<3>>, IntrNoMem] >,
+                     RISCVVIntrinsic {
+    let ScalarOperand = 1;
+    let VLOperand = 4;
+  }
+
+  // Masked Widening Vector Multiply-Add operations, its first operand can not be undef.
+  // Input: (vector_in, vector_in/scalar, vector_in, mask, frm, vl)
+  class XVTernaryWideMaskedRoundingMode
+        : DefaultAttrsIntrinsic< [llvm_anyvector_ty],
+                     [LLVMMatchType<0>, llvm_any_ty, llvm_anyvector_ty,
+                      LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>,
+                      llvm_anyint_ty, LLVMMatchType<3>],
+                     [ImmArg<ArgIndex<4>>, IntrNoMem]>,
+                     RISCVVIntrinsic {
+    let ScalarOperand = 1;
+    let VLOperand = 5;
+  }
+
   multiclass XVBinaryAAX {
     def "int_riscv_" # NAME : RISCVBinaryAAXUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVBinaryAAXMasked;
@@ -785,6 +810,11 @@ let TargetPrefix = "riscv" in {
   multiclass XVTernaryAAXARoundingMode {
     def "int_riscv_" # NAME : XVTernaryAAXAUnMaskedRoundingMode;
     def "int_riscv_" # NAME # "_mask" : XVTernaryAAXAMaskedRoundingMode;
+  }
+
+  multiclass XVTernaryWideRoundingMode {
+    def "int_riscv_" # NAME : XVTernaryWideUnMaskedRoundingMode;
+    def "int_riscv_" # NAME # "_mask" : XVTernaryWideMaskedRoundingMode;
   }
 }
 
@@ -940,6 +970,12 @@ let TargetPrefix = "riscv" in {
   defm th_vfnmadd : XVTernaryAAXARoundingMode;
   defm th_vfmsub : XVTernaryAAXARoundingMode;
   defm th_vfnmsub : XVTernaryAAXARoundingMode;
+
+  // 14.7. Vector Widening Floating-Point Fused Multiply-Add Instructions
+  defm th_vfwmacc : XVTernaryWideRoundingMode;
+  defm th_vfwnmacc : XVTernaryWideRoundingMode;
+  defm th_vfwmsac : XVTernaryWideRoundingMode;
+  defm th_vfwnmsac : XVTernaryWideRoundingMode;
 
   // 15.1. Vector Single-Width Integer Reduction
   defm th_vredsum : RISCVReduction;
