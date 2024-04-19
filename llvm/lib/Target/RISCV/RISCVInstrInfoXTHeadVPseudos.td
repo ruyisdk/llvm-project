@@ -2037,6 +2037,11 @@ multiclass XVPseudoBinaryV_VI<Operand ImmType = simm5, LMULInfo m, string Constr
   defm _VI : XVPseudoBinary<m.vrclass, m.vrclass, ImmType, m, Constraint>;
 }
 
+multiclass XVPseudoBinaryV_VF<LMULInfo m, FPR_InfoXTHeadV f, string Constraint = "", int sew = 0> {
+  defm "_V" # f.FX : XVPseudoBinary<m.vrclass, m.vrclass,
+                                    f.fprclass, m, Constraint, sew>;
+}
+
 multiclass XVPseudoBinaryW_VV<LMULInfo m> {
   defm _VV : XVPseudoBinary<m.wvrclass, m.vrclass, m.vrclass, m,
                             "@earlyclobber $rd">;
@@ -2825,6 +2830,52 @@ multiclass XVPseudoVSQR_V_RM {
                                                ReadVMask]>;
         }
       }
+  }
+}
+
+multiclass XVPseudoVMAX_VV_VF {
+  foreach m = MxListFXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVFMinMaxV_MX = !cast<SchedWrite>("WriteVFMinMaxV_" # mx);
+    defvar ReadVFMinMaxV_MX = !cast<SchedRead>("ReadVFMinMaxV_" # mx);
+
+    defm "" : XVPseudoBinaryFV_VV<m>,
+              Sched<[WriteVFMinMaxV_MX, ReadVFMinMaxV_MX, ReadVFMinMaxV_MX, ReadVMask]>;
+  }
+
+  foreach f = FPListXTHeadV in {
+    foreach m = f.MxList in {
+      defvar mx = m.MX;
+      defvar WriteVFMinMaxF_MX = !cast<SchedWrite>("WriteVFMinMaxF_" # mx);
+      defvar ReadVFMinMaxV_MX = !cast<SchedRead>("ReadVFMinMaxV_" # mx);
+      defvar ReadVFMinMaxF_MX = !cast<SchedRead>("ReadVFMinMaxF_" # mx);
+
+      defm "" : XVPseudoBinaryV_VF<m, f>,
+                Sched<[WriteVFMinMaxF_MX, ReadVFMinMaxV_MX, ReadVFMinMaxF_MX, ReadVMask]>;
+    }
+  }
+}
+
+multiclass XVPseudoVSGNJ_VV_VF {
+  foreach m = MxListFXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVFSgnjV_MX = !cast<SchedWrite>("WriteVFSgnjV_" # mx);
+    defvar ReadVFSgnjV_MX = !cast<SchedRead>("ReadVFSgnjV_" # mx);
+
+    defm "" : XVPseudoBinaryFV_VV<m>,
+              Sched<[WriteVFSgnjV_MX, ReadVFSgnjV_MX, ReadVFSgnjV_MX, ReadVMask]>;
+  }
+
+  foreach f = FPListXTHeadV in {
+    foreach m = f.MxList in {
+      defvar mx = m.MX;
+      defvar WriteVFSgnjF_MX = !cast<SchedWrite>("WriteVFSgnjF_" # mx);
+      defvar ReadVFSgnjV_MX = !cast<SchedRead>("ReadVFSgnjV_" # mx);
+      defvar ReadVFSgnjF_MX = !cast<SchedRead>("ReadVFSgnjF_" # mx);
+
+      defm "" : XVPseudoBinaryV_VF<m, f>,
+                Sched<[WriteVFSgnjF_MX, ReadVFSgnjV_MX, ReadVFSgnjF_MX, ReadVMask]>;
+    }
   }
 }
 
@@ -4965,6 +5016,30 @@ defm PseudoTH_VFSQRT : XVPseudoVSQR_V_RM;
 
 defm : XVPatUnaryV_V_RM<"int_riscv_th_vfsqrt", "PseudoTH_VFSQRT",
        AllFloatXVectors, isSEWAware=1>;
+
+//===----------------------------------------------------------------------===//
+// 14.9. Vector Floating-Point MIN/MAX Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true in {
+  defm PseudoTH_VFMIN : XVPseudoVMAX_VV_VF;
+  defm PseudoTH_VFMAX : XVPseudoVMAX_VV_VF;
+}
+
+defm : XVPatBinaryV_VV_VX<"int_riscv_th_vfmin", "PseudoTH_VFMIN", AllFloatXVectors>;
+defm : XVPatBinaryV_VV_VX<"int_riscv_th_vfmax", "PseudoTH_VFMAX", AllFloatXVectors>;
+
+//===----------------------------------------------------------------------===//
+// 14.10. Vector Floating-Point MIN/MAX Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true in {
+  defm PseudoTH_VFSGNJ  : XVPseudoVSGNJ_VV_VF;
+  defm PseudoTH_VFSGNJN : XVPseudoVSGNJ_VV_VF;
+  defm PseudoTH_VFSGNJX : XVPseudoVSGNJ_VV_VF;
+}
+
+defm : XVPatBinaryV_VV_VX<"int_riscv_th_vfsgnj", "PseudoTH_VFSGNJ", AllFloatXVectors>;
+defm : XVPatBinaryV_VV_VX<"int_riscv_th_vfsgnjn", "PseudoTH_VFSGNJN", AllFloatXVectors>;
+defm : XVPatBinaryV_VV_VX<"int_riscv_th_vfsgnjx", "PseudoTH_VFSGNJX", AllFloatXVectors>;
 
 //===----------------------------------------------------------------------===//
 // 15.1. Vector Single-Width Integer Reduction Instructions
