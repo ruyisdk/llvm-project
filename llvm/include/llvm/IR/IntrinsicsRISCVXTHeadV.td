@@ -757,6 +757,17 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 5;
   }
 
+  // For destination vector type is the same as first source vector (with mask, no policy).
+  // Input: (vector_in, vector_in, mask, frm, vl)
+  class XVUnaryAAMaskedRoundingMode
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, LLVMMatchType<0>,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty,
+                     LLVMMatchType<1>],
+                    [ImmArg<ArgIndex<3>>, IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 4;
+  }
+
   multiclass XVBinaryAAX {
     def "int_riscv_" # NAME : RISCVBinaryAAXUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVBinaryAAXMasked;
@@ -815,6 +826,11 @@ let TargetPrefix = "riscv" in {
   multiclass XVTernaryWideRoundingMode {
     def "int_riscv_" # NAME : XVTernaryWideUnMaskedRoundingMode;
     def "int_riscv_" # NAME # "_mask" : XVTernaryWideMaskedRoundingMode;
+  }
+
+  multiclass XVUnaryAARoundingMode {
+    def "int_riscv_" # NAME : RISCVUnaryAAUnMaskedRoundingMode;
+    def "int_riscv_" # NAME # "_mask" : XVUnaryAAMaskedRoundingMode;
   }
 }
 
@@ -976,6 +992,18 @@ let TargetPrefix = "riscv" in {
   defm th_vfwnmacc : XVTernaryWideRoundingMode;
   defm th_vfwmsac : XVTernaryWideRoundingMode;
   defm th_vfwnmsac : XVTernaryWideRoundingMode;
+
+  // 14.8. Vector Floating-Point Square-Root Instruction
+  defm th_vfsqrt : XVUnaryAARoundingMode;
+
+  // 14.9. Vector Floating-Point MIN/MAX Instructions
+  defm th_vfmin : XVBinaryAAX;
+  defm th_vfmax : XVBinaryAAX;
+
+  // 14.10. Vector Floating-Point Sign-Injection Instructions
+  defm th_vfsgnj : XVBinaryAAX;
+  defm th_vfsgnjn : XVBinaryAAX;
+  defm th_vfsgnjx : XVBinaryAAX;
 
   // 15.1. Vector Single-Width Integer Reduction
   defm th_vredsum : RISCVReduction;
