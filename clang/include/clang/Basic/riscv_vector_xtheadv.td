@@ -61,6 +61,11 @@ multiclass RVVOutBuiltinSet<string intrinsic_name, string type_range,
                             list<list<string>> suffixes_prototypes>
     : RVVBuiltinSet<intrinsic_name, type_range, suffixes_prototypes, [-1]>;
 
+// IntrinsicTypes is output, op1 [-1, 0]
+multiclass RVVOutOp0BuiltinSet<string intrinsic_name, string type_range,
+                               list<list<string>> suffixes_prototypes>
+    : RVVBuiltinSet<intrinsic_name, type_range, suffixes_prototypes, [-1, 0]>;
+
 // IntrinsicTypes is output, op1 [-1, 1]
 multiclass RVVOutOp1BuiltinSet<string intrinsic_name, string type_range,
                                list<list<string>> suffixes_prototypes>
@@ -255,6 +260,29 @@ class RVVMaskOp0Builtin<string ir, string prototype> : RVVOp0Builtin<"m", protot
   let MaskedIRName = ir # "_mask";
   let HasMaskedOffOperand = false;
 }
+
+let HasMaskedOffOperand = true in {
+  multiclass RVVSignedReductionBuiltin {
+    defm "" : RVVOutOp0BuiltinSet<NAME, "csil",
+                                  [["vs", "vSv", "SvvSv"]]>;
+  }
+  multiclass RVVUnsignedReductionBuiltin {
+    defm "" : RVVOutOp0BuiltinSet<NAME, "csil",
+                                  [["vs", "UvUSv", "USvUvUSv"]]>;
+  }
+  multiclass RVVFloatingReductionBuiltin {
+    defm "" : RVVOutOp0BuiltinSet<NAME, "xfd",
+                                  [["vs", "vSv", "SvvSv"]]>;
+  }
+  multiclass RVVFloatingWidenReductionBuiltin {
+    defm "" : RVVOutOp0BuiltinSet<NAME, "xf",
+                                  [["vs", "vSw", "SwvSw"]]>;
+  }
+}
+
+multiclass RVVIntReductionBuiltinSet
+    : RVVSignedReductionBuiltin,
+      RVVUnsignedReductionBuiltin;
 
 //===----------------------------------------------------------------------===//
 // 6. Configuration-Setting and Utility
@@ -1321,6 +1349,89 @@ let UnMaskedPolicyScheme = HasPassthruOperand,
   // 13.5. Vector Narrowing Fixed-Point Clip Instructions
   defm th_vnclipu : RVVUnsignedNShiftBuiltinSetRoundingMode;
   defm th_vnclip  : RVVSignedNShiftBuiltinSetRoundingMode;
+}
+
+
+// 15. Vector Reduction Operations
+// 15.1. Vector Single-Width Integer Reduction Instructions
+let UnMaskedPolicyScheme = HasPassthruOperand,
+    MaskedPolicyScheme = HasPassthruOperand,
+    HasMaskPolicy = false in {
+  defm th_vredsum : RVVIntReductionBuiltinSet;
+  defm th_vredmaxu : RVVUnsignedReductionBuiltin;
+  defm th_vredmax : RVVSignedReductionBuiltin;
+  defm th_vredminu : RVVUnsignedReductionBuiltin;
+  defm th_vredmin : RVVSignedReductionBuiltin;
+  defm th_vredand : RVVIntReductionBuiltinSet;
+  defm th_vredor : RVVIntReductionBuiltinSet;
+  defm th_vredxor : RVVIntReductionBuiltinSet;
+
+  // 15.2. Vector Widening Integer Reduction Instructions
+  // Vector Widening Integer Reduction Operations
+  let HasMaskedOffOperand = true in {
+    defm th_vwredsum : RVVOutOp0BuiltinSet<"th_vwredsum", "csi",
+                                        [["vs", "vSw", "SwvSw"]]>;
+    defm th_vwredsumu : RVVOutOp0BuiltinSet<"th_vwredsumu", "csi",
+                                         [["vs", "UvUSw", "USwUvUSw"]]>;
+  }
+
+  // 15.3. Vector Single-Width Floating-Point Reduction Instructions
+  defm th_vfredmax : RVVFloatingReductionBuiltin;
+  defm th_vfredmin : RVVFloatingReductionBuiltin;
+
+  let ManualCodegen = [{
+    {
+      // LLVM intrinsic
+      // Unmasked: (passthru, op0, op1, round_mode, vl)
+      // Masked:   (passthru, vector_in, vector_in/scalar_in, mask, frm, vl)
+
+      SmallVector<llvm::Value*, 7> Operands;
+      bool HasMaskedOff = !(
+          (IsMasked && (PolicyAttrs & RVV_VTA) && (PolicyAttrs & RVV_VMA)) ||
+          (!IsMasked && PolicyAttrs & RVV_VTA));
+      bool HasRoundModeOp = IsMasked ?
+        (HasMaskedOff ? Ops.size() == 6 : Ops.size() == 5) :
+        (HasMaskedOff ? Ops.size() == 5 : Ops.size() == 4);
+
+      unsigned Offset = IsMasked ?
+          (HasMaskedOff ? 2 : 1) : (HasMaskedOff ? 1 : 0);
+
+      if (!HasMaskedOff)
+        Operands.push_back(llvm::PoisonValue::get(ResultType));
+      else
+        Operands.push_back(Ops[IsMasked ? 1 : 0]);
+
+      Operands.push_back(Ops[Offset]); // op0
+      Operands.push_back(Ops[Offset + 1]); // op1
+
+      if (IsMasked)
+        Operands.push_back(Ops[0]); // mask
+
+      if (HasRoundModeOp) {
+        Operands.push_back(Ops[Offset + 2]); // frm
+        Operands.push_back(Ops[Offset + 3]); // vl
+      } else {
+        Operands.push_back(ConstantInt::get(Ops[Offset + 2]->getType(), 7)); // frm
+        Operands.push_back(Ops[Offset + 2]); // vl
+      }
+
+      IntrinsicTypes = {ResultType, Ops[Offset]->getType(),
+                        Ops.back()->getType()};
+      llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
+      return Builder.CreateCall(F, Operands, "");
+    }
+  }] in {
+    // NOTE: there's no RoundingMode version (like `vfredosum_*_rm`)
+    // for floating point reduction in XTHeadVector.
+
+    // 15.3. Vector Single-Width Floating-Point Reduction Instructions
+    defm th_vfredsum  : RVVFloatingReductionBuiltin;
+    defm th_vfredosum : RVVFloatingReductionBuiltin;
+
+    // 15.4. Vector Widening Floating-Point Reduction Instructions
+    defm th_vfwredsum  : RVVFloatingWidenReductionBuiltin;
+    defm th_vfwredosum : RVVFloatingWidenReductionBuiltin;
+  }
 }
 
 // 16. Vector Mask Instructions
