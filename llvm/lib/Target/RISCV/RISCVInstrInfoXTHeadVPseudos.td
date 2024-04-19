@@ -3858,6 +3858,36 @@ multiclass XVPatBinaryW_WX_RM<string intrinsic, string instruction,
   }
 }
 
+multiclass XVPatTernaryW_VV_RM<string intrinsic, string instruction,
+                               list<VTypeInfoToWide> vtilist> {
+  foreach vtiToWti = vtilist in {
+    defvar vti = vtiToWti.Vti;
+    defvar wti = vtiToWti.Wti;
+    let Predicates = !listconcat(GetXVTypePredicates<vti>.Predicates,
+                                 GetXVTypePredicates<wti>.Predicates) in
+    defm : XVPatTernaryNoPolicyRoundingMode<intrinsic, instruction, "VV",
+                                            wti.Vector, vti.Vector, vti.Vector,
+                                            vti.Mask, vti.Log2SEW, vti.LMul,
+                                            wti.RegClass, vti.RegClass, vti.RegClass>;
+  }
+}
+
+multiclass XVPatTernaryW_VX_RM<string intrinsic, string instruction,
+                               list<VTypeInfoToWide> vtilist> {
+  foreach vtiToWti = vtilist in {
+    defvar vti = vtiToWti.Vti;
+    defvar wti = vtiToWti.Wti;
+    let Predicates = !listconcat(GetXVTypePredicates<vti>.Predicates,
+                                 GetXVTypePredicates<wti>.Predicates) in
+    defm : XVPatTernaryNoPolicyRoundingMode<intrinsic, instruction,
+                                            "V"#vti.ScalarSuffix,
+                                            wti.Vector, vti.Scalar, vti.Vector,
+                                            vti.Mask, vti.Log2SEW, vti.LMul,
+                                            wti.RegClass, vti.ScalarRegClass,
+                                            vti.RegClass>;
+  }
+}
+
 multiclass XVPatTernaryV_VV_AAXA_RM<string intrinsic, string instruction,
                                     list<VTypeInfo> vtilist> {
   foreach vti = vtilist in
@@ -3980,6 +4010,11 @@ multiclass XVPatTernaryV_VV_VX_AAXA_RM<string intrinsic, string instruction,
                                        list<VTypeInfo> vtilist>
     : XVPatTernaryV_VV_AAXA_RM<intrinsic, instruction, vtilist>,
       XVPatTernaryV_VX_AAXA_RM<intrinsic, instruction, vtilist>;
+
+multiclass XVPatTernaryW_VV_VX_RM<string intrinsic, string instruction,
+                                  list<VTypeInfoToWide> vtilist>
+    : XVPatTernaryW_VV_RM<intrinsic, instruction, vtilist>,
+      XVPatTernaryW_VX_RM<intrinsic, instruction, vtilist>;
 
 // Can't reuse `VPatTernaryNoMask`, the name of the instruction is different
 // from `VPatTernaryNoMaskTA`.
@@ -4780,6 +4815,26 @@ defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfmadd", "PseudoTH_VFMADD", All
 defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfnmadd", "PseudoTH_VFNMADD", AllFloatXVectors>;
 defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfmsub", "PseudoTH_VFMSUB", AllFloatXVectors>;
 defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfnmsub", "PseudoTH_VFNMSUB", AllFloatXVectors>;
+
+//===----------------------------------------------------------------------===//
+// 14.7. Vector Single-Width Floating-Point Fused Multiply-Add Instructions
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true,
+    hasSideEffects = 0, hasPostISelHook = 1 in {
+  defm PseudoTH_VFWMACC  : XVPseudoVWMAC_VV_VF_RM;
+  defm PseudoTH_VFWNMACC : XVPseudoVWMAC_VV_VF_RM;
+  defm PseudoTH_VFWMSAC  : XVPseudoVWMAC_VV_VF_RM;
+  defm PseudoTH_VFWNMSAC : XVPseudoVWMAC_VV_VF_RM;
+}
+
+defm : XVPatTernaryW_VV_VX_RM<"int_riscv_th_vfwmacc", "PseudoTH_VFWMACC",
+                              AllWidenableFloatXVectors>;
+defm : XVPatTernaryW_VV_VX_RM<"int_riscv_th_vfwnmacc", "PseudoTH_VFWNMACC",
+                              AllWidenableFloatXVectors>;
+defm : XVPatTernaryW_VV_VX_RM<"int_riscv_th_vfwmsac", "PseudoTH_VFWMSAC",
+                              AllWidenableFloatXVectors>;
+defm : XVPatTernaryW_VV_VX_RM<"int_riscv_th_vfwnmsac", "PseudoTH_VFWNMSAC",
+                              AllWidenableFloatXVectors>;
 
 //===----------------------------------------------------------------------===//
 // 15.1. Vector Single-Width Integer Reduction Instructions
