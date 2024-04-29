@@ -768,6 +768,46 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 4;
   }
 
+  // For destination vector type is the same as first and second source vector.
+  // Input: (vector_in, vector_in, int_vector_in, vl)
+  class XVRGatherVVMasked
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, LLVMMatchType<0>, LLVMVectorOfBitcastsToInt<0>,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty],
+                    [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 4;
+  }
+
+  // For destination vector type is the same as first source vector (with mask).
+  // Second operand is XLen.
+  // Input: (maskedoff, vector_in, xlen_in, mask, vl)
+  class XVGatherVXMasked
+       : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                   [LLVMMatchType<0>, LLVMMatchType<0>, llvm_anyint_ty,
+                    LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, LLVMMatchType<1>],
+                   [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 4;
+  }
+
+  // Input: (vector_in, vector_in, scalar_in, vl)
+  class XVSlideUnMasked
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, LLVMMatchType<0>, llvm_anyint_ty,
+                     LLVMMatchType<1>],
+                    [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 3;
+  }
+
+  // Input: (vector_in, vector_in, vector_in/scalar_in, mask, vl)
+  class XVSlideMasked
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, LLVMMatchType<0>, llvm_anyint_ty,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>,
+                     LLVMMatchType<1>],
+                    [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 4;
+  }
+
   multiclass XVBinaryAAX {
     def "int_riscv_" # NAME : RISCVBinaryAAXUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVBinaryAAXMasked;
@@ -831,6 +871,21 @@ let TargetPrefix = "riscv" in {
   multiclass XVUnaryAARoundingMode {
     def "int_riscv_" # NAME : RISCVUnaryAAUnMaskedRoundingMode;
     def "int_riscv_" # NAME # "_mask" : XVUnaryAAMaskedRoundingMode;
+  }
+
+  multiclass XVRGatherVV {
+    def "int_riscv_" # NAME : RISCVRGatherVVUnMasked;
+    def "int_riscv_" # NAME # "_mask" : XVRGatherVVMasked;
+  }
+
+  multiclass XVRGatherVX {
+    def "int_riscv_" # NAME : RISCVGatherVXUnMasked;
+    def "int_riscv_" # NAME # "_mask" : XVGatherVXMasked;
+  }
+
+  multiclass XVSlide {
+    def "int_riscv_" # NAME : XVSlideUnMasked;
+    def "int_riscv_" # NAME # "_mask" : XVSlideMasked;
   }
 }
 
@@ -1095,5 +1150,42 @@ let TargetPrefix = "riscv" in {
                                 [IntrNoMem]>, RISCVVIntrinsic {
     let VLOperand = 2;
   }
+
+  // 17.2. Integer Scalar Move Operations
+  def int_riscv_th_vmv_x_s : DefaultAttrsIntrinsic<[LLVMVectorElementType<0>],
+                                                   [llvm_anyint_ty],
+                                                   [IntrNoMem]>, RISCVVIntrinsic;
+  def int_riscv_th_vmv_s_x : DefaultAttrsIntrinsic<[llvm_anyint_ty],
+                                                   [LLVMMatchType<0>,
+                                                    LLVMVectorElementType<0>,
+                                                    llvm_anyint_ty],
+                                                   [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 2;
+  }
+
+  // 17.3. Floating-Point Scalar Move Operations
+  def int_riscv_th_vfmv_f_s : DefaultAttrsIntrinsic<[LLVMVectorElementType<0>],
+                                                    [llvm_anyfloat_ty],
+                                                    [IntrNoMem]>, RISCVVIntrinsic;
+  def int_riscv_th_vfmv_s_f : DefaultAttrsIntrinsic<[llvm_anyfloat_ty],
+                                                    [LLVMMatchType<0>,
+                                                     LLVMVectorElementType<0>,
+                                                     llvm_anyint_ty],
+                                                    [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 2;
+  }
+
+  // 17.4. Vector Slide Operations
+  defm th_vslideup     : XVSlide;
+  defm th_vslidedown   : XVSlide;
+  defm th_vslide1up    : XVBinaryAAX;
+  defm th_vslide1down  : XVBinaryAAX;
+
+  // 17.5. Vector Register Gather Operations
+  defm th_vrgather_vv : XVRGatherVV;
+  defm th_vrgather_vx : XVRGatherVX;
+
+  // 17.6. Vector Compress Operations
+  def int_riscv_th_vcompress : RISCVCompress;
 
 } // TargetPrefix = "riscv"
