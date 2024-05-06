@@ -820,6 +820,17 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 3;
   }
 
+  // For Conversion unary operations with mask but no policy.
+  // Input: (maskedoff, vector_in, mask, frm, vl)
+  class XVConversionMaskedRoundingMode
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, llvm_anyvector_ty,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty,
+                     LLVMMatchType<2>],
+                    [ImmArg<ArgIndex<3>>, IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 4;
+  }
+
   multiclass XVBinaryAAX {
     def "int_riscv_" # NAME : RISCVBinaryAAXUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVBinaryAAXMasked;
@@ -888,6 +899,11 @@ let TargetPrefix = "riscv" in {
   multiclass XVClassify {
     def "int_riscv_" # NAME : RISCVClassifyUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVClassifyMasked;
+  }
+
+  multiclass XVConversionRoundingMode {
+    def "int_riscv_" # NAME : RISCVConversionUnMaskedRoundingMode;
+    def "int_riscv_" # NAME # "_mask" : XVConversionMaskedRoundingMode;
   }
 
   multiclass XVRGatherVV {
@@ -1087,6 +1103,12 @@ let TargetPrefix = "riscv" in {
 
   // 14.12. Vector Floating-Point Classify Instruction
   defm th_vfclass : XVClassify;
+
+  // 14.14. Single-Width Floating-Point/Integer Type-Convert Instructions
+  defm th_vfcvt_xu_f_v : XVConversionRoundingMode;
+  defm th_vfcvt_x_f_v : XVConversionRoundingMode;
+  defm th_vfcvt_f_xu_v : XVConversionRoundingMode;
+  defm th_vfcvt_f_x_v : XVConversionRoundingMode;
 
   // 15.1. Vector Single-Width Integer Reduction
   defm th_vredsum : RISCVReduction;
