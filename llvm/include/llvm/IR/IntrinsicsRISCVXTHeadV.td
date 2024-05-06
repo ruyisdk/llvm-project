@@ -831,6 +831,16 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 4;
   }
 
+  // For Conversion unary operations with mask but no policy.
+  // Input: (maskedoff, vector_in, mask, vl)
+  class XVConversionMasked
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, llvm_anyvector_ty,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty],
+                    [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 3;
+  }
+
   multiclass XVBinaryAAX {
     def "int_riscv_" # NAME : RISCVBinaryAAXUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVBinaryAAXMasked;
@@ -904,6 +914,11 @@ let TargetPrefix = "riscv" in {
   multiclass XVConversionRoundingMode {
     def "int_riscv_" # NAME : RISCVConversionUnMaskedRoundingMode;
     def "int_riscv_" # NAME # "_mask" : XVConversionMaskedRoundingMode;
+  }
+
+  multiclass XVConversion {
+    def "int_riscv_" # NAME :RISCVConversionUnMasked;
+    def "int_riscv_" # NAME # "_mask" : XVConversionMasked;
   }
 
   multiclass XVRGatherVV {
@@ -1109,6 +1124,20 @@ let TargetPrefix = "riscv" in {
   defm th_vfcvt_x_f_v : XVConversionRoundingMode;
   defm th_vfcvt_f_xu_v : XVConversionRoundingMode;
   defm th_vfcvt_f_x_v : XVConversionRoundingMode;
+
+  // 14.15. Widening Floating-Point/Integer Type-Convert Instructions
+  defm th_vfwcvt_f_xu_v : XVConversion;
+  defm th_vfwcvt_f_x_v : XVConversion;
+  defm th_vfwcvt_xu_f_v : XVConversionRoundingMode;
+  defm th_vfwcvt_x_f_v : XVConversionRoundingMode;
+  defm th_vfwcvt_f_f_v : XVConversion;
+
+  // 14.16. Narrowing Floating-Point/Integer Type-Convert Instructions
+  defm th_vfncvt_f_xu_w : XVConversionRoundingMode;
+  defm th_vfncvt_f_x_w : XVConversionRoundingMode;
+  defm th_vfncvt_xu_f_w : XVConversionRoundingMode;
+  defm th_vfncvt_x_f_w : XVConversionRoundingMode;
+  defm th_vfncvt_f_f_w : XVConversionRoundingMode;
 
   // 15.1. Vector Single-Width Integer Reduction
   defm th_vredsum : RISCVReduction;
