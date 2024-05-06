@@ -1060,6 +1060,14 @@ let TargetPrefix = "riscv" in {
   defm th_vfsgnjn : XVBinaryAAX;
   defm th_vfsgnjx : XVBinaryAAX;
 
+  // 14.11. Vector Floating-Point Compare Instructions
+  defm th_vmfeq : RISCVCompare;
+  defm th_vmfne : RISCVCompare;
+  defm th_vmflt : RISCVCompare;
+  defm th_vmfle : RISCVCompare;
+  defm th_vmfgt : RISCVCompare;
+  defm th_vmfge : RISCVCompare;
+
   // 15.1. Vector Single-Width Integer Reduction
   defm th_vredsum : RISCVReduction;
   defm th_vredand : RISCVReduction;

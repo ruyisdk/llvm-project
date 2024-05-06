@@ -2206,6 +2206,12 @@ multiclass XVPseudoTernaryW_VF_RM<LMULInfo m, FPR_InfoXTHeadV f> {
                                                  m.vrclass, m, constraint>;
 }
 
+multiclass XVPseudoBinaryM_VF<LMULInfo m, FPR_InfoXTHeadV f> {
+  defm "_V" # f.FX :
+    VPseudoBinaryM<VR, m.vrclass, f.fprclass, m,
+                   !if(!ge(m.octuple, 16), "@earlyclobber $rd", "")>;
+}
+
 multiclass XVPseudoVALU_VV_VX_VI<Operand ImmType = simm5, string Constraint = ""> {
   foreach m = MxListXTHeadV in {
     defvar mx = m.MX;
@@ -2905,6 +2911,43 @@ multiclass XVPseudoVALU_MM {
     let VLMul = m.value in {
       def "_MM_" # mx : VPseudoBinaryNoMask<VR, VR, VR, "">,
                           Sched<[WriteVMALUV_MX, ReadVMALUV_MX, ReadVMALUV_MX]>;
+    }
+  }
+}
+
+multiclass XVPseudoVCMPM_VV_VF {
+  foreach m = MxListFXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVFCmpV_MX = !cast<SchedWrite>("WriteVFCmpV_" # mx);
+    defvar ReadVFCmpV_MX = !cast<SchedRead>("ReadVFCmpV_" # mx);
+
+    defm "" : VPseudoBinaryM_VV<m>,
+              Sched<[WriteVFCmpV_MX, ReadVFCmpV_MX, ReadVFCmpV_MX, ReadVMask]>;
+  }
+
+  foreach f = FPListXTHeadV in {
+    foreach m = f.MxList in {
+      defvar mx = m.MX;
+      defvar WriteVFCmpF_MX = !cast<SchedWrite>("WriteVFCmpF_" # mx);
+      defvar ReadVFCmpV_MX = !cast<SchedRead>("ReadVFCmpV_" # mx);
+      defvar ReadVFCmpF_MX = !cast<SchedRead>("ReadVFCmpF_" # mx);
+
+      defm "" : XVPseudoBinaryM_VF<m, f>,
+                Sched<[WriteVFCmpF_MX, ReadVFCmpV_MX, ReadVFCmpF_MX, ReadVMask]>;
+    }
+  }
+}
+
+multiclass XVPseudoVCMPM_VF {
+  foreach f = FPListXTHeadV in {
+    foreach m = f.MxList in {
+      defvar mx = m.MX;
+      defvar WriteVFCmpF_MX = !cast<SchedWrite>("WriteVFCmpF_" # mx);
+      defvar ReadVFCmpV_MX = !cast<SchedRead>("ReadVFCmpV_" # mx);
+      defvar ReadVFCmpF_MX = !cast<SchedRead>("ReadVFCmpF_" # mx);
+
+      defm "" : XVPseudoBinaryM_VF<m, f>,
+                Sched<[WriteVFCmpF_MX, ReadVFCmpV_MX, ReadVFCmpF_MX, ReadVMask]>;
     }
   }
 }
@@ -5196,6 +5239,27 @@ let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true in {
 defm : XVPatBinaryV_VV_VX<"int_riscv_th_vfsgnj", "PseudoTH_VFSGNJ", AllFloatXVectors>;
 defm : XVPatBinaryV_VV_VX<"int_riscv_th_vfsgnjn", "PseudoTH_VFSGNJN", AllFloatXVectors>;
 defm : XVPatBinaryV_VV_VX<"int_riscv_th_vfsgnjx", "PseudoTH_VFSGNJX", AllFloatXVectors>;
+
+//===----------------------------------------------------------------------===//
+// 14.11. Vector Floating-Point Compare Instructions
+//===----------------------------------------------------------------------===//
+let mayRaiseFPException = true, Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VMFEQ : XVPseudoVCMPM_VV_VF;
+  defm PseudoTH_VMFNE : XVPseudoVCMPM_VV_VF;
+  defm PseudoTH_VMFLT : XVPseudoVCMPM_VV_VF;
+  defm PseudoTH_VMFLE : XVPseudoVCMPM_VV_VF;
+  defm PseudoTH_VMFGT : XVPseudoVCMPM_VF;
+  defm PseudoTH_VMFGE : XVPseudoVCMPM_VF;
+}
+
+defm : XVPatBinaryM_VV_VX<"int_riscv_th_vmfeq", "PseudoTH_VMFEQ", AllFloatXVectors>;
+defm : XVPatBinaryM_VV_VX<"int_riscv_th_vmfle", "PseudoTH_VMFLE", AllFloatXVectors>;
+defm : XVPatBinaryM_VV_VX<"int_riscv_th_vmflt", "PseudoTH_VMFLT", AllFloatXVectors>;
+defm : XVPatBinaryM_VV_VX<"int_riscv_th_vmfne", "PseudoTH_VMFNE", AllFloatXVectors>;
+defm : XVPatBinaryM_VX<"int_riscv_th_vmfgt", "PseudoTH_VMFGT", AllFloatXVectors>;
+defm : XVPatBinaryM_VX<"int_riscv_th_vmfge", "PseudoTH_VMFGE", AllFloatXVectors>;
+defm : XVPatBinarySwappedM_VV<"int_riscv_th_vmfgt", "PseudoTH_VMFLT", AllFloatXVectors>;
+defm : XVPatBinarySwappedM_VV<"int_riscv_th_vmfge", "PseudoTH_VMFLE", AllFloatXVectors>;
 
 //===----------------------------------------------------------------------===//
 // 15.1. Vector Single-Width Integer Reduction Instructions
