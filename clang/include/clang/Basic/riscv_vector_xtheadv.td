@@ -1505,7 +1505,7 @@ let UnMaskedPolicyScheme = NonePolicy,
     HasMaskedOffOperand = false,
     ManualCodegen = [{
       if (IsMasked) {
-       std::rotate(Ops.begin(), Ops.begin() + 1, Ops.end() - 1);
+        std::rotate(Ops.begin(), Ops.begin() + 1, Ops.end() - 1);
       }
 
       // TODO: no policy in LLVM side for masked intrinsics.
