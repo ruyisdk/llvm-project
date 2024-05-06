@@ -1119,6 +1119,19 @@ let TargetPrefix = "riscv" in {
   // 14.12. Vector Floating-Point Classify Instruction
   defm th_vfclass : XVClassify;
 
+  // 14.13. Vector Floating-Point Merge Instruction
+  defm th_vfmerge : RISCVBinaryWithV0;
+
+  // Output: (vector)
+  // Input: (passthru, scalar, vl)
+  def int_riscv_th_vfmv_v_f : DefaultAttrsIntrinsic<[llvm_anyfloat_ty],
+                                                    [LLVMMatchType<0>,
+                                                     LLVMVectorElementType<0>,
+                                                     llvm_anyint_ty],
+                                                    [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 2;
+  }
+
   // 14.14. Single-Width Floating-Point/Integer Type-Convert Instructions
   defm th_vfcvt_xu_f_v : XVConversionRoundingMode;
   defm th_vfcvt_x_f_v : XVConversionRoundingMode;

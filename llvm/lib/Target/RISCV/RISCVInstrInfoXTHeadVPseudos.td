@@ -3102,6 +3102,38 @@ multiclass XVPseudoVNCVTD_W_RM {
   }
 }
 
+multiclass XVPseudoVMRG_FM {
+  foreach f = FPListXTHeadV in {
+    foreach m = f.MxList in {
+      defvar mx = m.MX;
+      defvar WriteVFMergeV_MX = !cast<SchedWrite>("WriteVFMergeV_" # mx);
+      defvar ReadVFMergeV_MX = !cast<SchedRead>("ReadVFMergeV_" # mx);
+      defvar ReadVFMergeF_MX = !cast<SchedRead>("ReadVFMergeF_" # mx);
+
+      def "_V" # f.FX # "M_" # mx:
+        VPseudoTiedBinaryCarryIn<GetVRegNoV0<m.vrclass>.R,
+                                 m.vrclass, f.fprclass, m, CarryIn=1, Constraint="">,
+        Sched<[WriteVFMergeV_MX, ReadVFMergeV_MX, ReadVFMergeF_MX, ReadVMask]>;
+    }
+  }
+}
+
+multiclass XVPseudoVMV_F {
+  foreach f = FPListXTHeadV in {
+    foreach m = f.MxList in {
+      defvar mx = m.MX;
+      defvar WriteVFMovV_MX = !cast<SchedWrite>("WriteVFMovV_" # mx);
+      defvar ReadVFMovF_MX = !cast<SchedRead>("ReadVFMovF_" # mx);
+
+      let VLMul = m.value in {
+        def "_" # f.FX # "_" # mx :
+          XVPseudoUnaryNoMask<m.vrclass, f.fprclass>,
+          Sched<[WriteVFMovV_MX, ReadVFMovF_MX]>;
+      }
+    }
+  }
+}
+
 multiclass XVPseudoVPOP_M {
   foreach mti = AllXMasks in {
     defvar mx = mti.LMul.MX;
@@ -5571,6 +5603,50 @@ let Predicates = [HasVendorXTHeadV] in {
 }
 
 defm : XVPatConversionVI_VF<"int_riscv_th_vfclass", "PseudoTH_VFCLASS">;
+
+//===----------------------------------------------------------------------===//
+// 14.13. Vector Floating-Point Merge Instruction
+//===----------------------------------------------------------------------===//
+let Predicates = [HasVendorXTHeadV] in {
+  defm PseudoTH_VFMERGE : XVPseudoVMRG_FM;
+  defm PseudoTH_VFMV_V : XVPseudoVMV_F;
+}
+
+// Map vfmerge of two vectors to vmerge, since there's only vfmerge.vfm
+// that supports operands in a vector register and a general-purpose
+// register, but the Clang intrinsics have to support proto-type that accept
+// two vectors.
+foreach vti = AllFloatXVectors in {
+  let Predicates = GetXVTypePredicates<vti>.Predicates in {
+    defm : VPatBinaryCarryInTAIL<"int_riscv_th_vmerge", "PseudoTH_VMERGE", "VVM",
+                                 vti.Vector,
+                                 vti.Vector, vti.Vector, vti.Mask,
+                                 vti.Log2SEW, vti.LMul, vti.RegClass,
+                                 vti.RegClass, vti.RegClass>;
+    defm : VPatBinaryCarryInTAIL<"int_riscv_th_vfmerge", "PseudoTH_VMERGE", "VVM",
+                                 vti.Vector,
+                                 vti.Vector, vti.Vector, vti.Mask,
+                                 vti.Log2SEW, vti.LMul, vti.RegClass,
+                                 vti.RegClass, vti.RegClass>;
+    defm : VPatBinaryCarryInTAIL<"int_riscv_th_vfmerge", "PseudoTH_VFMERGE",
+                                 "V"#vti.ScalarSuffix#"M",
+                                 vti.Vector,
+                                 vti.Vector, vti.Scalar, vti.Mask,
+                                 vti.Log2SEW, vti.LMul, vti.RegClass,
+                                 vti.RegClass, vti.ScalarRegClass>;
+  }
+}
+
+foreach fvti = AllFloatXVectors in {
+  defvar instr = !cast<Instruction>("PseudoTH_VMERGE_VIM_"#fvti.LMul.MX);
+  let Predicates = GetXVTypePredicates<fvti>.Predicates in
+  def : Pat<(fvti.Vector (int_riscv_th_vfmerge (fvti.Vector fvti.RegClass:$merge),
+                                               (fvti.Vector fvti.RegClass:$rs2),
+                                               (fvti.Scalar (fpimm0)),
+                                               (fvti.Mask V0), VLOpFrag)),
+            (instr fvti.RegClass:$merge, fvti.RegClass:$rs2, 0,
+                   (fvti.Mask V0), GPR:$vl, fvti.Log2SEW)>;
+}
 
 //===----------------------------------------------------------------------===//
 // 14.14. Vector Floating-Point Classify Instruction
