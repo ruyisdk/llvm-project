@@ -808,6 +808,18 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 4;
   }
 
+  // For FP classify operations with mask but no policy.
+  // Output: (bit mask type output)
+  // Input: (maskedoff, vector_in, mask, vl)
+  class XVClassifyMasked
+        : DefaultAttrsIntrinsic<[LLVMVectorOfBitcastsToInt<0>],
+                    [LLVMVectorOfBitcastsToInt<0>, llvm_anyvector_ty,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, 
+                     llvm_anyint_ty],
+                    [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 3;
+  }
+
   multiclass XVBinaryAAX {
     def "int_riscv_" # NAME : RISCVBinaryAAXUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVBinaryAAXMasked;
@@ -871,6 +883,11 @@ let TargetPrefix = "riscv" in {
   multiclass XVUnaryAARoundingMode {
     def "int_riscv_" # NAME : RISCVUnaryAAUnMaskedRoundingMode;
     def "int_riscv_" # NAME # "_mask" : XVUnaryAAMaskedRoundingMode;
+  }
+
+  multiclass XVClassify {
+    def "int_riscv_" # NAME : RISCVClassifyUnMasked;
+    def "int_riscv_" # NAME # "_mask" : XVClassifyMasked;
   }
 
   multiclass XVRGatherVV {
@@ -1067,6 +1084,9 @@ let TargetPrefix = "riscv" in {
   defm th_vmfle : RISCVCompare;
   defm th_vmfgt : RISCVCompare;
   defm th_vmfge : RISCVCompare;
+
+  // 14.12. Vector Floating-Point Classify Instruction
+  defm th_vfclass : XVClassify;
 
   // 15.1. Vector Single-Width Integer Reduction
   defm th_vredsum : RISCVReduction;
