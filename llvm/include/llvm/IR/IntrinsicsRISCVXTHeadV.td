@@ -808,6 +808,39 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 4;
   }
 
+  // For FP classify operations with mask but no policy.
+  // Output: (bit mask type output)
+  // Input: (maskedoff, vector_in, mask, vl)
+  class XVClassifyMasked
+        : DefaultAttrsIntrinsic<[LLVMVectorOfBitcastsToInt<0>],
+                    [LLVMVectorOfBitcastsToInt<0>, llvm_anyvector_ty,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, 
+                     llvm_anyint_ty],
+                    [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 3;
+  }
+
+  // For Conversion unary operations with mask but no policy.
+  // Input: (maskedoff, vector_in, mask, frm, vl)
+  class XVConversionMaskedRoundingMode
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, llvm_anyvector_ty,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty,
+                     LLVMMatchType<2>],
+                    [ImmArg<ArgIndex<3>>, IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 4;
+  }
+
+  // For Conversion unary operations with mask but no policy.
+  // Input: (maskedoff, vector_in, mask, vl)
+  class XVConversionMasked
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, llvm_anyvector_ty,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty],
+                    [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 3;
+  }
+
   multiclass XVBinaryAAX {
     def "int_riscv_" # NAME : RISCVBinaryAAXUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVBinaryAAXMasked;
@@ -871,6 +904,21 @@ let TargetPrefix = "riscv" in {
   multiclass XVUnaryAARoundingMode {
     def "int_riscv_" # NAME : RISCVUnaryAAUnMaskedRoundingMode;
     def "int_riscv_" # NAME # "_mask" : XVUnaryAAMaskedRoundingMode;
+  }
+
+  multiclass XVClassify {
+    def "int_riscv_" # NAME : RISCVClassifyUnMasked;
+    def "int_riscv_" # NAME # "_mask" : XVClassifyMasked;
+  }
+
+  multiclass XVConversionRoundingMode {
+    def "int_riscv_" # NAME : RISCVConversionUnMaskedRoundingMode;
+    def "int_riscv_" # NAME # "_mask" : XVConversionMaskedRoundingMode;
+  }
+
+  multiclass XVConversion {
+    def "int_riscv_" # NAME :RISCVConversionUnMasked;
+    def "int_riscv_" # NAME # "_mask" : XVConversionMasked;
   }
 
   multiclass XVRGatherVV {
@@ -1059,6 +1107,50 @@ let TargetPrefix = "riscv" in {
   defm th_vfsgnj : XVBinaryAAX;
   defm th_vfsgnjn : XVBinaryAAX;
   defm th_vfsgnjx : XVBinaryAAX;
+
+  // 14.11. Vector Floating-Point Compare Instructions
+  defm th_vmfeq : RISCVCompare;
+  defm th_vmfne : RISCVCompare;
+  defm th_vmflt : RISCVCompare;
+  defm th_vmfle : RISCVCompare;
+  defm th_vmfgt : RISCVCompare;
+  defm th_vmfge : RISCVCompare;
+
+  // 14.12. Vector Floating-Point Classify Instruction
+  defm th_vfclass : XVClassify;
+
+  // 14.13. Vector Floating-Point Merge Instruction
+  defm th_vfmerge : RISCVBinaryWithV0;
+
+  // Output: (vector)
+  // Input: (passthru, scalar, vl)
+  def int_riscv_th_vfmv_v_f : DefaultAttrsIntrinsic<[llvm_anyfloat_ty],
+                                                    [LLVMMatchType<0>,
+                                                     LLVMVectorElementType<0>,
+                                                     llvm_anyint_ty],
+                                                    [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 2;
+  }
+
+  // 14.14. Single-Width Floating-Point/Integer Type-Convert Instructions
+  defm th_vfcvt_xu_f_v : XVConversionRoundingMode;
+  defm th_vfcvt_x_f_v : XVConversionRoundingMode;
+  defm th_vfcvt_f_xu_v : XVConversionRoundingMode;
+  defm th_vfcvt_f_x_v : XVConversionRoundingMode;
+
+  // 14.15. Widening Floating-Point/Integer Type-Convert Instructions
+  defm th_vfwcvt_f_xu_v : XVConversion;
+  defm th_vfwcvt_f_x_v : XVConversion;
+  defm th_vfwcvt_xu_f_v : XVConversionRoundingMode;
+  defm th_vfwcvt_x_f_v : XVConversionRoundingMode;
+  defm th_vfwcvt_f_f_v : XVConversion;
+
+  // 14.16. Narrowing Floating-Point/Integer Type-Convert Instructions
+  defm th_vfncvt_f_xu_w : XVConversionRoundingMode;
+  defm th_vfncvt_f_x_w : XVConversionRoundingMode;
+  defm th_vfncvt_xu_f_w : XVConversionRoundingMode;
+  defm th_vfncvt_x_f_w : XVConversionRoundingMode;
+  defm th_vfncvt_f_f_w : XVConversionRoundingMode;
 
   // 15.1. Vector Single-Width Integer Reduction
   defm th_vredsum : RISCVReduction;

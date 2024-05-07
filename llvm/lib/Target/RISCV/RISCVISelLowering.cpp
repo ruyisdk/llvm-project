@@ -7495,7 +7495,10 @@ SDValue RISCVTargetLowering::LowerINTRINSIC_WO_CHAIN(SDValue Op,
                             Op.getOperand(3), Op.getSimpleValueType(), DL, DAG,
                             Subtarget);
   case Intrinsic::riscv_vfmv_v_f:
-    return DAG.getNode(RISCVISD::VFMV_V_F_VL, DL, Op.getValueType(),
+  case Intrinsic::riscv_th_vfmv_v_f:
+    return DAG.getNode(Subtarget.hasVendorXTHeadV() ? RISCVISD::TH_VFMV_V_F_VL :
+                                                      RISCVISD::VFMV_V_F_VL,
+                       DL, Op.getValueType(),
                        Op.getOperand(1), Op.getOperand(2), Op.getOperand(3));
   case Intrinsic::riscv_vmv_s_x: {
     SDValue Scalar = Op.getOperand(2);
@@ -16440,6 +16443,7 @@ const char *RISCVTargetLowering::getTargetNodeName(unsigned Opcode) const {
   NODE_NAME_CASE(VMV_V_X_VL)
   NODE_NAME_CASE(TH_VMV_V_X_VL)
   NODE_NAME_CASE(VFMV_V_F_VL)
+  NODE_NAME_CASE(TH_VFMV_V_F_VL)
   NODE_NAME_CASE(VMV_X_S)
   NODE_NAME_CASE(VMV_S_X_VL)
   NODE_NAME_CASE(VFMV_S_F_VL)

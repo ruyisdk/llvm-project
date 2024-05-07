@@ -156,6 +156,7 @@ enum NodeType : unsigned {
   // for the VL value to be used for the operation. The first operand is
   // passthru operand.
   VFMV_V_F_VL,
+  TH_VFMV_V_F_VL,
   // VMV_X_S matches the semantics of vmv.x.s. The result is always XLenVT sign
   // extended from the vector element size.
   VMV_X_S,
