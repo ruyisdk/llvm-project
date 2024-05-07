@@ -284,6 +284,11 @@ multiclass RVVIntReductionBuiltinSet
     : RVVSignedReductionBuiltin,
       RVVUnsignedReductionBuiltin;
 
+multiclass RVVSlideOneBuiltinSet
+    : RVVOutOp1BuiltinSet<NAME, "csil",
+                          [["vx", "v", "vve"],
+                           ["vx", "Uv", "UvUvUe"]]>;
+
 //===----------------------------------------------------------------------===//
 // 6. Configuration-Setting and Utility
 //===----------------------------------------------------------------------===//
@@ -1494,5 +1499,93 @@ let UnMaskedPolicyScheme = HasPassthruOperand,
                                                     ["v", "Uv", "Uv"]]>;
 }
 
+// 17.4. Vector Slide Operations
+let UnMaskedPolicyScheme = NonePolicy,
+    MaskedPolicyScheme = HasPassthruOperand,
+    HasMaskedOffOperand = false,
+    ManualCodegen = [{
+      if (IsMasked) {
+        std::rotate(Ops.begin(), Ops.begin() + 1, Ops.end() - 1);
+      }
+
+      // TODO: no policy in LLVM side for masked intrinsics.
+      // Ops.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+      IntrinsicTypes = {ResultType, Ops.back()->getType()};
+    }]
+    in {
+  multiclass RVVSlideUpBuiltinSet {
+    defm "" : RVVOutBuiltinSet<NAME, "csilxfd",
+                               [["vx","v", "vvvz"]]>;
+    defm "" : RVVOutBuiltinSet<NAME, "csil",
+                               [["vx","Uv", "UvUvUvz"]]>;
+  }
+}
+
+let UnMaskedPolicyScheme = NonePolicy,
+    MaskedPolicyScheme = HasPassthruOperand,
+    HasMaskedOffOperand = false,
+    ManualCodegen = [{
+      if (IsMasked) {
+        std::rotate(Ops.begin(), Ops.begin() + 1, Ops.end() - 1);
+        if ((PolicyAttrs & RVV_VTA) && (PolicyAttrs & RVV_VMA))
+          Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType));
+      } else {
+        if (PolicyAttrs & RVV_VTA)
+          Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType));
+      }
+
+      // TODO: no policy in LLVM side for masked intrinsics.
+      // Ops.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+      IntrinsicTypes = {ResultType, Ops.back()->getType()};
+    }] in {
+  multiclass RVVSlideDownBuiltinSet {
+    defm "" : RVVOutBuiltinSet<NAME, "csilxfd",
+                               [["vx","v", "vvz"]]>;
+    defm "" : RVVOutBuiltinSet<NAME, "csil",
+                               [["vx","Uv", "UvUvz"]]>;
+  }
+}
+
+defm th_vslideup   : RVVSlideUpBuiltinSet;
+defm th_vslidedown : RVVSlideDownBuiltinSet;
+
+let UnMaskedPolicyScheme = HasPassthruOperand,
+    MaskedPolicyScheme = HasPassthruOperand in {
+  defm th_vslide1up : RVVSlideOneBuiltinSet;
+  defm th_vslide1down : RVVSlideOneBuiltinSet;
+}
+
+// 17.5. Vector Register Gather Operations
+let UnMaskedPolicyScheme = HasPassthruOperand,
+    MaskedPolicyScheme = HasPassthruOperand in {
+  // signed and floating type
+  defm th_vrgather : RVVOutBuiltinSet<"th_vrgather_vv", "csilxfd",
+                                      [["vv", "v", "vvUv"]]>;
+  defm th_vrgather : RVVOutBuiltinSet<"th_vrgather_vx", "csilxfd",
+                                      [["vx", "v", "vvz"]]>;
+  // unsigned type
+  defm th_vrgather : RVVOutBuiltinSet<"th_vrgather_vv", "csil",
+                                      [["vv", "Uv", "UvUvUv"]]>;
+  defm th_vrgather : RVVOutBuiltinSet<"th_vrgather_vx", "csil",
+                                      [["vx", "Uv", "UvUvz"]]>;
+}
+
+// 17.6. Vector Compress Operations
+let HasMasked = false,
+    UnMaskedPolicyScheme = HasPassthruOperand,
+    MaskedPolicyScheme = NonePolicy,
+    ManualCodegen = [{
+      // insert poison passthru
+      if (PolicyAttrs & RVV_VTA)
+        Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType));
+      IntrinsicTypes = {ResultType, Ops.back()->getType()};
+    }] in {
+  // signed and floating type
+  defm th_vcompress : RVVOutBuiltinSet<"th_vcompress", "csilxfd",
+                                       [["vm", "v", "vvm"]]>;
+  // unsigned type
+  defm th_vcompress : RVVOutBuiltinSet<"th_vcompress", "csil",
+                                       [["vm", "Uv", "UvUvm"]]>;
+}
 
 include "riscv_vector_xtheadv_wrappers.td"
