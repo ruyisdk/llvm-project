@@ -1500,10 +1500,17 @@ let UnMaskedPolicyScheme = HasPassthruOperand,
       return Builder.CreateCall(F, Operands, "");
     }
   }] in {
-    // 14.3. Vector Widening Floating-Point Add/Subtract Instructions
+    // 14.2. Vector Widening Floating-Point Add/Subtract Instructions
     // Widening FP add/subtract, 2*SEW = SEW +/- SEW
     defm th_vfwadd : RVVFloatingWidenBinBuiltinSet; // for vv, vf
     defm th_vfwsub : RVVFloatingWidenBinBuiltinSet; // for vv, vf
+
+    // 14.4. Vector Widening Floating-Point Multiply
+    let Log2LMUL = [-2, -1, 0, 1, 2] in {
+      defm th_vfwmul : RVVOutOp0Op1BuiltinSet<"th_vfwmul", "xf",
+                                              [["vv", "w", "wvv"],
+                                               ["vf", "w", "wve"]]>;
+    }
   }
 }
 
