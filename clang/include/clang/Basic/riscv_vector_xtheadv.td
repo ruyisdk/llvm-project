@@ -215,6 +215,25 @@ let Log2LMUL = [-3, -2, -1, 0, 1, 2] in {
                                         ["wx", "Uv", "UvUwzu"]]>;
 }
 
+multiclass RVVFloatingBinBuiltinSet
+    : RVVOutOp1BuiltinSet<NAME, "xfd",
+                          [["vv", "v", "vvv"],
+                           ["vf", "v", "vve"]]>;
+
+multiclass RVVFloatingBinVFBuiltinSet
+    : RVVOutOp1BuiltinSet<NAME, "xfd",
+                          [["vf", "v", "vve"]]>;
+
+multiclass RVVFloatingWidenOp0BinBuiltinSet
+    : RVVWidenWOp0BuiltinSet<NAME # "_w", "xf",
+                             [["wv", "w", "wwv"],
+                              ["wf", "w", "wwe"]]>;
+
+multiclass RVVFloatingWidenBinBuiltinSet
+    : RVVWidenBuiltinSet<NAME, "xf",
+                         [["vv", "w", "wvv"],
+                          ["vf", "w", "wve"]]>;
+
 multiclass RVVSignedMaskOutBuiltinSet
     : RVVOp0Op1BuiltinSet<NAME, "csil",
                           [["vv", "vm", "mvv"],
@@ -1356,6 +1375,137 @@ let UnMaskedPolicyScheme = HasPassthruOperand,
   defm th_vnclip  : RVVSignedNShiftBuiltinSetRoundingMode;
 }
 
+// 14. Vector Floating-Point Operations
+let HeaderCode =
+[{
+enum __RISCV_FRM {
+  __RISCV_FRM_RNE = 0,
+  __RISCV_FRM_RTZ = 1,
+  __RISCV_FRM_RDN = 2,
+  __RISCV_FRM_RUP = 3,
+  __RISCV_FRM_RMM = 4,
+};
+}] in def frm_enum : RVVHeader;
+
+// NOTE: there's no RoundingMode version (like `vfxxx_*_rm`)
+// for floating point operations.
+
+let UnMaskedPolicyScheme = HasPassthruOperand,
+    MaskedPolicyScheme = HasPassthruOperand in {
+  let ManualCodegen = [{
+    {
+      // LLVM intrinsic
+      // Unmasked: (passthru, op0, op1, round_mode, vl)
+      // Masked:   (passthru, vector_in, vector_in/scalar_in, mask, frm, vl)
+
+      SmallVector<llvm::Value*, 7> Operands;
+      bool HasMaskedOff = !(
+          (IsMasked && (PolicyAttrs & RVV_VTA) && (PolicyAttrs & RVV_VMA)) ||
+          (!IsMasked && PolicyAttrs & RVV_VTA));
+      bool HasRoundModeOp = IsMasked ?
+        (HasMaskedOff ? Ops.size() == 6 : Ops.size() == 5) :
+        (HasMaskedOff ? Ops.size() == 5 : Ops.size() == 4);
+
+      unsigned Offset = IsMasked ?
+          (HasMaskedOff ? 2 : 1) : (HasMaskedOff ? 1 : 0);
+
+      if (!HasMaskedOff)
+        Operands.push_back(llvm::PoisonValue::get(ResultType));
+      else
+        Operands.push_back(Ops[IsMasked ? 1 : 0]);
+
+      Operands.push_back(Ops[Offset]); // op0
+      Operands.push_back(Ops[Offset + 1]); // op1
+
+      if (IsMasked)
+        Operands.push_back(Ops[0]); // mask
+
+      if (HasRoundModeOp) {
+        Operands.push_back(Ops[Offset + 2]); // frm
+        Operands.push_back(Ops[Offset + 3]); // vl
+      } else {
+        Operands.push_back(ConstantInt::get(Ops[Offset + 2]->getType(), 7)); // frm
+        Operands.push_back(Ops[Offset + 2]); // vl
+      }
+
+      // TODO: no policy in LLVM side for masked intrinsics.
+      // if (IsMasked)
+      //  Operands.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+
+      IntrinsicTypes = {ResultType, Ops[Offset + 1]->getType(),
+                        Operands.back()->getType()};
+      llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
+      return Builder.CreateCall(F, Operands, "");
+    }
+  }] in {
+    // 14.1. Vector Single-Width Floating-Point Add/Subtract Instructions
+    defm th_vfadd  : RVVFloatingBinBuiltinSet;
+    defm th_vfsub  : RVVFloatingBinBuiltinSet;
+    defm th_vfrsub : RVVFloatingBinVFBuiltinSet;
+
+    // 14.2. Vector Widening Floating-Point Add/Subtract Instructions
+    // Widening FP add/subtract, 2*SEW = 2*SEW +/- SEW
+    defm th_vfwadd : RVVFloatingWidenOp0BinBuiltinSet; // for wv, wf
+    defm th_vfwsub : RVVFloatingWidenOp0BinBuiltinSet; // for wv, wf
+
+    // 14.3. Vector Single-Width Floating-Point Multiply/Divide Instructions
+    defm th_vfmul  : RVVFloatingBinBuiltinSet;
+    defm th_vfdiv  : RVVFloatingBinBuiltinSet;
+    defm th_vfrdiv : RVVFloatingBinVFBuiltinSet;
+  }
+
+  let ManualCodegen = [{
+    {
+      // LLVM intrinsic
+      // Unmasked: (passthru, op0, op1, round_mode, vl)
+      // Masked:   (passthru, vector_in, vector_in/scalar_in, mask, frm, vl)
+
+      SmallVector<llvm::Value*, 7> Operands;
+      bool HasMaskedOff = !(
+          (IsMasked && (PolicyAttrs & RVV_VTA) && (PolicyAttrs & RVV_VMA)) ||
+          (!IsMasked && PolicyAttrs & RVV_VTA));
+      bool HasRoundModeOp = IsMasked ?
+        (HasMaskedOff ? Ops.size() == 6 : Ops.size() == 5) :
+        (HasMaskedOff ? Ops.size() == 5 : Ops.size() == 4);
+
+      unsigned Offset = IsMasked ?
+          (HasMaskedOff ? 2 : 1) : (HasMaskedOff ? 1 : 0);
+
+      if (!HasMaskedOff)
+        Operands.push_back(llvm::PoisonValue::get(ResultType));
+      else
+        Operands.push_back(Ops[IsMasked ? 1 : 0]);
+
+      Operands.push_back(Ops[Offset]); // op0
+      Operands.push_back(Ops[Offset + 1]); // op1
+
+      if (IsMasked)
+        Operands.push_back(Ops[0]); // mask
+
+      if (HasRoundModeOp) {
+        Operands.push_back(Ops[Offset + 2]); // frm
+        Operands.push_back(Ops[Offset + 3]); // vl
+      } else {
+        Operands.push_back(ConstantInt::get(Ops[Offset + 2]->getType(), 7)); // frm
+        Operands.push_back(Ops[Offset + 2]); // vl
+      }
+
+      // TODO: no policy in LLVM side for masked intrinsics.
+      // if (IsMasked)
+      //  Operands.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+
+      IntrinsicTypes = {ResultType, Ops[Offset]->getType(), Ops[Offset + 1]->getType(),
+                        Ops.back()->getType()};
+      llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
+      return Builder.CreateCall(F, Operands, "");
+    }
+  }] in {
+    // 14.3. Vector Widening Floating-Point Add/Subtract Instructions
+    // Widening FP add/subtract, 2*SEW = SEW +/- SEW
+    defm th_vfwadd : RVVFloatingWidenBinBuiltinSet; // for vv, vf
+    defm th_vfwsub : RVVFloatingWidenBinBuiltinSet; // for vv, vf
+  }
+}
 
 // 15. Vector Reduction Operations
 // 15.1. Vector Single-Width Integer Reduction Instructions
