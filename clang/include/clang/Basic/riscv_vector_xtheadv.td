@@ -256,6 +256,19 @@ let HasMaskedOffOperand = false in {
                                    ["vv", "Uv", "UvUvUvUv"],
                                    ["vx", "Uv", "UvUvUeUv"]]>;
   }
+  multiclass RVVFloatingTerBuiltinSet {
+    defm "" : RVVOutOp1BuiltinSet<NAME, "xfd",
+                                  [["vv", "v", "vvvv"],
+                                   ["vf", "v", "vvev"]]>;
+  }
+}
+
+let HasMaskedOffOperand = false, Log2LMUL = [-2, -1, 0, 1, 2] in {
+  multiclass RVVFloatingWidenTerBuiltinSet {
+    defm ""  : RVVOutOp1Op2BuiltinSet<NAME, "xf",
+                                      [["vv", "w", "wwvv"],
+                                       ["vf", "w", "wwev"]]>;
+  }
 }
 
 class RVVMaskBinBuiltin : RVVOutBuiltin<"m", "mmm", "c"> {
@@ -1500,10 +1513,114 @@ let UnMaskedPolicyScheme = HasPassthruOperand,
       return Builder.CreateCall(F, Operands, "");
     }
   }] in {
-    // 14.3. Vector Widening Floating-Point Add/Subtract Instructions
+    // 14.2. Vector Widening Floating-Point Add/Subtract Instructions
     // Widening FP add/subtract, 2*SEW = SEW +/- SEW
     defm th_vfwadd : RVVFloatingWidenBinBuiltinSet; // for vv, vf
     defm th_vfwsub : RVVFloatingWidenBinBuiltinSet; // for vv, vf
+
+    // 14.4. Vector Widening Floating-Point Multiply
+    let Log2LMUL = [-2, -1, 0, 1, 2] in {
+      defm th_vfwmul : RVVOutOp0Op1BuiltinSet<"th_vfwmul", "xf",
+                                              [["vv", "w", "wvv"],
+                                               ["vf", "w", "wve"]]>;
+    }
+  }
+}
+
+let UnMaskedPolicyScheme = HasPassthruOperand,
+    MaskedPolicyScheme = HasPassthruOperand in {
+  let ManualCodegen = [{
+    {
+      // LLVM intrinsic
+      // Unmasked: (passthru, op0, op1, round_mode, vl)
+      // Masked:   (passthru, vector_in, vector_in/scalar_in, mask, frm, vl)
+
+      SmallVector<llvm::Value*, 7> Operands;
+      bool HasRoundModeOp = IsMasked ? Ops.size() == 6 : Ops.size() == 5;
+
+      unsigned Offset = IsMasked ? 2 : 1;
+
+      Operands.push_back(Ops[IsMasked ? 1 : 0]); // passthrough
+
+      Operands.push_back(Ops[Offset]); // op0
+      Operands.push_back(Ops[Offset + 1]); // op1
+
+      if (IsMasked)
+        Operands.push_back(Ops[0]); // mask
+
+      if (HasRoundModeOp) {
+        Operands.push_back(Ops[Offset + 2]); // frm
+        Operands.push_back(Ops[Offset + 3]); // vl
+      } else {
+        Operands.push_back(ConstantInt::get(Ops[Offset + 2]->getType(), 7)); // frm
+        Operands.push_back(Ops[Offset + 2]); // vl
+      }
+
+      // TODO: no policy in LLVM side for masked intrinsics.
+      // Operands.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+
+      IntrinsicTypes = {ResultType, Ops[Offset]->getType(),
+                        Operands.back()->getType()};
+
+      llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
+
+      return Builder.CreateCall(F, Operands, "");
+    }
+  }] in {
+    // 14.5. Vector Single-Width Floating-Point Fused Multiply-Add Instructions
+    defm th_vfmacc  : RVVFloatingTerBuiltinSet;
+    defm th_vfnmacc : RVVFloatingTerBuiltinSet;
+    defm th_vfmsac  : RVVFloatingTerBuiltinSet;
+    defm th_vfnmsac : RVVFloatingTerBuiltinSet;
+    defm th_vfmadd  : RVVFloatingTerBuiltinSet;
+    defm th_vfnmadd : RVVFloatingTerBuiltinSet;
+    defm th_vfmsub  : RVVFloatingTerBuiltinSet;
+    defm th_vfnmsub : RVVFloatingTerBuiltinSet;
+  }
+
+  let ManualCodegen = [{
+    {
+      // LLVM intrinsic
+      // Unmasked: (passthru, op0, op1, round_mode, vl)
+      // Masked:   (passthru, vector_in, vector_in/scalar_in, mask, frm, vl)
+
+      SmallVector<llvm::Value*, 7> Operands;
+      bool HasRoundModeOp = IsMasked ? Ops.size() == 6 : Ops.size() == 5;
+
+      unsigned Offset = IsMasked ? 2 : 1;
+
+      Operands.push_back(Ops[IsMasked ? 1 : 0]); // passthrough
+
+      Operands.push_back(Ops[Offset]); // op0
+      Operands.push_back(Ops[Offset + 1]); // op1
+
+      if (IsMasked)
+        Operands.push_back(Ops[0]); // mask
+
+      if (HasRoundModeOp) {
+        Operands.push_back(Ops[Offset + 2]); // frm
+        Operands.push_back(Ops[Offset + 3]); // vl
+      } else {
+        Operands.push_back(ConstantInt::get(Ops[Offset + 2]->getType(), 7)); // frm
+        Operands.push_back(Ops[Offset + 2]); // vl
+      }
+
+      // TODO: no policy in LLVM side for masked intrinsics.
+      // Operands.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+
+      IntrinsicTypes = {ResultType, Ops[Offset]->getType(), Ops[Offset + 1]->getType(),
+                        Operands.back()->getType()};
+
+      llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
+
+      return Builder.CreateCall(F, Operands, "");
+    }
+  }] in {
+    // 14.6. Vector Widening Floating-Point Fused Multiply-Add Instructions
+    defm th_vfwmacc  : RVVFloatingWidenTerBuiltinSet;
+    defm th_vfwnmacc : RVVFloatingWidenTerBuiltinSet;
+    defm th_vfwmsac  : RVVFloatingWidenTerBuiltinSet;
+    defm th_vfwnmsac : RVVFloatingWidenTerBuiltinSet;
   }
 }
 
