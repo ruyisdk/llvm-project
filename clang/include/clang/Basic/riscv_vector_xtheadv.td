@@ -1071,6 +1071,41 @@ multiclass RVVPseudoUnaryBuiltin<string ir, string type_range> {
   }
 }
 
+multiclass RVVPseudoVFUnaryBuiltin<string IR, string type_range> {
+  let Name = NAME,
+      IRName = IR,
+      MaskedIRName = IR # "_mask",
+      UnMaskedPolicyScheme = HasPassthruOperand,
+      MaskedPolicyScheme = HasPassthruOperand,
+      ManualCodegen = [{
+      {
+        if (IsMasked) {
+          std::rotate(Ops.begin(), Ops.begin() + 1, Ops.end() - 1);
+          if ((PolicyAttrs & RVV_VTA) && (PolicyAttrs & RVV_VMA))
+            Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType));
+          Ops.insert(Ops.begin() + 2, Ops[1]);
+          // TODO: no policy in LLVM side for masked intrinsics.
+          // Ops.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+          // maskedoff, op1, op2, mask, vl
+          IntrinsicTypes = {ResultType,
+                            Ops[2]->getType(),
+                            Ops.back()->getType()};
+        } else {
+          if (PolicyAttrs & RVV_VTA)
+            Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType));
+          // op1, po2, vl
+          IntrinsicTypes = {ResultType,
+                            Ops[1]->getType(), Ops[2]->getType()};
+          Ops.insert(Ops.begin() + 2, Ops[1]);
+          break;
+        }
+        break;
+      }
+      }] in {
+        def : RVVBuiltin<"v", "vv", type_range>;
+  }
+}
+
 multiclass RVVPseudoVNotBuiltin<string ir, string type_range> {
   let Name = NAME,
       IRName = ir,
@@ -1623,6 +1658,71 @@ let UnMaskedPolicyScheme = HasPassthruOperand,
     defm th_vfwnmsac : RVVFloatingWidenTerBuiltinSet;
   }
 }
+
+let UnMaskedPolicyScheme = HasPassthruOperand,
+    MaskedPolicyScheme = HasPassthruOperand in {
+  let ManualCodegen = [{
+    {
+      // LLVM intrinsic
+      // Unmasked: (passthru, op0, round_mode, vl)
+      // Masked:   (passthru, op0, mask, frm, vl)
+
+      SmallVector<llvm::Value*, 7> Operands;
+      bool HasMaskedOff = !(
+          (IsMasked && (PolicyAttrs & RVV_VTA) && (PolicyAttrs & RVV_VMA)) ||
+          (!IsMasked && PolicyAttrs & RVV_VTA));
+      bool HasRoundModeOp = IsMasked ?
+        (HasMaskedOff ? Ops.size() == 5 : Ops.size() == 4) :
+        (HasMaskedOff ? Ops.size() == 4 : Ops.size() == 3);
+
+      unsigned Offset = IsMasked ?
+          (HasMaskedOff ? 2 : 1) : (HasMaskedOff ? 1 : 0);
+
+      if (!HasMaskedOff)
+        Operands.push_back(llvm::PoisonValue::get(ResultType));
+      else
+        Operands.push_back(Ops[IsMasked ? 1 : 0]);
+
+      Operands.push_back(Ops[Offset]); // op0
+
+      if (IsMasked)
+        Operands.push_back(Ops[0]); // mask
+
+      if (HasRoundModeOp) {
+        Operands.push_back(Ops[Offset + 1]); // frm
+        Operands.push_back(Ops[Offset + 2]); // vl
+      } else {
+        Operands.push_back(ConstantInt::get(Ops[Offset + 1]->getType(), 7)); // frm
+        Operands.push_back(Ops[Offset + 1]); // vl
+      }
+
+      // TODO: no policy in LLVM side for masked intrinsics.
+      // if (IsMasked)
+      //  Operands.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+
+      IntrinsicTypes = {ResultType, Operands.back()->getType()};
+      llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
+      return Builder.CreateCall(F, Operands, "");
+    }
+  }] in {
+    // 14.7. Vector Floating-Point Square-Root Operations
+    defm th_vfsqrt : RVVOutBuiltinSet<"th_vfsqrt", "xfd", [["v", "v", "vv"]]>;
+  }
+
+  // NOTE: there's no `th_vfrsqrt7` and `th_vfrec7` in XTHeadVector.
+  // though they are listed in `riscv-v-intrinsic-0.7.1.pdf`.
+
+  // 14.10. Vector Floating-Point MIN/MAX Operations
+  defm th_vfmin : RVVFloatingBinBuiltinSet;
+  defm th_vfmax : RVVFloatingBinBuiltinSet;
+
+  // 14.11. Vector Floating-Point Sign-Injection Operations
+  defm th_vfsgnj  : RVVFloatingBinBuiltinSet;
+  defm th_vfsgnjn : RVVFloatingBinBuiltinSet;
+  defm th_vfsgnjx : RVVFloatingBinBuiltinSet;
+}
+defm th_vfneg_v : RVVPseudoVFUnaryBuiltin<"th_vfsgnjn", "xfd">;
+defm th_vfabs_v : RVVPseudoVFUnaryBuiltin<"th_vfsgnjx", "xfd">;
 
 // 15. Vector Reduction Operations
 // 15.1. Vector Single-Width Integer Reduction Instructions
