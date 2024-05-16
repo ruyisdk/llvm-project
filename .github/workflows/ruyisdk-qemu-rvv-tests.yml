@@ -52,6 +52,8 @@ jobs:
           max-size: 500M
           key: sccache-${{ matrix.os }}
           variant: sccache
+      - name: Setup mold
+        uses: rui314/setup-mold@v1
 
       - name: Build QEMU 6.2 with RVV 0.7.1 support
         run: |
@@ -68,7 +70,6 @@ jobs:
           ./qemu-6.2.0/build/qemu-riscv64 --version
           ./qemu-6.2.0/build/qemu-riscv64 -cpu rv64,x-v=true,vlen=256,elen=64,vext_spec=v0.7.1 -L $RISCV_SYSROOT --help
 
-
       - name: Checkout LLVM
         uses: actions/checkout@v3
         with:
@@ -77,7 +78,16 @@ jobs:
         run: |
           mkdir -p llvm-build
           pushd llvm-build
-          cmake -GNinja -DLLVM_ENABLE_PROJECTS="clang" -DCMAKE_BUILD_TYPE=Release -DLLDB_INCLUDE_TESTS=OFF ../llvm
+          cmake -GNinja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLLDB_INCLUDE_TESTS=OFF \
+            -DBUILD_SHARED_LIBS=true \
+            -DLLVM_ENABLE_PROJECTS="clang" \
+            -DLLVM_TARGETS_TO_BUILD="RISCV" \
+            -DLLVM_USE_LINKER=mold \
+            -DDEFAULT_SYSROOT="$RISCV_SYSROOT" \
+            -DLLVM_DEFAULT_TARGET_TRIPLE="riscv64-unknown-linux-gnu" \
+            ../llvm
           ninja clang
 
       - name: Checkout rvv-intrinsic-doc
