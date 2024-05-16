@@ -122,6 +122,12 @@ jobs:
             $QEMU_EXE \
               -cpu rv64,x-v=true,vlen=256,elen=64,vext_spec=v0.7.1 \
               -L $RISCV_SYSROOT \
-              ${test%%.*}
+              ${test%%.*} 2>&1 | tee ${test%%.*}.log
+            content="$(cat ${test%%.*}.log)"
+            if [[ x"$content" != x"pass" ]]; then
+              echo "Test $test failed with the following output"
+              echo "$content"
+              exit 1
+            fi
           done
           popd
