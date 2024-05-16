@@ -1304,6 +1304,19 @@ let HasMasked = false,
 }
 
 // 12.15. Vector Integer Move Operations
+let HasMasked = false,
+    UnMaskedPolicyScheme = HasPassthruOperand,
+    MaskedPolicyScheme = NonePolicy,
+    OverloadedName = "th_vmv_v" in {
+    defm th_vmv_v : RVVOutBuiltinSet<"th_vmv_v_v", "csil",
+                                      [["v", "Uv", "UvUv"]]>;
+    defm th_vmv_v : RVVOutBuiltinSet<"th_vmv_v_v", "csilxfd",
+                                      [["v", "v", "vv"]]>;
+  let SupportOverloading = false in
+    defm th_vmv_v : RVVOutBuiltinSet<"th_vmv_v_x", "csil",
+                                      [["x", "v", "ve"],
+                                       ["x", "Uv", "UvUe"]]>;
+}
 
 // 13. Vector Fixed-Point Arithmetic Instructions
 let HeaderCode =
