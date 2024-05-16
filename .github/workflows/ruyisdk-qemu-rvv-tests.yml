@@ -54,8 +54,11 @@ jobs:
           variant: sccache
       - name: Setup mold
         uses: rui314/setup-mold@v1
-
-      - name: Build QEMU 6.2 with RVV 0.7.1 support
+      - name: Checkout LLVM
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 250
+      - name: Build QEMU 6.2
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libglib2.0-dev libpixman-1-dev liblzma-dev
@@ -69,11 +72,6 @@ jobs:
         run: |
           ./qemu-6.2.0/build/qemu-riscv64 --version
           ./qemu-6.2.0/build/qemu-riscv64 -cpu rv64,x-v=true,vlen=256,elen=64,vext_spec=v0.7.1 -L $RISCV_SYSROOT --help
-
-      - name: Checkout LLVM
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 250
       - name: Build LLVM
         run: |
           mkdir -p llvm-build
@@ -89,6 +87,7 @@ jobs:
             -DLLVM_DEFAULT_TARGET_TRIPLE="riscv64-unknown-linux-gnu" \
             ../llvm
           ninja clang
+          popd
 
       - name: Checkout rvv-intrinsic-doc
         uses: actions/checkout@master
