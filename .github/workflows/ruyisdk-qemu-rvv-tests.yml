@@ -1,0 +1,118 @@
+name: RuyiSDK QEMU RVV Tests
+
+on:
+  workflow_dispatch:
+  push:
+    ignore-forks: true
+    branches:
+      - 'xtheadvector'
+      - 'rebase-*'
+    paths:
+      - 'llvm/**'
+      - 'clang/**'
+      - '.github/workflows/ruyisdk-qemu-rvv-tests.yml'
+  pull_request:
+    ignore-forks: true
+    branches:
+      - 'xtheadvector'
+      - 'rebase-*'
+    paths:
+      - 'llvm/**'
+      - 'clang/**'
+      - '.github/workflows/ruyisdk-qemu-rvv-tests.yml'
+
+concurrency:
+  # Skip intermediate builds: always.
+  # Cancel intermediate builds: only if it is a pull request build.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
+jobs:
+  check_qemu:
+    name: Test RVV
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup RISCV GNU Toolchain
+        uses: imkiva/setup-riscv-gnu-toolchain@latest
+        with:
+          version: '2024.04.12'
+          arch: riscv64     # or riscv32
+          libc: glibc       # or elf, musl
+          compiler: gcc     # or llvm
+          os: ubuntu-22.04  # or ubuntu-20.04
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install Ninja
+        uses: llvm/actions/install-ninja@main
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          max-size: 500M
+          key: sccache-${{ matrix.os }}
+          variant: sccache
+
+      - name: Build QEMU 6.2 with RVV 0.7.1 support
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libglib2.0-dev libpixman-1-dev liblzma-dev
+          wget https://download.qemu.org/qemu-6.2.0.tar.xz
+          tar -xf qemu-6.2.0.tar.xz
+          pushd qemu-6.2.0
+          ./configure --disable-curl --target-list=riscv32-softmmu,riscv64-softmmu,riscv32-linux-user,riscv64-linux-user
+          make -j$(nproc)
+          popd
+      - name: Sanity check QEMU
+        run: |
+          ./qemu-6.2.0/build/qemu-riscv64 --version
+          ./qemu-6.2.0/build/qemu-riscv64 -cpu rv64,x-v=true,vlen=256,elen=64,vext_spec=v0.7.1 -L $RISCV_SYSROOT --help
+
+
+      - name: Checkout LLVM
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 250
+      - name: Build LLVM
+        run: |
+          mkdir -p llvm-build
+          pushd llvm-build
+          cmake -GNinja -DLLVM_ENABLE_PROJECTS="clang" -DCMAKE_BUILD_TYPE=Release -DLLDB_INCLUDE_TESTS=OFF ../llvm
+          ninja clang
+
+      - name: Checkout rvv-intrinsic-doc
+        uses: actions/checkout@master
+        with:
+          repository: riscv-non-isa/rvv-intrinsic-doc
+          path: rvv-intrinsic-doc
+      - name: Run RVV tests with QEMU
+        run: |
+          export QEMU_EXE=$PWD/qemu-6.2.0/build/qemu-riscv64
+          export CLANG_EXE=$PWD/llvm-build/bin/clang
+          
+          ln -s $RISCV_HOME/lib/gcc llvm-build/lib/gcc
+          
+          pushd rvv-intrinsic-doc/examples
+          TESTS=(
+            # rvv_branch.c
+            # rvv_index.c
+            # rvv_matmul.c
+            rvv_memcpy.c
+            # rvv_reduce.c
+            rvv_saxpy.c
+            rvv_sgemm.c
+            rvv_strcmp.c
+            rvv_strcpy.c
+            rvv_strlen.c
+            rvv_strncpy.c
+          )
+          for test in "${TESTS[@]}"; do
+            echo "Compiling $test"
+            $CLANG_EXE -march=rv64gc_xtheadvector -O1 $test -o ${test%%.*}
+            echo "Running $test"
+            $QEMU_EXE \
+              -cpu rv64,x-v=true,vlen=256,elen=64,vext_spec=v0.7.1 \
+              -L $RISCV_SYSROOT \
+              ${test%%.*}
+          done
+          popd
