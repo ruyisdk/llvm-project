@@ -85,3 +85,83 @@ void test_th_vsse8_v_u8m4(uint8_t *base, ptrdiff_t stride, vuint8m4_t value, siz
 void test_th_vsse8_v_u8m8(uint8_t *base, ptrdiff_t stride, vuint8m8_t value, size_t vl) {
   return __riscv_vsse8_v_u8m8(base, stride, value, vl);
 }
+
+// CHECK-RV64-LABEL: define dso_local void @test_vsse8_v_i8m1_m
+// CHECK-RV64-SAME: (<vscale x 8 x i1> [[MASK:%.*]], ptr noundef [[BASE:%.*]], i64 noundef [[BSTRIDE:%.*]], <vscale x 8 x i8> [[VALUE:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-NEXT:  entry:
+// CHECK-RV64-NEXT:    call void @llvm.riscv.th.vsse.mask.nxv8i8.i64(<vscale x 8 x i8> [[VALUE]], ptr [[BASE]], i64 [[BSTRIDE]], <vscale x 8 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    ret void
+//
+void test_vsse8_v_i8m1_m(vbool8_t mask, int8_t *base, ptrdiff_t bstride, vint8m1_t value, size_t vl) {
+  return __riscv_vsse8_v_i8m1_m(mask, base, bstride, value, vl);
+}
+
+// CHECK-RV64-LABEL: define dso_local void @test_vsse8_v_i8m2_m
+// CHECK-RV64-SAME: (<vscale x 16 x i1> [[MASK:%.*]], ptr noundef [[BASE:%.*]], i64 noundef [[BSTRIDE:%.*]], <vscale x 16 x i8> [[VALUE:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-NEXT:  entry:
+// CHECK-RV64-NEXT:    call void @llvm.riscv.th.vsse.mask.nxv16i8.i64(<vscale x 16 x i8> [[VALUE]], ptr [[BASE]], i64 [[BSTRIDE]], <vscale x 16 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    ret void
+//
+void test_vsse8_v_i8m2_m(vbool4_t mask, int8_t *base, ptrdiff_t bstride, vint8m2_t value, size_t vl) {
+  return __riscv_vsse8_v_i8m2_m(mask, base, bstride, value, vl);
+}
+
+// CHECK-RV64-LABEL: define dso_local void @test_vsse8_v_i8m4_m
+// CHECK-RV64-SAME: (<vscale x 32 x i1> [[MASK:%.*]], ptr noundef [[BASE:%.*]], i64 noundef [[BSTRIDE:%.*]], <vscale x 32 x i8> [[VALUE:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-NEXT:  entry:
+// CHECK-RV64-NEXT:    call void @llvm.riscv.th.vsse.mask.nxv32i8.i64(<vscale x 32 x i8> [[VALUE]], ptr [[BASE]], i64 [[BSTRIDE]], <vscale x 32 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    ret void
+//
+void test_vsse8_v_i8m4_m(vbool2_t mask, int8_t *base, ptrdiff_t bstride, vint8m4_t value, size_t vl) {
+  return __riscv_vsse8_v_i8m4_m(mask, base, bstride, value, vl);
+}
+
+// CHECK-RV64-LABEL: define dso_local void @test_vsse8_v_i8m8_m
+// CHECK-RV64-SAME: (<vscale x 64 x i1> [[MASK:%.*]], ptr noundef [[BASE:%.*]], i64 noundef [[BSTRIDE:%.*]], <vscale x 64 x i8> [[VALUE:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-NEXT:  entry:
+// CHECK-RV64-NEXT:    call void @llvm.riscv.th.vsse.mask.nxv64i8.i64(<vscale x 64 x i8> [[VALUE]], ptr [[BASE]], i64 [[BSTRIDE]], <vscale x 64 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    ret void
+//
+void test_vsse8_v_i8m8_m(vbool1_t mask, int8_t *base, ptrdiff_t bstride, vint8m8_t value, size_t vl) {
+  return __riscv_vsse8_v_i8m8_m(mask, base, bstride, value, vl);
+}
+
+// CHECK-RV64-LABEL: define dso_local void @test_vsse8_v_u8m1_m
+// CHECK-RV64-SAME: (<vscale x 8 x i1> [[MASK:%.*]], ptr noundef [[BASE:%.*]], i64 noundef [[BSTRIDE:%.*]], <vscale x 8 x i8> [[VALUE:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-NEXT:  entry:
+// CHECK-RV64-NEXT:    call void @llvm.riscv.th.vsse.mask.nxv8i8.i64(<vscale x 8 x i8> [[VALUE]], ptr [[BASE]], i64 [[BSTRIDE]], <vscale x 8 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    ret void
+//
+void test_vsse8_v_u8m1_m(vbool8_t mask, uint8_t *base, ptrdiff_t bstride, vuint8m1_t value, size_t vl) {
+  return __riscv_vsse8_v_u8m1_m(mask, base, bstride, value, vl);
+}
+
+// CHECK-RV64-LABEL: define dso_local void @test_vsse8_v_u8m2_m
+// CHECK-RV64-SAME: (<vscale x 16 x i1> [[MASK:%.*]], ptr noundef [[BASE:%.*]], i64 noundef [[BSTRIDE:%.*]], <vscale x 16 x i8> [[VALUE:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-NEXT:  entry:
+// CHECK-RV64-NEXT:    call void @llvm.riscv.th.vsse.mask.nxv16i8.i64(<vscale x 16 x i8> [[VALUE]], ptr [[BASE]], i64 [[BSTRIDE]], <vscale x 16 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    ret void
+//
+void test_vsse8_v_u8m2_m(vbool4_t mask, uint8_t *base, ptrdiff_t bstride, vuint8m2_t value, size_t vl) {
+  return __riscv_vsse8_v_u8m2_m(mask, base, bstride, value, vl);
+}
+
+// CHECK-RV64-LABEL: define dso_local void @test_vsse8_v_u8m4_m
+// CHECK-RV64-SAME: (<vscale x 32 x i1> [[MASK:%.*]], ptr noundef [[BASE:%.*]], i64 noundef [[BSTRIDE:%.*]], <vscale x 32 x i8> [[VALUE:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-NEXT:  entry:
+// CHECK-RV64-NEXT:    call void @llvm.riscv.th.vsse.mask.nxv32i8.i64(<vscale x 32 x i8> [[VALUE]], ptr [[BASE]], i64 [[BSTRIDE]], <vscale x 32 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    ret void
+//
+void test_vsse8_v_u8m4_m(vbool2_t mask, uint8_t *base, ptrdiff_t bstride, vuint8m4_t value, size_t vl) {
+  return __riscv_vsse8_v_u8m4_m(mask, base, bstride, value, vl);
+}
+
+// CHECK-RV64-LABEL: define dso_local void @test_vsse8_v_u8m8_m
+// CHECK-RV64-SAME: (<vscale x 64 x i1> [[MASK:%.*]], ptr noundef [[BASE:%.*]], i64 noundef [[BSTRIDE:%.*]], <vscale x 64 x i8> [[VALUE:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-NEXT:  entry:
+// CHECK-RV64-NEXT:    call void @llvm.riscv.th.vsse.mask.nxv64i8.i64(<vscale x 64 x i8> [[VALUE]], ptr [[BASE]], i64 [[BSTRIDE]], <vscale x 64 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    ret void
+//
+void test_vsse8_v_u8m8_m(vbool1_t mask, uint8_t *base, ptrdiff_t bstride, vuint8m8_t value, size_t vl) {
+  return __riscv_vsse8_v_u8m8_m(mask, base, bstride, value, vl);
+}
