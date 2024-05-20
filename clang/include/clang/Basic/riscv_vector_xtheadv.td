@@ -234,6 +234,11 @@ multiclass RVVFloatingWidenBinBuiltinSet
                          [["vv", "w", "wvv"],
                           ["vf", "w", "wve"]]>;
 
+multiclass RVVFloatingMaskOutBuiltinSet
+    : RVVOp0Op1BuiltinSet<NAME, "xfd",
+                          [["vv", "vm", "mvv"],
+                           ["vf", "vm", "mve"]]>;
+
 multiclass RVVSignedMaskOutBuiltinSet
     : RVVOp0Op1BuiltinSet<NAME, "csil",
                           [["vv", "vm", "mvv"],
@@ -1736,6 +1741,47 @@ let UnMaskedPolicyScheme = HasPassthruOperand,
 }
 defm th_vfneg_v : RVVPseudoVFUnaryBuiltin<"th_vfsgnjn", "xfd">;
 defm th_vfabs_v : RVVPseudoVFUnaryBuiltin<"th_vfsgnjx", "xfd">;
+
+// 14.12. Vector Floating-Point Compare Instructions
+let MaskedPolicyScheme = HasPassthruOperand,
+    HasTailPolicy = false in {
+  defm th_vmfeq : RVVFloatingMaskOutBuiltinSet;
+  defm th_vmfne : RVVFloatingMaskOutBuiltinSet;
+  defm th_vmflt : RVVFloatingMaskOutBuiltinSet;
+  defm th_vmfle : RVVFloatingMaskOutBuiltinSet;
+  defm th_vmfgt : RVVFloatingMaskOutBuiltinSet;
+  defm th_vmfge : RVVFloatingMaskOutBuiltinSet;
+}
+
+// 14.13. Vector Floating-Point Classify Instruction
+let Name = "th_vfclass_v",
+    UnMaskedPolicyScheme = HasPassthruOperand,
+    MaskedPolicyScheme = HasPassthruOperand in
+  def th_vfclass : RVVOp0Builtin<"Uv", "Uvv", "xfd">;
+
+// 14.14. Vector Floating-Point Merge Instructio
+// C/C++ Operand: (mask, op1, op2, vl), Builtin: (op1, op2, mask, vl)
+let HasMasked = false,
+    UnMaskedPolicyScheme = HasPassthruOperand,
+    MaskedPolicyScheme = NonePolicy,
+    ManualCodegen = [{
+      // insert poison passthru
+      if (PolicyAttrs & RVV_VTA)
+        Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType));
+      IntrinsicTypes = {ResultType, Ops[2]->getType(), Ops.back()->getType()};
+    }] in {
+  defm th_vfmerge : RVVOutOp1BuiltinSet<"th_vfmerge", "xfd",
+                                        [["vfm", "v", "vvem"]]>;
+}
+
+// 14.15. Vector Floating-Point Move Instruction
+let HasMasked = false,
+    UnMaskedPolicyScheme = HasPassthruOperand,
+    SupportOverloading = false,
+    MaskedPolicyScheme = NonePolicy,
+    OverloadedName = "th_vfmv_v" in
+  defm th_vfmv_v : RVVOutBuiltinSet<"th_vfmv_v_f", "xfd",
+                                     [["f", "v", "ve"]]>;
 
 // 15. Vector Reduction Operations
 // 15.1. Vector Single-Width Integer Reduction Instructions
