@@ -326,6 +326,28 @@ multiclass RVVSlideOneBuiltinSet
                           [["vx", "v", "vve"],
                            ["vx", "Uv", "UvUvUe"]]>;
 
+
+multiclass RVVConvBuiltinSet<string intrinsic_name, string type_range,
+                             list<list<string>> suffixes_prototypes> {
+let Name = intrinsic_name,
+    IRName = intrinsic_name,
+    MaskedIRName = intrinsic_name # "_mask",
+    IntrinsicTypes = [-1, 0] in {
+  foreach s_p = suffixes_prototypes in {
+      defvar suffix = s_p[0];
+      defvar prototype = s_p[1];
+      def : RVVBuiltin<suffix, prototype, type_range>;
+    }
+  }
+}
+
+class RVVConvBuiltin<string suffix, string prototype, string type_range,
+                     string overloaded_name>
+    : RVVBuiltin<suffix, prototype, type_range> {
+  let IntrinsicTypes = [-1, 0];
+  let OverloadedName = overloaded_name;
+}
+
 //===----------------------------------------------------------------------===//
 // 6. Configuration-Setting and Utility
 //===----------------------------------------------------------------------===//
@@ -1783,23 +1805,14 @@ let HasMasked = false,
   defm th_vfmv_v : RVVOutBuiltinSet<"th_vfmv_v_f", "xfd",
                                      [["f", "v", "ve"]]>;
 
-multiclass RVVConvBuiltinSet<string intrinsic_name, string type_range,
-                             list<list<string>> suffixes_prototypes> {
-let Name = intrinsic_name,
-    IRName = intrinsic_name,
-    MaskedIRName = intrinsic_name # "_mask",
-    IntrinsicTypes = [-1, 0] in {
-  foreach s_p = suffixes_prototypes in {
-      defvar suffix = s_p[0];
-      defvar prototype = s_p[1];
-      def : RVVBuiltin<suffix, prototype, type_range>;
-    }
-  }
-}
-
 let UnMaskedPolicyScheme = HasPassthruOperand,
     MaskedPolicyScheme = HasPassthruOperand in {
-  // TODO: vfwcvt_f
+  // 14.17. Widening Floating-Point/Integer Type-Convert Operations
+  let Log2LMUL = [-3, -2, -1, 0, 1, 2] in {
+    def th_vfwcvt_f_xu_v : RVVConvBuiltin<"Fw", "FwUv", "csi", "th_vfwcvt_f">;
+    def th_vfwcvt_f_x_v : RVVConvBuiltin<"Fw", "Fwv", "csi", "th_vfwcvt_f">;
+    def th_vfwcvt_f_f_v : RVVConvBuiltin<"w", "wv", "xf", "th_vfwcvt_f">;
+  }
   
   let ManualCodegen = [{
     {
