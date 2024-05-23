@@ -326,6 +326,28 @@ multiclass RVVSlideOneBuiltinSet
                           [["vx", "v", "vve"],
                            ["vx", "Uv", "UvUvUe"]]>;
 
+
+multiclass RVVConvBuiltinSet<string intrinsic_name, string type_range,
+                             list<list<string>> suffixes_prototypes> {
+let Name = intrinsic_name,
+    IRName = intrinsic_name,
+    MaskedIRName = intrinsic_name # "_mask",
+    IntrinsicTypes = [-1, 0] in {
+  foreach s_p = suffixes_prototypes in {
+      defvar suffix = s_p[0];
+      defvar prototype = s_p[1];
+      def : RVVBuiltin<suffix, prototype, type_range>;
+    }
+  }
+}
+
+class RVVConvBuiltin<string suffix, string prototype, string type_range,
+                     string overloaded_name>
+    : RVVBuiltin<suffix, prototype, type_range> {
+  let IntrinsicTypes = [-1, 0];
+  let OverloadedName = overloaded_name;
+}
+
 //===----------------------------------------------------------------------===//
 // 6. Configuration-Setting and Utility
 //===----------------------------------------------------------------------===//
@@ -1782,6 +1804,103 @@ let HasMasked = false,
     OverloadedName = "th_vfmv_v" in
   defm th_vfmv_v : RVVOutBuiltinSet<"th_vfmv_v_f", "xfd",
                                      [["f", "v", "ve"]]>;
+
+let UnMaskedPolicyScheme = HasPassthruOperand,
+    MaskedPolicyScheme = HasPassthruOperand in {
+  // 14.17. Widening Floating-Point/Integer Type-Convert Operations
+  let Log2LMUL = [-3, -2, -1, 0, 1, 2] in {
+    def th_vfwcvt_f_xu_v : RVVConvBuiltin<"Fw", "FwUv", "csi", "th_vfwcvt_f">;
+    def th_vfwcvt_f_x_v : RVVConvBuiltin<"Fw", "Fwv", "csi", "th_vfwcvt_f">;
+    def th_vfwcvt_f_f_v : RVVConvBuiltin<"w", "wv", "xf", "th_vfwcvt_f">;
+  }
+  
+  let ManualCodegen = [{
+    {
+      // LLVM intrinsic
+      // Unmasked: (passthru, op0, frm, vl)
+      // Masked:   (passthru, op0, mask, frm, vl, policy)
+      SmallVector<llvm::Value*, 7> Operands;
+      bool HasMaskedOff = !(
+          (IsMasked && (PolicyAttrs & RVV_VTA) && (PolicyAttrs & RVV_VMA)) ||
+          (!IsMasked && PolicyAttrs & RVV_VTA));
+      bool HasRoundModeOp = IsMasked ?
+        (HasMaskedOff ? Ops.size() == 5 : Ops.size() == 4) :
+        (HasMaskedOff ? Ops.size() == 4 : Ops.size() == 3);
+
+      unsigned Offset = IsMasked ?
+          (HasMaskedOff ? 2 : 1) : (HasMaskedOff ? 1 : 0);
+
+      if (!HasMaskedOff)
+        Operands.push_back(llvm::PoisonValue::get(ResultType));
+      else
+        Operands.push_back(Ops[IsMasked ? 1 : 0]);
+
+      Operands.push_back(Ops[Offset]); // op0
+
+      if (IsMasked)
+        Operands.push_back(Ops[0]); // mask
+
+      if (HasRoundModeOp) {
+        Operands.push_back(Ops[Offset + 1]); // frm
+        Operands.push_back(Ops[Offset + 2]); // vl
+      } else {
+        Operands.push_back(ConstantInt::get(Ops[Offset + 1]->getType(), 7)); // frm
+        Operands.push_back(Ops[Offset + 1]); // vl
+      }
+
+      // TODO: no policy in LLVM side for masked intrinsics.
+      // if (IsMasked)
+      //  Operands.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+
+      IntrinsicTypes = {ResultType, Ops[Offset]->getType(),
+                        Operands.back()->getType()};
+      llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
+      return Builder.CreateCall(F, Operands, "");
+    }
+  }] in {
+    // 14.16. Single-Width Floating-Point/Integer Type-Convert Operations
+    let OverloadedName = "th_vfcvt_x" in
+      defm :
+        RVVConvBuiltinSet<"th_vfcvt_x_f_v", "xfd", [["Iv", "Ivv"]]>;
+    let OverloadedName = "th_vfcvt_xu" in
+      defm :
+        RVVConvBuiltinSet<"th_vfcvt_xu_f_v", "xfd", [["Uv", "Uvv"]]>;
+    let OverloadedName = "th_vfcvt_f" in {
+      defm :
+        RVVConvBuiltinSet<"th_vfcvt_f_x_v", "sil", [["Fv", "Fvv"]]>;
+      defm :
+        RVVConvBuiltinSet<"th_vfcvt_f_xu_v", "sil", [["Fv", "FvUv"]]>;
+    }
+
+    // 14.17. Widening Floating-Point/Integer Type-Convert Operations
+    let Log2LMUL = [-3, -2, -1, 0, 1, 2] in {
+      let OverloadedName = "th_vfwcvt_x" in
+        defm :
+          RVVConvBuiltinSet<"th_vfwcvt_x_f_v", "xf", [["Iw", "Iwv"]]>;
+      let OverloadedName = "th_vfwcvt_xu" in
+        defm :
+          RVVConvBuiltinSet<"th_vfwcvt_xu_f_v", "xf", [["Uw", "Uwv"]]>;
+    }
+    // 14.18. Narrowing Floating-Point/Integer Type-Convert Operations
+    let Log2LMUL = [-3, -2, -1, 0, 1, 2] in {
+      let OverloadedName = "th_vfncvt_x" in
+        defm :
+          RVVConvBuiltinSet<"th_vfncvt_x_f_w", "csi", [["Iv", "IvFw"]]>;
+      let OverloadedName = "th_vfncvt_xu" in
+        defm :
+          RVVConvBuiltinSet<"th_vfncvt_xu_f_w", "csi", [["Uv", "UvFw"]]>;
+      let OverloadedName = "th_vfncvt_f" in {
+        defm :
+          RVVConvBuiltinSet<"th_vfncvt_f_x_w", "csi", [["Fv", "Fvw"]]>;
+        defm :
+          RVVConvBuiltinSet<"th_vfncvt_f_xu_w", "csi", [["Fv", "FvUw"]]>;
+      }
+      let OverloadedName = "th_vfncvt_f" in
+        defm :
+          RVVConvBuiltinSet<"th_vfncvt_f_f_w", "xf", [["v", "vw"]]>;
+    }
+  }
+}
 
 // 15. Vector Reduction Operations
 // 15.1. Vector Single-Width Integer Reduction Instructions
