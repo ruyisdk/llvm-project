@@ -1199,6 +1199,11 @@ void RISCVISAInfo::updateMinVLen() {
 }
 
 void RISCVISAInfo::updateMaxELen() {
+  if (Exts.count("xtheadvector")) {
+    MaxELen = XLen;
+    MaxELenFp = FLen;
+    return;
+  }
   // handles EEW restriction by sub-extension zve
   for (auto const &Ext : Exts) {
     StringRef ExtName = Ext.first;

@@ -185,8 +185,11 @@ void RISCVTargetInfo::getTargetDefines(const LangOptions &Opts,
     Builder.defineMacro("__riscv_fsqrt");
   }
 
-  if (MinVLen) {
-    Builder.defineMacro("__riscv_v_min_vlen", Twine(MinVLen));
+  auto HasXTHeadVector = ISAInfo->hasExtension("xtheadvector");
+
+  if (MinVLen || HasXTHeadVector) {
+    if (MinVLen)
+      Builder.defineMacro("__riscv_v_min_vlen", Twine(MinVLen));
     Builder.defineMacro("__riscv_v_elen", Twine(MaxELen));
     Builder.defineMacro("__riscv_v_elen_fp", Twine(MaxELenFp));
   }
@@ -200,7 +203,7 @@ void RISCVTargetInfo::getTargetDefines(const LangOptions &Opts,
     Builder.defineMacro("__riscv_v_intrinsic", Twine(getVersionValue(0, 12)));
   }
 
-  if (ISAInfo->hasExtension("xtheadvector")) {
+  if (HasXTHeadVector) {
     // https://github.com/riscv-non-isa/rvv-intrinsic-doc/pull/298/files
     Builder.defineMacro("__riscv_th_v_intrinsic", Twine(getVersionValue(0, 11)));
   }
