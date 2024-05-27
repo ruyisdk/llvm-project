@@ -89,14 +89,28 @@ TEST(ParseNormalizedArchString, AcceptsArbitraryExtensionsAndVersions) {
 }
 
 TEST(ParseNormalizedArchString, UpdatesFLenMinVLenMaxELen) {
-  auto MaybeISAInfo = RISCVISAInfo::parseNormalizedArchString(
-      "rv64i2p0_d2p0_zvl64b1p0_zve64d1p0");
-  ASSERT_THAT_EXPECTED(MaybeISAInfo, Succeeded());
-  RISCVISAInfo &Info = **MaybeISAInfo;
-  EXPECT_EQ(Info.getXLen(), 64U);
-  EXPECT_EQ(Info.getFLen(), 64U);
-  EXPECT_EQ(Info.getMinVLen(), 64U);
-  EXPECT_EQ(Info.getMaxELen(), 64U);
+  {
+    auto MaybeISAInfo = RISCVISAInfo::parseNormalizedArchString(
+        "rv64i2p0_d2p0_zvl64b1p0_zve64d1p0");
+    ASSERT_THAT_EXPECTED(MaybeISAInfo, Succeeded());
+    RISCVISAInfo &Info = **MaybeISAInfo;
+    EXPECT_EQ(Info.getXLen(), 64U);
+    EXPECT_EQ(Info.getFLen(), 64U);
+    EXPECT_EQ(Info.getMinVLen(), 64U);
+    EXPECT_EQ(Info.getMaxELen(), 64U);
+  }
+
+  {
+    auto MaybeISAInfo = RISCVISAInfo::parseNormalizedArchString(
+        "rv64i2p0_d2p0_xtheadvector1p0");
+    ASSERT_THAT_EXPECTED(MaybeISAInfo, Succeeded());
+    RISCVISAInfo &Info = **MaybeISAInfo;
+    EXPECT_EQ(Info.getXLen(), 64U);
+    EXPECT_EQ(Info.getFLen(), 64U);
+    EXPECT_EQ(Info.getMinVLen(), 0U);
+    EXPECT_EQ(Info.getMaxELen(), 64U);
+    EXPECT_EQ(Info.getMaxELenFp(), 64U);
+  }
 }
 
 TEST(ParseArchString, RejectsUpperCase) {
