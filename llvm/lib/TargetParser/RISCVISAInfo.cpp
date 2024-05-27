@@ -911,6 +911,11 @@ void RISCVISAInfo::updateImpliedLengths() {
     MaxELen = std::max(MaxELen, 64u);
   }
 
+  if (Exts.count("xtheadvector")) {
+    MaxELen = XLen;
+    MaxELenFp = FLen;
+  }
+
   for (auto const &Ext : Exts) {
     StringRef ExtName = Ext.first;
     // Infer MaxELen and MaxELenFp from Zve(32/64)(x/f/d)

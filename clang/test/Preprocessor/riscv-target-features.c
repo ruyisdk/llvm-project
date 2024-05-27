@@ -891,6 +891,18 @@
 // CHECK-V0P7-EXT: __riscv_th_v_intrinsic 11000{{$}}
 // CHECK-V0P7-EXT: __riscv_xtheadvector 1000000{{$}}
 
+// RUN: %clang -target riscv32-unknown-linux-gnu \
+// RUN: -march=rv32i_xtheadvector -x c -E -dM %s \
+// RUN: -o - | FileCheck --check-prefix=CHECK-V0P7-EXT-RV32 %s
+// CHECK-V0P7-EXT-RV32: __riscv_v_elen 32
+// CHECK-V0P7-EXT-RV32: __riscv_v_elen_fp 0
+
+// RUN: %clang -target riscv64-unknown-linux-gnu \
+// RUN: -march=rv64i_xtheadvector -x c -E -dM %s \
+// RUN: -o - | FileCheck --check-prefix=CHECK-V0P7-EXT-RV64 %s
+// CHECK-V0P7-EXT-RV64: __riscv_v_elen 64
+// CHECK-V0P7-EXT-RV64: __riscv_v_elen_fp 0
+
 // RUN: %clang --target=riscv32-unknown-linux-gnu \
 // RUN:   -march=rv32izcf1p0 -E -dM %s \
 // RUN:   -o - | FileCheck --check-prefix=CHECK-ZCF-EXT %s

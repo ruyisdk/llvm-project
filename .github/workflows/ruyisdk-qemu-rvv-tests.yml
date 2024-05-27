@@ -104,7 +104,7 @@ jobs:
           pushd rvv-intrinsic-doc/examples
           TESTS=(
             # rvv_branch.c
-            # rvv_index.c
+            rvv_index.c
             # rvv_matmul.c
             rvv_memcpy.c
             # rvv_reduce.c
