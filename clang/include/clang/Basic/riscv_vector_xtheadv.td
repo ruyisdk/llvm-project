@@ -2133,4 +2133,32 @@ let HasMasked = false,
                                        [["vm", "Uv", "UvUvm"]]>;
 }
 
+// Miscellaneous
+let HasMasked = false, HasVL = false, IRName = "" in {
+  let Name = "th_vreinterpret_v", MaskedPolicyScheme = NonePolicy,
+      ManualCodegen = [{
+        // Just simple type cast
+        return Builder.CreateBitCast(Ops[0], ResultType);
+      }] in {
+    // Reinterpret between floating point and integer types
+    def th_vreinterpret_i_f : RVVBuiltin<"Fvv", "vFv", "sil", "v">;
+    def th_vreinterpret_f_i : RVVBuiltin<"vFv", "Fvv", "sil", "Fv">;
+    def th_vreinterpret_u_f : RVVBuiltin<"FvUv", "UvFv", "sil", "Uv">;
+    def th_vreinterpret_f_u : RVVBuiltin<"UvFv", "FvUv", "sil", "Fv">;
+    // Reinterpret between signed and unsigned types
+    def th_vreinterpret_i_u : RVVBuiltin<"Uvv", "vUv", "csil", "v">;
+    def th_vreinterpret_u_i : RVVBuiltin<"vUv", "Uvv", "csil", "Uv">;
+  }
+
+  // Vector Initialization
+  let Name = "th_vundefined", SupportOverloading = false,
+      MaskedPolicyScheme = NonePolicy,
+      ManualCodegen = [{
+        return llvm::PoisonValue::get(ResultType);
+      }] in {
+    def th_vundefined   : RVVBuiltin<"v", "v", "csilxfd">;
+    def th_vundefined_u : RVVBuiltin<"Uv", "Uv", "csil">;
+  }
+}
+
 include "riscv_vector_xtheadv_wrappers.td"
