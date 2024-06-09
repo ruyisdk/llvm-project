@@ -248,241 +248,241 @@ vfloat64m8_t test_vfwcvt_f_f_v_f64m8(vfloat32m4_t src, size_t vl) {
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 8 x half> @test_vfwcvt_f_x_v_f16m2_m
-// CHECK-RV64-SAME: (<vscale x 8 x i1> [[MASK:%.*]], <vscale x 8 x i8> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 8 x i1> [[MASK:%.*]], <vscale x 8 x half> [[MASKEDOFF:%.*]], <vscale x 8 x i8> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 8 x half> @llvm.riscv.th.vfwcvt.f.x.v.mask.nxv8f16.nxv8i8.i64(<vscale x 8 x half> poison, <vscale x 8 x i8> [[SRC]], <vscale x 8 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 8 x half> @llvm.riscv.th.vfwcvt.f.x.v.mask.nxv8f16.nxv8i8.i64(<vscale x 8 x half> [[MASKEDOFF]], <vscale x 8 x i8> [[SRC]], <vscale x 8 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 8 x half> [[TMP0]]
 //
-vfloat16m2_t test_vfwcvt_f_x_v_f16m2_m(vbool8_t mask, vint8m1_t src, size_t vl) {
-  return __riscv_vfwcvt_f_x_v_f16m2_m(mask, src, vl);
+vfloat16m2_t test_vfwcvt_f_x_v_f16m2_m(vbool8_t mask, vfloat16m2_t maskedoff, vint8m1_t src, size_t vl) {
+  return __riscv_vfwcvt_f_x_v_f16m2_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 16 x half> @test_vfwcvt_f_x_v_f16m4_m
-// CHECK-RV64-SAME: (<vscale x 16 x i1> [[MASK:%.*]], <vscale x 16 x i8> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 16 x i1> [[MASK:%.*]], <vscale x 16 x half> [[MASKEDOFF:%.*]], <vscale x 16 x i8> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 16 x half> @llvm.riscv.th.vfwcvt.f.x.v.mask.nxv16f16.nxv16i8.i64(<vscale x 16 x half> poison, <vscale x 16 x i8> [[SRC]], <vscale x 16 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 16 x half> @llvm.riscv.th.vfwcvt.f.x.v.mask.nxv16f16.nxv16i8.i64(<vscale x 16 x half> [[MASKEDOFF]], <vscale x 16 x i8> [[SRC]], <vscale x 16 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 16 x half> [[TMP0]]
 //
-vfloat16m4_t test_vfwcvt_f_x_v_f16m4_m(vbool4_t mask, vint8m2_t src, size_t vl) {
-  return __riscv_vfwcvt_f_x_v_f16m4_m(mask, src, vl);
+vfloat16m4_t test_vfwcvt_f_x_v_f16m4_m(vbool4_t mask, vfloat16m4_t maskedoff, vint8m2_t src, size_t vl) {
+  return __riscv_vfwcvt_f_x_v_f16m4_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 32 x half> @test_vfwcvt_f_x_v_f16m8_m
-// CHECK-RV64-SAME: (<vscale x 32 x i1> [[MASK:%.*]], <vscale x 32 x i8> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 32 x i1> [[MASK:%.*]], <vscale x 32 x half> [[MASKEDOFF:%.*]], <vscale x 32 x i8> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 32 x half> @llvm.riscv.th.vfwcvt.f.x.v.mask.nxv32f16.nxv32i8.i64(<vscale x 32 x half> poison, <vscale x 32 x i8> [[SRC]], <vscale x 32 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 32 x half> @llvm.riscv.th.vfwcvt.f.x.v.mask.nxv32f16.nxv32i8.i64(<vscale x 32 x half> [[MASKEDOFF]], <vscale x 32 x i8> [[SRC]], <vscale x 32 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 32 x half> [[TMP0]]
 //
-vfloat16m8_t test_vfwcvt_f_x_v_f16m8_m(vbool2_t mask, vint8m4_t src, size_t vl) {
-  return __riscv_vfwcvt_f_x_v_f16m8_m(mask, src, vl);
+vfloat16m8_t test_vfwcvt_f_x_v_f16m8_m(vbool2_t mask, vfloat16m8_t maskedoff, vint8m4_t src, size_t vl) {
+  return __riscv_vfwcvt_f_x_v_f16m8_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 8 x half> @test_vfwcvt_f_xu_v_f16m2_m
-// CHECK-RV64-SAME: (<vscale x 8 x i1> [[MASK:%.*]], <vscale x 8 x i8> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 8 x i1> [[MASK:%.*]], <vscale x 8 x half> [[MASKEDOFF:%.*]], <vscale x 8 x i8> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 8 x half> @llvm.riscv.th.vfwcvt.f.xu.v.mask.nxv8f16.nxv8i8.i64(<vscale x 8 x half> poison, <vscale x 8 x i8> [[SRC]], <vscale x 8 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 8 x half> @llvm.riscv.th.vfwcvt.f.xu.v.mask.nxv8f16.nxv8i8.i64(<vscale x 8 x half> [[MASKEDOFF]], <vscale x 8 x i8> [[SRC]], <vscale x 8 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 8 x half> [[TMP0]]
 //
-vfloat16m2_t test_vfwcvt_f_xu_v_f16m2_m(vbool8_t mask, vuint8m1_t src, size_t vl) {
-  return __riscv_vfwcvt_f_xu_v_f16m2_m(mask, src, vl);
+vfloat16m2_t test_vfwcvt_f_xu_v_f16m2_m(vbool8_t mask, vfloat16m2_t maskedoff, vuint8m1_t src, size_t vl) {
+  return __riscv_vfwcvt_f_xu_v_f16m2_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 16 x half> @test_vfwcvt_f_xu_v_f16m4_m
-// CHECK-RV64-SAME: (<vscale x 16 x i1> [[MASK:%.*]], <vscale x 16 x i8> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 16 x i1> [[MASK:%.*]], <vscale x 16 x half> [[MASKEDOFF:%.*]], <vscale x 16 x i8> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 16 x half> @llvm.riscv.th.vfwcvt.f.xu.v.mask.nxv16f16.nxv16i8.i64(<vscale x 16 x half> poison, <vscale x 16 x i8> [[SRC]], <vscale x 16 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 16 x half> @llvm.riscv.th.vfwcvt.f.xu.v.mask.nxv16f16.nxv16i8.i64(<vscale x 16 x half> [[MASKEDOFF]], <vscale x 16 x i8> [[SRC]], <vscale x 16 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 16 x half> [[TMP0]]
 //
-vfloat16m4_t test_vfwcvt_f_xu_v_f16m4_m(vbool4_t mask, vuint8m2_t src, size_t vl) {
-  return __riscv_vfwcvt_f_xu_v_f16m4_m(mask, src, vl);
+vfloat16m4_t test_vfwcvt_f_xu_v_f16m4_m(vbool4_t mask, vfloat16m4_t maskedoff, vuint8m2_t src, size_t vl) {
+  return __riscv_vfwcvt_f_xu_v_f16m4_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 32 x half> @test_vfwcvt_f_xu_v_f16m8_m
-// CHECK-RV64-SAME: (<vscale x 32 x i1> [[MASK:%.*]], <vscale x 32 x i8> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 32 x i1> [[MASK:%.*]], <vscale x 32 x half> [[MASKEDOFF:%.*]], <vscale x 32 x i8> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 32 x half> @llvm.riscv.th.vfwcvt.f.xu.v.mask.nxv32f16.nxv32i8.i64(<vscale x 32 x half> poison, <vscale x 32 x i8> [[SRC]], <vscale x 32 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 32 x half> @llvm.riscv.th.vfwcvt.f.xu.v.mask.nxv32f16.nxv32i8.i64(<vscale x 32 x half> [[MASKEDOFF]], <vscale x 32 x i8> [[SRC]], <vscale x 32 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 32 x half> [[TMP0]]
 //
-vfloat16m8_t test_vfwcvt_f_xu_v_f16m8_m(vbool2_t mask, vuint8m4_t src, size_t vl) {
-  return __riscv_vfwcvt_f_xu_v_f16m8_m(mask, src, vl);
+vfloat16m8_t test_vfwcvt_f_xu_v_f16m8_m(vbool2_t mask, vfloat16m8_t maskedoff, vuint8m4_t src, size_t vl) {
+  return __riscv_vfwcvt_f_xu_v_f16m8_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 4 x float> @test_vfwcvt_f_x_v_f32m2_m
-// CHECK-RV64-SAME: (<vscale x 4 x i1> [[MASK:%.*]], <vscale x 4 x i16> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 4 x i1> [[MASK:%.*]], <vscale x 4 x float> [[MASKEDOFF:%.*]], <vscale x 4 x i16> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 4 x float> @llvm.riscv.th.vfwcvt.f.x.v.mask.nxv4f32.nxv4i16.i64(<vscale x 4 x float> poison, <vscale x 4 x i16> [[SRC]], <vscale x 4 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 4 x float> @llvm.riscv.th.vfwcvt.f.x.v.mask.nxv4f32.nxv4i16.i64(<vscale x 4 x float> [[MASKEDOFF]], <vscale x 4 x i16> [[SRC]], <vscale x 4 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 4 x float> [[TMP0]]
 //
-vfloat32m2_t test_vfwcvt_f_x_v_f32m2_m(vbool16_t mask, vint16m1_t src, size_t vl) {
-  return __riscv_vfwcvt_f_x_v_f32m2_m(mask, src, vl);
+vfloat32m2_t test_vfwcvt_f_x_v_f32m2_m(vbool16_t mask, vfloat32m2_t maskedoff, vint16m1_t src, size_t vl) {
+  return __riscv_vfwcvt_f_x_v_f32m2_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 8 x float> @test_vfwcvt_f_x_v_f32m4_m
-// CHECK-RV64-SAME: (<vscale x 8 x i1> [[MASK:%.*]], <vscale x 8 x i16> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 8 x i1> [[MASK:%.*]], <vscale x 8 x float> [[MASKEDOFF:%.*]], <vscale x 8 x i16> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 8 x float> @llvm.riscv.th.vfwcvt.f.x.v.mask.nxv8f32.nxv8i16.i64(<vscale x 8 x float> poison, <vscale x 8 x i16> [[SRC]], <vscale x 8 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 8 x float> @llvm.riscv.th.vfwcvt.f.x.v.mask.nxv8f32.nxv8i16.i64(<vscale x 8 x float> [[MASKEDOFF]], <vscale x 8 x i16> [[SRC]], <vscale x 8 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 8 x float> [[TMP0]]
 //
-vfloat32m4_t test_vfwcvt_f_x_v_f32m4_m(vbool8_t mask, vint16m2_t src, size_t vl) {
-  return __riscv_vfwcvt_f_x_v_f32m4_m(mask, src, vl);
+vfloat32m4_t test_vfwcvt_f_x_v_f32m4_m(vbool8_t mask, vfloat32m4_t maskedoff, vint16m2_t src, size_t vl) {
+  return __riscv_vfwcvt_f_x_v_f32m4_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 16 x float> @test_vfwcvt_f_x_v_f32m8_m
-// CHECK-RV64-SAME: (<vscale x 16 x i1> [[MASK:%.*]], <vscale x 16 x i16> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 16 x i1> [[MASK:%.*]], <vscale x 16 x float> [[MASKEDOFF:%.*]], <vscale x 16 x i16> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 16 x float> @llvm.riscv.th.vfwcvt.f.x.v.mask.nxv16f32.nxv16i16.i64(<vscale x 16 x float> poison, <vscale x 16 x i16> [[SRC]], <vscale x 16 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 16 x float> @llvm.riscv.th.vfwcvt.f.x.v.mask.nxv16f32.nxv16i16.i64(<vscale x 16 x float> [[MASKEDOFF]], <vscale x 16 x i16> [[SRC]], <vscale x 16 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 16 x float> [[TMP0]]
 //
-vfloat32m8_t test_vfwcvt_f_x_v_f32m8_m(vbool4_t mask, vint16m4_t src, size_t vl) {
-  return __riscv_vfwcvt_f_x_v_f32m8_m(mask, src, vl);
+vfloat32m8_t test_vfwcvt_f_x_v_f32m8_m(vbool4_t mask, vfloat32m8_t maskedoff, vint16m4_t src, size_t vl) {
+  return __riscv_vfwcvt_f_x_v_f32m8_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 4 x float> @test_vfwcvt_f_xu_v_f32m2_m
-// CHECK-RV64-SAME: (<vscale x 4 x i1> [[MASK:%.*]], <vscale x 4 x i16> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 4 x i1> [[MASK:%.*]], <vscale x 4 x float> [[MASKEDOFF:%.*]], <vscale x 4 x i16> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 4 x float> @llvm.riscv.th.vfwcvt.f.xu.v.mask.nxv4f32.nxv4i16.i64(<vscale x 4 x float> poison, <vscale x 4 x i16> [[SRC]], <vscale x 4 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 4 x float> @llvm.riscv.th.vfwcvt.f.xu.v.mask.nxv4f32.nxv4i16.i64(<vscale x 4 x float> [[MASKEDOFF]], <vscale x 4 x i16> [[SRC]], <vscale x 4 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 4 x float> [[TMP0]]
 //
-vfloat32m2_t test_vfwcvt_f_xu_v_f32m2_m(vbool16_t mask, vuint16m1_t src, size_t vl) {
-  return __riscv_vfwcvt_f_xu_v_f32m2_m(mask, src, vl);
+vfloat32m2_t test_vfwcvt_f_xu_v_f32m2_m(vbool16_t mask, vfloat32m2_t maskedoff, vuint16m1_t src, size_t vl) {
+  return __riscv_vfwcvt_f_xu_v_f32m2_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 8 x float> @test_vfwcvt_f_xu_v_f32m4_m
-// CHECK-RV64-SAME: (<vscale x 8 x i1> [[MASK:%.*]], <vscale x 8 x i16> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 8 x i1> [[MASK:%.*]], <vscale x 8 x float> [[MASKEDOFF:%.*]], <vscale x 8 x i16> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 8 x float> @llvm.riscv.th.vfwcvt.f.xu.v.mask.nxv8f32.nxv8i16.i64(<vscale x 8 x float> poison, <vscale x 8 x i16> [[SRC]], <vscale x 8 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 8 x float> @llvm.riscv.th.vfwcvt.f.xu.v.mask.nxv8f32.nxv8i16.i64(<vscale x 8 x float> [[MASKEDOFF]], <vscale x 8 x i16> [[SRC]], <vscale x 8 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 8 x float> [[TMP0]]
 //
-vfloat32m4_t test_vfwcvt_f_xu_v_f32m4_m(vbool8_t mask, vuint16m2_t src, size_t vl) {
-  return __riscv_vfwcvt_f_xu_v_f32m4_m(mask, src, vl);
+vfloat32m4_t test_vfwcvt_f_xu_v_f32m4_m(vbool8_t mask, vfloat32m4_t maskedoff, vuint16m2_t src, size_t vl) {
+  return __riscv_vfwcvt_f_xu_v_f32m4_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 16 x float> @test_vfwcvt_f_xu_v_f32m8_m
-// CHECK-RV64-SAME: (<vscale x 16 x i1> [[MASK:%.*]], <vscale x 16 x i16> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 16 x i1> [[MASK:%.*]], <vscale x 16 x float> [[MASKEDOFF:%.*]], <vscale x 16 x i16> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 16 x float> @llvm.riscv.th.vfwcvt.f.xu.v.mask.nxv16f32.nxv16i16.i64(<vscale x 16 x float> poison, <vscale x 16 x i16> [[SRC]], <vscale x 16 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 16 x float> @llvm.riscv.th.vfwcvt.f.xu.v.mask.nxv16f32.nxv16i16.i64(<vscale x 16 x float> [[MASKEDOFF]], <vscale x 16 x i16> [[SRC]], <vscale x 16 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 16 x float> [[TMP0]]
 //
-vfloat32m8_t test_vfwcvt_f_xu_v_f32m8_m(vbool4_t mask, vuint16m4_t src, size_t vl) {
-  return __riscv_vfwcvt_f_xu_v_f32m8_m(mask, src, vl);
+vfloat32m8_t test_vfwcvt_f_xu_v_f32m8_m(vbool4_t mask, vfloat32m8_t maskedoff, vuint16m4_t src, size_t vl) {
+  return __riscv_vfwcvt_f_xu_v_f32m8_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 4 x float> @test_vfwcvt_f_f_v_f32m2_m
-// CHECK-RV64-SAME: (<vscale x 4 x i1> [[MASK:%.*]], <vscale x 4 x half> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 4 x i1> [[MASK:%.*]], <vscale x 4 x float> [[MASKEDOFF:%.*]], <vscale x 4 x half> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 4 x float> @llvm.riscv.th.vfwcvt.f.f.v.mask.nxv4f32.nxv4f16.i64(<vscale x 4 x float> poison, <vscale x 4 x half> [[SRC]], <vscale x 4 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 4 x float> @llvm.riscv.th.vfwcvt.f.f.v.mask.nxv4f32.nxv4f16.i64(<vscale x 4 x float> [[MASKEDOFF]], <vscale x 4 x half> [[SRC]], <vscale x 4 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 4 x float> [[TMP0]]
 //
-vfloat32m2_t test_vfwcvt_f_f_v_f32m2_m(vbool16_t mask, vfloat16m1_t src, size_t vl) {
-  return __riscv_vfwcvt_f_f_v_f32m2_m(mask, src, vl);
+vfloat32m2_t test_vfwcvt_f_f_v_f32m2_m(vbool16_t mask, vfloat32m2_t maskedoff, vfloat16m1_t src, size_t vl) {
+  return __riscv_vfwcvt_f_f_v_f32m2_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 8 x float> @test_vfwcvt_f_f_v_f32m4_m
-// CHECK-RV64-SAME: (<vscale x 8 x i1> [[MASK:%.*]], <vscale x 8 x half> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 8 x i1> [[MASK:%.*]], <vscale x 8 x float> [[MASKEDOFF:%.*]], <vscale x 8 x half> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 8 x float> @llvm.riscv.th.vfwcvt.f.f.v.mask.nxv8f32.nxv8f16.i64(<vscale x 8 x float> poison, <vscale x 8 x half> [[SRC]], <vscale x 8 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 8 x float> @llvm.riscv.th.vfwcvt.f.f.v.mask.nxv8f32.nxv8f16.i64(<vscale x 8 x float> [[MASKEDOFF]], <vscale x 8 x half> [[SRC]], <vscale x 8 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 8 x float> [[TMP0]]
 //
-vfloat32m4_t test_vfwcvt_f_f_v_f32m4_m(vbool8_t mask, vfloat16m2_t src, size_t vl) {
-  return __riscv_vfwcvt_f_f_v_f32m4_m(mask, src, vl);
+vfloat32m4_t test_vfwcvt_f_f_v_f32m4_m(vbool8_t mask, vfloat32m4_t maskedoff, vfloat16m2_t src, size_t vl) {
+  return __riscv_vfwcvt_f_f_v_f32m4_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 16 x float> @test_vfwcvt_f_f_v_f32m8_m
-// CHECK-RV64-SAME: (<vscale x 16 x i1> [[MASK:%.*]], <vscale x 16 x half> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 16 x i1> [[MASK:%.*]], <vscale x 16 x float> [[MASKEDOFF:%.*]], <vscale x 16 x half> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 16 x float> @llvm.riscv.th.vfwcvt.f.f.v.mask.nxv16f32.nxv16f16.i64(<vscale x 16 x float> poison, <vscale x 16 x half> [[SRC]], <vscale x 16 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 16 x float> @llvm.riscv.th.vfwcvt.f.f.v.mask.nxv16f32.nxv16f16.i64(<vscale x 16 x float> [[MASKEDOFF]], <vscale x 16 x half> [[SRC]], <vscale x 16 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 16 x float> [[TMP0]]
 //
-vfloat32m8_t test_vfwcvt_f_f_v_f32m8_m(vbool4_t mask, vfloat16m4_t src, size_t vl) {
-  return __riscv_vfwcvt_f_f_v_f32m8_m(mask, src, vl);
+vfloat32m8_t test_vfwcvt_f_f_v_f32m8_m(vbool4_t mask, vfloat32m8_t maskedoff, vfloat16m4_t src, size_t vl) {
+  return __riscv_vfwcvt_f_f_v_f32m8_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 2 x double> @test_vfwcvt_f_x_v_f64m2_m
-// CHECK-RV64-SAME: (<vscale x 2 x i1> [[MASK:%.*]], <vscale x 2 x i32> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 2 x i1> [[MASK:%.*]], <vscale x 2 x double> [[MASKEDOFF:%.*]], <vscale x 2 x i32> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 2 x double> @llvm.riscv.th.vfwcvt.f.x.v.mask.nxv2f64.nxv2i32.i64(<vscale x 2 x double> poison, <vscale x 2 x i32> [[SRC]], <vscale x 2 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 2 x double> @llvm.riscv.th.vfwcvt.f.x.v.mask.nxv2f64.nxv2i32.i64(<vscale x 2 x double> [[MASKEDOFF]], <vscale x 2 x i32> [[SRC]], <vscale x 2 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 2 x double> [[TMP0]]
 //
-vfloat64m2_t test_vfwcvt_f_x_v_f64m2_m(vbool32_t mask, vint32m1_t src, size_t vl) {
-  return __riscv_vfwcvt_f_x_v_f64m2_m(mask, src, vl);
+vfloat64m2_t test_vfwcvt_f_x_v_f64m2_m(vbool32_t mask, vfloat64m2_t maskedoff, vint32m1_t src, size_t vl) {
+  return __riscv_vfwcvt_f_x_v_f64m2_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 4 x double> @test_vfwcvt_f_x_v_f64m4_m
-// CHECK-RV64-SAME: (<vscale x 4 x i1> [[MASK:%.*]], <vscale x 4 x i32> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 4 x i1> [[MASK:%.*]], <vscale x 4 x double> [[MASKEDOFF:%.*]], <vscale x 4 x i32> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 4 x double> @llvm.riscv.th.vfwcvt.f.x.v.mask.nxv4f64.nxv4i32.i64(<vscale x 4 x double> poison, <vscale x 4 x i32> [[SRC]], <vscale x 4 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 4 x double> @llvm.riscv.th.vfwcvt.f.x.v.mask.nxv4f64.nxv4i32.i64(<vscale x 4 x double> [[MASKEDOFF]], <vscale x 4 x i32> [[SRC]], <vscale x 4 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 4 x double> [[TMP0]]
 //
-vfloat64m4_t test_vfwcvt_f_x_v_f64m4_m(vbool16_t mask, vint32m2_t src, size_t vl) {
-  return __riscv_vfwcvt_f_x_v_f64m4_m(mask, src, vl);
+vfloat64m4_t test_vfwcvt_f_x_v_f64m4_m(vbool16_t mask, vfloat64m4_t maskedoff, vint32m2_t src, size_t vl) {
+  return __riscv_vfwcvt_f_x_v_f64m4_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 8 x double> @test_vfwcvt_f_x_v_f64m8_m
-// CHECK-RV64-SAME: (<vscale x 8 x i1> [[MASK:%.*]], <vscale x 8 x i32> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 8 x i1> [[MASK:%.*]], <vscale x 8 x double> [[MASKEDOFF:%.*]], <vscale x 8 x i32> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 8 x double> @llvm.riscv.th.vfwcvt.f.x.v.mask.nxv8f64.nxv8i32.i64(<vscale x 8 x double> poison, <vscale x 8 x i32> [[SRC]], <vscale x 8 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 8 x double> @llvm.riscv.th.vfwcvt.f.x.v.mask.nxv8f64.nxv8i32.i64(<vscale x 8 x double> [[MASKEDOFF]], <vscale x 8 x i32> [[SRC]], <vscale x 8 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 8 x double> [[TMP0]]
 //
-vfloat64m8_t test_vfwcvt_f_x_v_f64m8_m(vbool8_t mask, vint32m4_t src, size_t vl) {
-  return __riscv_vfwcvt_f_x_v_f64m8_m(mask, src, vl);
+vfloat64m8_t test_vfwcvt_f_x_v_f64m8_m(vbool8_t mask, vfloat64m8_t maskedoff, vint32m4_t src, size_t vl) {
+  return __riscv_vfwcvt_f_x_v_f64m8_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 2 x double> @test_vfwcvt_f_xu_v_f64m2_m
-// CHECK-RV64-SAME: (<vscale x 2 x i1> [[MASK:%.*]], <vscale x 2 x i32> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 2 x i1> [[MASK:%.*]], <vscale x 2 x double> [[MASKEDOFF:%.*]], <vscale x 2 x i32> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 2 x double> @llvm.riscv.th.vfwcvt.f.xu.v.mask.nxv2f64.nxv2i32.i64(<vscale x 2 x double> poison, <vscale x 2 x i32> [[SRC]], <vscale x 2 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 2 x double> @llvm.riscv.th.vfwcvt.f.xu.v.mask.nxv2f64.nxv2i32.i64(<vscale x 2 x double> [[MASKEDOFF]], <vscale x 2 x i32> [[SRC]], <vscale x 2 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 2 x double> [[TMP0]]
 //
-vfloat64m2_t test_vfwcvt_f_xu_v_f64m2_m(vbool32_t mask, vuint32m1_t src, size_t vl) {
-  return __riscv_vfwcvt_f_xu_v_f64m2_m(mask, src, vl);
+vfloat64m2_t test_vfwcvt_f_xu_v_f64m2_m(vbool32_t mask, vfloat64m2_t maskedoff, vuint32m1_t src, size_t vl) {
+  return __riscv_vfwcvt_f_xu_v_f64m2_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 4 x double> @test_vfwcvt_f_xu_v_f64m4_m
-// CHECK-RV64-SAME: (<vscale x 4 x i1> [[MASK:%.*]], <vscale x 4 x i32> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 4 x i1> [[MASK:%.*]], <vscale x 4 x double> [[MASKEDOFF:%.*]], <vscale x 4 x i32> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 4 x double> @llvm.riscv.th.vfwcvt.f.xu.v.mask.nxv4f64.nxv4i32.i64(<vscale x 4 x double> poison, <vscale x 4 x i32> [[SRC]], <vscale x 4 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 4 x double> @llvm.riscv.th.vfwcvt.f.xu.v.mask.nxv4f64.nxv4i32.i64(<vscale x 4 x double> [[MASKEDOFF]], <vscale x 4 x i32> [[SRC]], <vscale x 4 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 4 x double> [[TMP0]]
 //
-vfloat64m4_t test_vfwcvt_f_xu_v_f64m4_m(vbool16_t mask, vuint32m2_t src, size_t vl) {
-  return __riscv_vfwcvt_f_xu_v_f64m4_m(mask, src, vl);
+vfloat64m4_t test_vfwcvt_f_xu_v_f64m4_m(vbool16_t mask, vfloat64m4_t maskedoff, vuint32m2_t src, size_t vl) {
+  return __riscv_vfwcvt_f_xu_v_f64m4_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 8 x double> @test_vfwcvt_f_xu_v_f64m8_m
-// CHECK-RV64-SAME: (<vscale x 8 x i1> [[MASK:%.*]], <vscale x 8 x i32> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 8 x i1> [[MASK:%.*]], <vscale x 8 x double> [[MASKEDOFF:%.*]], <vscale x 8 x i32> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 8 x double> @llvm.riscv.th.vfwcvt.f.xu.v.mask.nxv8f64.nxv8i32.i64(<vscale x 8 x double> poison, <vscale x 8 x i32> [[SRC]], <vscale x 8 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 8 x double> @llvm.riscv.th.vfwcvt.f.xu.v.mask.nxv8f64.nxv8i32.i64(<vscale x 8 x double> [[MASKEDOFF]], <vscale x 8 x i32> [[SRC]], <vscale x 8 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 8 x double> [[TMP0]]
 //
-vfloat64m8_t test_vfwcvt_f_xu_v_f64m8_m(vbool8_t mask, vuint32m4_t src, size_t vl) {
-  return __riscv_vfwcvt_f_xu_v_f64m8_m(mask, src, vl);
+vfloat64m8_t test_vfwcvt_f_xu_v_f64m8_m(vbool8_t mask, vfloat64m8_t maskedoff, vuint32m4_t src, size_t vl) {
+  return __riscv_vfwcvt_f_xu_v_f64m8_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 2 x double> @test_vfwcvt_f_f_v_f64m2_m
-// CHECK-RV64-SAME: (<vscale x 2 x i1> [[MASK:%.*]], <vscale x 2 x float> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 2 x i1> [[MASK:%.*]], <vscale x 2 x double> [[MASKEDOFF:%.*]], <vscale x 2 x float> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 2 x double> @llvm.riscv.th.vfwcvt.f.f.v.mask.nxv2f64.nxv2f32.i64(<vscale x 2 x double> poison, <vscale x 2 x float> [[SRC]], <vscale x 2 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 2 x double> @llvm.riscv.th.vfwcvt.f.f.v.mask.nxv2f64.nxv2f32.i64(<vscale x 2 x double> [[MASKEDOFF]], <vscale x 2 x float> [[SRC]], <vscale x 2 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 2 x double> [[TMP0]]
 //
-vfloat64m2_t test_vfwcvt_f_f_v_f64m2_m(vbool32_t mask, vfloat32m1_t src, size_t vl) {
-  return __riscv_vfwcvt_f_f_v_f64m2_m(mask, src, vl);
+vfloat64m2_t test_vfwcvt_f_f_v_f64m2_m(vbool32_t mask, vfloat64m2_t maskedoff, vfloat32m1_t src, size_t vl) {
+  return __riscv_vfwcvt_f_f_v_f64m2_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 4 x double> @test_vfwcvt_f_f_v_f64m4_m
-// CHECK-RV64-SAME: (<vscale x 4 x i1> [[MASK:%.*]], <vscale x 4 x float> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 4 x i1> [[MASK:%.*]], <vscale x 4 x double> [[MASKEDOFF:%.*]], <vscale x 4 x float> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 4 x double> @llvm.riscv.th.vfwcvt.f.f.v.mask.nxv4f64.nxv4f32.i64(<vscale x 4 x double> poison, <vscale x 4 x float> [[SRC]], <vscale x 4 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 4 x double> @llvm.riscv.th.vfwcvt.f.f.v.mask.nxv4f64.nxv4f32.i64(<vscale x 4 x double> [[MASKEDOFF]], <vscale x 4 x float> [[SRC]], <vscale x 4 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 4 x double> [[TMP0]]
 //
-vfloat64m4_t test_vfwcvt_f_f_v_f64m4_m(vbool16_t mask, vfloat32m2_t src, size_t vl) {
-  return __riscv_vfwcvt_f_f_v_f64m4_m(mask, src, vl);
+vfloat64m4_t test_vfwcvt_f_f_v_f64m4_m(vbool16_t mask, vfloat64m4_t maskedoff, vfloat32m2_t src, size_t vl) {
+  return __riscv_vfwcvt_f_f_v_f64m4_m(mask, maskedoff, src, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 8 x double> @test_vfwcvt_f_f_v_f64m8_m
-// CHECK-RV64-SAME: (<vscale x 8 x i1> [[MASK:%.*]], <vscale x 8 x float> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
+// CHECK-RV64-SAME: (<vscale x 8 x i1> [[MASK:%.*]], <vscale x 8 x double> [[MASKEDOFF:%.*]], <vscale x 8 x float> [[SRC:%.*]], i64 noundef [[VL:%.*]]) #[[ATTR0]] {
 // CHECK-RV64-NEXT:  entry:
-// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 8 x double> @llvm.riscv.th.vfwcvt.f.f.v.mask.nxv8f64.nxv8f32.i64(<vscale x 8 x double> poison, <vscale x 8 x float> [[SRC]], <vscale x 8 x i1> [[MASK]], i64 [[VL]])
+// CHECK-RV64-NEXT:    [[TMP0:%.*]] = call <vscale x 8 x double> @llvm.riscv.th.vfwcvt.f.f.v.mask.nxv8f64.nxv8f32.i64(<vscale x 8 x double> [[MASKEDOFF]], <vscale x 8 x float> [[SRC]], <vscale x 8 x i1> [[MASK]], i64 [[VL]])
 // CHECK-RV64-NEXT:    ret <vscale x 8 x double> [[TMP0]]
 //
-vfloat64m8_t test_vfwcvt_f_f_v_f64m8_m(vbool8_t mask, vfloat32m4_t src, size_t vl) {
-  return __riscv_vfwcvt_f_f_v_f64m8_m(mask, src, vl);
+vfloat64m8_t test_vfwcvt_f_f_v_f64m8_m(vbool8_t mask, vfloat64m8_t maskedoff, vfloat32m4_t src, size_t vl) {
+  return __riscv_vfwcvt_f_f_v_f64m8_m(mask, maskedoff, src, vl);
 }
