@@ -2068,7 +2068,7 @@ let UnMaskedPolicyScheme = NonePolicy,
 
 let UnMaskedPolicyScheme = NonePolicy,
     MaskedPolicyScheme = HasPassthruOperand,
-    HasMaskedOffOperand = false,
+    HasMaskedOffOperand = true,
     ManualCodegen = [{
       if (IsMasked) {
         std::rotate(Ops.begin(), Ops.begin() + 1, Ops.end() - 1);
