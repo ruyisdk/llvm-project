@@ -1812,6 +1812,36 @@ let HasMasked = false,
 let HasMasked = false, HasVL = false, IRName = "" in {
   let Name = "th_vreinterpret_v", MaskedPolicyScheme = NonePolicy,
       ManualCodegen = [{
+        if (ResultType->isIntOrIntVectorTy(1) ||
+            Ops[0]->getType()->isIntOrIntVectorTy(1)) {
+          assert(isa<ScalableVectorType>(ResultType) &&
+                 isa<ScalableVectorType>(Ops[0]->getType()));
+
+          LLVMContext &Context = CGM.getLLVMContext();
+          ScalableVectorType *Boolean64Ty =
+              ScalableVectorType::get(llvm::Type::getInt1Ty(Context), 64);
+
+          if (ResultType->isIntOrIntVectorTy(1)) {
+            // Casting from m1 vector integer -> vector boolean
+            // Ex: <vscale x 8 x i8>
+            //     --(bitcast)--------> <vscale x 64 x i1>
+            //     --(vector_extract)-> <vscale x  8 x i1>
+            llvm::Value *BitCast = Builder.CreateBitCast(Ops[0], Boolean64Ty);
+            return Builder.CreateExtractVector(ResultType, BitCast,
+                                               ConstantInt::get(Int64Ty, 0));
+          } else {
+            // Casting from vector boolean -> m1 vector integer
+            // Ex: <vscale x  1 x i1>
+            //       --(vector_insert)-> <vscale x 64 x i1>
+            //       --(bitcast)-------> <vscale x  8 x i8>
+            llvm::Value *Boolean64Val =
+              Builder.CreateInsertVector(Boolean64Ty,
+                                         llvm::PoisonValue::get(Boolean64Ty),
+                                         Ops[0],
+                                         ConstantInt::get(Int64Ty, 0));
+            return Builder.CreateBitCast(Boolean64Val, ResultType);
+          }
+        }
         // Just simple type cast
         return Builder.CreateBitCast(Ops[0], ResultType);
       }] in {
@@ -1823,6 +1853,36 @@ let HasMasked = false, HasVL = false, IRName = "" in {
     // Reinterpret between signed and unsigned types
     def th_vreinterpret_i_u : RVVBuiltin<"Uvv", "vUv", "csil", "v">;
     def th_vreinterpret_u_i : RVVBuiltin<"vUv", "Uvv", "csil", "Uv">;
+
+    // Reinterpret between different SEW under the same LMUL
+    foreach dst_sew = ["(FixedSEW:8)", "(FixedSEW:16)", "(FixedSEW:32)",
+                       "(FixedSEW:64)"] in {
+      def th_vreinterpret_i_ # dst_sew : RVVBuiltin<"v" # dst_sew # "v",
+                                                    dst_sew # "vv", "csil", dst_sew # "v">;
+      def th_vreinterpret_u_ # dst_sew : RVVBuiltin<"Uv" # dst_sew # "Uv",
+                                                    dst_sew # "UvUv", "csil", dst_sew # "Uv">;
+    }
+
+    // Reinterpret between LMUL=1 integer type and vector boolean type.
+    // NOTE: they are not defined in the spec, but they are useful as I have
+    // seen them in some RVV related open-source projects.
+    def th_vreintrepret_i_m1_b8 : RVVBuiltin<"Svm", "mSv", "c", "m">;
+    def th_vreintrepret_u_m1_b8 : RVVBuiltin<"USvm", "mUSv", "c", "m">;
+    def th_vreintrepret_i_b8_m1 : RVVBuiltin<"mSv", "Svm", "c", "Sv">;
+    def th_vreintrepret_u_b8_m1 : RVVBuiltin<"mUSv", "USvm", "c", "USv">;
+
+    foreach dst_sew = ["(FixedSEW:16)", "(FixedSEW:32)", "(FixedSEW:64)"] in {
+      // Reinterpret from LMUL=1 integer type to vector boolean type
+      def th_vreinterpret_i_m1_b # dst_sew:
+        RVVBuiltin<dst_sew # "Svm", "m" # dst_sew # "Sv", "c", "m">;
+      def th_vreinterpret_u_m1_b # dst_sew:
+        RVVBuiltin<dst_sew # "USvm", "m" # dst_sew # "USv", "c", "m">;
+      // Reinterpret from vector boolean type to LMUL=1 integer type
+      def th_vreinterpret_i_b # dst_sew # _m1:
+        RVVBuiltin<"m" # dst_sew # "Sv", dst_sew # "Svm", "c", dst_sew # "Sv">;
+      def th_vreinterpret_u_b # dst_sew # _m1:
+        RVVBuiltin<"m" # dst_sew # "USv", dst_sew # "USvm", "c", dst_sew # "USv">;
+    }
   }
 
   // Vector Initialization
