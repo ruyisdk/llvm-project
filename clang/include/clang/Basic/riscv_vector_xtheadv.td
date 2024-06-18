@@ -1894,6 +1894,41 @@ let HasMasked = false, HasVL = false, IRName = "" in {
     def th_vundefined   : RVVBuiltin<"v", "v", "csilxfd">;
     def th_vundefined_u : RVVBuiltin<"Uv", "Uv", "csil">;
   }
+
+  // LMUL truncation
+  // C/C++ Operand: VecTy, IR Operand: VecTy, Index
+  let Name = "th_vlmul_trunc_v", OverloadedName = "th_vlmul_trunc",
+      MaskedPolicyScheme = NonePolicy,
+      ManualCodegen = [{ {
+        return Builder.CreateExtractVector(ResultType, Ops[0],
+                                           ConstantInt::get(Int64Ty, 0));
+      } }] in {
+    // no LMUL=8 vector in result value
+    foreach dst_lmul = ["(SFixedLog2LMUL:0)", "(SFixedLog2LMUL:1)", "(SFixedLog2LMUL:2)"] in {
+      def th_vlmul_trunc # dst_lmul : RVVBuiltin<"v" # dst_lmul # "v",
+                                                 dst_lmul # "vv", "csilxfd", dst_lmul # "v">;
+      def th_vlmul_trunc_u # dst_lmul : RVVBuiltin<"Uv" # dst_lmul # "Uv",
+                                                   dst_lmul # "UvUv", "csil", dst_lmul # "Uv">;
+    }
+  }
+
+  // LMUL extension
+  // C/C++ Operand: SubVecTy, IR Operand: VecTy, SubVecTy, Index
+  let Name = "th_vlmul_ext_v", OverloadedName = "th_vlmul_ext",
+      MaskedPolicyScheme = NonePolicy,
+      ManualCodegen = [{
+        return Builder.CreateInsertVector(ResultType,
+                                          llvm::PoisonValue::get(ResultType),
+                                          Ops[0], ConstantInt::get(Int64Ty, 0));
+      }] in {
+    // no LMUL=1 vector in result value
+    foreach dst_lmul = ["(LFixedLog2LMUL:1)", "(LFixedLog2LMUL:2)", "(LFixedLog2LMUL:3)"] in {
+      def th_vlmul_ext # dst_lmul : RVVBuiltin<"v" # dst_lmul # "v",
+                                               dst_lmul # "vv", "csilxfd", dst_lmul # "v">;
+      def th_vlmul_ext_u # dst_lmul : RVVBuiltin<"Uv" # dst_lmul # "Uv",
+                                                 dst_lmul # "UvUv", "csil", dst_lmul # "Uv">;
+    }
+  }
 }
 
 include "riscv_vector_xtheadv_wrappers.td"
