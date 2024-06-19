@@ -4,6 +4,54 @@
 ; RUN: sed 's/iXLen/i64/g' %s | llc -mtriple=riscv64 -mattr=+xtheadvector \
 ; RUN:   -verify-machineinstrs | FileCheck %s
 
+declare <vscale x 1 x i1> @llvm.riscv.th.vmset.nxv1i1(
+  iXLen);
+
+define <vscale x 1 x i1> @intrinsic_vmset_m_pseudo_nxv1i1(iXLen %0) nounwind {
+; CHECK-LABEL: intrinsic_vmset_m_pseudo_nxv1i1:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    th.vsetvli zero, a0, e64, m1, d1
+; CHECK-NEXT:    th.vmset.m v0
+; CHECK-NEXT:    ret
+entry:
+  %a = call <vscale x 1 x i1> @llvm.riscv.th.vmset.nxv1i1(
+    iXLen %0)
+
+  ret <vscale x 1 x i1> %a
+}
+
+declare <vscale x 2 x i1> @llvm.riscv.th.vmset.nxv2i1(
+  iXLen);
+
+define <vscale x 2 x i1> @intrinsic_vmset_m_pseudo_nxv2i1(iXLen %0) nounwind {
+; CHECK-LABEL: intrinsic_vmset_m_pseudo_nxv2i1:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    th.vsetvli zero, a0, e32, m1, d1
+; CHECK-NEXT:    th.vmset.m v0
+; CHECK-NEXT:    ret
+entry:
+  %a = call <vscale x 2 x i1> @llvm.riscv.th.vmset.nxv2i1(
+    iXLen %0)
+
+  ret <vscale x 2 x i1> %a
+}
+
+declare <vscale x 4 x i1> @llvm.riscv.th.vmset.nxv4i1(
+  iXLen);
+
+define <vscale x 4 x i1> @intrinsic_vmset_m_pseudo_nxv4i1(iXLen %0) nounwind {
+; CHECK-LABEL: intrinsic_vmset_m_pseudo_nxv4i1:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    th.vsetvli zero, a0, e16, m1, d1
+; CHECK-NEXT:    th.vmset.m v0
+; CHECK-NEXT:    ret
+entry:
+  %a = call <vscale x 4 x i1> @llvm.riscv.th.vmset.nxv4i1(
+    iXLen %0)
+
+  ret <vscale x 4 x i1> %a
+}
+
 declare <vscale x 8 x i1> @llvm.riscv.th.vmset.nxv8i1(
   iXLen);
 
