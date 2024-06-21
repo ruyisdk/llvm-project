@@ -22,19 +22,6 @@ entry:
   ret iXLen %a
 }
 
-; define iXLen @intrinsic_vmpopc_m_nxv1i1_zero(<vscale x 1 x i1> %0) nounwind {
-; ; CHECK-LABEL: intrinsic_vmpopc_m_nxv1i1_zero:
-; ; CHECK:       # %bb.0: # %entry
-; ; CHECK-NEXT:    li a0, 0
-; ; CHECK-NEXT:    ret
-; entry:
-;   %a = call iXLen @llvm.riscv.th.vmpopc.iXLen.nxv1i1(
-;     <vscale x 1 x i1> %0,
-;     iXLen 0)
-;
-;   ret iXLen %a
-; }
-
 declare iXLen @llvm.riscv.th.vmpopc.mask.iXLen.nxv1i1(
   <vscale x 1 x i1>,
   <vscale x 1 x i1>,
@@ -64,20 +51,6 @@ entry:
 
   ret iXLen %a
 }
-
-; define iXLen @intrinsic_vmpopc_mask_m_nxv1i1_zero(<vscale x 1 x i1> %0, <vscale x 1 x i1> %1) nounwind {
-; ; CHECK-LABEL: intrinsic_vmpopc_mask_m_nxv1i1_zero:
-; ; CHECK:       # %bb.0: # %entry
-; ; CHECK-NEXT:    li a0, 0
-; ; CHECK-NEXT:    ret
-; entry:
-;   %a = call iXLen @llvm.riscv.th.vmpopc.mask.iXLen.nxv1i1(
-;     <vscale x 1 x i1> %0,
-;     <vscale x 1 x i1> %1,
-;     iXLen 0)
-;
-;   ret iXLen %a
-; }
 
 declare iXLen @llvm.riscv.th.vmpopc.iXLen.nxv2i1(
   <vscale x 2 x i1>,
