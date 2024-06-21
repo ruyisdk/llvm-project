@@ -4,6 +4,156 @@
 ; RUN: sed 's/iXLen/i64/g' %s | llc -mtriple=riscv64 -mattr=+xtheadvector \
 ; RUN:   -verify-machineinstrs | FileCheck %s
 
+declare <vscale x 1 x i1> @llvm.riscv.th.vmsof.nxv1i1(
+  <vscale x 1 x i1>,
+  iXLen);
+
+define <vscale x 1 x i1> @intrinsic_vmsof_m_nxv1i1(<vscale x 1 x i1> %0, iXLen %1) nounwind {
+; CHECK-LABEL: intrinsic_vmsof_m_nxv1i1:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    th.vsetvli zero, a0, e64, m1, d1
+; CHECK-NEXT:    th.vmsof.m v8, v0
+; CHECK-NEXT:    th.vmv.v.v v0, v8
+; CHECK-NEXT:    ret
+entry:
+  %a = call <vscale x 1 x i1> @llvm.riscv.th.vmsof.nxv1i1(
+    <vscale x 1 x i1> %0,
+    iXLen %1)
+  ret <vscale x 1 x i1> %a
+}
+
+declare <vscale x 1 x i1> @llvm.riscv.th.vmsof.mask.nxv1i1(
+  <vscale x 1 x i1>,
+  <vscale x 1 x i1>,
+  <vscale x 1 x i1>,
+  iXLen);
+
+define <vscale x 1 x i1> @intrinsic_vmsof_mask_m_nxv1i1_nxv1i1(<vscale x 1 x i1> %0, <vscale x 1 x i1> %1, <vscale x 1 x i1> %2, iXLen %3) nounwind {
+; CHECK-LABEL: intrinsic_vmsof_mask_m_nxv1i1_nxv1i1:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vmv.v.v v10, v0
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vmv.v.v v0, v9
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
+; CHECK-NEXT:    th.vsetvli zero, a0, e64, m1, d1
+; CHECK-NEXT:    th.vmsof.m v10, v8, v0.t
+; CHECK-NEXT:    th.vmv.v.v v0, v10
+; CHECK-NEXT:    ret
+entry:
+  %a = call <vscale x 1 x i1> @llvm.riscv.th.vmsof.mask.nxv1i1(
+    <vscale x 1 x i1> %0,
+    <vscale x 1 x i1> %1,
+    <vscale x 1 x i1> %2,
+    iXLen %3)
+  ret <vscale x 1 x i1> %a
+}
+
+declare <vscale x 2 x i1> @llvm.riscv.th.vmsof.nxv2i1(
+  <vscale x 2 x i1>,
+  iXLen);
+
+define <vscale x 2 x i1> @intrinsic_vmsof_m_nxv2i1(<vscale x 2 x i1> %0, iXLen %1) nounwind {
+; CHECK-LABEL: intrinsic_vmsof_m_nxv2i1:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    th.vsetvli zero, a0, e32, m1, d1
+; CHECK-NEXT:    th.vmsof.m v8, v0
+; CHECK-NEXT:    th.vmv.v.v v0, v8
+; CHECK-NEXT:    ret
+entry:
+  %a = call <vscale x 2 x i1> @llvm.riscv.th.vmsof.nxv2i1(
+    <vscale x 2 x i1> %0,
+    iXLen %1)
+  ret <vscale x 2 x i1> %a
+}
+
+declare <vscale x 2 x i1> @llvm.riscv.th.vmsof.mask.nxv2i1(
+  <vscale x 2 x i1>,
+  <vscale x 2 x i1>,
+  <vscale x 2 x i1>,
+  iXLen);
+
+define <vscale x 2 x i1> @intrinsic_vmsof_mask_m_nxv2i1_nxv2i1(<vscale x 2 x i1> %0, <vscale x 2 x i1> %1, <vscale x 2 x i1> %2, iXLen %3) nounwind {
+; CHECK-LABEL: intrinsic_vmsof_mask_m_nxv2i1_nxv2i1:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vmv.v.v v10, v0
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vmv.v.v v0, v9
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
+; CHECK-NEXT:    th.vsetvli zero, a0, e32, m1, d1
+; CHECK-NEXT:    th.vmsof.m v10, v8, v0.t
+; CHECK-NEXT:    th.vmv.v.v v0, v10
+; CHECK-NEXT:    ret
+entry:
+  %a = call <vscale x 2 x i1> @llvm.riscv.th.vmsof.mask.nxv2i1(
+    <vscale x 2 x i1> %0,
+    <vscale x 2 x i1> %1,
+    <vscale x 2 x i1> %2,
+    iXLen %3)
+  ret <vscale x 2 x i1> %a
+}
+
+declare <vscale x 4 x i1> @llvm.riscv.th.vmsof.nxv4i1(
+  <vscale x 4 x i1>,
+  iXLen);
+
+define <vscale x 4 x i1> @intrinsic_vmsof_m_nxv4i1(<vscale x 4 x i1> %0, iXLen %1) nounwind {
+; CHECK-LABEL: intrinsic_vmsof_m_nxv4i1:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    th.vsetvli zero, a0, e16, m1, d1
+; CHECK-NEXT:    th.vmsof.m v8, v0
+; CHECK-NEXT:    th.vmv.v.v v0, v8
+; CHECK-NEXT:    ret
+entry:
+  %a = call <vscale x 4 x i1> @llvm.riscv.th.vmsof.nxv4i1(
+    <vscale x 4 x i1> %0,
+    iXLen %1)
+  ret <vscale x 4 x i1> %a
+}
+
+declare <vscale x 4 x i1> @llvm.riscv.th.vmsof.mask.nxv4i1(
+  <vscale x 4 x i1>,
+  <vscale x 4 x i1>,
+  <vscale x 4 x i1>,
+  iXLen);
+
+define <vscale x 4 x i1> @intrinsic_vmsof_mask_m_nxv4i1_nxv4i1(<vscale x 4 x i1> %0, <vscale x 4 x i1> %1, <vscale x 4 x i1> %2, iXLen %3) nounwind {
+; CHECK-LABEL: intrinsic_vmsof_mask_m_nxv4i1_nxv4i1:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vmv.v.v v10, v0
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vmv.v.v v0, v9
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
+; CHECK-NEXT:    th.vsetvli zero, a0, e16, m1, d1
+; CHECK-NEXT:    th.vmsof.m v10, v8, v0.t
+; CHECK-NEXT:    th.vmv.v.v v0, v10
+; CHECK-NEXT:    ret
+entry:
+  %a = call <vscale x 4 x i1> @llvm.riscv.th.vmsof.mask.nxv4i1(
+    <vscale x 4 x i1> %0,
+    <vscale x 4 x i1> %1,
+    <vscale x 4 x i1> %2,
+    iXLen %3)
+  ret <vscale x 4 x i1> %a
+}
+
 declare <vscale x 8 x i1> @llvm.riscv.th.vmsof.nxv8i1(
   <vscale x 8 x i1>,
   iXLen);
