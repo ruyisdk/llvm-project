@@ -755,6 +755,10 @@ private:
   void doLocalPostpass(MachineBasicBlock &MBB);
   void doPRE(MachineBasicBlock &MBB);
   void insertReadVL(MachineBasicBlock &MBB);
+  void emulateXTHeadVectorVSETIVLI(MachineBasicBlock &MBB,
+                                   MachineBasicBlock::iterator &InsertPt,
+                                   const DebugLoc &DL, const VSETVLIInfo &Info,
+                                   uint64_t UImm);
 };
 
 } // end anonymous namespace
@@ -917,11 +921,14 @@ void RISCVInsertVSETVLIForXTHeadVector::insertVSETVLI(MachineBasicBlock &MBB,
   }
 
   if (Info.hasAVLImm()) {
-    assert(!HasVendorXTHeadV && "XTHeadV extension does not support AVLImm");
-    BuildMI(MBB, InsertPt, DL, TII->get(RISCV::PseudoVSETIVLI))
-        .addReg(RISCV::X0, RegState::Define | RegState::Dead)
-        .addImm(Info.getAVLImm())
-        .addImm(Info.encodeVTYPE());
+    if (HasVendorXTHeadV) {
+      emulateXTHeadVectorVSETIVLI(MBB, InsertPt, DL, Info, Info.getAVLImm());
+    } else {
+      BuildMI(MBB, InsertPt, DL, TII->get(RISCV::PseudoVSETIVLI))
+          .addReg(RISCV::X0, RegState::Define | RegState::Dead)
+          .addImm(Info.getAVLImm())
+          .addImm(Info.encodeVTYPE());
+    }
     return;
   }
 
@@ -944,15 +951,7 @@ void RISCVInsertVSETVLIForXTHeadVector::insertVSETVLI(MachineBasicBlock &MBB,
     }
     // Otherwise use an AVL of 0 to avoid depending on previous vl.
     if (HasVendorXTHeadV) {
-      // Generate the equivalent of `vsetivli rd, uimm, vtypei` in RVV 0.7
-      auto UImmR = MRI->createVirtualRegister(&RISCV::GPRRegClass);
-      BuildMI(MBB, InsertPt, DL, TII->get(RISCV::PseudoLI))
-          .addReg(UImmR, RegState::Define)
-          .addImm(0);
-      BuildMI(MBB, InsertPt, DL, TII->get(RISCV::PseudoTH_VSETVLI))
-          .addReg(RISCV::X0, RegState::Define | RegState::Dead)
-          .addReg(UImmR, RegState::Kill)
-          .addImm(Info.encodeXTHeadVTYPE());
+      emulateXTHeadVectorVSETIVLI(MBB, InsertPt, DL, Info, 0);
     } else {
       BuildMI(MBB, InsertPt, DL, TII->get(RISCV::PseudoVSETIVLI))
           .addReg(RISCV::X0, RegState::Define | RegState::Dead)
@@ -979,6 +978,30 @@ void RISCVInsertVSETVLIForXTHeadVector::insertVSETVLI(MachineBasicBlock &MBB,
       .addReg(DestReg, RegState::Define | RegState::Dead)
       .addReg(AVLReg)
       .addImm(TypeI);
+}
+
+void RISCVInsertVSETVLIForXTHeadVector::emulateXTHeadVectorVSETIVLI(
+    MachineBasicBlock &MBB, MachineBasicBlock::iterator &InsertPt,
+    const DebugLoc &DL, const VSETVLIInfo &Info, uint64_t UImm) {
+  // RVV 1.0:
+  // vsetvli rd, rs1, vtypei # rd = new vl, rs1 = AVL, vtypei = vtype
+  // vsetivli rd, uimm, vtypei # rd = new vl, uimm = AVL, vtypei = vtype
+
+  // XTHeadVector:
+  // vsetvli rd, rs1, vtypei # rd = new vl, rs1 = AVL, vtypei = new vtype
+
+  // Let's load the AVLImm to a temporary register and use it as AVL in vsetvli
+  auto UImmR = MRI->createVirtualRegister(&RISCV::GPRRegClass);
+  // PseudoTH_VSETVLI requires the rs1 to be a GPRNoX0 register.
+  MRI->constrainRegClass(UImmR, &RISCV::GPRNoX0RegClass);
+
+  BuildMI(MBB, InsertPt, DL, TII->get(RISCV::PseudoLI))
+      .addReg(UImmR, RegState::Define)
+      .addImm(UImm);
+  BuildMI(MBB, InsertPt, DL, TII->get(RISCV::PseudoTH_VSETVLI))
+      .addReg(RISCV::X0, RegState::Define | RegState::Dead)
+      .addReg(UImmR, RegState::Kill)
+      .addImm(Info.encodeXTHeadVTYPE());
 }
 
 void RISCVInsertVSETVLIForXTHeadVector::insertVSETVLIForCOPY(MachineBasicBlock &MBB) {
