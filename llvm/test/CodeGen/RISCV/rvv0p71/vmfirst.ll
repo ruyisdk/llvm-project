@@ -4,6 +4,150 @@
 ; RUN: sed 's/iXLen/i64/g' %s | llc -mtriple=riscv64 -mattr=+xtheadvector \
 ; RUN:   -verify-machineinstrs | FileCheck %s
 
+declare iXLen @llvm.riscv.th.vmfirst.iXLen.nxv1i1(
+  <vscale x 1 x i1>,
+  iXLen);
+
+define iXLen @intrinsic_vmfirst_m_nxv1i1(<vscale x 1 x i1> %0, iXLen %1) nounwind {
+; CHECK-LABEL: intrinsic_vmfirst_m_nxv1i1:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    th.vsetvli zero, a0, e64, m1, d1
+; CHECK-NEXT:    th.vmfirst.m a0, v0
+; CHECK-NEXT:    ret
+entry:
+  %a = call iXLen @llvm.riscv.th.vmfirst.iXLen.nxv1i1(
+    <vscale x 1 x i1> %0,
+    iXLen %1)
+
+  ret iXLen %a
+}
+
+declare iXLen @llvm.riscv.th.vmfirst.mask.iXLen.nxv1i1(
+  <vscale x 1 x i1>,
+  <vscale x 1 x i1>,
+  iXLen);
+
+define iXLen @intrinsic_vmfirst_mask_m_nxv1i1(<vscale x 1 x i1> %0, <vscale x 1 x i1> %1, iXLen %2) nounwind {
+; CHECK-LABEL: intrinsic_vmfirst_mask_m_nxv1i1:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vmv.v.v v9, v0
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vmv.v.v v0, v8
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
+; CHECK-NEXT:    th.vsetvli zero, a0, e64, m1, d1
+; CHECK-NEXT:    th.vmfirst.m a0, v9, v0.t
+; CHECK-NEXT:    ret
+entry:
+  %a = call iXLen @llvm.riscv.th.vmfirst.mask.iXLen.nxv1i1(
+    <vscale x 1 x i1> %0,
+    <vscale x 1 x i1> %1,
+    iXLen %2)
+
+  ret iXLen %a
+}
+
+declare iXLen @llvm.riscv.th.vmfirst.iXLen.nxv2i1(
+  <vscale x 2 x i1>,
+  iXLen);
+
+define iXLen @intrinsic_vmfirst_m_nxv2i1(<vscale x 2 x i1> %0, iXLen %1) nounwind {
+; CHECK-LABEL: intrinsic_vmfirst_m_nxv2i1:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    th.vsetvli zero, a0, e32, m1, d1
+; CHECK-NEXT:    th.vmfirst.m a0, v0
+; CHECK-NEXT:    ret
+entry:
+  %a = call iXLen @llvm.riscv.th.vmfirst.iXLen.nxv2i1(
+    <vscale x 2 x i1> %0,
+    iXLen %1)
+
+  ret iXLen %a
+}
+
+declare iXLen @llvm.riscv.th.vmfirst.mask.iXLen.nxv2i1(
+  <vscale x 2 x i1>,
+  <vscale x 2 x i1>,
+  iXLen);
+
+define iXLen @intrinsic_vmfirst_mask_m_nxv2i1(<vscale x 2 x i1> %0, <vscale x 2 x i1> %1, iXLen %2) nounwind {
+; CHECK-LABEL: intrinsic_vmfirst_mask_m_nxv2i1:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vmv.v.v v9, v0
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vmv.v.v v0, v8
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
+; CHECK-NEXT:    th.vsetvli zero, a0, e32, m1, d1
+; CHECK-NEXT:    th.vmfirst.m a0, v9, v0.t
+; CHECK-NEXT:    ret
+entry:
+  %a = call iXLen @llvm.riscv.th.vmfirst.mask.iXLen.nxv2i1(
+    <vscale x 2 x i1> %0,
+    <vscale x 2 x i1> %1,
+    iXLen %2)
+
+  ret iXLen %a
+}
+
+declare iXLen @llvm.riscv.th.vmfirst.iXLen.nxv4i1(
+  <vscale x 4 x i1>,
+  iXLen);
+
+define iXLen @intrinsic_vmfirst_m_nxv4i1(<vscale x 4 x i1> %0, iXLen %1) nounwind {
+; CHECK-LABEL: intrinsic_vmfirst_m_nxv4i1:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    th.vsetvli zero, a0, e16, m1, d1
+; CHECK-NEXT:    th.vmfirst.m a0, v0
+; CHECK-NEXT:    ret
+entry:
+  %a = call iXLen @llvm.riscv.th.vmfirst.iXLen.nxv4i1(
+    <vscale x 4 x i1> %0,
+    iXLen %1)
+
+  ret iXLen %a
+}
+
+declare iXLen @llvm.riscv.th.vmfirst.mask.iXLen.nxv4i1(
+  <vscale x 4 x i1>,
+  <vscale x 4 x i1>,
+  iXLen);
+
+define iXLen @intrinsic_vmfirst_mask_m_nxv4i1(<vscale x 4 x i1> %0, <vscale x 4 x i1> %1, iXLen %2) nounwind {
+; CHECK-LABEL: intrinsic_vmfirst_mask_m_nxv4i1:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vmv.v.v v9, v0
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
+; CHECK-NEXT:    csrr a1, vl
+; CHECK-NEXT:    csrr a2, vtype
+; CHECK-NEXT:    th.vsetvli zero, zero, e8, m1, d1
+; CHECK-NEXT:    th.vmv.v.v v0, v8
+; CHECK-NEXT:    th.vsetvl zero, a1, a2
+; CHECK-NEXT:    th.vsetvli zero, a0, e16, m1, d1
+; CHECK-NEXT:    th.vmfirst.m a0, v9, v0.t
+; CHECK-NEXT:    ret
+entry:
+  %a = call iXLen @llvm.riscv.th.vmfirst.mask.iXLen.nxv4i1(
+    <vscale x 4 x i1> %0,
+    <vscale x 4 x i1> %1,
+    iXLen %2)
+
+  ret iXLen %a
+}
+
 declare iXLen @llvm.riscv.th.vmfirst.iXLen.nxv8i1(
   <vscale x 8 x i1>,
   iXLen);

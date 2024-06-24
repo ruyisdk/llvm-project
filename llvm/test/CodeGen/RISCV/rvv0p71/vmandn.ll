@@ -4,13 +4,73 @@
 ; RUN: sed 's/iXLen/i64/g' %s | llc -mtriple=riscv64 -mattr=+xtheadvector \
 ; RUN:   -verify-machineinstrs | FileCheck %s
 
+declare <vscale x 1 x i1> @llvm.riscv.th.vmandnot.nxv1i1(
+  <vscale x 1 x i1>,
+  <vscale x 1 x i1>,
+  iXLen);
+
+define <vscale x 1 x i1> @intrinsic_vmandnot_mm_nxv1i1(<vscale x 1 x i1> %0, <vscale x 1 x i1> %1, iXLen %2) nounwind {
+; CHECK-LABEL: intrinsic_vmandnot_mm_nxv1i1:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    th.vsetvli zero, a0, e64, m1, d1
+; CHECK-NEXT:    th.vmandnot.mm v0, v0, v8
+; CHECK-NEXT:    ret
+entry:
+  %a = call <vscale x 1 x i1> @llvm.riscv.th.vmandnot.nxv1i1(
+    <vscale x 1 x i1> %0,
+    <vscale x 1 x i1> %1,
+    iXLen %2)
+
+  ret <vscale x 1 x i1> %a
+}
+
+declare <vscale x 2 x i1> @llvm.riscv.th.vmandnot.nxv2i1(
+  <vscale x 2 x i1>,
+  <vscale x 2 x i1>,
+  iXLen);
+
+define <vscale x 2 x i1> @intrinsic_vmandnot_mm_nxv2i1(<vscale x 2 x i1> %0, <vscale x 2 x i1> %1, iXLen %2) nounwind {
+; CHECK-LABEL: intrinsic_vmandnot_mm_nxv2i1:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    th.vsetvli zero, a0, e32, m1, d1
+; CHECK-NEXT:    th.vmandnot.mm v0, v0, v8
+; CHECK-NEXT:    ret
+entry:
+  %a = call <vscale x 2 x i1> @llvm.riscv.th.vmandnot.nxv2i1(
+    <vscale x 2 x i1> %0,
+    <vscale x 2 x i1> %1,
+    iXLen %2)
+
+  ret <vscale x 2 x i1> %a
+}
+
+declare <vscale x 4 x i1> @llvm.riscv.th.vmandnot.nxv4i1(
+  <vscale x 4 x i1>,
+  <vscale x 4 x i1>,
+  iXLen);
+
+define <vscale x 4 x i1> @intrinsic_vmandnot_mm_nxv4i1(<vscale x 4 x i1> %0, <vscale x 4 x i1> %1, iXLen %2) nounwind {
+; CHECK-LABEL: intrinsic_vmandnot_mm_nxv4i1:
+; CHECK:       # %bb.0: # %entry
+; CHECK-NEXT:    th.vsetvli zero, a0, e16, m1, d1
+; CHECK-NEXT:    th.vmandnot.mm v0, v0, v8
+; CHECK-NEXT:    ret
+entry:
+  %a = call <vscale x 4 x i1> @llvm.riscv.th.vmandnot.nxv4i1(
+    <vscale x 4 x i1> %0,
+    <vscale x 4 x i1> %1,
+    iXLen %2)
+
+  ret <vscale x 4 x i1> %a
+}
+
 declare <vscale x 8 x i1> @llvm.riscv.th.vmandnot.nxv8i1(
   <vscale x 8 x i1>,
   <vscale x 8 x i1>,
   iXLen);
 
-define <vscale x 8 x i1> @intrinsic_vmandn_mm_nxv8i1(<vscale x 8 x i1> %0, <vscale x 8 x i1> %1, iXLen %2) nounwind {
-; CHECK-LABEL: intrinsic_vmandn_mm_nxv8i1:
+define <vscale x 8 x i1> @intrinsic_vmandnot_mm_nxv8i1(<vscale x 8 x i1> %0, <vscale x 8 x i1> %1, iXLen %2) nounwind {
+; CHECK-LABEL: intrinsic_vmandnot_mm_nxv8i1:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a0, e8, m1, d1
 ; CHECK-NEXT:    th.vmandnot.mm v0, v0, v8
@@ -29,8 +89,8 @@ declare <vscale x 16 x i1> @llvm.riscv.th.vmandnot.nxv16i1(
   <vscale x 16 x i1>,
   iXLen);
 
-define <vscale x 16 x i1> @intrinsic_vmandn_mm_nxv16i1(<vscale x 16 x i1> %0, <vscale x 16 x i1> %1, iXLen %2) nounwind {
-; CHECK-LABEL: intrinsic_vmandn_mm_nxv16i1:
+define <vscale x 16 x i1> @intrinsic_vmandnot_mm_nxv16i1(<vscale x 16 x i1> %0, <vscale x 16 x i1> %1, iXLen %2) nounwind {
+; CHECK-LABEL: intrinsic_vmandnot_mm_nxv16i1:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a0, e8, m2, d1
 ; CHECK-NEXT:    th.vmandnot.mm v0, v0, v8
@@ -49,8 +109,8 @@ declare <vscale x 32 x i1> @llvm.riscv.th.vmandnot.nxv32i1(
   <vscale x 32 x i1>,
   iXLen);
 
-define <vscale x 32 x i1> @intrinsic_vmandn_mm_nxv32i1(<vscale x 32 x i1> %0, <vscale x 32 x i1> %1, iXLen %2) nounwind {
-; CHECK-LABEL: intrinsic_vmandn_mm_nxv32i1:
+define <vscale x 32 x i1> @intrinsic_vmandnot_mm_nxv32i1(<vscale x 32 x i1> %0, <vscale x 32 x i1> %1, iXLen %2) nounwind {
+; CHECK-LABEL: intrinsic_vmandnot_mm_nxv32i1:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a0, e8, m4, d1
 ; CHECK-NEXT:    th.vmandnot.mm v0, v0, v8
@@ -69,8 +129,8 @@ declare <vscale x 64 x i1> @llvm.riscv.th.vmandnot.nxv64i1(
   <vscale x 64 x i1>,
   iXLen);
 
-define <vscale x 64 x i1> @intrinsic_vmandn_mm_nxv64i1(<vscale x 64 x i1> %0, <vscale x 64 x i1> %1, iXLen %2) nounwind {
-; CHECK-LABEL: intrinsic_vmandn_mm_nxv64i1:
+define <vscale x 64 x i1> @intrinsic_vmandnot_mm_nxv64i1(<vscale x 64 x i1> %0, <vscale x 64 x i1> %1, iXLen %2) nounwind {
+; CHECK-LABEL: intrinsic_vmandnot_mm_nxv64i1:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a0, e8, m8, d1
 ; CHECK-NEXT:    th.vmandnot.mm v0, v0, v8
