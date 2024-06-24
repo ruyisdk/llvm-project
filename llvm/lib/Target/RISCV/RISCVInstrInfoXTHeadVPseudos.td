@@ -145,15 +145,32 @@ defset list<VTypeInfoToWide> AllWidenableIntToFloatXVectors = {
   def : VTypeInfoToWide<VI32M4, VF64M8>;
 }
 
+class XMTypeInfo<ValueType Mas, int Sew, int Log2Sew, LMULInfo M, string Bx> {
+  ValueType Mask = Mas;
+  // {SEW, VLMul} values set a valid VType to deal with this mask type.
+  int SEW = Sew;
+  int Log2SEW = Log2Sew;
+  LMULInfo LMul = M;
+  string BX = Bx; // Appendix of mask operations.
+  // The pattern fragment which produces the AVL operand, representing the
+  // "natural" vector length for this mask type. For scalable masks this is
+  // VLMax.
+  OutPatFrag AVL = VLMax;
+}
+
 // Redefine `AllMasks` from RISCVInstrInfoVPseudos.td to remove fractionally-grouped register groups.
-// TODO: riscv-v-intrinsics.pdf declares there are functions accepting vbool<16,32,64>_t, but they need
-//  to be connected to MF2, MF4, MF8, which are not supported by the 'V' extension 0.7.1.
-defset list<MTypeInfo> AllXMasks = {
+defset list<XMTypeInfo> AllXMasks = {
   // vbool<n>_t, <n> = SEW/LMUL, we assume SEW=8 and corresponding LMUL.
-  def : MTypeInfo<vbool8_t, V_M1, "B8">;
-  def : MTypeInfo<vbool4_t, V_M2, "B16">;
-  def : MTypeInfo<vbool2_t, V_M4, "B32">;
-  def : MTypeInfo<vbool1_t, V_M8, "B64">;
+  def : XMTypeInfo<vbool8_t, 8, 3, V_M1, "B8">;
+  def : XMTypeInfo<vbool4_t, 8, 3, V_M2, "B16">;
+  def : XMTypeInfo<vbool2_t, 8, 3, V_M4, "B32">;
+  def : XMTypeInfo<vbool1_t, 8, 3, V_M8, "B64">;
+
+  // Cannot assume SEW=8, as <n> = SEW/LMUL, so LMUL = MF2/MF4/MF8, which is not supported.
+  // Instead, we assume LMUL=1, so SEW = <n> * LMUL.
+  def : XMTypeInfo<vbool64_t, 64, 6, V_M1, "B1">;
+  def : XMTypeInfo<vbool32_t, 32, 5, V_M1, "B2">;
+  def : XMTypeInfo<vbool16_t, 16, 4, V_M1, "B4">;
 }
 
 class GetXVTypePredicates<VTypeInfo vti> {
@@ -3940,7 +3957,7 @@ multiclass XVPatUnaryS_M<string intrinsic_name,
 
 class XVPatMaskUnaryNoMask<string intrinsic_name,
                           string inst,
-                          MTypeInfo mti> :
+                          XMTypeInfo mti> :
   Pat<(mti.Mask (!cast<Intrinsic>(intrinsic_name)
                 (mti.Mask VR:$rs2),
                 VLOpFrag)),
@@ -3951,7 +3968,7 @@ class XVPatMaskUnaryNoMask<string intrinsic_name,
 
 class XVPatMaskUnaryMask<string intrinsic_name,
                         string inst,
-                        MTypeInfo mti> :
+                        XMTypeInfo mti> :
   Pat<(mti.Mask (!cast<Intrinsic>(intrinsic_name#"_mask")
                 (mti.Mask VR:$merge),
                 (mti.Mask VR:$rs2),
