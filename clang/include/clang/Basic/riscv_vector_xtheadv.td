@@ -1929,6 +1929,62 @@ let HasMasked = false, HasVL = false, IRName = "" in {
                                                  dst_lmul # "UvUv", "csil", dst_lmul # "Uv">;
     }
   }
+
+  let Name = "th_vget_v", MaskedPolicyScheme = NonePolicy,
+      ManualCodegen = [{
+      {
+        if (isa<StructType>(Ops[0]->getType())) // For tuple type
+          // Extract value from index (operand 1) of vtuple (operand 0)
+          return Builder.CreateExtractValue(
+            Ops[0],
+            {(unsigned)cast<ConstantInt>(Ops[1])->getZExtValue()});
+        auto *VecTy = cast<ScalableVectorType>(ResultType);
+        auto *OpVecTy = cast<ScalableVectorType>(Ops[0]->getType());
+        // Mask to only valid indices.
+        unsigned MaxIndex = OpVecTy->getMinNumElements() / VecTy->getMinNumElements();
+        assert(isPowerOf2_32(MaxIndex));
+        Ops[1] = Builder.CreateZExt(Ops[1], Builder.getInt64Ty());
+        Ops[1] = Builder.CreateAnd(Ops[1], MaxIndex - 1);
+        Ops[1] = Builder.CreateMul(Ops[1],
+                                   ConstantInt::get(Ops[1]->getType(),
+                                                    VecTy->getMinNumElements()));
+        return Builder.CreateExtractVector(ResultType, Ops[0], Ops[1]);
+      }
+      }] in {
+    foreach dst_lmul = ["(SFixedLog2LMUL:0)", "(SFixedLog2LMUL:1)", "(SFixedLog2LMUL:2)"] in {
+      def : RVVBuiltin<"v" # dst_lmul # "v", dst_lmul # "vvKz", "csilxfd", dst_lmul # "v">;
+      def : RVVBuiltin<"Uv" # dst_lmul # "Uv", dst_lmul # "UvUvKz", "csil", dst_lmul # "Uv">;
+    }
+  }
+
+  let Name = "th_vset_v", MaskedPolicyScheme = NonePolicy,
+      ManualCodegen = [{
+      {
+        if (isa<StructType>(ResultType)) // For tuple type
+          // Insert value (operand 2) into index (operand 1) of vtuple (operand 0)
+          return Builder.CreateInsertValue(
+            Ops[0], Ops[2],
+            {(unsigned)cast<ConstantInt>(Ops[1])->getZExtValue()});
+        auto *ResVecTy = cast<ScalableVectorType>(ResultType);
+        auto *VecTy = cast<ScalableVectorType>(Ops[2]->getType());
+        // Mask to only valid indices.
+        unsigned MaxIndex = ResVecTy->getMinNumElements() / VecTy->getMinNumElements();
+        assert(isPowerOf2_32(MaxIndex));
+        Ops[1] = Builder.CreateZExt(Ops[1], Builder.getInt64Ty());
+        Ops[1] = Builder.CreateAnd(Ops[1], MaxIndex - 1);
+        Ops[1] = Builder.CreateMul(Ops[1],
+                                   ConstantInt::get(Ops[1]->getType(),
+                                                    VecTy->getMinNumElements()));
+        return Builder.CreateInsertVector(ResultType, Ops[0], Ops[2], Ops[1]);
+      }
+      }] in {
+    let Log2LMUL = [0, 1, 2] in {
+      foreach dst_lmul = ["(LFixedLog2LMUL:1)", "(LFixedLog2LMUL:2)", "(LFixedLog2LMUL:3)"] in {
+        def : RVVBuiltin<"v" # dst_lmul # "v", dst_lmul # "v" # dst_lmul # "vKzv", "csilxfd">;
+        def : RVVBuiltin<"Uv" # dst_lmul # "Uv", dst_lmul # "Uv" # dst_lmul #"UvKzUv", "csil">;
+      }
+    }
+  }
 }
 
 include "riscv_vector_xtheadv_wrappers.td"
