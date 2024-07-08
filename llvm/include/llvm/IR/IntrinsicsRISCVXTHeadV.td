@@ -706,6 +706,19 @@ let TargetPrefix = "riscv" in {
                     RISCVVIntrinsic {
     let VLOperand = 5;
   }
+  // For Saturating binary operations with mask but no policy.
+  // The destination vector type is the same as first source vector.
+  // The second source operand matches the destination type or is an XLen scalar.
+  // Input: (maskedoff, vector_in, vector_in/scalar_in, mask, vxrm, vl)
+  class XVSaturatingBinaryAAShiftMaskedRoundingMode
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, LLVMMatchType<0>, llvm_any_ty,
+                     LLVMScalarOrSameVectorWidth<0, llvm_i1_ty>, llvm_anyint_ty,
+                     LLVMMatchType<2>],
+                    [ImmArg<ArgIndex<4>>, IntrNoMem, IntrHasSideEffects]>,
+                    RISCVVIntrinsic {
+    let VLOperand = 6;
+  }
 
   // UnMasked Vector Multiply-Add operations, its first operand can not be undef.
   // Input: (vector_in, vector_in/scalar, vector_in, frm, vl)
@@ -890,6 +903,10 @@ let TargetPrefix = "riscv" in {
     def "int_riscv_" # NAME : RISCVSaturatingBinaryABShiftUnMaskedRoundingMode;
     def "int_riscv_" # NAME # "_mask" : XVSaturatingBinaryABShiftMaskedRoundingMode;
   }
+  multiclass XVSaturatingBinaryAAShiftRoundingMode {
+    def "int_riscv_" # NAME : RISCVSaturatingBinaryAAShiftUnMaskedRoundingMode;
+    def "int_riscv_" # NAME # "_mask" : XVSaturatingBinaryAAShiftMaskedRoundingMode;
+  }
 
   multiclass XVTernaryAAXARoundingMode {
     def "int_riscv_" # NAME : XVTernaryAAXAUnMaskedRoundingMode;
@@ -1056,6 +1073,10 @@ let TargetPrefix = "riscv" in {
 
   // 13.3.  Vector Single-Width Fractional Multiply with Rounding and Saturation Instructions
   defm th_vsmul : XVBinaryAAXRoundingMode;
+
+  // 13.5. Vector Single-Width Scaling Shift Instructions
+  defm th_vssrl : XVSaturatingBinaryAAShiftRoundingMode;
+  defm th_vssra : XVSaturatingBinaryAAShiftRoundingMode;
 
   // 13.6. Vector Narrowing Fixed-Point Clip Instructions
   defm th_vnclipu : XVSaturatingBinaryABShiftRoundingMode;

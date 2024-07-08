@@ -2146,6 +2146,10 @@ multiclass XVPseudoBinaryV_VI<Operand ImmType = simm5, LMULInfo m, string Constr
   defm _VI : XVPseudoBinary<m.vrclass, m.vrclass, ImmType, m, Constraint>;
 }
 
+multiclass XVPseudoBinaryV_VI_RM<Operand ImmType = simm5, LMULInfo m, string Constraint = ""> {
+  defm _VI : XVPseudoBinaryRoundingMode<m.vrclass, m.vrclass, ImmType, m, Constraint>;
+}
+
 multiclass XVPseudoBinaryV_VF<LMULInfo m, FPR_InfoXTHeadV f, string Constraint = "", int sew = 0> {
   defm "_V" # f.FX : XVPseudoBinary<m.vrclass, m.vrclass,
                                     f.fprclass, m, Constraint, sew>;
@@ -2463,6 +2467,24 @@ multiclass XVPseudoVSHT_VV_VX_VI<Operand ImmType = simm5, string Constraint = ""
               Sched<[WriteVShiftX_MX, ReadVShiftV_MX, ReadVShiftX_MX, ReadVMask]>;
     defm "" : XVPseudoBinaryV_VI<ImmType, m, Constraint>,
               Sched<[WriteVShiftI_MX, ReadVShiftV_MX, ReadVMask]>;
+  }
+}
+
+multiclass XVPseudoVSSHT_VV_VX_VI_RM<Operand ImmType = simm5, string Constraint = ""> {
+  foreach m = MxListXTHeadV in {
+    defvar mx = m.MX;
+    defvar WriteVSShiftV_MX = !cast<SchedWrite>("WriteVSShiftV_" # mx);
+    defvar WriteVSShiftX_MX = !cast<SchedWrite>("WriteVSShiftX_" # mx);
+    defvar WriteVSShiftI_MX = !cast<SchedWrite>("WriteVSShiftI_" # mx);
+    defvar ReadVSShiftV_MX = !cast<SchedRead>("ReadVSShiftV_" # mx);
+    defvar ReadVSShiftX_MX = !cast<SchedRead>("ReadVSShiftX_" # mx);
+
+    defm "" : XVPseudoBinaryV_VV_RM<m, Constraint>,
+              Sched<[WriteVSShiftV_MX, ReadVSShiftV_MX, ReadVSShiftV_MX, ReadVMask]>;
+    defm "" : XVPseudoBinaryV_VX_RM<m, Constraint>,
+              Sched<[WriteVSShiftX_MX, ReadVSShiftV_MX, ReadVSShiftX_MX, ReadVMask]>;
+    defm "" : XVPseudoBinaryV_VI_RM<ImmType, m, Constraint>,
+              Sched<[WriteVSShiftI_MX, ReadVSShiftV_MX, ReadVMask]>;
   }
 }
 
@@ -3690,6 +3712,18 @@ multiclass XVPatBinaryV_VI<string intrinsic, string instruction,
                       vti.RegClass, imm_type>;
 }
 
+multiclass XVPatBinaryV_VI_RM<string intrinsic, string instruction,
+                              list<VTypeInfo> vtilist,
+                              Operand imm_type> {
+  foreach vti = vtilist in
+    let Predicates = GetXVTypePredicates<vti>.Predicates in
+    defm : XVPatBinaryRoundingMode<intrinsic,
+                                   instruction # "_VI_" # vti.LMul.MX,
+                                   vti.Vector, vti.Vector, XLenVT, vti.Mask,
+                                   vti.Log2SEW, vti.RegClass,
+                                   vti.RegClass, imm_type>;
+}
+
 multiclass XVPatBinaryW_VV<string intrinsic, string instruction,
                            list<VTypeInfoToWide> vtilist> {
   foreach VtiToWti = vtilist in {
@@ -4639,6 +4673,12 @@ multiclass XVPatBinaryV_VV_VX_VI<string intrinsic, string instruction,
       XVPatBinaryV_VX<intrinsic, instruction, vtilist>,
       XVPatBinaryV_VI<intrinsic, instruction, vtilist, ImmType>;
 
+multiclass XVPatBinaryV_VV_VX_VI_RM<string intrinsic, string instruction,
+                                    list<VTypeInfo> vtilist, Operand ImmType = simm5>
+    : XVPatBinaryV_VV_RM<intrinsic, instruction, vtilist>,
+      XVPatBinaryV_VX_RM<intrinsic, instruction, vtilist>,
+      XVPatBinaryV_VI_RM<intrinsic, instruction, vtilist, ImmType>;
+
 multiclass XVPatBinaryV_VV_VX<string intrinsic, string instruction,
                               list<VTypeInfo> vtilist, bit isSEWAware = 0>
     : XVPatBinaryV_VV<intrinsic, instruction, vtilist, isSEWAware>,
@@ -5449,12 +5489,26 @@ let Predicates = [HasVendorXTHeadV] in {
 // Saturation Instructions
 //===----------------------------------------------------------------------===//
 
-let Predicates = [HasVendorXTHeadV] in {
+let Predicates = [HasVendorXTHeadV], hasSideEffects = 1 in {
   defm PseudoTH_VSMUL  : XVPseudoVSMUL_VV_VX_RM;
 } // Predicates = [HasVendorXTHeadV]
 
 let Predicates = [HasVendorXTHeadV] in {
   defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vsmul", "PseudoTH_VSMUL", AllIntegerXVectors>;
+} // Predicates = [HasVendorXTHeadV]
+
+//===----------------------------------------------------------------------===//
+// 13.5. Vector Single-Width Scaling Shift Instructions
+//===----------------------------------------------------------------------===//
+
+let Predicates = [HasVendorXTHeadV], hasSideEffects = 1 in {
+  defm PseudoTH_VSSRL : XVPseudoVSSHT_VV_VX_VI_RM<uimm5>;
+  defm PseudoTH_VSSRA : XVPseudoVSSHT_VV_VX_VI_RM<uimm5>;
+} // Predicates = [HasVendorXTHeadV]
+
+let Predicates = [HasVendorXTHeadV] in {
+  defm : XVPatBinaryV_VV_VX_VI_RM<"int_riscv_th_vssrl", "PseudoTH_VSSRL", AllIntegerXVectors, uimm5>;
+  defm : XVPatBinaryV_VV_VX_VI_RM<"int_riscv_th_vssra", "PseudoTH_VSSRA", AllIntegerXVectors, uimm5>;
 } // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
