@@ -1087,6 +1087,9 @@ let UnMaskedPolicyScheme = HasPassthruOperand,
   defm th_vasub : RVVSignedBinBuiltinSetRoundingMode;
   // 13.3. Vector Single-Width Fractional Multiply with Rounding and Saturation Operations
   defm th_vsmul : RVVSignedBinBuiltinSetRoundingMode;
+  // 13.4. Vector Single-Width Scaling Shift Instructions
+  defm th_vssrl : RVVUnsignedShiftBuiltinSetRoundingMode;
+  defm th_vssra : RVVSignedShiftBuiltinSetRoundingMode;
 }
 
 // 13.5 Vector Narrowing Fixed-Point Clip Operations
