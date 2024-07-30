@@ -771,6 +771,8 @@ public:
                                           Value *NewVal, Value *Mask,
                                           AtomicOrdering Ord) const override;
 
+  MVT getPointerTy(const DataLayout &DL, uint32_t AS = 0) const override;
+
   /// Returns true if the target allows unaligned memory accesses of the
   /// specified type.
   bool allowsMisalignedMemoryAccesses(
