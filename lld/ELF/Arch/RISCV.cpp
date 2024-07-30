@@ -156,6 +156,10 @@ uint32_t RISCV::calcEFlags() const {
     if (eflags & EF_RISCV_RVC)
       target |= EF_RISCV_RVC;
 
+    if ((eflags & EF_RISCV_X32) != (target & EF_RISCV_X32))
+      error(toString(f) +
+            ": cannot link object files with different EF_RISCV_X32");
+
     if ((eflags & EF_RISCV_FLOAT_ABI) != (target & EF_RISCV_FLOAT_ABI))
       error(
           toString(f) +
@@ -735,6 +739,7 @@ void elf::initSymbolAnchors() {
 static void relaxCall(const InputSection &sec, size_t i, uint64_t loc,
                       Relocation &r, uint32_t &remove) {
   const bool rvc = getEFlags(sec.file) & EF_RISCV_RVC;
+  const bool x32 = getEFlags(sec.file) & EF_RISCV_X32;
   const Symbol &sym = *r.sym;
   const uint64_t insnPair = read64le(sec.content().data() + r.offset);
   const uint32_t rd = extractBits(insnPair, 32 + 11, 32 + 7);
@@ -747,7 +752,7 @@ static void relaxCall(const InputSection &sec, size_t i, uint64_t loc,
     sec.relaxAux->writes.push_back(0xa001); // c.j
     remove = 6;
   } else if (rvc && isInt<12>(displace) && rd == X_RA &&
-             !config->is64) { // RV32C only
+             !config->is64 && !x32) { // RV32C only
     sec.relaxAux->relocTypes[i] = R_RISCV_RVC_JUMP;
     sec.relaxAux->writes.push_back(0x2001); // c.jal
     remove = 6;
