@@ -212,6 +212,8 @@ void RISCVTargetInfo::getTargetDefines(const LangOptions &Opts,
   if (HasXTHeadVector) {
     // https://github.com/riscv-non-isa/rvv-intrinsic-doc/pull/298/files
     Builder.defineMacro("__riscv_th_v_intrinsic", Twine(getVersionValue(0, 11)));
+    // https://github.com/ruyisdk/llvm-project/issues/128
+    Builder.defineMacro("__riscv_vector");
   }
 
   auto VScale = getVScaleRange(Opts);
