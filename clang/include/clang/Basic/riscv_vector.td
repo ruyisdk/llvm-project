@@ -761,27 +761,6 @@ The Vector(s) is poison when the policy behavior allows us to not care
 about any masked-off elements.
 */
 
-class PVString<int nf, bit signed> {
-  string S =
-    !cond(!eq(nf, 2): !if(signed, "PvPv", "PUvPUv"),
-          !eq(nf, 3): !if(signed, "PvPvPv", "PUvPUvPUv"),
-          !eq(nf, 4): !if(signed, "PvPvPvPv", "PUvPUvPUvPUv"),
-          !eq(nf, 5): !if(signed, "PvPvPvPvPv", "PUvPUvPUvPUvPUv"),
-          !eq(nf, 6): !if(signed, "PvPvPvPvPvPv", "PUvPUvPUvPUvPUvPUv"),
-          !eq(nf, 7): !if(signed, "PvPvPvPvPvPvPv", "PUvPUvPUvPUvPUvPUvPUv"),
-          !eq(nf, 8): !if(signed, "PvPvPvPvPvPvPvPv", "PUvPUvPUvPUvPUvPUvPUvPUv"));
-}
-
-class VString<int nf, bit signed> {
-  string S = !cond(!eq(nf, 2): !if(signed, "vv", "UvUv"),
-                   !eq(nf, 3): !if(signed, "vvv", "UvUvUv"),
-                   !eq(nf, 4): !if(signed, "vvvv", "UvUvUvUv"),
-                   !eq(nf, 5): !if(signed, "vvvvv", "UvUvUvUvUv"),
-                   !eq(nf, 6): !if(signed, "vvvvvv", "UvUvUvUvUvUv"),
-                   !eq(nf, 7): !if(signed, "vvvvvvv", "UvUvUvUvUvUvUv"),
-                   !eq(nf, 8): !if(signed, "vvvvvvvv", "UvUvUvUvUvUvUvUv"));
-}
-
 multiclass RVVPseudoUnaryBuiltin<string IR, string type_range> {
   let Name = NAME,
       IRName = IR,
@@ -2811,6 +2790,32 @@ let HasMasked = false, HasVL = false, IRName = "" in {
       defvar T = "(Tuple:" # nf # ")";
       def : RVVBuiltin<"v" # T # "v", T # "v" # T # "vKzv", "csilxfd">;
       def : RVVBuiltin<"Uv" # T # "Uv", T # "Uv" # T # "UvKzUv", "csil">;
+    }
+  }
+
+  let Name = "vcreate_v",
+      UnMaskedPolicyScheme = NonePolicy,
+      MaskedPolicyScheme = NonePolicy,
+      SupportOverloading = false,
+      ManualCodegen = [{
+      {
+        assert(isa<StructType>(ResultType));
+        unsigned NF = cast<StructType>(ResultType)->getNumElements();
+        llvm::Value *ReturnTuple = llvm::PoisonValue::get(ResultType);
+        for (unsigned I = 0; I < NF; ++I) {
+          ReturnTuple = Builder.CreateInsertValue(ReturnTuple, Ops[I], {I});
+        }
+        return ReturnTuple;
+      }
+      }] in {
+    foreach nf = NFList in {
+      let NF = nf in {
+        defvar T = "(Tuple:" # nf # ")";
+        defvar V = VString<nf, /*signed=*/true>.S;
+        defvar UV = VString<nf, /*signed=*/false>.S;
+        def : RVVBuiltin<T # "v", T # "v" # V, "csilxfd">;
+        def : RVVBuiltin<T # "Uv", T # "Uv" # UV, "csil">;
+      }
     }
   }
 }
