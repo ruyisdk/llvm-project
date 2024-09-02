@@ -320,28 +320,6 @@ The Vector(s) is poison when the policy behavior allows us to not care
 about any masked-off elements.
 */
 
-class PVString<int nf, bit signed> {
-  string S =
-    !cond(!eq(nf, 2): !if(signed, "PvPv", "PUvPUv"),
-          !eq(nf, 3): !if(signed, "PvPvPv", "PUvPUvPUv"),
-          !eq(nf, 4): !if(signed, "PvPvPvPv", "PUvPUvPUvPUv"),
-          !eq(nf, 5): !if(signed, "PvPvPvPvPv", "PUvPUvPUvPUvPUv"),
-          !eq(nf, 6): !if(signed, "PvPvPvPvPvPv", "PUvPUvPUvPUvPUvPUv"),
-          !eq(nf, 7): !if(signed, "PvPvPvPvPvPvPv", "PUvPUvPUvPUvPUvPUvPUv"),
-          !eq(nf, 8): !if(signed, "PvPvPvPvPvPvPvPv", "PUvPUvPUvPUvPUvPUvPUvPUv"));
-}
-
-class VString<int nf, bit signed> {
-  string S = !cond(!eq(nf, 2): !if(signed, "vv", "UvUv"),
-                   !eq(nf, 3): !if(signed, "vvv", "UvUvUv"),
-                   !eq(nf, 4): !if(signed, "vvvv", "UvUvUvUv"),
-                   !eq(nf, 5): !if(signed, "vvvvv", "UvUvUvUvUv"),
-                   !eq(nf, 6): !if(signed, "vvvvvv", "UvUvUvUvUvUv"),
-                   !eq(nf, 7): !if(signed, "vvvvvvv", "UvUvUvUvUvUvUv"),
-                   !eq(nf, 8): !if(signed, "vvvvvvvv", "UvUvUvUvUvUvUvUv"));
-}
-
-
 class FixedVString<int fixed_lmul, int num, string vec> {
   string V = "(LFixedLog2LMUL:" # fixed_lmul # ")" # vec;
   string S = !interleave(!listsplat(V, num), "");

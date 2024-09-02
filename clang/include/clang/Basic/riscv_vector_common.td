@@ -715,3 +715,25 @@ multiclass RVVFloatingWidenOp0BinBuiltinSetRoundingMode
 class IsFloat<string type> {
   bit val = !or(!eq(type, "x"), !eq(type, "f"), !eq(type, "d"), !eq(type, "y"));
 }
+
+
+class PVString<int nf, bit signed> {
+  string S =
+    !cond(!eq(nf, 2): !if(signed, "PvPv", "PUvPUv"),
+          !eq(nf, 3): !if(signed, "PvPvPv", "PUvPUvPUv"),
+          !eq(nf, 4): !if(signed, "PvPvPvPv", "PUvPUvPUvPUv"),
+          !eq(nf, 5): !if(signed, "PvPvPvPvPv", "PUvPUvPUvPUvPUv"),
+          !eq(nf, 6): !if(signed, "PvPvPvPvPvPv", "PUvPUvPUvPUvPUvPUv"),
+          !eq(nf, 7): !if(signed, "PvPvPvPvPvPvPv", "PUvPUvPUvPUvPUvPUvPUv"),
+          !eq(nf, 8): !if(signed, "PvPvPvPvPvPvPvPv", "PUvPUvPUvPUvPUvPUvPUvPUv"));
+}
+
+class VString<int nf, bit signed> {
+  string S = !cond(!eq(nf, 2): !if(signed, "vv", "UvUv"),
+                   !eq(nf, 3): !if(signed, "vvv", "UvUvUv"),
+                   !eq(nf, 4): !if(signed, "vvvv", "UvUvUvUv"),
+                   !eq(nf, 5): !if(signed, "vvvvv", "UvUvUvUvUv"),
+                   !eq(nf, 6): !if(signed, "vvvvvv", "UvUvUvUvUvUv"),
+                   !eq(nf, 7): !if(signed, "vvvvvvv", "UvUvUvUvUvUvUv"),
+                   !eq(nf, 8): !if(signed, "vvvvvvvv", "UvUvUvUvUvUvUvUv"));
+}
