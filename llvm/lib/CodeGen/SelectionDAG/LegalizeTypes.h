@@ -402,6 +402,7 @@ private:
   SDValue PromoteIntOp_SINT_TO_FP(SDNode *N);
   SDValue PromoteIntOp_STRICT_SINT_TO_FP(SDNode *N);
   SDValue PromoteIntOp_STORE(StoreSDNode *N, unsigned OpNo);
+  SDValue PromoteIntOp_LOAD(LoadSDNode *N, unsigned OpNo);
   SDValue PromoteIntOp_TRUNCATE(SDNode *N);
   SDValue PromoteIntOp_UINT_TO_FP(SDNode *N);
   SDValue PromoteIntOp_STRICT_UINT_TO_FP(SDNode *N);

@@ -280,11 +280,12 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     setOperationAction(ISD::EH_DWARF_CFA, MVT::i64, Custom);
 
     if (!RV64LegalI32) {
-      setOperationAction(ISD::LOAD, MVT::i32, Custom);
+      // setOperationAction(ISD::LOAD, MVT::i32, Custom);
       setOperationAction({ISD::ADD, ISD::SUB, ISD::SHL, ISD::SRA, ISD::SRL},
                          MVT::i32, Custom);
       setOperationAction({ISD::UADDO, ISD::USUBO, ISD::UADDSAT, ISD::USUBSAT},
                          MVT::i32, Custom);
+      setOperationAction(ISD::READ_REGISTER, MVT::i32, Custom);
       if (!Subtarget.hasStdExtZbb())
         setOperationAction({ISD::SADDSAT, ISD::SSUBSAT}, MVT::i32, Custom);
     } else {
@@ -7828,8 +7829,8 @@ SDValue RISCVTargetLowering::lowerVASTART(SDValue Op, SelectionDAG &DAG) const {
   // vastart just stores the address of the VarArgsFrameIndex slot into the
   // memory location argument.
   const Value *SV = cast<SrcValueSDNode>(Op.getOperand(2))->getValue();
-  return DAG.getStore(Op.getOperand(0), DL, FI, Op.getOperand(1),
-                      MachinePointerInfo(SV));
+  return DAG.getTruncStore(Op.getOperand(0), DL, FI, Op.getOperand(1),
+                      MachinePointerInfo(SV), getPointerMemTy(MF.getDataLayout()));
 }
 
 SDValue RISCVTargetLowering::lowerFRAMEADDR(SDValue Op,
@@ -12614,6 +12615,14 @@ void RISCVTargetLowering::ReplaceNodeResults(SDNode *N,
     SDValue EltHi = DAG.getNode(RISCVISD::VMV_X_S, DL, XLenVT, LShr32);
 
     Results.push_back(DAG.getNode(ISD::BUILD_PAIR, DL, MVT::i64, EltLo, EltHi));
+    break;
+  }
+  case ISD::READ_REGISTER: {
+    SDValue Chain = N->getOperand(0);
+    SDValue SysRegName = N->getOperand(1);
+    SDValue Result = DAG.getNode(N->getOpcode(), DL, DAG.getVTList({MVT::i64, MVT::Other}), Chain, SysRegName);
+    Results.push_back(DAG.getNode(ISD::TRUNCATE, DL, MVT::i32, Result));
+    Results.push_back(Result.getValue(1));
     break;
   }
   case ISD::INTRINSIC_WO_CHAIN: {

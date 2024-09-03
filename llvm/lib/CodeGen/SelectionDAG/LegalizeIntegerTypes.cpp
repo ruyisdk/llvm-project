@@ -1908,6 +1908,8 @@ bool DAGTypeLegalizer::PromoteIntegerOperand(SDNode *N, unsigned OpNo) {
   case ISD::STRICT_SINT_TO_FP: Res = PromoteIntOp_STRICT_SINT_TO_FP(N); break;
   case ISD::STORE:        Res = PromoteIntOp_STORE(cast<StoreSDNode>(N),
                                                    OpNo); break;
+  case ISD::LOAD:         Res = PromoteIntOp_LOAD(cast<LoadSDNode>(N),
+                                                   OpNo); break;
   case ISD::MSTORE:       Res = PromoteIntOp_MSTORE(cast<MaskedStoreSDNode>(N),
                                                     OpNo); break;
   case ISD::MLOAD:        Res = PromoteIntOp_MLOAD(cast<MaskedLoadSDNode>(N),
@@ -2306,14 +2308,39 @@ SDValue DAGTypeLegalizer::PromoteIntOp_STRICT_SINT_TO_FP(SDNode *N) {
 
 SDValue DAGTypeLegalizer::PromoteIntOp_STORE(StoreSDNode *N, unsigned OpNo){
   assert(ISD::isUNINDEXEDStore(N) && "Indexed store during type legalization!");
-  SDValue Ch = N->getChain(), Ptr = N->getBasePtr();
-  SDLoc dl(N);
 
-  SDValue Val = GetPromotedInteger(N->getValue());  // Get promoted value.
+  if (OpNo == 1) {
+    SDValue Ch = N->getChain(), Ptr = N->getBasePtr();
+    SDLoc dl(N);
 
-  // Truncate the value and store the result.
-  return DAG.getTruncStore(Ch, dl, Val, Ptr,
-                           N->getMemoryVT(), N->getMemOperand());
+    LLVM_DEBUG(dbgs() << "GetPromotedInteger " << N->getValue().getNode() << "\n");
+    SDValue Val = GetPromotedInteger(N->getValue());  // Get promoted value.
+
+    // Truncate the value and store the result.
+    return DAG.getTruncStore(Ch, dl, Val, Ptr,
+                             N->getMemoryVT(), N->getMemOperand());
+  }
+  else if (OpNo == 2) {
+    return SDValue(DAG.UpdateNodeOperands(N, N->getOperand(0), N->getOperand(1),
+          SExtPromotedInteger(N->getOperand(2)), N->getOperand(3)), 0);
+  } else if (OpNo == 3) {
+    return SDValue(DAG.UpdateNodeOperands(N, N->getOperand(0), N->getOperand(1),
+          N->getOperand(2), SExtPromotedInteger(N->getOperand(3))), 0);
+  } else {
+    llvm_unreachable("TODO: msg");
+  }
+}
+
+SDValue DAGTypeLegalizer::PromoteIntOp_LOAD(LoadSDNode *N, unsigned OpNo) {
+  if (OpNo == 1) {
+    return SDValue(DAG.UpdateNodeOperands(N, N->getOperand(0),
+          SExtPromotedInteger(N->getOperand(1)), N->getOperand(2)), 0);
+  } else if (OpNo == 2) {
+    return SDValue(DAG.UpdateNodeOperands(N, N->getOperand(0), N->getOperand(1),
+          SExtPromotedInteger(N->getOperand(2))), 0);
+  } else {
+    llvm_unreachable("TODO: msg");
+  }
 }
 
 SDValue DAGTypeLegalizer::PromoteIntOp_MSTORE(MaskedStoreSDNode *N,
