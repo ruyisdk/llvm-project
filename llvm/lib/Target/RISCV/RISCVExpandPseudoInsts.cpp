@@ -554,7 +554,7 @@ bool RISCVPreRAExpandPseudo::expandLoadLocalAddress(
 static unsigned getAddrLoadSecondOpcode(const RISCVSubtarget *STI) {
   if (STI->is64Bit()) {
     if (STI->getTargetABI() == RISCVABI::ABI_ILP32)
-      return RISCV::LWU;
+      return RISCV::LW;
     return RISCV::LD;
   }
   return RISCV::LW;
