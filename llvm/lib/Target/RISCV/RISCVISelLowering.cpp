@@ -286,6 +286,7 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
       setOperationAction({ISD::UADDO, ISD::USUBO, ISD::UADDSAT, ISD::USUBSAT},
                          MVT::i32, Custom);
       setOperationAction(ISD::READ_REGISTER, MVT::i32, Custom);
+      setOperationAction(ISD::FrameIndex, MVT::i32, Custom);
       if (!Subtarget.hasStdExtZbb())
         setOperationAction({ISD::SADDSAT, ISD::SSUBSAT}, MVT::i32, Custom);
     } else {
@@ -12623,6 +12624,10 @@ void RISCVTargetLowering::ReplaceNodeResults(SDNode *N,
     SDValue Result = DAG.getNode(N->getOpcode(), DL, DAG.getVTList({MVT::i64, MVT::Other}), Chain, SysRegName);
     Results.push_back(DAG.getNode(ISD::TRUNCATE, DL, MVT::i32, Result));
     Results.push_back(Result.getValue(1));
+    break;
+  }
+  case ISD::FrameIndex: {
+    Results.push_back(DAG.getFrameIndex(cast<FrameIndexSDNode>(N)->getIndex(), MVT::i64));
     break;
   }
   case ISD::INTRINSIC_WO_CHAIN: {
