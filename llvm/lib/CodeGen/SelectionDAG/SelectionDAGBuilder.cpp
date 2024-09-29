@@ -7294,17 +7294,20 @@ void SelectionDAGBuilder::visitIntrinsicCall(const CallInst &I,
   case Intrinsic::stackguard: {
     MachineFunction &MF = DAG.getMachineFunction();
     const Module &M = *MF.getFunction().getParent();
-    EVT PtrTy = TLI.getMemValueType(DAG.getDataLayout(), I.getType());
+    EVT PtrMemTy = TLI.getMemValueType(DAG.getDataLayout(), I.getType());
+    EVT PtrTy = TLI.getValueType(DAG.getDataLayout(), I.getType());
     SDValue Chain = getRoot();
     if (TLI.useLoadStackGuardNode()) {
       Res = getLoadStackGuard(DAG, sdl, Chain);
-      Res = DAG.getPtrExtOrTrunc(Res, sdl, PtrTy);
+      Res = DAG.getPtrExtOrTrunc(Res, sdl, PtrMemTy);
     } else {
       const Value *Global = TLI.getSDagStackGuard(M);
       Align Align = DAG.getDataLayout().getPrefTypeAlign(Global->getType());
-      Res = DAG.getLoad(PtrTy, sdl, Chain, getValue(Global),
+      Res = DAG.getLoad(PtrMemTy, sdl, Chain, getValue(Global),
                         MachinePointerInfo(Global, 0), Align,
                         MachineMemOperand::MOVolatile);
+      if (PtrMemTy != PtrTy)
+        Res = DAG.getPtrExtOrTrunc(Res, sdl, PtrTy);
     }
     if (TLI.useStackGuardXorFP())
       Res = TLI.emitStackGuardXorFP(DAG, Res, sdl);
@@ -7320,8 +7323,13 @@ void SelectionDAGBuilder::visitIntrinsicCall(const CallInst &I,
 
     if (TLI.useLoadStackGuardNode())
       Src = getLoadStackGuard(DAG, sdl, Chain);
-    else
+    else {
       Src = getValue(I.getArgOperand(0));   // The guard's value.
+
+      EVT PtrMemTy = TLI.getPointerMemTy(DAG.getDataLayout());
+      if (Src.getValueType() != PtrMemTy)
+        Src = DAG.getPtrExtOrTrunc(Src, sdl, PtrMemTy);
+    }
 
     AllocaInst *Slot = cast<AllocaInst>(I.getArgOperand(1));
 
