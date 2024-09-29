@@ -1540,6 +1540,29 @@ SDValue SelectionDAG::getZeroExtendInReg(SDValue Op, const SDLoc &DL, EVT VT) {
   return getNode(ISD::AND, DL, OpVT, Op, getConstant(Imm, DL, OpVT));
 }
 
+SDValue SelectionDAG::getSignExtendInReg(SDValue Op, const SDLoc &DL, EVT VT) {
+  EVT OpVT = Op.getValueType();
+  assert(VT.isInteger() && OpVT.isInteger() &&
+         "Cannot getSignExtendInReg FP types");
+  assert(VT.isVector() == OpVT.isVector() &&
+         "getSignExtendInReg type should be vector iff the operand "
+         "type is vector!");
+  assert((!VT.isVector() ||
+          VT.getVectorElementCount() == OpVT.getVectorElementCount()) &&
+         "Vector element counts must match in getSignExtendInReg");
+  assert(VT.bitsLE(OpVT) && "Not extending!");
+  if (OpVT == VT)
+    return Op;
+
+  SDValue ShiftAmount = getConstant(OpVT.getScalarSizeInBits() - VT.getScalarSizeInBits(), DL, OpVT);
+
+  SDNodeFlags Flags;
+  Flags.setExact(true);
+
+  SDValue Tmp = getNode(ISD::SHL, DL, OpVT, Op, ShiftAmount);
+  return getNode(ISD::SRA, DL, OpVT, Tmp, ShiftAmount, Flags);
+}
+
 SDValue SelectionDAG::getVPZeroExtendInReg(SDValue Op, SDValue Mask,
                                            SDValue EVL, const SDLoc &DL,
                                            EVT VT) {
@@ -1560,15 +1583,11 @@ SDValue SelectionDAG::getVPZeroExtendInReg(SDValue Op, SDValue Mask,
 }
 
 SDValue SelectionDAG::getPtrExtOrTrunc(SDValue Op, const SDLoc &DL, EVT VT) {
-  // Only unsigned pointer semantics are supported right now. In the future this
-  // might delegate to TLI to check pointer signedness.
-  return getZExtOrTrunc(Op, DL, VT);
+  return TLI->isPointerUnsigned() ? getZExtOrTrunc(Op, DL, VT) : getSExtOrTrunc(Op, DL, VT);
 }
 
 SDValue SelectionDAG::getPtrExtendInReg(SDValue Op, const SDLoc &DL, EVT VT) {
-  // Only unsigned pointer semantics are supported right now. In the future this
-  // might delegate to TLI to check pointer signedness.
-  return getZeroExtendInReg(Op, DL, VT);
+  return TLI->isPointerUnsigned() ? getZeroExtendInReg(Op, DL, VT) : getSignExtendInReg(Op, DL, VT);
 }
 
 SDValue SelectionDAG::getNegative(SDValue Val, const SDLoc &DL, EVT VT) {

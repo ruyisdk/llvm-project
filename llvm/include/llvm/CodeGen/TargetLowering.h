@@ -425,6 +425,11 @@ public:
   /// to any larger type.
   virtual MVT getVPExplicitVectorLengthTy() const { return MVT::i32; }
 
+  virtual bool isPointerUnsigned() const {
+    // Use unsigned pointer semantics by default.
+    return true;
+  }
+
   /// This callback is used to inspect load/store instructions and add
   /// target-specific MachineMemOperand flags to them.  The default
   /// implementation does nothing.

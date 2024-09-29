@@ -1584,6 +1584,11 @@ MVT RISCVTargetLowering::getPointerTy(const DataLayout &DL, uint32_t AS) const {
   return TargetLowering::getPointerTy(DL, AS);
 }
 
+bool RISCVTargetLowering::isPointerUnsigned() const {
+  // pointers of rv64ilp32 are signed
+  return !(Subtarget.is64Bit() && Subtarget.getTargetABI() == RISCVABI::ABI_ILP32);
+}
+
 bool RISCVTargetLowering::getTgtMemIntrinsic(IntrinsicInfo &Info,
                                              const CallInst &I,
                                              MachineFunction &MF,
