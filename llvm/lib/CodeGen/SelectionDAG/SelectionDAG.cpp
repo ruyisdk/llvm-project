@@ -2451,11 +2451,13 @@ SDValue SelectionDAG::expandVACopy(SDNode *Node) {
   // output, returning the chain.
   const Value *VD = cast<SrcValueSDNode>(Node->getOperand(3))->getValue();
   const Value *VS = cast<SrcValueSDNode>(Node->getOperand(4))->getValue();
+  EVT PtrVT = TLI.getPointerTy(getDataLayout());
+  EVT MemVT = TLI.getPointerMemTy(getDataLayout());
   SDValue Tmp1 =
-      getLoad(TLI.getPointerTy(getDataLayout()), dl, Node->getOperand(0),
-              Node->getOperand(2), MachinePointerInfo(VS));
-  return getStore(Tmp1.getValue(1), dl, Tmp1, Node->getOperand(1),
-                  MachinePointerInfo(VD));
+      getExtLoad(ISD::LoadExtType::SEXTLOAD, dl, PtrVT, Node->getOperand(0),
+                 Node->getOperand(2), MachinePointerInfo(VS), MemVT);
+  return getTruncStore(Tmp1.getValue(1), dl, Tmp1, Node->getOperand(1),
+                       MachinePointerInfo(VD), MemVT);
 }
 
 Align SelectionDAG::getReducedAlign(EVT VT, bool UseABI) {
