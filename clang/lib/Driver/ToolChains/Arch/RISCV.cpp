@@ -341,6 +341,12 @@ StringRef riscv::getRISCVArch(const llvm::opt::ArgList &Args,
   }
 }
 
+bool riscv::isRISCVX32(const llvm::opt::ArgList &Args, const llvm::Triple &Triple) {
+  StringRef abi = riscv::getRISCVABI(Args, Triple);
+  StringRef arch = riscv::getRISCVArch(Args, Triple);
+  return arch.starts_with("rv64") && abi == "ilp32";
+}
+
 std::string riscv::getRISCVTargetCPU(const llvm::opt::ArgList &Args,
                                      const llvm::Triple &Triple) {
   std::string CPU;
