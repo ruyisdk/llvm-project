@@ -229,7 +229,7 @@ createTargetCodeGenInfo(CodeGenModule &CGM) {
   case llvm::Triple::riscv32:
   case llvm::Triple::riscv64: {
     StringRef ABIStr = Target.getABI();
-    unsigned XLen = Target.getPointerWidth(LangAS::Default);
+    unsigned XLen = Target.getIntMaxTWidth();
     unsigned ABIFLen = 0;
     if (ABIStr.ends_with("f"))
       ABIFLen = 32;
