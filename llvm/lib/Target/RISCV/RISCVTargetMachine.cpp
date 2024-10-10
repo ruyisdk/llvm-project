@@ -123,6 +123,7 @@ extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeRISCVTarget() {
   initializeRISCVExpandPseudoPass(*PR);
   initializeRISCVVectorPeepholePass(*PR);
   initializeRISCVInsertVSETVLIPass(*PR);
+  initializeRISCVInsertVSETVLIForXTHeadVectorPass(*PR);
   initializeRISCVInsertReadWriteCSRPass(*PR);
   initializeRISCVInsertWriteVXRMPass(*PR);
   initializeRISCVDAGToDAGISelLegacyPass(*PR);
@@ -396,9 +397,11 @@ FunctionPass *RISCVPassConfig::createRVVRegAllocPass(bool Optimized) {
 }
 
 bool RISCVPassConfig::addRegAssignAndRewriteFast() {
+  auto hasXTHeadVector = TM->getMCSubtargetInfo()->hasFeature(RISCV::FeatureVendorXTHeadV);
+
   addPass(createRVVRegAllocPass(false));
   if (EnableVSETVLIAfterRVVRegAlloc)
-    addPass(createRISCVInsertVSETVLIPass());
+    addPass(hasXTHeadVector ? createRISCVInsertVSETVLIForXTHeadVectorPass() : createRISCVInsertVSETVLIPass());
   if (TM->getOptLevel() != CodeGenOptLevel::None &&
       EnableRISCVDeadRegisterElimination)
     addPass(createRISCVDeadRegisterDefinitionsPass());
@@ -406,10 +409,12 @@ bool RISCVPassConfig::addRegAssignAndRewriteFast() {
 }
 
 bool RISCVPassConfig::addRegAssignAndRewriteOptimized() {
+  auto hasXTHeadVector = TM->getMCSubtargetInfo()->hasFeature(RISCV::FeatureVendorXTHeadV);
+
   addPass(createRVVRegAllocPass(true));
   addPass(createVirtRegRewriter(false));
   if (EnableVSETVLIAfterRVVRegAlloc)
-    addPass(createRISCVInsertVSETVLIPass());
+    addPass(hasXTHeadVector ? createRISCVInsertVSETVLIForXTHeadVectorPass() : createRISCVInsertVSETVLIPass());
   if (TM->getOptLevel() != CodeGenOptLevel::None &&
       EnableRISCVDeadRegisterElimination)
     addPass(createRISCVDeadRegisterDefinitionsPass());
@@ -557,10 +562,12 @@ void RISCVPassConfig::addPreRegAlloc() {
   // Run RISCVInsertVSETVLI after PHI elimination. On O1 and above do it after
   // register coalescing so needVSETVLIPHI doesn't need to look through COPYs.
   if (!EnableVSETVLIAfterRVVRegAlloc) {
+    auto hasXTHeadVector = TM->getMCSubtargetInfo()->hasFeature(RISCV::FeatureVendorXTHeadV);
+
     if (TM->getOptLevel() == CodeGenOptLevel::None)
-      insertPass(&PHIEliminationID, &RISCVInsertVSETVLIID);
+      insertPass(&PHIEliminationID, hasXTHeadVector ? &RISCVInsertVSETVLIForXTHeadVectorID : &RISCVInsertVSETVLIID);
     else
-      insertPass(&RegisterCoalescerID, &RISCVInsertVSETVLIID);
+      insertPass(&RegisterCoalescerID, hasXTHeadVector ? &RISCVInsertVSETVLIForXTHeadVectorID : &RISCVInsertVSETVLIID);
   }
 }
 

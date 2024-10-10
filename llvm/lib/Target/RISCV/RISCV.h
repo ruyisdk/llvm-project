@@ -60,7 +60,11 @@ void initializeRISCVExpandAtomicPseudoPass(PassRegistry &);
 
 FunctionPass *createRISCVInsertVSETVLIPass();
 void initializeRISCVInsertVSETVLIPass(PassRegistry &);
+FunctionPass *createRISCVInsertVSETVLIForXTHeadVectorPass();
+void initializeRISCVInsertVSETVLIForXTHeadVectorPass(PassRegistry &);
+
 extern char &RISCVInsertVSETVLIID;
+extern char &RISCVInsertVSETVLIForXTHeadVectorID;
 
 FunctionPass *createRISCVPostRAExpandPseudoPass();
 void initializeRISCVPostRAExpandPseudoPass(PassRegistry &);
