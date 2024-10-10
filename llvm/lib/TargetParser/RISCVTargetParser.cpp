@@ -243,7 +243,7 @@ getSameRatioLMUL(unsigned SEW, RISCVII::VLMUL VLMUL, unsigned EEW) {
 // 6:5  | vediv[1:0] | Used by EDIV extension
 // 4:2  | vsew[2:0]  | Standard element width (SEW) setting
 // 1:0  | vlmul[1:0] | Vector register group multiplier (LMUL) setting
-unsigned RISCVVType::encodeXTHeadVTYPE(unsigned SEW, unsigned LMUL,
+unsigned encodeXTHeadVTYPE(unsigned SEW, unsigned LMUL,
                                        unsigned EDIV) {
   unsigned VSEWBits = encodeSEW(SEW);
   unsigned VLMULBits = encodeLMUL(LMUL, false);
@@ -253,7 +253,7 @@ unsigned RISCVVType::encodeXTHeadVTYPE(unsigned SEW, unsigned LMUL,
   return VTypeI;
 }
 
-void RISCVVType::printXTHeadVType(unsigned VType, raw_ostream &OS) {
+void printXTHeadVType(unsigned VType, raw_ostream &OS) {
   unsigned VEDIV = (VType >> 5) & 0x3;
   unsigned VSEW = getXTHeadVSEW(VType);
   unsigned VLMUL = getXTHeadVVLMUL(VType);
