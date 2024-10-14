@@ -1097,18 +1097,18 @@ multiclass XVPseudoISegLoad {
               defvar idxreg = lmul.vrclass;
               def nf # tag # "_V_E" # reg # "_" # LInfo :
                 XVPseudoISegLoadNoMask<vreg, idxreg, mem, reg, nf, 0, 0>,
-                VLXSEGSched<nf, mem, "O", LInfo>;
+                VLXSEGSched<nf, mem, true, LInfo>;
               def nf # tag # "U_V_E" # reg # "_" # LInfo :
                 XVPseudoISegLoadNoMask<vreg, idxreg, mem, reg, nf, 1, 0>,
-                VLXSEGSched<nf, mem, "O", LInfo>;
+                VLXSEGSched<nf, mem, true, LInfo>;
               def nf # tag # "_V_E" # reg # "_" # LInfo # "_MASK" :
                 XVPseudoISegLoadMask<vreg, idxreg, mem, reg, nf, 0, 0>,
                 RISCVMaskedPseudo<MaskIdx=2>,
-                VLXSEGSched<nf, mem, "O", LInfo>;
+                VLXSEGSched<nf, mem, true, LInfo>;
               def nf # tag # "U_V_E" # reg # "_" # LInfo # "_MASK" :
                 XVPseudoISegLoadMask<vreg, idxreg, mem, reg, nf, 1, 0>,
                 RISCVMaskedPseudo<MaskIdx=2>,
-                VLXSEGSched<nf, mem, "O", LInfo>;
+                VLXSEGSched<nf, mem, true, LInfo>;
             }
           }
         }
@@ -1124,10 +1124,10 @@ multiclass XVPseudoISegLoad {
           defvar idxreg = lmul.vrclass;
           def nf # "E_V_E" # eew # "_" # LInfo :
             XVPseudoISegLoadNoMask<vreg, idxreg, eew, eew, nf, 0, 1>,
-            VLXSEGSched<nf, eew, "O", LInfo>;
+            VLXSEGSched<nf, eew, true, LInfo>;
           def nf # "E_V_E" # eew # "_" # LInfo # "_MASK" :
             XVPseudoISegLoadMask<vreg, idxreg, eew, eew, nf, 0, 1>,
-            VLXSEGSched<nf, eew, "O", LInfo>;
+            VLXSEGSched<nf, eew, true, LInfo>;
         }
       }
     }
@@ -1177,10 +1177,10 @@ multiclass XVPseudoISegStore {
               defvar idxreg = lmul.vrclass;
               def nf # tag # "_V_E" # reg # "_" # LInfo :
                 XVPseudoISegStoreNoMask<vreg, idxreg, mem, reg, nf, 0>,
-                VSXSEGSched<nf, mem, "O", LInfo>;
+                VSXSEGSched<nf, mem, true, LInfo>;
               def nf # tag # "_V_E" # reg # "_" # LInfo # "_MASK" :
                 XVPseudoISegStoreMask<vreg, idxreg, mem, reg, nf, 0>,
-                VSXSEGSched<nf, mem, "O", LInfo>;
+                VSXSEGSched<nf, mem, true, LInfo>;
             }
           }
         }
@@ -1196,10 +1196,10 @@ multiclass XVPseudoISegStore {
           defvar idxreg = lmul.vrclass;
           def nf # "E_E" # eew # "_V_" # LInfo :
             XVPseudoISegStoreNoMask<vreg, idxreg, eew, eew, nf, 1>,
-            VSXSEGSched<nf, eew, "O", LInfo>;
+            VSXSEGSched<nf, eew, true, LInfo>;
           def nf # "E_E" # eew # "_V_" # LInfo # "_MASK" :
             XVPseudoISegStoreMask<vreg, idxreg, eew, eew, nf, 1>,
-            VSXSEGSched<nf, eew, "O", LInfo>;
+            VSXSEGSched<nf, eew, true, LInfo>;
         }
       }
     }
@@ -1601,6 +1601,41 @@ class XVPseudoBinaryMaskNoPolicy<VReg RetClass,
   let HasSEWOp = 1;
 }
 
+class XVPseudoBinaryMask<VReg RetClass,
+                        RegisterClass Op1Class,
+                        DAGOperand Op2Class,
+                        string Constraint> :
+      Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd),
+             (ins GetVRegNoV0<RetClass>.R:$merge,
+                  Op1Class:$rs2, Op2Class:$rs1,
+                  VMaskOp:$vm, AVL:$vl, ixlenimm:$sew), []>,
+      RISCVVPseudo {
+  let mayLoad = 0;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let Constraints = !interleave([Constraint, "$rd = $merge"], ",");
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+}
+
+// Like VPseudoBinaryNoMask, but output can be V0.
+class XVPseudoBinaryMOutNoMask<VReg RetClass,
+                              VReg Op1Class,
+                              DAGOperand Op2Class,
+                              string Constraint,
+                              int TargetConstraintType = 1> :
+      Pseudo<(outs RetClass:$rd),
+             (ins Op1Class:$rs2, Op2Class:$rs1, AVL:$vl, ixlenimm:$sew), []>,
+      RISCVVPseudo {
+  let mayLoad = 0;
+  let mayStore = 0;
+  let hasSideEffects = 0;
+  let Constraints = Constraint;
+  let TargetOverlapConstraintType = TargetConstraintType;
+  let HasVLOp = 1;
+  let HasSEWOp = 1;
+}
+
 multiclass XVPseudoBinary<VReg RetClass,
                           VReg Op1Class,
                           DAGOperand Op2Class,
@@ -1611,8 +1646,8 @@ multiclass XVPseudoBinary<VReg RetClass,
     defvar suffix = !if(sew, "_" # MInfo.MX # "_E" # sew, "_" # MInfo.MX);
     def suffix : XVPseudoBinaryNoMask<RetClass, Op1Class, Op2Class,
                                      Constraint>;
-    def suffix # "_MASK" : VPseudoBinaryMask<RetClass, Op1Class, Op2Class,
-                                             Constraint>,
+    def suffix # "_MASK" : XVPseudoBinaryMask<RetClass, Op1Class, Op2Class,
+                                              Constraint>,
                            RISCVMaskedPseudo<MaskIdx=3>;
   }
 }
@@ -1959,7 +1994,7 @@ multiclass XVPseudoVMSGE_VX_VI {
 
     let VLMul = m.value in {
       let BaseInstr = !cast<Instruction>(prefix # "_VX") in
-      def "_VX_" # mx : VPseudoBinaryMOutNoMask<VR, m.vrclass, GPR,
+      def "_VX_" # mx : XVPseudoBinaryMOutNoMask<VR, m.vrclass, GPR,
                                                 !if(!ge(m.octuple, 16), "@earlyclobber $rd", "")>,
                         Sched<[WriteVICmpX_MX, ReadVICmpV_MX, ReadVICmpX_MX, ReadVMask]>;
       let BaseInstr = !cast<Instruction>(prefix # "_VX_M") in
@@ -1969,7 +2004,7 @@ multiclass XVPseudoVMSGE_VX_VI {
                                   Sched<[WriteVICmpX_MX, ReadVICmpV_MX, ReadVICmpX_MX, ReadVMask]>;
 
       let BaseInstr = !cast<Instruction>(prefix # "_VI") in
-      def "_VI_" # mx : VPseudoBinaryMOutNoMask<VR, m.vrclass, simm5,
+      def "_VI_" # mx : XVPseudoBinaryMOutNoMask<VR, m.vrclass, simm5,
                                                 !if(!ge(m.octuple, 16), "@earlyclobber $rd", "")>,
                         Sched<[WriteVICmpI_MX, ReadVICmpV_MX, ReadVMask]>;
       let BaseInstr = !cast<Instruction>(prefix # "_VI") in
@@ -2379,7 +2414,7 @@ multiclass XVPatBinarySwappedM_VV<string intrinsic, string instruction,
                                   list<VTypeInfo> vtilist> {
   foreach vti = vtilist in
     let Predicates = GetXVTypePredicates<vti>.Predicates in
-    defm : VPatBinarySwapped<intrinsic, instruction # "_VV_" # vti.LMul.MX,
+    defm : VPatBinaryMSwapped<intrinsic, instruction # "_VV_" # vti.LMul.MX,
                              vti.Mask, vti.Vector, vti.Vector, vti.Mask,
                              vti.Log2SEW, VR,
                              vti.RegClass, vti.RegClass>;
@@ -2446,11 +2481,79 @@ multiclass XVPseudoVMINMAX_VV_VX {
   }
 }
 
+class XVPatTernaryMask<string intrinsic,
+                      string inst,
+                      string kind,
+                      ValueType result_type,
+                      ValueType op1_type,
+                      ValueType op2_type,
+                      ValueType mask_type,
+                      int sew,
+                      LMULInfo vlmul,
+                      VReg result_reg_class,
+                      RegisterClass op1_reg_class,
+                      DAGOperand op2_kind> :
+  Pat<(result_type (!cast<Intrinsic>(intrinsic#"_mask")
+                    (result_type result_reg_class:$rs3),
+                    (op1_type op1_reg_class:$rs1),
+                    (op2_type op2_kind:$rs2),
+                    (mask_type V0),
+                    VLOpFrag)),
+                   (!cast<Instruction>(inst#"_"#kind#"_"#vlmul.MX # "_MASK")
+                    result_reg_class:$rs3,
+                    (op1_type op1_reg_class:$rs1),
+                    op2_kind:$rs2,
+                    (mask_type V0),
+                    GPR:$vl, sew)>;
+
+
+class XVPatTernaryNoMask<string intrinsic,
+                        string inst,
+                        string kind,
+                        ValueType result_type,
+                        ValueType op1_type,
+                        ValueType op2_type,
+                        int sew,
+                        LMULInfo vlmul,
+                        VReg result_reg_class,
+                        RegisterClass op1_reg_class,
+                        DAGOperand op2_kind> :
+  Pat<(result_type (!cast<Intrinsic>(intrinsic)
+                    (result_type result_reg_class:$rs3),
+                    (op1_type op1_reg_class:$rs1),
+                    (op2_type op2_kind:$rs2),
+                    VLOpFrag)),
+                   (!cast<Instruction>(inst#"_"#kind#"_"#vlmul.MX)
+                    result_reg_class:$rs3,
+                    (op1_type op1_reg_class:$rs1),
+                    op2_kind:$rs2,
+                    GPR:$vl, sew)>;
+
+multiclass XVPatTernary<string intrinsic,
+                       string inst,
+                       string kind,
+                       ValueType result_type,
+                       ValueType op1_type,
+                       ValueType op2_type,
+                       ValueType mask_type,
+                       int sew,
+                       LMULInfo vlmul,
+                       VReg result_reg_class,
+                       RegisterClass op1_reg_class,
+                       DAGOperand op2_kind> {
+  def : XVPatTernaryNoMask<intrinsic, inst, kind, result_type, op1_type, op2_type,
+                          sew, vlmul, result_reg_class, op1_reg_class,
+                          op2_kind>;
+  def : XVPatTernaryMask<intrinsic, inst, kind, result_type, op1_type, op2_type,
+                        mask_type, sew, vlmul, result_reg_class, op1_reg_class,
+                        op2_kind>;
+}
+
 multiclass XVPatTernaryV_VV_AAXA<string intrinsic, string instruction,
                                  list<VTypeInfo> vtilist> {
   foreach vti = vtilist in
     let Predicates = GetXVTypePredicates<vti>.Predicates in
-    defm : VPatTernary<intrinsic, instruction, "VV",
+    defm : XVPatTernary<intrinsic, instruction, "VV",
                        vti.Vector, vti.Vector, vti.Vector, vti.Mask,
                        vti.Log2SEW, vti.LMul, vti.RegClass,
                        vti.RegClass, vti.RegClass>;
@@ -2460,7 +2563,7 @@ multiclass XVPatTernaryV_VX_AAXA<string intrinsic, string instruction,
                                  list<VTypeInfo> vtilist> {
   foreach vti = vtilist in
     let Predicates = GetXVTypePredicates<vti>.Predicates in
-    defm : VPatTernary<intrinsic, instruction,
+    defm : XVPatTernary<intrinsic, instruction,
                        "V"#vti.ScalarSuffix,
                        vti.Vector, vti.Scalar, vti.Vector, vti.Mask,
                        vti.Log2SEW, vti.LMul, vti.RegClass,
@@ -2474,7 +2577,7 @@ multiclass XVPatTernaryW_VV<string intrinsic, string instruction,
     defvar wti = vtiToWti.Wti;
     let Predicates = !listconcat(GetXVTypePredicates<vti>.Predicates,
                                  GetXVTypePredicates<wti>.Predicates) in
-    defm : VPatTernary<intrinsic, instruction, "VV",
+    defm : XVPatTernary<intrinsic, instruction, "VV",
                        wti.Vector, vti.Vector, vti.Vector,
                        vti.Mask, vti.Log2SEW, vti.LMul,
                        wti.RegClass, vti.RegClass, vti.RegClass>;
@@ -2488,7 +2591,7 @@ multiclass XVPatTernaryW_VX<string intrinsic, string instruction,
     defvar wti = vtiToWti.Wti;
     let Predicates = !listconcat(GetXVTypePredicates<vti>.Predicates,
                                  GetXVTypePredicates<wti>.Predicates) in
-    defm : VPatTernary<intrinsic, instruction,
+    defm : XVPatTernary<intrinsic, instruction,
                        "V"#vti.ScalarSuffix,
                        wti.Vector, vti.Scalar, vti.Vector,
                        vti.Mask, vti.Log2SEW, vti.LMul,
