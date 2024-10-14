@@ -14,46 +14,6 @@
 
 include "riscv_vector_common.td"
 
-class XRVVBuiltin<string suffix, string prototype, string type_range,
-                  string overloaded_suffix = "">
-    : RVVBuiltin<suffix, prototype, type_range, overloaded_suffix> {
-}
-
-multiclass RVVBuiltinSet<string intrinsic_name, string type_range,
-                         list<list<string>> suffixes_prototypes,
-                         list<int> intrinsic_types> {
-  let IRName = intrinsic_name, MaskedIRName = intrinsic_name # "_mask",
-      IntrinsicTypes = intrinsic_types in {
-    foreach s_p = suffixes_prototypes in {
-      let Name = NAME # "_" # s_p[0] in {
-        defvar suffix = s_p[1];
-        defvar prototype = s_p[2];
-        def : XRVVBuiltin<suffix, prototype, type_range>;
-      }
-    }
-  }
-}
-
-// IntrinsicTypes is output, op1 [-1, 1]
-multiclass RVVOutOp1BuiltinSet<string intrinsic_name, string type_range,
-                               list<list<string>> suffixes_prototypes>
-    : RVVBuiltinSet<intrinsic_name, type_range, suffixes_prototypes, [-1, 1]>;
-
-multiclass RVVSignedBinBuiltinSet
-    : RVVOutOp1BuiltinSet<NAME, "csil",
-                          [["vv", "v", "vvv"],
-                           ["vx", "v", "vve"]]>;
-
-multiclass RVVUnsignedBinBuiltinSet
-    : RVVOutOp1BuiltinSet<NAME, "csil",
-                          [["vv", "Uv", "UvUvUv"],
-                           ["vx", "Uv", "UvUvUe"]]>;
-
-multiclass RVVIntBinBuiltinSet
-    : RVVSignedBinBuiltinSet,
-      RVVUnsignedBinBuiltinSet;
-
-
 //===----------------------------------------------------------------------===//
 // 6. Configuration-Setting Instructions
 //===----------------------------------------------------------------------===//
