@@ -493,18 +493,18 @@ multiclass XVPseudoILoad {
           let VLMul = lmul.value, SEW = mem in {
             def "X" # tag # "_V_E" # reg # "_" # LInfo :
               XVPseudoILoadNoMask<vreg, mem, reg, 0, 0>,
-              VLXSched<mem, "O", LInfo, LInfo>;
+              VLXSched<mem, true, LInfo, LInfo>;
             def "X" # tag # "U_V_E" # reg # "_" # LInfo :
               XVPseudoILoadNoMask<vreg, mem, reg, 1, 0>,
-              VLXSched<mem, "O", LInfo, LInfo>;
+              VLXSched<mem, true, LInfo, LInfo>;
             def "X" # tag # "_V_E" # reg # "_" # LInfo # "_MASK" :
               XVPseudoILoadMask<vreg, mem, reg, 0, 0>,
               RISCVMaskedPseudo<MaskIdx=3>,
-              VLXSched<mem, "O", LInfo, LInfo>;
+              VLXSched<mem, true, LInfo, LInfo>;
             def "X" # tag # "U_V_E" # reg # "_" # LInfo # "_MASK" :
               XVPseudoILoadMask<vreg, mem, reg, 1, 0>,
               RISCVMaskedPseudo<MaskIdx=3>,
-              VLXSched<mem, "O", LInfo, LInfo>;
+              VLXSched<mem, true, LInfo, LInfo>;
           }
         }
       }
@@ -517,11 +517,11 @@ multiclass XVPseudoILoad {
       let VLMul = lmul.value, SEW = eew in {
         def "XE_V_E" # eew # "_" # LInfo :
           XVPseudoILoadNoMask<vreg, eew, eew, 0, 1>,
-          VLXSched<eew, "O", LInfo, LInfo>;
+          VLXSched<eew, true, LInfo, LInfo>;
         def "XE_V_E" # eew # "_" # LInfo # "_MASK" :
           XVPseudoILoadMask<vreg, eew, eew, 0, 1>,
           RISCVMaskedPseudo<MaskIdx=3>,
-          VLXSched<eew, "O", LInfo, LInfo>;
+          VLXSched<eew, true, LInfo, LInfo>;
       }
     }
   }
@@ -565,10 +565,10 @@ multiclass XVPseudoIStore {
         let VLMul = lmul.value, SEW = mem in {
           def "X" # tag # "_V_E" # reg # "_" # LInfo :
             XVPseudoIStoreNoMask<vreg, mem, reg, 0>,
-            VSXSched<mem, "O", LInfo, LInfo>;
+            VSXSched<mem, true, LInfo, LInfo>;
           def "X" # tag # "_V_E" # reg # "_" # LInfo # "_MASK" :
             XVPseudoIStoreMask<vreg, mem, reg, 0>,
-            VSXSched<mem, "O", LInfo, LInfo>;
+            VSXSched<mem, true, LInfo, LInfo>;
         }
       }
     }
@@ -580,10 +580,10 @@ multiclass XVPseudoIStore {
       let VLMul = lmul.value, SEW = eew in {
         def "XE_V_E" # eew # "_" # LInfo :
           XVPseudoIStoreNoMask<vreg, eew, eew, 1>,
-          VSXSched<eew, "O", LInfo, LInfo>;
+          VSXSched<eew, true, LInfo, LInfo>;
         def "XE_V_E" # eew # "_" # LInfo # "_MASK" :
           XVPseudoIStoreMask<vreg, eew, eew, 1>,
-          VSXSched<eew, "O", LInfo, LInfo>;
+          VSXSched<eew, true, LInfo, LInfo>;
       }
     }
   }
