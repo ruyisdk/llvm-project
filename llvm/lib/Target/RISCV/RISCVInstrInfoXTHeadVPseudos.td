@@ -3121,7 +3121,7 @@ multiclass XVPseudoVMRG_FM {
 
       def "_V" # f.FX # "M_" # mx:
         VPseudoTiedBinaryCarryIn<GetVRegNoV0<m.vrclass>.R,
-                                 m.vrclass, f.fprclass, m, CarryIn=1, Constraint="">,
+                                 m.vrclass, f.fprclass, m>,
         Sched<[WriteVFMergeV_MX, ReadVFMergeV_MX, ReadVFMergeF_MX, ReadVMask]>;
     }
   }
@@ -4784,7 +4784,7 @@ multiclass XVPatTernaryV_VI<string intrinsic, string instruction,
                            list<VTypeInfo> vtilist, Operand Imm_type> {
   foreach vti = vtilist in
     let Predicates = GetXVTypePredicates<vti>.Predicates in
-    defm : VPatTernary<intrinsic, instruction, "VI",
+    defm : XVPatTernary<intrinsic, instruction, "VI",
                        vti.Vector, vti.Vector, XLenVT, vti.Mask,
                        vti.Log2SEW, vti.LMul, vti.RegClass,
                        vti.RegClass, Imm_type>;
@@ -4794,7 +4794,7 @@ multiclass XVPatTernaryV_VX<string intrinsic, string instruction,
                            list<VTypeInfo> vtilist> {
   foreach vti = vtilist in
     let Predicates = GetXVTypePredicates<vti>.Predicates in
-    defm : VPatTernary<intrinsic, instruction, "VX",
+    defm : XVPatTernary<intrinsic, instruction, "VX",
                        vti.Vector, vti.Vector, XLenVT, vti.Mask,
                        vti.Log2SEW, vti.LMul, vti.RegClass,
                        vti.RegClass, GPR>;
