@@ -4102,75 +4102,75 @@ let Predicates = [HasVendorXTHeadV] in {
                                    AllWidenableIntXVectors>;
 } // Predicates = [HasVendorXTHeadV]
 
-//===----------------------------------------------------------------------===//
-// 14.2. Vector Single-Width Floating-Point Add/Subtract Instructions
-//===----------------------------------------------------------------------===//
-let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true, hasPostISelHook = 1 in {
-  defm PseudoTH_VFADD  : XVPseudoVALU_VV_VF_RM;
-  defm PseudoTH_VFSUB  : XVPseudoVALU_VV_VF_RM;
-  defm PseudoTH_VFRSUB : XVPseudoVALU_VF_RM;
-}
-
-let Predicates = [HasVendorXTHeadV] in {
-  defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfadd", "PseudoTH_VFADD",
-                               AllFloatXVectors>;
-  defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfsub", "PseudoTH_VFSUB",
-                               AllFloatXVectors>;
-  defm : XVPatBinaryV_VX_RM<"int_riscv_th_vfrsub", "PseudoTH_VFRSUB", AllFloatXVectors>;
-}
-
-//===----------------------------------------------------------------------===//
-// 14.3. Vector Single-Width Floating-Point Add/Subtract Instructions
-//===----------------------------------------------------------------------===//
-let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true,
-    hasSideEffects = 0, hasPostISelHook = 1 in {
-  defm PseudoTH_VFWADD : XVPseudoVFWALU_VV_VF_RM;
-  defm PseudoTH_VFWSUB : XVPseudoVFWALU_VV_VF_RM;
-  defm PseudoTH_VFWADD : XVPseudoVFWALU_WV_WF_RM;
-  defm PseudoTH_VFWSUB : XVPseudoVFWALU_WV_WF_RM;
-}
-
-let Predicates = [HasVendorXTHeadV] in {
-  defm : XVPatBinaryW_VV_VX_RM<"int_riscv_th_vfwadd", "PseudoTH_VFWADD",
-                               AllWidenableFloatXVectors>;
-  defm : XVPatBinaryW_VV_VX_RM<"int_riscv_th_vfwsub", "PseudoTH_VFWSUB",
-                              AllWidenableFloatXVectors>;
-  defm : XVPatBinaryW_WV_WX_RM<"int_riscv_th_vfwadd_w", "PseudoTH_VFWADD",
-                               AllWidenableFloatXVectors>;
-  defm : XVPatBinaryW_WV_WX_RM<"int_riscv_th_vfwsub_w", "PseudoTH_VFWSUB",
-                               AllWidenableFloatXVectors>;
-} // Predicates = [HasVendorXTHeadV]
-
-//===----------------------------------------------------------------------===//
-// 14.4. Vector Single-Width Floating-Point Multiply/Divide Instructions
-//===----------------------------------------------------------------------===//
-let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true,
-    hasSideEffects = 0, hasPostISelHook = 1 in {
-  defm PseudoTH_VFMUL  : XVPseudoVFMUL_VV_VF_RM;
-  defm PseudoTH_VFDIV  : XVPseudoVFDIV_VV_VF_RM;
-  defm PseudoTH_VFRDIV : XVPseudoVFRDIV_VF_RM;
-} // Predicates = [HasVendorXTHeadV]
-
-let Predicates = [HasVendorXTHeadV] in {
-  defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfmul", "PseudoTH_VFMUL",
-                               AllFloatXVectors>;
-  defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfdiv", "PseudoTH_VFDIV",
-                               AllFloatXVectors, isSEWAware=1>;
-  defm : XVPatBinaryV_VX_RM<"int_riscv_th_vfrdiv", "PseudoTH_VFRDIV",
-                            AllFloatXVectors, isSEWAware=1>;
-} // Predicates = [HasVendorXTHeadV]
-
-//===----------------------------------------------------------------------===//
-// 14.5. Vector Single-Width Floating-Point Add/Subtract Instructions
-//===----------------------------------------------------------------------===//
-let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true, hasSideEffects = 0 in {
-  defm PseudoTH_VFWMUL : XVPseudoVWMUL_VV_VF_RM;
-}
-
-let Predicates = [HasVendorXTHeadV] in {
-  defm : XVPatBinaryW_VV_VX_RM<"int_riscv_th_vfwmul", "PseudoTH_VFWMUL",
-                               AllWidenableFloatXVectors>;
-}
+////===----------------------------------------------------------------------===//
+//// 14.2. Vector Single-Width Floating-Point Add/Subtract Instructions
+////===----------------------------------------------------------------------===//
+//let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true, hasPostISelHook = 1 in {
+//  defm PseudoTH_VFADD  : XVPseudoVALU_VV_VF_RM;
+//  defm PseudoTH_VFSUB  : XVPseudoVALU_VV_VF_RM;
+//  defm PseudoTH_VFRSUB : XVPseudoVALU_VF_RM;
+//}
+//
+//let Predicates = [HasVendorXTHeadV] in {
+//  defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfadd", "PseudoTH_VFADD",
+//                               AllFloatXVectors>;
+//  defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfsub", "PseudoTH_VFSUB",
+//                               AllFloatXVectors>;
+//  defm : XVPatBinaryV_VX_RM<"int_riscv_th_vfrsub", "PseudoTH_VFRSUB", AllFloatXVectors>;
+//}
+//
+////===----------------------------------------------------------------------===//
+//// 14.3. Vector Single-Width Floating-Point Add/Subtract Instructions
+////===----------------------------------------------------------------------===//
+//let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true,
+//    hasSideEffects = 0, hasPostISelHook = 1 in {
+//  defm PseudoTH_VFWADD : XVPseudoVFWALU_VV_VF_RM;
+//  defm PseudoTH_VFWSUB : XVPseudoVFWALU_VV_VF_RM;
+//  defm PseudoTH_VFWADD : XVPseudoVFWALU_WV_WF_RM;
+//  defm PseudoTH_VFWSUB : XVPseudoVFWALU_WV_WF_RM;
+//}
+//
+//let Predicates = [HasVendorXTHeadV] in {
+//  defm : XVPatBinaryW_VV_VX_RM<"int_riscv_th_vfwadd", "PseudoTH_VFWADD",
+//                               AllWidenableFloatXVectors>;
+//  defm : XVPatBinaryW_VV_VX_RM<"int_riscv_th_vfwsub", "PseudoTH_VFWSUB",
+//                              AllWidenableFloatXVectors>;
+//  defm : XVPatBinaryW_WV_WX_RM<"int_riscv_th_vfwadd_w", "PseudoTH_VFWADD",
+//                               AllWidenableFloatXVectors>;
+//  defm : XVPatBinaryW_WV_WX_RM<"int_riscv_th_vfwsub_w", "PseudoTH_VFWSUB",
+//                               AllWidenableFloatXVectors>;
+//} // Predicates = [HasVendorXTHeadV]
+//
+////===----------------------------------------------------------------------===//
+//// 14.4. Vector Single-Width Floating-Point Multiply/Divide Instructions
+////===----------------------------------------------------------------------===//
+//let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true,
+//    hasSideEffects = 0, hasPostISelHook = 1 in {
+//  defm PseudoTH_VFMUL  : XVPseudoVFMUL_VV_VF_RM;
+//  defm PseudoTH_VFDIV  : XVPseudoVFDIV_VV_VF_RM;
+//  defm PseudoTH_VFRDIV : XVPseudoVFRDIV_VF_RM;
+//} // Predicates = [HasVendorXTHeadV]
+//
+//let Predicates = [HasVendorXTHeadV] in {
+//  defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfmul", "PseudoTH_VFMUL",
+//                               AllFloatXVectors>;
+//  defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfdiv", "PseudoTH_VFDIV",
+//                               AllFloatXVectors, isSEWAware=1>;
+//  defm : XVPatBinaryV_VX_RM<"int_riscv_th_vfrdiv", "PseudoTH_VFRDIV",
+//                            AllFloatXVectors, isSEWAware=1>;
+//} // Predicates = [HasVendorXTHeadV]
+//
+////===----------------------------------------------------------------------===//
+//// 14.5. Vector Single-Width Floating-Point Add/Subtract Instructions
+////===----------------------------------------------------------------------===//
+//let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true, hasSideEffects = 0 in {
+//  defm PseudoTH_VFWMUL : XVPseudoVWMUL_VV_VF_RM;
+//}
+//
+//let Predicates = [HasVendorXTHeadV] in {
+//  defm : XVPatBinaryW_VV_VX_RM<"int_riscv_th_vfwmul", "PseudoTH_VFWMUL",
+//                               AllWidenableFloatXVectors>;
+//}
 
 //===----------------------------------------------------------------------===//
 // 16.1. Vector Mask-Register Logical Operations
