@@ -2583,16 +2583,16 @@ multiclass XVPseudoVSFS_M {
   }
 }
 
-multiclass XVPseudoVIOT_M {
+multiclass XVPseudoVIOTA_M {
   defvar constraint = "@earlyclobber $rd";
   foreach m = MxListXTHeadV in {
     defvar mx = m.MX;
     let VLMul = m.value in {
       def "_" # mx : XVPseudoUnaryNoMask<m.vrclass, VR, constraint>,
-                       SchedUnary<"WriteVMIotV", "ReadVMIotV", mx>;
+                       SchedUnary<"WriteVIotaV", "ReadVIotaV", mx>;
       def "_" # mx # "_MASK" : XVPseudoUnaryMask<m.vrclass, VR, constraint>,
                                  RISCVMaskedPseudo<MaskIdx=2>,
-                                 SchedUnary<"WriteVMIotV", "ReadVMIotV", mx>;
+                                 SchedUnary<"WriteVIotaV", "ReadVIotaV", mx>;
     }
   }
 }
@@ -2602,10 +2602,10 @@ multiclass XVPseudoVID_V {
     defvar mx = m.MX;
     let VLMul = m.value in {
       def "_V_" # mx : XVPseudoNullaryNoMask<m.vrclass>,
-                         SchedNullary<"WriteVMIdxV", mx>;
+                         SchedNullary<"WriteVIdxV", mx>;
       def "_V_" # mx # "_MASK" : XVPseudoNullaryMask<m.vrclass>,
                                    RISCVMaskedPseudo<MaskIdx=1>,
-                                   SchedNullary<"WriteVMIdxV", mx>;
+                                   SchedNullary<"WriteVIdxV", mx>;
     }
   }
 }
@@ -4230,7 +4230,7 @@ defm : XVPatUnaryM_M<"int_riscv_th_vmsof", "PseudoTH_VMSOF">;
 // 16.7. Vector Iota Operations
 // 16.8. Vector Element Index Operations
 //===----------------------------------------------------------------------===//
-defm PseudoTH_VIOTA_M: XVPseudoVIOT_M;
+defm PseudoTH_VIOTA_M: XVPseudoVIOTA_M;
 defm PseudoTH_VID : XVPseudoVID_V;
 
 // Patterns
