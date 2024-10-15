@@ -30,7 +30,7 @@ defvar MxListFWXTHeadV = MxListWXTHeadV;
 
 class FPR_InfoXTHeadV<int sew> {
   RegisterClass fprclass = !cast<RegisterClass>("FPR" # sew);
-  string FX = "F" # sew;
+  string FX = "FPR" # sew;
   int SEW = sew;
   list<LMULInfo> MxList = [V_M1, V_M2, V_M4, V_M8];
   list<LMULInfo> MxListFW = !if(!eq(sew, 64), [], !listremove(MxList, [V_M8]));
@@ -1630,7 +1630,8 @@ class XVPseudoBinaryNoMaskRoundingMode<VReg RetClass,
                                        VReg Op1Class,
                                        DAGOperand Op2Class,
                                        string Constraint,
-                                       int UsesVXRM_ = 1> :
+                                       int UsesVXRM_ = 1,
+                                       int TargetConstraintType = 1> :
         Pseudo<(outs RetClass:$rd),
                (ins RetClass:$merge, Op1Class:$rs2, Op2Class:$rs1, ixlenimm:$rm,
                 AVL:$vl, ixlenimm:$sew), []>,
@@ -1639,6 +1640,7 @@ class XVPseudoBinaryNoMaskRoundingMode<VReg RetClass,
   let mayStore = 0;
   let hasSideEffects = 0;
   let Constraints = !interleave([Constraint, "$rd = $merge"], ",");
+  let TargetOverlapConstraintType = TargetConstraintType;
   let HasVLOp = 1;
   let HasSEWOp = 1;
   let HasRoundModeOp = 1;
@@ -1649,7 +1651,8 @@ class XVPseudoBinaryMaskRoundingMode<VReg RetClass,
                                      RegisterClass Op1Class,
                                      DAGOperand Op2Class,
                                      string Constraint,
-                                     int UsesVXRM_ = 1> :
+                                     int UsesVXRM_,
+                                     int TargetConstraintType = 1> :
         Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd),
                 (ins GetVRegNoV0<RetClass>.R:$merge,
                      Op1Class:$rs2, Op2Class:$rs1,
@@ -1659,6 +1662,7 @@ class XVPseudoBinaryMaskRoundingMode<VReg RetClass,
   let mayStore = 0;
   let hasSideEffects = 0;
   let Constraints = !interleave([Constraint, "$rd = $merge"], ",");
+  let TargetOverlapConstraintType = TargetConstraintType;
   let HasVLOp = 1;
   let HasSEWOp = 1;
   let HasRoundModeOp = 1;
@@ -1998,13 +2002,17 @@ multiclass XVPseudoBinaryRoundingMode<VReg RetClass,
                                       LMULInfo MInfo,
                                       string Constraint = "",
                                       int sew = 0,
-                                      int UsesVXRM = 1> {
+                                      int UsesVXRM = 1,
+                                      int TargetConstraintType = 1,
+                                      bit Commutable = 0> {
   let VLMul = MInfo.value, SEW=sew in {
     defvar suffix = !if(sew, "_" # MInfo.MX # "_E" # sew, "_" # MInfo.MX);
     def suffix : XVPseudoBinaryNoMaskRoundingMode<RetClass, Op1Class, Op2Class,
-                                                  Constraint, UsesVXRM>;
+                                                  Constraint, UsesVXRM,
+                                                  TargetConstraintType>;
     def suffix # "_MASK" : XVPseudoBinaryMaskRoundingMode<RetClass, Op1Class, Op2Class,
-                                                          Constraint, UsesVXRM>,
+                                                          Constraint, UsesVXRM,
+                                                          TargetConstraintType>,
                            RISCVMaskedPseudo<MaskIdx=3>;
   }
 }
@@ -2026,7 +2034,8 @@ multiclass XVPseudoTernaryRoundingMode<VReg RetClass,
                                        DAGOperand Op2Class,
                                        LMULInfo MInfo,
                                        string Constraint = "",
-                                       bit Commutable = 0> {
+                                       bit Commutable = 0,
+                                       int TargetConstraintType = 1> {
   let VLMul = MInfo.value in {
     let isCommutable = Commutable in
     def "_" # MInfo.MX :
@@ -2035,7 +2044,8 @@ multiclass XVPseudoTernaryRoundingMode<VReg RetClass,
     def "_" # MInfo.MX # "_MASK" :
         XVPseudoBinaryMaskRoundingMode<RetClass, Op1Class,
                                        Op2Class, Constraint,
-                                       UsesVXRM_=0>,
+                                       UsesVXRM_=0,
+                                       TargetConstraintType=TargetConstraintType>,
                               RISCVMaskedPseudo<MaskIdx=3>;
   }
 }
@@ -2242,15 +2252,14 @@ multiclass XVPseudoBinaryFV_VV<LMULInfo m, string Constraint = "", int sew = 0> 
   defm _VV : XVPseudoBinary<m.vrclass, m.vrclass, m.vrclass, m, Constraint, sew>;
 }
 
-multiclass XVPseudoBinaryFV_VV_RM<LMULInfo m, string Constraint = "", int sew = 0> {
+multiclass XVPseudoBinaryFV_VV_RM<LMULInfo m, int sew> {
   defm _VV : XVPseudoBinaryRoundingMode<m.vrclass, m.vrclass, m.vrclass, m,
-                                       Constraint, sew,
-                                       UsesVXRM=0>;
+                                       "", sew, UsesVXRM=0>;
 }
 
-multiclass XVPseudoBinaryV_VF_RM<LMULInfo m, FPR_InfoXTHeadV f, string Constraint = "", int sew = 0> {
+multiclass XVPseudoBinaryV_VF_RM<LMULInfo m, FPR_InfoXTHeadV f, int sew> {
   defm _V # f.FX : XVPseudoBinaryRoundingMode<m.vrclass, m.vrclass,
-                                              f.fprclass, m, Constraint, sew,
+                                              f.fprclass, m, "", sew,
                                               UsesVXRM=0>;
 }
 
@@ -2732,14 +2741,17 @@ multiclass XVPseudoVNCLP_WV_WX_WI_RM {
 
 multiclass XVPseudoVALU_VV_VF_RM {
   foreach m = MxListXTHeadV in {
-    defm "" : XVPseudoBinaryFV_VV_RM<m>,
-              SchedBinary<"WriteVFALUV", "ReadVFALUV", "ReadVFALUV", m.MX>;
+    foreach e = SchedSEWSet<m.MX, isF=1>.val in
+      defm "" : XVPseudoBinaryFV_VV_RM<m, e>,
+                SchedBinary<"WriteVFMulV", "ReadVFMulV", "ReadVFMulV", m.MX, e,
+                            forceMergeOpRead=true>;
   }
 
   foreach f = FPListXTHeadV in {
     foreach m = f.MxList in {
-      defm "" : XVPseudoBinaryV_VF_RM<m, f>,
-                SchedBinary<"WriteVFALUF", "ReadVFALUV", "ReadVFALUF", m.MX>;
+      defm "" : XVPseudoBinaryV_VF_RM<m, f, f.SEW>,
+                SchedBinary<"WriteVFALUF", "ReadVFALUV", "ReadVFALUF", m.MX,
+                            f.SEW, forceMergeOpRead=true>;
     }
   }
 }
@@ -2747,8 +2759,9 @@ multiclass XVPseudoVALU_VV_VF_RM {
 multiclass XVPseudoVALU_VF_RM {
   foreach f = FPListXTHeadV in {
     foreach m = f.MxList in {
-      defm "" : XVPseudoBinaryV_VF_RM<m, f>,
-                SchedBinary<"WriteVFALUF", "ReadVFALUV", "ReadVFALUF", m.MX>;
+      defm "" : XVPseudoBinaryV_VF_RM<m, f, f.SEW>,
+                SchedBinary<"WriteVFALUF", "ReadVFALUV", "ReadVFALUF", m.MX,
+                            f.SEW, forceMergeOpRead=true>;
     }
   }
 }
@@ -2783,14 +2796,17 @@ multiclass XVPseudoVFWALU_WV_WF_RM {
 
 multiclass XVPseudoVFMUL_VV_VF_RM {
   foreach m = MxListXTHeadV in {
-    defm "" : XVPseudoBinaryFV_VV_RM<m>,
-              SchedBinary<"WriteVFMulV", "ReadVFMulV", "ReadVFMulV", m.MX>;
+    foreach e = SchedSEWSet<m.MX, isF=1>.val in
+    defm "" : XVPseudoBinaryFV_VV_RM<m, e>,
+              SchedBinary<"WriteVFMulV", "ReadVFMulV", "ReadVFMulV", m.MX, e,
+                          forceMergeOpRead=true>;
   }
 
   foreach f = FPListXTHeadV in {
     foreach m = f.MxList in {
-      defm "" : XVPseudoBinaryV_VF_RM<m, f>,
-                SchedBinary<"WriteVFMulF", "ReadVFMulV", "ReadVFMulF", m.MX>;
+      defm "" : XVPseudoBinaryV_VF_RM<m, f, f.SEW>,
+                SchedBinary<"WriteVFMulF", "ReadVFMulV", "ReadVFMulF", m.MX,
+                            f.SEW, forceMergeOpRead=true>;
     }
   }
 }
@@ -2800,15 +2816,17 @@ multiclass XVPseudoVFDIV_VV_VF_RM {
     defvar mx = m.MX;
     defvar sews = SchedSEWSet<mx, isF=1>.val;
     foreach e = sews in {
-      defm "" : XVPseudoBinaryFV_VV_RM<m, "", e>,
-                SchedBinary<"WriteVFDivV", "ReadVFDivV", "ReadVFDivV", mx, e>;
+      defm "" : XVPseudoBinaryFV_VV_RM<m, e>,
+                SchedBinary<"WriteVFDivV", "ReadVFDivV", "ReadVFDivV", mx, e,
+                            forceMergeOpRead=true>;
     }
   }
 
   foreach f = FPListXTHeadV in {
     foreach m = f.MxList in {
-      defm "" : XVPseudoBinaryV_VF_RM<m, f, "", f.SEW>,
-                SchedBinary<"WriteVFDivF", "ReadVFDivV", "ReadVFDivF", m.MX, f.SEW>;
+      defm "" : XVPseudoBinaryV_VF_RM<m, f, f.SEW>,
+                SchedBinary<"WriteVFDivF", "ReadVFDivV", "ReadVFDivF", m.MX, f.SEW,
+                            forceMergeOpRead=true>;
     }
   }
 }
@@ -2816,8 +2834,9 @@ multiclass XVPseudoVFDIV_VV_VF_RM {
 multiclass XVPseudoVFRDIV_VF_RM {
   foreach f = FPListXTHeadV in {
     foreach m = f.MxList in {
-      defm "" : XVPseudoBinaryV_VF_RM<m, f, "", f.SEW>,
-                SchedBinary<"WriteVFDivF", "ReadVFDivV", "ReadVFDivF", m.MX, f.SEW>;
+      defm "" : XVPseudoBinaryV_VF_RM<m, f, f.SEW>,
+                SchedBinary<"WriteVFDivF", "ReadVFDivV", "ReadVFDivF", m.MX, f.SEW,
+                            forceMergeOpRead=true>;
     }
   }
 }
@@ -5537,10 +5556,11 @@ let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true, hasPostISelHook
 
 let Predicates = [HasVendorXTHeadV] in {
   defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfadd", "PseudoTH_VFADD",
-                               AllFloatXVectors>;
+                               AllFloatXVectors, isSEWAware=1>;
   defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfsub", "PseudoTH_VFSUB",
-                               AllFloatXVectors>;
-  defm : XVPatBinaryV_VX_RM<"int_riscv_th_vfrsub", "PseudoTH_VFRSUB", AllFloatXVectors>;
+                               AllFloatXVectors, isSEWAware=1>;
+  defm : XVPatBinaryV_VX_RM<"int_riscv_th_vfrsub", "PseudoTH_VFRSUB",
+                            AllFloatXVectors, isSEWAware=1>;
 }
 
 //===----------------------------------------------------------------------===//
@@ -5556,13 +5576,13 @@ let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true,
 
 let Predicates = [HasVendorXTHeadV] in {
   defm : XVPatBinaryW_VV_VX_RM<"int_riscv_th_vfwadd", "PseudoTH_VFWADD",
-                               AllWidenableFloatXVectors>;
+                               AllWidenableFloatXVectors, isSEWAware=1>;
   defm : XVPatBinaryW_VV_VX_RM<"int_riscv_th_vfwsub", "PseudoTH_VFWSUB",
-                              AllWidenableFloatXVectors>;
+                              AllWidenableFloatXVectors, isSEWAware=1>;
   defm : XVPatBinaryW_WV_WX_RM<"int_riscv_th_vfwadd_w", "PseudoTH_VFWADD",
-                               AllWidenableFloatXVectors>;
+                               AllWidenableFloatXVectors, isSEWAware=1>;
   defm : XVPatBinaryW_WV_WX_RM<"int_riscv_th_vfwsub_w", "PseudoTH_VFWSUB",
-                               AllWidenableFloatXVectors>;
+                               AllWidenableFloatXVectors, isSEWAware=1>;
 } // Predicates = [HasVendorXTHeadV]
 
 //===----------------------------------------------------------------------===//
@@ -5577,7 +5597,7 @@ let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true,
 
 let Predicates = [HasVendorXTHeadV] in {
   defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfmul", "PseudoTH_VFMUL",
-                               AllFloatXVectors>;
+                               AllFloatXVectors, isSEWAware=1>;
   defm : XVPatBinaryV_VV_VX_RM<"int_riscv_th_vfdiv", "PseudoTH_VFDIV",
                                AllFloatXVectors, isSEWAware=1>;
   defm : XVPatBinaryV_VX_RM<"int_riscv_th_vfrdiv", "PseudoTH_VFRDIV",
@@ -5593,7 +5613,7 @@ let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true, hasSideEffects 
 
 let Predicates = [HasVendorXTHeadV] in {
   defm : XVPatBinaryW_VV_VX_RM<"int_riscv_th_vfwmul", "PseudoTH_VFWMUL",
-                               AllWidenableFloatXVectors>;
+                               AllWidenableFloatXVectors, isSEWAware=1>;
 }
 
 //===----------------------------------------------------------------------===//
@@ -5610,14 +5630,14 @@ let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true, hasSideEffects 
   defm PseudoTH_VFNMSUB : XVPseudoVMAC_VV_VF_AAXA_RM;
 }
 
-defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfmacc", "PseudoTH_VFMACC", AllFloatXVectors>;
-defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfnmacc", "PseudoTH_VFNMACC", AllFloatXVectors>;
-defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfmsac", "PseudoTH_VFMSAC", AllFloatXVectors>;
-defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfnmsac", "PseudoTH_VFNMSAC", AllFloatXVectors>;
-defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfmadd", "PseudoTH_VFMADD", AllFloatXVectors>;
-defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfnmadd", "PseudoTH_VFNMADD", AllFloatXVectors>;
-defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfmsub", "PseudoTH_VFMSUB", AllFloatXVectors>;
-defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfnmsub", "PseudoTH_VFNMSUB", AllFloatXVectors>;
+defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfmacc", "PseudoTH_VFMACC", AllFloatXVectors, isSEWAware=1>;
+defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfnmacc", "PseudoTH_VFNMACC", AllFloatXVectors, isSEWAware=1>;
+defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfmsac", "PseudoTH_VFMSAC", AllFloatXVectors, isSEWAware=1>;
+defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfnmsac", "PseudoTH_VFNMSAC", AllFloatXVectors, isSEWAware=1>;
+defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfmadd", "PseudoTH_VFMADD", AllFloatXVectors, isSEWAware=1>;
+defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfnmadd", "PseudoTH_VFNMADD", AllFloatXVectors, isSEWAware=1>;
+defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfmsub", "PseudoTH_VFMSUB", AllFloatXVectors, isSEWAware=1>;
+defm : XVPatTernaryV_VV_VX_AAXA_RM<"int_riscv_th_vfnmsub", "PseudoTH_VFNMSUB", AllFloatXVectors, isSEWAware=1>;
 
 //===----------------------------------------------------------------------===//
 // 14.7. Vector Single-Width Floating-Point Fused Multiply-Add Instructions
@@ -5631,13 +5651,13 @@ let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true,
 }
 
 defm : XVPatTernaryW_VV_VX_RM<"int_riscv_th_vfwmacc", "PseudoTH_VFWMACC",
-                              AllWidenableFloatXVectors>;
+                              AllWidenableFloatXVectors, isSEWAware=1>;
 defm : XVPatTernaryW_VV_VX_RM<"int_riscv_th_vfwnmacc", "PseudoTH_VFWNMACC",
-                              AllWidenableFloatXVectors>;
+                              AllWidenableFloatXVectors, isSEWAware=1>;
 defm : XVPatTernaryW_VV_VX_RM<"int_riscv_th_vfwmsac", "PseudoTH_VFWMSAC",
-                              AllWidenableFloatXVectors>;
+                              AllWidenableFloatXVectors, isSEWAware=1>;
 defm : XVPatTernaryW_VV_VX_RM<"int_riscv_th_vfwnmsac", "PseudoTH_VFWNMSAC",
-                              AllWidenableFloatXVectors>;
+                              AllWidenableFloatXVectors, isSEWAware=1>;
 
 //===----------------------------------------------------------------------===//
 // 14.8. Vector Single-Width Floating-Point Fused Multiply-Add Instructions
@@ -5656,8 +5676,8 @@ let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true in {
   defm PseudoTH_VFMAX : XVPseudoVMAX_VV_VF;
 }
 
-defm : XVPatBinaryV_VV_VX<"int_riscv_th_vfmin", "PseudoTH_VFMIN", AllFloatXVectors>;
-defm : XVPatBinaryV_VV_VX<"int_riscv_th_vfmax", "PseudoTH_VFMAX", AllFloatXVectors>;
+defm : XVPatBinaryV_VV_VX<"int_riscv_th_vfmin", "PseudoTH_VFMIN", AllFloatXVectors, isSEWAware=1>;
+defm : XVPatBinaryV_VV_VX<"int_riscv_th_vfmax", "PseudoTH_VFMAX", AllFloatXVectors, isSEWAware=1>;
 
 //===----------------------------------------------------------------------===//
 // 14.10. Vector Floating-Point MIN/MAX Instructions
@@ -5668,9 +5688,9 @@ let Predicates = [HasVendorXTHeadV], mayRaiseFPException = true in {
   defm PseudoTH_VFSGNJX : XVPseudoVSGNJ_VV_VF;
 }
 
-defm : XVPatBinaryV_VV_VX<"int_riscv_th_vfsgnj", "PseudoTH_VFSGNJ", AllFloatXVectors>;
-defm : XVPatBinaryV_VV_VX<"int_riscv_th_vfsgnjn", "PseudoTH_VFSGNJN", AllFloatXVectors>;
-defm : XVPatBinaryV_VV_VX<"int_riscv_th_vfsgnjx", "PseudoTH_VFSGNJX", AllFloatXVectors>;
+defm : XVPatBinaryV_VV_VX<"int_riscv_th_vfsgnj", "PseudoTH_VFSGNJ", AllFloatXVectors, isSEWAware=1>;
+defm : XVPatBinaryV_VV_VX<"int_riscv_th_vfsgnjn", "PseudoTH_VFSGNJN", AllFloatXVectors, isSEWAware=1>;
+defm : XVPatBinaryV_VV_VX<"int_riscv_th_vfsgnjx", "PseudoTH_VFSGNJX", AllFloatXVectors, isSEWAware=1>;
 
 //===----------------------------------------------------------------------===//
 // 14.11. Vector Floating-Point Compare Instructions
@@ -5759,8 +5779,8 @@ let mayRaiseFPException = true, Predicates = [HasVendorXTHeadV],
 
 defm : XVPatConversionVI_VF_RM<"int_riscv_th_vfcvt_x_f_v", "PseudoTH_VFCVT_X_F">;
 defm : XVPatConversionVI_VF_RM<"int_riscv_th_vfcvt_xu_f_v", "PseudoTH_VFCVT_XU_F">;
-defm : XVPatConversionVF_VI_RM<"int_riscv_th_vfcvt_f_x_v", "PseudoTH_VFCVT_F_X">;
-defm : XVPatConversionVF_VI_RM<"int_riscv_th_vfcvt_f_xu_v", "PseudoTH_VFCVT_F_XU">;
+defm : XVPatConversionVF_VI_RM<"int_riscv_th_vfcvt_f_x_v", "PseudoTH_VFCVT_F_X", isSEWAware=1>;
+defm : XVPatConversionVF_VI_RM<"int_riscv_th_vfcvt_f_xu_v", "PseudoTH_VFCVT_F_XU", isSEWAware=1>;
 
 //===----------------------------------------------------------------------===//
 // 14.15. Widening Floating-Point/Integer Type-Convert Instructions
@@ -5777,9 +5797,9 @@ let mayRaiseFPException = true, Predicates = [HasVendorXTHeadV] in {
 
 defm : XVPatConversionWI_VF_RM<"int_riscv_th_vfwcvt_xu_f_v", "PseudoTH_VFWCVT_XU_F">;
 defm : XVPatConversionWI_VF_RM<"int_riscv_th_vfwcvt_x_f_v", "PseudoTH_VFWCVT_X_F">;
-defm : XVPatConversionWF_VI<"int_riscv_th_vfwcvt_f_xu_v", "PseudoTH_VFWCVT_F_XU">;
-defm : XVPatConversionWF_VI<"int_riscv_th_vfwcvt_f_x_v", "PseudoTH_VFWCVT_F_X">;
-defm : XVPatConversionWF_VF<"int_riscv_th_vfwcvt_f_f_v", "PseudoTH_VFWCVT_F_F">;
+defm : XVPatConversionWF_VI<"int_riscv_th_vfwcvt_f_xu_v", "PseudoTH_VFWCVT_F_XU", isSEWAware=1>;
+defm : XVPatConversionWF_VI<"int_riscv_th_vfwcvt_f_x_v", "PseudoTH_VFWCVT_F_X", isSEWAware=1>;
+defm : XVPatConversionWF_VF<"int_riscv_th_vfwcvt_f_f_v", "PseudoTH_VFWCVT_F_F", isSEWAware=1>;
 
 //===----------------------------------------------------------------------===//
 // 14.16. Narrowing Floating-Point/Integer Type-Convert Instructions
@@ -5795,9 +5815,9 @@ let mayRaiseFPException = true, hasSideEffects = 0,
 
 defm : XVPatConversionVI_WF_RM<"int_riscv_th_vfncvt_xu_f_w", "PseudoTH_VFNCVT_XU_F">;
 defm : XVPatConversionVI_WF_RM<"int_riscv_th_vfncvt_x_f_w", "PseudoTH_VFNCVT_X_F">;
-defm : XVPatConversionVF_WI_RM <"int_riscv_th_vfncvt_f_xu_w", "PseudoTH_VFNCVT_F_XU">;
-defm : XVPatConversionVF_WI_RM <"int_riscv_th_vfncvt_f_x_w", "PseudoTH_VFNCVT_F_X">;
-defm : XVPatConversionVF_WF_RM<"int_riscv_th_vfncvt_f_f_w", "PseudoTH_VFNCVT_F_F">;
+defm : XVPatConversionVF_WI_RM <"int_riscv_th_vfncvt_f_xu_w", "PseudoTH_VFNCVT_F_XU", isSEWAware=1>;
+defm : XVPatConversionVF_WI_RM <"int_riscv_th_vfncvt_f_x_w", "PseudoTH_VFNCVT_F_X", isSEWAware=1>;
+defm : XVPatConversionVF_WF_RM<"int_riscv_th_vfncvt_f_f_w", "PseudoTH_VFNCVT_F_F", isSEWAware=1>;
 
 //===----------------------------------------------------------------------===//
 // 15.1. Vector Single-Width Integer Reduction Instructions
