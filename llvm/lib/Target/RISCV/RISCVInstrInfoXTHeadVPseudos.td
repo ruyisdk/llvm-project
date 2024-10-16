@@ -1613,7 +1613,8 @@ let Predicates = [HasVendorXTHeadV, HasVendorXTHeadZvamo, HasStdExtA] in {
 class XVPseudoBinaryNoMask<VReg RetClass,
                           VReg Op1Class,
                           DAGOperand Op2Class,
-                          string Constraint> :
+                          string Constraint,
+                          int TargetConstraintType = 1> :
         Pseudo<(outs RetClass:$rd),
                (ins RetClass:$merge, Op1Class:$rs2, Op2Class:$rs1,
                 AVL:$vl, ixlenimm:$sew), []>,
@@ -1622,6 +1623,7 @@ class XVPseudoBinaryNoMask<VReg RetClass,
   let mayStore = 0;
   let hasSideEffects = 0;
   let Constraints = !interleave([Constraint, "$rd = $merge"], ",");
+  let TargetOverlapConstraintType = TargetConstraintType;
   let HasVLOp = 1;
   let HasSEWOp = 1;
 }
@@ -1671,7 +1673,8 @@ class XVPseudoBinaryMaskRoundingMode<VReg RetClass,
 
 class XVPseudoTiedBinaryNoMask<VReg RetClass,
                                DAGOperand Op2Class,
-                               string Constraint> :
+                               string Constraint,
+                               int TargetConstraintType = 1> :
         Pseudo<(outs RetClass:$rd),
                (ins RetClass:$rs2, Op2Class:$rs1, AVL:$vl, ixlenimm:$sew), []>,
         RISCVVPseudo {
@@ -1679,6 +1682,7 @@ class XVPseudoTiedBinaryNoMask<VReg RetClass,
   let mayStore = 0;
   let hasSideEffects = 0;
   let Constraints = !interleave([Constraint, "$rd = $rs2"], ",");
+  let TargetOverlapConstraintType = TargetConstraintType;
   let HasVLOp = 1;
   let HasSEWOp = 1;
   let isConvertibleToThreeAddress = 1;
@@ -1687,7 +1691,8 @@ class XVPseudoTiedBinaryNoMask<VReg RetClass,
 
 class XVPseudoTiedBinaryMask<VReg RetClass,
                             DAGOperand Op2Class,
-                            string Constraint> :
+                            string Constraint,
+                            int TargetConstraintType = 1> :
         Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd),
                 (ins GetVRegNoV0<RetClass>.R:$merge,
                      Op2Class:$rs1,
@@ -1697,6 +1702,7 @@ class XVPseudoTiedBinaryMask<VReg RetClass,
   let mayStore = 0;
   let hasSideEffects = 0;
   let Constraints = !interleave([Constraint, "$rd = $merge"], ",");
+  let TargetOverlapConstraintType = TargetConstraintType;
   let HasVLOp = 1;
   let HasSEWOp = 1;
   let IsTiedPseudo = 1;
@@ -1722,7 +1728,8 @@ class XVPseudoBinaryMaskNoPolicy<VReg RetClass,
 class XVPseudoBinaryMask<VReg RetClass,
                         RegisterClass Op1Class,
                         DAGOperand Op2Class,
-                        string Constraint> :
+                        string Constraint,
+                        int TargetConstraintType = 1> :
       Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd),
              (ins GetVRegNoV0<RetClass>.R:$merge,
                   Op1Class:$rs2, Op2Class:$rs1,
@@ -1732,6 +1739,7 @@ class XVPseudoBinaryMask<VReg RetClass,
   let mayStore = 0;
   let hasSideEffects = 0;
   let Constraints = !interleave([Constraint, "$rd = $merge"], ",");
+  let TargetOverlapConstraintType = TargetConstraintType;
   let HasVLOp = 1;
   let HasSEWOp = 1;
 }
@@ -1991,13 +1999,15 @@ multiclass XVPseudoBinary<VReg RetClass,
                           DAGOperand Op2Class,
                           LMULInfo MInfo,
                           string Constraint = "",
-                          int sew = 0> {
-  let VLMul = MInfo.value, SEW=sew in {
+                          int sew = 0,
+                          int TargetConstraintType = 1,
+                          bit Commutable = 0> {
+  let VLMul = MInfo.value, SEW=sew, isCommutable = Commutable in {
     defvar suffix = !if(sew, "_" # MInfo.MX # "_E" # sew, "_" # MInfo.MX);
     def suffix : XVPseudoBinaryNoMask<RetClass, Op1Class, Op2Class,
-                                     Constraint>;
+                                     Constraint, TargetConstraintType>;
     def suffix # "_MASK" : XVPseudoBinaryMask<RetClass, Op1Class, Op2Class,
-                                              Constraint>,
+                                              Constraint, TargetConstraintType>,
                            RISCVMaskedPseudo<MaskIdx=3>;
   }
 }
@@ -2026,12 +2036,13 @@ multiclass XVPseudoBinaryRoundingMode<VReg RetClass,
 multiclass XVPseudoTiedBinary<VReg RetClass,
                               DAGOperand Op2Class,
                               LMULInfo MInfo,
-                              string Constraint = ""> {
+                              string Constraint = "",
+                              int TargetConstraintType = 1> {
   let VLMul = MInfo.value in {
     def "_" # MInfo.MX # "_TIED": XVPseudoTiedBinaryNoMask<RetClass, Op2Class,
-                                                           Constraint>;
+                                                           Constraint, TargetConstraintType>;
     def "_" # MInfo.MX # "_MASK_TIED" : XVPseudoTiedBinaryMask<RetClass, Op2Class,
-                                                               Constraint>;
+                                                               Constraint, TargetConstraintType>;
   }
 }
 
@@ -2149,12 +2160,13 @@ multiclass XVPseudoConversion<VReg RetClass,
   }
 }
 
-multiclass XVPseudoBinaryV_VV<LMULInfo m, string Constraint = "", int sew = 0> {
-  defm _VV : XVPseudoBinary<m.vrclass, m.vrclass, m.vrclass, m, Constraint, sew>;
+multiclass XVPseudoBinaryV_VV<LMULInfo m, string Constraint = "", int sew = 0, bit Commutable = 0> {
+  defm _VV : XVPseudoBinary<m.vrclass, m.vrclass, m.vrclass, m, Constraint, sew, Commutable=Commutable>;
 }
 
-multiclass XVPseudoBinaryV_VV_RM<LMULInfo m, string Constraint = "", int sew = 0> {
-  defm _VV : XVPseudoBinaryRoundingMode<m.vrclass, m.vrclass, m.vrclass, m, Constraint, sew>;
+multiclass XVPseudoBinaryV_VV_RM<LMULInfo m, string Constraint = "", bit Commutable = 0> {
+  defm _VV : XVPseudoBinaryRoundingMode<m.vrclass, m.vrclass, m.vrclass, m, Constraint,
+                                        Commutable=Commutable>;
 }
 
 multiclass XVPseudoBinaryV_VX<LMULInfo m, string Constraint = "", int sew = 0> {
@@ -2165,38 +2177,39 @@ multiclass XVPseudoBinaryV_VX_RM<LMULInfo m, string Constraint = "", int sew = 0
   defm _VX : XVPseudoBinaryRoundingMode<m.vrclass, m.vrclass, GPR, m, Constraint, sew>;
 }
 
-multiclass XVPseudoBinaryV_VI<Operand ImmType = simm5, LMULInfo m, string Constraint = ""> {
+multiclass XVPseudoBinaryV_VI<Operand ImmType, LMULInfo m, string Constraint = ""> {
   defm _VI : XVPseudoBinary<m.vrclass, m.vrclass, ImmType, m, Constraint>;
 }
 
-multiclass XVPseudoBinaryV_VI_RM<Operand ImmType = simm5, LMULInfo m, string Constraint = ""> {
+multiclass XVPseudoBinaryV_VI_RM<Operand ImmType, LMULInfo m, string Constraint = ""> {
   defm _VI : XVPseudoBinaryRoundingMode<m.vrclass, m.vrclass, ImmType, m, Constraint>;
 }
 
-multiclass XVPseudoBinaryV_VF<LMULInfo m, FPR_InfoXTHeadV f, string Constraint = "", int sew = 0> {
+multiclass XVPseudoBinaryV_VF<LMULInfo m, FPR_InfoXTHeadV f, int sew> {
   defm "_V" # f.FX : XVPseudoBinary<m.vrclass, m.vrclass,
-                                    f.fprclass, m, Constraint, sew>;
+                                    f.fprclass, m, "", sew>;
 }
 
-multiclass XVPseudoBinaryW_VV<LMULInfo m> {
+multiclass XVPseudoBinaryW_VV<LMULInfo m, bit Commutable = 0> {
   defm _VV : XVPseudoBinary<m.wvrclass, m.vrclass, m.vrclass, m,
-                            "@earlyclobber $rd">;
+                            "@earlyclobber $rd", TargetConstraintType=3,
+                            Commutable=Commutable>;
 }
 
 multiclass XVPseudoBinaryW_VX<LMULInfo m> {
   defm _VX : XVPseudoBinary<m.wvrclass, m.vrclass, GPR, m,
-                            "@earlyclobber $rd">;
+                            "@earlyclobber $rd", TargetConstraintType=3>;
 }
 
 multiclass XVPseudoBinaryW_WV<LMULInfo m> {
   defm _WV : XVPseudoBinary<m.wvrclass, m.wvrclass, m.vrclass, m,
-                            "@earlyclobber $rd">;
+                            "@earlyclobber $rd", TargetConstraintType=3>;
   defm _WV : XVPseudoTiedBinary<m.wvrclass, m.vrclass, m,
-                                "@earlyclobber $rd">;
+                                "@earlyclobber $rd", TargetConstraintType=3>;
 }
 
 multiclass XVPseudoBinaryW_WX<LMULInfo m> {
-  defm _WX : XVPseudoBinary<m.wvrclass, m.wvrclass, GPR, m>;
+  defm _WX : XVPseudoBinary<m.wvrclass, m.wvrclass, GPR, m, "", TargetConstraintType=3>;
 }
 
 // In RVV 1.0 `@earlyclobber` is used here to prevent the source and destination
@@ -2259,10 +2272,6 @@ multiclass XVPseudoBinaryV_WI_RM<LMULInfo m> {
   defm _WI : XVPseudoBinaryRoundingMode<m.vrclass, m.wvrclass, uimm5, m,
                                         !if(!ge(m.octuple, 8),
                                         "@earlyclobber $rd", "")>;
-}
-
-multiclass XVPseudoBinaryFV_VV<LMULInfo m, string Constraint = "", int sew = 0> {
-  defm _VV : XVPseudoBinary<m.vrclass, m.vrclass, m.vrclass, m, Constraint, sew>;
 }
 
 multiclass XVPseudoBinaryFV_VV_RM<LMULInfo m, int sew> {
@@ -2766,7 +2775,7 @@ multiclass XVPseudoVALU_VV_VF_RM {
   foreach m = MxListXTHeadV in {
     foreach e = SchedSEWSet<m.MX, isF=1>.val in
       defm "" : XVPseudoBinaryFV_VV_RM<m, e>,
-                SchedBinary<"WriteVFMulV", "ReadVFMulV", "ReadVFMulV", m.MX, e,
+                SchedBinary<"WriteVFALUV", "ReadVFALUV", "ReadVFALUV", m.MX, e,
                             forceMergeOpRead=true>;
   }
 
@@ -2947,46 +2956,34 @@ multiclass XVPseudoVSQR_V_RM {
 
 multiclass XVPseudoVMAX_VV_VF {
   foreach m = MxListFXTHeadV in {
-    defvar mx = m.MX;
-    defvar WriteVFMinMaxV_MX = !cast<SchedWrite>("WriteVFMinMaxV_" # mx);
-    defvar ReadVFMinMaxV_MX = !cast<SchedRead>("ReadVFMinMaxV_" # mx);
-
-    defm "" : XVPseudoBinaryFV_VV<m>,
-              Sched<[WriteVFMinMaxV_MX, ReadVFMinMaxV_MX, ReadVFMinMaxV_MX, ReadVMask]>;
+    foreach e = SchedSEWSet<m.MX, isF=1>.val in
+      defm "" : XVPseudoBinaryV_VV<m, sew=e>,
+                SchedBinary<"WriteVFMinMaxV", "ReadVFMinMaxV", "ReadVFMinMaxV",
+                            m.MX, e, forceMergeOpRead=true>;
   }
 
   foreach f = FPListXTHeadV in {
     foreach m = f.MxList in {
-      defvar mx = m.MX;
-      defvar WriteVFMinMaxF_MX = !cast<SchedWrite>("WriteVFMinMaxF_" # mx);
-      defvar ReadVFMinMaxV_MX = !cast<SchedRead>("ReadVFMinMaxV_" # mx);
-      defvar ReadVFMinMaxF_MX = !cast<SchedRead>("ReadVFMinMaxF_" # mx);
-
-      defm "" : XVPseudoBinaryV_VF<m, f>,
-                Sched<[WriteVFMinMaxF_MX, ReadVFMinMaxV_MX, ReadVFMinMaxF_MX, ReadVMask]>;
+      defm "" : XVPseudoBinaryV_VF<m, f, sew=f.SEW>,
+                SchedBinary<"WriteVFMinMaxF", "ReadVFMinMaxV", "ReadVFMinMaxF",
+                            m.MX, f.SEW, forceMergeOpRead=true>;
     }
   }
 }
 
 multiclass XVPseudoVSGNJ_VV_VF {
   foreach m = MxListFXTHeadV in {
-    defvar mx = m.MX;
-    defvar WriteVFSgnjV_MX = !cast<SchedWrite>("WriteVFSgnjV_" # mx);
-    defvar ReadVFSgnjV_MX = !cast<SchedRead>("ReadVFSgnjV_" # mx);
-
-    defm "" : XVPseudoBinaryFV_VV<m>,
-              Sched<[WriteVFSgnjV_MX, ReadVFSgnjV_MX, ReadVFSgnjV_MX, ReadVMask]>;
+    foreach e = SchedSEWSet<m.MX, isF=1>.val in
+    defm "" : XVPseudoBinaryV_VV<m, sew=e>,
+              SchedBinary<"WriteVFSgnjV", "ReadVFSgnjV", "ReadVFSgnjV", m.MX,
+                          e, forceMergeOpRead=true>;
   }
 
   foreach f = FPListXTHeadV in {
     foreach m = f.MxList in {
-      defvar mx = m.MX;
-      defvar WriteVFSgnjF_MX = !cast<SchedWrite>("WriteVFSgnjF_" # mx);
-      defvar ReadVFSgnjV_MX = !cast<SchedRead>("ReadVFSgnjV_" # mx);
-      defvar ReadVFSgnjF_MX = !cast<SchedRead>("ReadVFSgnjF_" # mx);
-
-      defm "" : XVPseudoBinaryV_VF<m, f>,
-                Sched<[WriteVFSgnjF_MX, ReadVFSgnjV_MX, ReadVFSgnjF_MX, ReadVMask]>;
+      defm "" : XVPseudoBinaryV_VF<m, f, sew=f.SEW>,
+                SchedBinary<"WriteVFSgnjF", "ReadVFSgnjV", "ReadVFSgnjF", m.MX,
+                            f.SEW, forceMergeOpRead=true>;
     }
   }
 }
@@ -3371,13 +3368,9 @@ multiclass XVPseudoVSLD_VX_VI<Operand ImmType = simm5, string Constraint = ""> {
 
 multiclass XVPseudoVSLD1_VX<string Constraint = ""> {
   foreach m = MxListXTHeadV in {
-    defvar mx = m.MX;
-    defvar WriteVISlide1X_MX = !cast<SchedWrite>("WriteVISlide1X_" # mx);
-    defvar ReadVISlideV_MX = !cast<SchedRead>("ReadVISlideV_" # mx);
-    defvar ReadVISlideX_MX = !cast<SchedRead>("ReadVISlideX_" # mx);
-
     defm "_VX" : XVPseudoBinary<m.vrclass, m.vrclass, GPR, m, Constraint>,
-                 Sched<[WriteVISlide1X_MX, ReadVISlideV_MX, ReadVISlideX_MX, ReadVMask]>;
+                 SchedBinary<"WriteVISlide1X", "ReadVISlideV", "ReadVISlideX",
+                             m.MX, forceMergeOpRead=true>;
   }
 }
 
