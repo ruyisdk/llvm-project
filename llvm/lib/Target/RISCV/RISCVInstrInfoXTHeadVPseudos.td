@@ -1871,7 +1871,8 @@ class XVPseudoUnaryNoMaskRoundingMode<DAGOperand RetClass, DAGOperand OpClass,
 
 class XVPseudoTiedBinaryNoMaskRoundingMode<VReg RetClass,
                                            DAGOperand Op2Class,
-                                           string Constraint> :
+                                           string Constraint,
+                                           int TargetConstraintType = 1> :
         Pseudo<(outs RetClass:$rd),
                (ins RetClass:$rs2, Op2Class:$rs1,
                     ixlenimm:$rm,
@@ -1881,6 +1882,7 @@ class XVPseudoTiedBinaryNoMaskRoundingMode<VReg RetClass,
   let mayStore = 0;
   let hasSideEffects = 0;
   let Constraints = !interleave([Constraint, "$rd = $rs2"], ",");
+  let TargetOverlapConstraintType = TargetConstraintType;
   let HasVLOp = 1;
   let HasSEWOp = 1;
   let isConvertibleToThreeAddress = 1;
@@ -1891,7 +1893,8 @@ class XVPseudoTiedBinaryNoMaskRoundingMode<VReg RetClass,
 
 class XVPseudoTiedBinaryMaskRoundingMode<VReg RetClass,
                                          DAGOperand Op2Class,
-                                         string Constraint> :
+                                         string Constraint,
+                                         int TargetConstraintType = 1> :
         Pseudo<(outs GetVRegNoV0<RetClass>.R:$rd),
                 (ins GetVRegNoV0<RetClass>.R:$merge,
                      Op2Class:$rs1,
@@ -1903,6 +1906,7 @@ class XVPseudoTiedBinaryMaskRoundingMode<VReg RetClass,
   let mayStore = 0;
   let hasSideEffects = 0;
   let Constraints = !interleave([Constraint, "$rd = $merge"], ",");
+  let TargetOverlapConstraintType = TargetConstraintType;
   let HasVLOp = 1;
   let HasSEWOp = 1;
   let IsTiedPseudo = 1;
@@ -1964,7 +1968,8 @@ class XVPseudoNullaryMask<VReg RegClass>:
 class XVPseudoTernaryNoMaskRoundingMode<VReg RetClass,
                                         RegisterClass Op1Class,
                                         DAGOperand Op2Class,
-                                        string Constraint> :
+                                        string Constraint = "",
+                                        int TargetConstraintType = 1> :
         Pseudo<(outs RetClass:$rd),
                (ins RetClass:$rs3, Op1Class:$rs1, Op2Class:$rs2,
                     ixlenimm:$rm, AVL:$vl, ixlenimm:$sew),
@@ -1974,6 +1979,7 @@ class XVPseudoTernaryNoMaskRoundingMode<VReg RetClass,
   let mayStore = 0;
   let hasSideEffects = 0;
   let Constraints = !interleave([Constraint, "$rd = $rs3"], ",");
+  let TargetOverlapConstraintType = TargetConstraintType;
   let HasVLOp = 1;
   let HasSEWOp = 1;
   let HasRoundModeOp = 1;
@@ -2005,7 +2011,7 @@ multiclass XVPseudoBinaryRoundingMode<VReg RetClass,
                                       int UsesVXRM = 1,
                                       int TargetConstraintType = 1,
                                       bit Commutable = 0> {
-  let VLMul = MInfo.value, SEW=sew in {
+  let VLMul = MInfo.value, SEW=sew, isCommutable = Commutable in {
     defvar suffix = !if(sew, "_" # MInfo.MX # "_E" # sew, "_" # MInfo.MX);
     def suffix : XVPseudoBinaryNoMaskRoundingMode<RetClass, Op1Class, Op2Class,
                                                   Constraint, UsesVXRM,
@@ -2034,14 +2040,17 @@ multiclass XVPseudoTernaryRoundingMode<VReg RetClass,
                                        DAGOperand Op2Class,
                                        LMULInfo MInfo,
                                        string Constraint = "",
+                                       int sew = 0,
                                        bit Commutable = 0,
                                        int TargetConstraintType = 1> {
   let VLMul = MInfo.value in {
+    defvar suffix = !if(sew, "_" # MInfo.MX # "_E" # sew, "_" # MInfo.MX);
     let isCommutable = Commutable in
-    def "_" # MInfo.MX :
+    def suffix :
         XVPseudoTernaryNoMaskRoundingMode<RetClass, Op1Class,
-                                          Op2Class, Constraint>;
-    def "_" # MInfo.MX # "_MASK" :
+                                          Op2Class, Constraint,
+                                          TargetConstraintType>;
+    def suffix # "_MASK" :
         XVPseudoBinaryMaskRoundingMode<RetClass, Op1Class,
                                        Op2Class, Constraint,
                                        UsesVXRM_=0,
@@ -2103,12 +2112,16 @@ multiclass XVPseudoTernaryNoTailPolicyRoundingMode<VReg RetClass,
 multiclass XVPseudoTiedBinaryRoundingMode<VReg RetClass,
                                          DAGOperand Op2Class,
                                          LMULInfo MInfo,
-                                         string Constraint = ""> {
+                                         string Constraint = "",
+                                         int sew = 0,
+                                         int TargetConstraintType = 1> {
+    defvar suffix = !if(sew, "_" # MInfo.MX # "_E" # sew, "_" # MInfo.MX);
     let VLMul = MInfo.value in {
-    def "_" # MInfo.MX # "_TIED":
-      XVPseudoTiedBinaryNoMaskRoundingMode<RetClass, Op2Class, Constraint>;
-    def "_" # MInfo.MX # "_MASK_TIED" :
-      XVPseudoTiedBinaryMaskRoundingMode<RetClass, Op2Class, Constraint>;
+    def suffix # "_TIED":
+      XVPseudoTiedBinaryNoMaskRoundingMode<RetClass, Op2Class, Constraint, TargetConstraintType>;
+    def suffix # "_MASK_TIED" :
+      XVPseudoTiedBinaryMaskRoundingMode<RetClass, Op2Class, Constraint, TargetConstraintType>,
+      RISCVMaskedPseudo<MaskIdx=2>;
   }
 }
 
@@ -2263,52 +2276,62 @@ multiclass XVPseudoBinaryV_VF_RM<LMULInfo m, FPR_InfoXTHeadV f, int sew> {
                                               UsesVXRM=0>;
 }
 
-multiclass XVPseudoBinaryW_VV_RM<LMULInfo m> {
+multiclass XVPseudoBinaryW_VV_RM<LMULInfo m, int sew> {
   defm _VV : XVPseudoBinaryRoundingMode<m.wvrclass, m.vrclass, m.vrclass, m,
-                                        "@earlyclobber $rd", UsesVXRM=0>;
+                                        "@earlyclobber $rd", sew, UsesVXRM=0,
+                                        TargetConstraintType=3>;
 }
 
-multiclass XVPseudoBinaryW_VF_RM<LMULInfo m, FPR_InfoXTHeadV f> {
+multiclass XVPseudoBinaryW_VF_RM<LMULInfo m, FPR_InfoXTHeadV f, int sew> {
   defm _V # f.FX : XVPseudoBinaryRoundingMode<m.wvrclass, m.vrclass,
                                               f.fprclass, m,
-                                              "@earlyclobber $rd",
-                                              UsesVXRM=0>;
+                                              "@earlyclobber $rd", sew,
+                                              UsesVXRM=0,
+                                              TargetConstraintType=3>;
 }
 
-multiclass XVPseudoBinaryW_WV_RM<LMULInfo m> {
+multiclass XVPseudoBinaryW_WV_RM<LMULInfo m, int sew> {
   defm _WV : XVPseudoBinaryRoundingMode<m.wvrclass, m.wvrclass, m.vrclass, m,
-                                        "@earlyclobber $rd", UsesVXRM=0>;
+                                        "@earlyclobber $rd", sew, UsesVXRM=0,
+                                        TargetConstraintType = 3>;
   defm _WV : XVPseudoTiedBinaryRoundingMode<m.wvrclass, m.vrclass, m,
-                                            "@earlyclobber $rd">;
+                                            "@earlyclobber $rd", sew,
+                                            TargetConstraintType = 3>;
 }
 
-multiclass XVPseudoBinaryW_WF_RM<LMULInfo m, FPR_InfoXTHeadV f> {
+multiclass XVPseudoBinaryW_WF_RM<LMULInfo m, FPR_InfoXTHeadV f, int sew> {
   defm "_W" # f.FX : XVPseudoBinaryRoundingMode<m.wvrclass, m.wvrclass,
                                                 f.fprclass, m,
-                                                UsesVXRM=0>;
+                                                Constraint="",
+                                                sew=sew,
+                                                UsesVXRM=0,
+                                                TargetConstraintType=3>;
 }
 
-multiclass XVPseudoTernaryV_VV_AAXA_RM<LMULInfo m, string Constraint = ""> {
+multiclass XVPseudoTernaryV_VV_AAXA_RM<LMULInfo m, int sew> {
   defm _VV : XVPseudoTernaryRoundingMode<m.vrclass, m.vrclass, m.vrclass, m,
-                                         Constraint, Commutable=1>;
+                                         sew=sew, Commutable=1>;
 }
 
-multiclass XVPseudoTernaryV_VF_AAXA_RM<LMULInfo m, FPR_InfoXTHeadV f, string Constraint = ""> {
+multiclass XVPseudoTernaryV_VF_AAXA_RM<LMULInfo m, FPR_InfoXTHeadV f, int sew> {
   defm _V # f.FX : XVPseudoTernaryRoundingMode<m.vrclass, f.fprclass,
-                                              m.vrclass, m, Constraint,
-                                              Commutable=1>;
+                                              m.vrclass, m,
+                                              sew=sew, Commutable=1>;
 }
 
-multiclass XVPseudoTernaryW_VV_RM<LMULInfo m> {
+multiclass XVPseudoTernaryW_VV_RM<LMULInfo m, int sew> {
   defvar constraint = "@earlyclobber $rd";
   defm _VV : XVPseudoTernaryRoundingMode<m.wvrclass, m.vrclass, m.vrclass, m,
-                                         constraint>;
+                                         constraint, sew,
+                                         TargetConstraintType=3>;
 }
 
-multiclass XVPseudoTernaryW_VF_RM<LMULInfo m, FPR_InfoXTHeadV f> {
+multiclass XVPseudoTernaryW_VF_RM<LMULInfo m, FPR_InfoXTHeadV f, int sew> {
   defvar constraint = "@earlyclobber $rd";
   defm _V # f.FX : XVPseudoTernaryRoundingMode<m.wvrclass, f.fprclass,
-                                                 m.vrclass, m, constraint>;
+                                               m.vrclass, m, constraint,
+                                               sew=sew,
+                                               TargetConstraintType=3>;
 }
 
 multiclass XVPseudoBinaryM_VF<LMULInfo m, FPR_InfoXTHeadV f> {
@@ -2768,28 +2791,34 @@ multiclass XVPseudoVALU_VF_RM {
 
 multiclass XVPseudoVFWALU_VV_VF_RM {
   foreach m = MxListWXTHeadV in {
-    defm "" : XVPseudoBinaryW_VV_RM<m>,
-              SchedBinary<"WriteVFWALUV", "ReadVFWALUV", "ReadVFWALUV", m.MX>;
+    foreach e = SchedSEWSet<m.MX, isF=1, isWidening=1>.val in
+      defm "" : XVPseudoBinaryW_VV_RM<m, sew=e>,
+                SchedBinary<"WriteVFWALUV", "ReadVFWALUV", "ReadVFWALUV", m.MX,
+                            e, forceMergeOpRead=true>;
   }
 
   foreach f = FPListWXTHeadV in {
     foreach m = f.MxListFW in {
-      defm "" : XVPseudoBinaryW_VF_RM<m, f>,
-                SchedBinary<"WriteVFWALUF", "ReadVFWALUV", "ReadVFWALUF", m.MX>;
+      defm "" : XVPseudoBinaryW_VF_RM<m, f, sew=f.SEW>,
+                SchedBinary<"WriteVFWALUF", "ReadVFWALUV", "ReadVFWALUF", m.MX,
+                            f.SEW, forceMergeOpRead=true>;
     }
   }
 }
 
 multiclass XVPseudoVFWALU_WV_WF_RM {
   foreach m = MxListWXTHeadV in {
-    defm "" : XVPseudoBinaryW_WV_RM<m>,
-              SchedBinary<"WriteVFWALUV", "ReadVFWALUV", "ReadVFWALUV", m.MX>;
+    foreach e = SchedSEWSet<m.MX, isF=1, isWidening=1>.val in
+      defm "" : XVPseudoBinaryW_WV_RM<m, sew=e>,
+                SchedBinary<"WriteVFWALUV", "ReadVFWALUV", "ReadVFWALUV", m.MX,
+                            e, forceMergeOpRead=true>;
   }
 
   foreach f = FPListWXTHeadV in {
     foreach m = f.MxListFW in {
-      defm "" : XVPseudoBinaryW_WF_RM<m, f>,
-                SchedBinary<"WriteVFWALUF", "ReadVFWALUV", "ReadVFWALUF", m.MX>;
+      defm "" : XVPseudoBinaryW_WF_RM<m, f, sew=f.SEW>,
+                SchedBinary<"WriteVFWALUF", "ReadVFWALUV", "ReadVFWALUF", m.MX,
+                            f.SEW, forceMergeOpRead=true>;
     }
   }
 }
@@ -2843,62 +2872,51 @@ multiclass XVPseudoVFRDIV_VF_RM {
 
 multiclass XVPseudoVWMUL_VV_VF_RM {
   foreach m = MxListWXTHeadV in {
-    defm "" : XVPseudoBinaryW_VV_RM<m>,
-              SchedBinary<"WriteVFWMulV", "ReadVFWMulV", "ReadVFWMulV", m.MX>;
+    foreach e = SchedSEWSet<m.MX, isF=1, isWidening=1>.val in
+      defm "" : XVPseudoBinaryW_VV_RM<m, sew=e>,
+                SchedBinary<"WriteVFWMulV", "ReadVFWMulV", "ReadVFWMulV", m.MX,
+                            e, forceMergeOpRead=true>;
   }
 
   foreach f = FPListXTHeadV in {
     foreach m = f.MxListFW in {
-      defm "" : XVPseudoBinaryW_VF_RM<m, f>,
-                SchedBinary<"WriteVFWMulF", "ReadVFWMulV", "ReadVFWMulF", m.MX>;
+      defm "" : XVPseudoBinaryW_VF_RM<m, f, sew=f.SEW>,
+                SchedBinary<"WriteVFWMulF", "ReadVFWMulV", "ReadVFWMulF", m.MX,
+                            f.SEW, forceMergeOpRead=true>;
     }
   }
 }
 
-multiclass XVPseudoVMAC_VV_VF_AAXA_RM<string Constraint = ""> {
+multiclass XVPseudoVMAC_VV_VF_AAXA_RM {
   foreach m = MxListXTHeadV in {
-    defvar mx = m.MX;
-    defvar WriteVFMulAddV_MX = !cast<SchedWrite>("WriteVFMulAddV_" # mx);
-    defvar ReadVFMulAddV_MX = !cast<SchedRead>("ReadVFMulAddV_" # mx);
-
-    defm "" : XVPseudoTernaryV_VV_AAXA_RM<m, Constraint>,
-              Sched<[WriteVFMulAddV_MX, ReadVFMulAddV_MX, ReadVFMulAddV_MX, ReadVFMulAddV_MX, ReadVMask]>;
+    foreach e = SchedSEWSet<m.MX, isF=1>.val in
+      defm "" : XVPseudoTernaryV_VV_AAXA_RM<m, sew=e>,
+                SchedTernary<"WriteVFMulAddV", "ReadVFMulAddV", "ReadVFMulAddV",
+                             "ReadVFMulAddV", m.MX, e>;
   }
 
   foreach f = FPListXTHeadV in {
     foreach m = f.MxList in {
-      defvar mx = m.MX;
-      defvar WriteVFMulAddF_MX = !cast<SchedWrite>("WriteVFMulAddF_" # mx);
-      defvar ReadVFMulAddV_MX = !cast<SchedRead>("ReadVFMulAddV_" # mx);
-      defvar ReadVFMulAddF_MX = !cast<SchedRead>("ReadVFMulAddF_" # mx);
-
-      defm "" : XVPseudoTernaryV_VF_AAXA_RM<m, f, Constraint>,
-                Sched<[WriteVFMulAddF_MX, ReadVFMulAddV_MX, ReadVFMulAddV_MX, ReadVFMulAddF_MX, ReadVMask]>;
+      defm "" : XVPseudoTernaryV_VF_AAXA_RM<m, f, sew=f.SEW>,
+                SchedTernary<"WriteVFMulAddF", "ReadVFMulAddV", "ReadVFMulAddF",
+                             "ReadVFMulAddV", m.MX, f.SEW>;
     }
   }
 }
 
 multiclass XVPseudoVWMAC_VV_VF_RM {
   foreach m = MxListWXTHeadV in {
-    defvar mx = m.MX;
-    defvar WriteVFWMulAddV_MX = !cast<SchedWrite>("WriteVFWMulAddV_" # mx);
-    defvar ReadVFWMulAddV_MX = !cast<SchedRead>("ReadVFWMulAddV_" # mx);
-
-    defm "" : XVPseudoTernaryW_VV_RM<m>,
-              Sched<[WriteVFWMulAddV_MX, ReadVFWMulAddV_MX,
-                     ReadVFWMulAddV_MX, ReadVFWMulAddV_MX, ReadVMask]>;
+    foreach e = SchedSEWSet<m.MX, isF=1, isWidening=1>.val in
+      defm "" : XVPseudoTernaryW_VV_RM<m, sew=e>,
+                SchedTernary<"WriteVFWMulAddV", "ReadVFWMulAddV",
+                             "ReadVFWMulAddV", "ReadVFWMulAddV", m.MX, e>;
   }
 
   foreach f = FPListWXTHeadV in {
     foreach m = f.MxListFW in {
-      defvar mx = m.MX;
-      defvar WriteVFWMulAddF_MX = !cast<SchedWrite>("WriteVFWMulAddF_" # mx);
-      defvar ReadVFWMulAddV_MX = !cast<SchedRead>("ReadVFWMulAddV_" # mx);
-      defvar ReadVFWMulAddF_MX = !cast<SchedRead>("ReadVFWMulAddF_" # mx);
-
-      defm "" : XVPseudoTernaryW_VF_RM<m, f>,
-                Sched<[WriteVFWMulAddF_MX, ReadVFWMulAddV_MX,
-                       ReadVFWMulAddV_MX, ReadVFWMulAddF_MX, ReadVMask]>;
+      defm "" : XVPseudoTernaryW_VF_RM<m, f, sew=f.SEW>,
+                SchedTernary<"WriteVFWMulAddF", "ReadVFWMulAddV",
+                             "ReadVFWMulAddF", "ReadVFWMulAddV", m.MX, f.SEW>;
     }
   }
 }
@@ -3519,23 +3537,26 @@ class XVPatTernaryNoMaskNoPolicyRoundingMode<string intrinsic,
                                              ValueType result_type,
                                              ValueType op1_type,
                                              ValueType op2_type,
-                                             int sew,
+                                             int log2sew,
                                              LMULInfo vlmul,
                                              VReg result_reg_class,
                                              RegisterClass op1_reg_class,
-                                             DAGOperand op2_kind> :
+                                             DAGOperand op2_kind,
+                                             bit isSEWAware = 0> :
   Pat<(result_type (!cast<Intrinsic>(intrinsic)
                     (result_type result_reg_class:$rs3),
                     (op1_type op1_reg_class:$rs1),
                     (op2_type op2_kind:$rs2),
                     (XLenVT timm:$round),
                     VLOpFrag)),
-                   (!cast<Instruction>(inst#"_"#kind#"_"#vlmul.MX)
+                   (!cast<Instruction>(!if(isSEWAware,
+                          inst#"_"#kind#"_"#vlmul.MX#"_E"#!shl(1, log2sew),
+                          inst#"_"#kind#"_"#vlmul.MX))
                     result_reg_class:$rs3,
                     (op1_type op1_reg_class:$rs1),
                     op2_kind:$rs2,
                     (XLenVT timm:$round),
-                    GPR:$vl, sew)>;
+                    GPR:$vl, log2sew)>;
 
 class XVPatTernaryMaskNoPolicyRoundingMode<string intrinsic,
                                            string inst,
@@ -3544,11 +3565,12 @@ class XVPatTernaryMaskNoPolicyRoundingMode<string intrinsic,
                                            ValueType op1_type,
                                            ValueType op2_type,
                                            ValueType mask_type,
-                                           int sew,
+                                           int log2sew,
                                            LMULInfo vlmul,
                                            VReg result_reg_class,
                                            RegisterClass op1_reg_class,
-                                           DAGOperand op2_kind> :
+                                           DAGOperand op2_kind,
+                                           bit isSEWAware = 0> :
   Pat<(result_type (!cast<Intrinsic>(intrinsic#"_mask")
                     (result_type result_reg_class:$rs3),
                     (op1_type op1_reg_class:$rs1),
@@ -3556,13 +3578,15 @@ class XVPatTernaryMaskNoPolicyRoundingMode<string intrinsic,
                     (mask_type V0),
                     (XLenVT timm:$round),
                     VLOpFrag)),
-                   (!cast<Instruction>(inst#"_"#kind#"_"#vlmul.MX # "_MASK")
+                   (!cast<Instruction>(!if(isSEWAware,
+                          inst#"_"#kind#"_"#vlmul.MX#"_E"#!shl(1, log2sew) # "_MASK",
+                          inst#"_"#kind#"_"#vlmul.MX # "_MASK"))
                     result_reg_class:$rs3,
                     (op1_type op1_reg_class:$rs1),
                     op2_kind:$rs2,
                     (mask_type V0),
                     (XLenVT timm:$round),
-                    GPR:$vl, sew)>;
+                    GPR:$vl, log2sew)>;
 
 multiclass XVPatBinary<string intrinsic,
                       string inst,
@@ -3609,15 +3633,16 @@ multiclass XVPatTernaryNoPolicyRoundingMode<string intrinsic,
                                             LMULInfo vlmul,
                                             VReg result_reg_class,
                                             RegisterClass op1_reg_class,
-                                            DAGOperand op2_kind> {
+                                            DAGOperand op2_kind,
+                                            bit isSEWAware = 0> {
   def : XVPatTernaryNoMaskNoPolicyRoundingMode<intrinsic, inst, kind, result_type,
                                                op1_type, op2_type, sew, vlmul,
                                                result_reg_class, op1_reg_class,
-                                               op2_kind>;
+                                               op2_kind, isSEWAware>;
   def : XVPatTernaryMaskNoPolicyRoundingMode<intrinsic, inst, kind, result_type, op1_type,
                                              op2_type, mask_type, sew, vlmul,
                                              result_reg_class, op1_reg_class,
-                                             op2_kind>;
+                                             op2_kind, isSEWAware>;
 }
 
 class XVPatTiedBinaryMaskRoundingMode<string intrinsic_name,
@@ -4387,13 +4412,16 @@ multiclass XVPatBinaryV_WI_RM<string intrinsic, string instruction,
 }
 
 multiclass XVPatBinaryW_VV_RM<string intrinsic, string instruction,
-                              list<VTypeInfoToWide> vtilist> {
+                              list<VTypeInfoToWide> vtilist, bit isSEWAware = 0> {
   foreach VtiToWti = vtilist in {
     defvar Vti = VtiToWti.Vti;
     defvar Wti = VtiToWti.Wti;
+    defvar name = !if(isSEWAware,
+                      instruction # "_VV_" # Vti.LMul.MX # "_E" # Vti.SEW,
+                      instruction # "_VV_" # Vti.LMul.MX);
     let Predicates = !listconcat(GetXVTypePredicates<Vti>.Predicates,
                                  GetXVTypePredicates<Wti>.Predicates) in
-    defm : XVPatBinaryRoundingMode<intrinsic, instruction # "_VV_" # Vti.LMul.MX,
+    defm : XVPatBinaryRoundingMode<intrinsic, name,
                                    Wti.Vector, Vti.Vector, Vti.Vector, Vti.Mask,
                                    Vti.Log2SEW, Wti.RegClass,
                                    Vti.RegClass, Vti.RegClass>;
@@ -4401,14 +4429,17 @@ multiclass XVPatBinaryW_VV_RM<string intrinsic, string instruction,
 }
 
 multiclass XVPatBinaryW_VX_RM<string intrinsic, string instruction,
-                              list<VTypeInfoToWide> vtilist> {
+                              list<VTypeInfoToWide> vtilist, bit isSEWAware = 0> {
   foreach VtiToWti = vtilist in {
     defvar Vti = VtiToWti.Vti;
     defvar Wti = VtiToWti.Wti;
     defvar kind = "V"#Vti.ScalarSuffix;
+    defvar name = !if(isSEWAware,
+                      instruction#"_"#kind#"_"#Vti.LMul.MX # "_E" # Vti.SEW,
+                      instruction#"_"#kind#"_"#Vti.LMul.MX);
     let Predicates = !listconcat(GetXVTypePredicates<Vti>.Predicates,
                                  GetXVTypePredicates<Wti>.Predicates) in
-    defm : XVPatBinaryRoundingMode<intrinsic, instruction#"_"#kind#"_"#Vti.LMul.MX,
+    defm : XVPatBinaryRoundingMode<intrinsic, name,
                                    Wti.Vector, Vti.Vector, Vti.Scalar, Vti.Mask,
                                    Vti.Log2SEW, Wti.RegClass,
                                    Vti.RegClass, Vti.ScalarRegClass>;
@@ -4416,21 +4447,24 @@ multiclass XVPatBinaryW_VX_RM<string intrinsic, string instruction,
 }
 
 multiclass XVPatBinaryW_WV_RM<string intrinsic, string instruction,
-                              list<VTypeInfoToWide> vtilist> {
+                              list<VTypeInfoToWide> vtilist, bit isSEWAware = 0> {
   foreach VtiToWti = vtilist in {
     defvar Vti = VtiToWti.Vti;
     defvar Wti = VtiToWti.Wti;
+    defvar name = !if(isSEWAware,
+                      instruction # "_WV_" # Vti.LMul.MX # "_E" # Vti.SEW,
+                      instruction # "_WV_" # Vti.LMul.MX);
     let Predicates = !listconcat(GetXVTypePredicates<Vti>.Predicates,
                                  GetXVTypePredicates<Wti>.Predicates) in {
-      def : XVPatTiedBinaryNoMaskRoundingMode<intrinsic, instruction # "_WV_" # Vti.LMul.MX,
+      def : XVPatTiedBinaryNoMaskRoundingMode<intrinsic, name,
                                               Wti.Vector, Vti.Vector,
                                               Vti.Log2SEW, Wti.RegClass, Vti.RegClass>;
       let AddedComplexity = 1 in {
-      def : XVPatTiedBinaryMaskRoundingMode<intrinsic, instruction # "_WV_" # Vti.LMul.MX,
+      def : XVPatTiedBinaryMaskRoundingMode<intrinsic, name,
                                             Wti.Vector, Vti.Vector, Vti.Mask,
                                             Vti.Log2SEW, Wti.RegClass, Vti.RegClass>;
       }
-      def : XVPatBinaryMaskRoundingMode<intrinsic, instruction # "_WV_" # Vti.LMul.MX,
+      def : XVPatBinaryMaskRoundingMode<intrinsic, name,
                                         Wti.Vector, Wti.Vector, Vti.Vector, Vti.Mask,
                                         Vti.Log2SEW, Wti.RegClass,
                                         Wti.RegClass, Vti.RegClass>;
@@ -4439,14 +4473,17 @@ multiclass XVPatBinaryW_WV_RM<string intrinsic, string instruction,
 }
 
 multiclass XVPatBinaryW_WX_RM<string intrinsic, string instruction,
-                              list<VTypeInfoToWide> vtilist> {
+                              list<VTypeInfoToWide> vtilist, bit isSEWAware = 0> {
   foreach VtiToWti = vtilist in {
     defvar Vti = VtiToWti.Vti;
     defvar Wti = VtiToWti.Wti;
     defvar kind = "W"#Vti.ScalarSuffix;
+    defvar name = !if(isSEWAware,
+                      instruction#"_"#kind#"_"#Vti.LMul.MX#"_E"#Vti.SEW,
+                      instruction#"_"#kind#"_"#Vti.LMul.MX);
     let Predicates = !listconcat(GetXVTypePredicates<Vti>.Predicates,
                                  GetXVTypePredicates<Wti>.Predicates) in
-    defm : XVPatBinaryRoundingMode<intrinsic, instruction#"_"#kind#"_"#Vti.LMul.MX,
+    defm : XVPatBinaryRoundingMode<intrinsic, name,
                                    Wti.Vector, Wti.Vector, Vti.Scalar, Vti.Mask,
                                    Vti.Log2SEW, Wti.RegClass,
                                    Wti.RegClass, Vti.ScalarRegClass>;
@@ -4454,7 +4491,7 @@ multiclass XVPatBinaryW_WX_RM<string intrinsic, string instruction,
 }
 
 multiclass XVPatTernaryW_VV_RM<string intrinsic, string instruction,
-                               list<VTypeInfoToWide> vtilist> {
+                               list<VTypeInfoToWide> vtilist, bit isSEWAware = 0> {
   foreach vtiToWti = vtilist in {
     defvar vti = vtiToWti.Vti;
     defvar wti = vtiToWti.Wti;
@@ -4463,12 +4500,13 @@ multiclass XVPatTernaryW_VV_RM<string intrinsic, string instruction,
     defm : XVPatTernaryNoPolicyRoundingMode<intrinsic, instruction, "VV",
                                             wti.Vector, vti.Vector, vti.Vector,
                                             vti.Mask, vti.Log2SEW, vti.LMul,
-                                            wti.RegClass, vti.RegClass, vti.RegClass>;
+                                            wti.RegClass, vti.RegClass,
+                                            vti.RegClass, isSEWAware>;
   }
 }
 
 multiclass XVPatTernaryW_VX_RM<string intrinsic, string instruction,
-                               list<VTypeInfoToWide> vtilist> {
+                               list<VTypeInfoToWide> vtilist, bit isSEWAware = 0> {
   foreach vtiToWti = vtilist in {
     defvar vti = vtiToWti.Vti;
     defvar wti = vtiToWti.Wti;
@@ -4479,7 +4517,7 @@ multiclass XVPatTernaryW_VX_RM<string intrinsic, string instruction,
                                             wti.Vector, vti.Scalar, vti.Vector,
                                             vti.Mask, vti.Log2SEW, vti.LMul,
                                             wti.RegClass, vti.ScalarRegClass,
-                                            vti.RegClass>;
+                                            vti.RegClass, isSEWAware>;
   }
 }
 
@@ -4508,24 +4546,24 @@ multiclass XVPatUnaryV_V_AnyMask<string intrinsic, string instruction,
 }
 
 multiclass XVPatTernaryV_VV_AAXA_RM<string intrinsic, string instruction,
-                                    list<VTypeInfo> vtilist> {
+                                    list<VTypeInfo> vtilist, bit isSEWAware = 0> {
   foreach vti = vtilist in
     let Predicates = GetXVTypePredicates<vti>.Predicates in
     defm : XVPatTernaryNoPolicyRoundingMode<intrinsic, instruction, "VV",
                                     vti.Vector, vti.Vector, vti.Vector, vti.Mask,
                                     vti.Log2SEW, vti.LMul, vti.RegClass,
-                                    vti.RegClass, vti.RegClass>;
+                                    vti.RegClass, vti.RegClass, isSEWAware>;
 }
 
 multiclass XVPatTernaryV_VX_AAXA_RM<string intrinsic, string instruction,
-                                    list<VTypeInfo> vtilist> {
+                                    list<VTypeInfo> vtilist, bit isSEWAware = 0> {
   foreach vti = vtilist in
     let Predicates = GetXVTypePredicates<vti>.Predicates in
     defm : XVPatTernaryNoPolicyRoundingMode<intrinsic, instruction,
                                             "V"#vti.ScalarSuffix,
                                             vti.Vector, vti.Scalar, vti.Vector, vti.Mask,
                                             vti.Log2SEW, vti.LMul, vti.RegClass,
-                                            vti.ScalarRegClass, vti.RegClass>;
+                                            vti.ScalarRegClass, vti.RegClass, isSEWAware>;
 }
 
 multiclass XVPatConversion<string intrinsic,
@@ -4780,24 +4818,24 @@ multiclass XVPatBinaryV_WV_WX_WI_RM<string intrinsic, string instruction,
       XVPatBinaryV_WI_RM<intrinsic, instruction, vtilist>;
 
 multiclass XVPatBinaryW_VV_VX_RM<string intrinsic, string instruction,
-                                 list<VTypeInfoToWide> vtilist>
-    : XVPatBinaryW_VV_RM<intrinsic, instruction, vtilist>,
-      XVPatBinaryW_VX_RM<intrinsic, instruction, vtilist>;
+                                 list<VTypeInfoToWide> vtilist, bit isSEWAware = 0>
+    : XVPatBinaryW_VV_RM<intrinsic, instruction, vtilist, isSEWAware>,
+      XVPatBinaryW_VX_RM<intrinsic, instruction, vtilist, isSEWAware>;
 
 multiclass XVPatBinaryW_WV_WX_RM<string intrinsic, string instruction,
-                                 list<VTypeInfoToWide> vtilist>
-    : XVPatBinaryW_WV_RM<intrinsic, instruction, vtilist>,
-      XVPatBinaryW_WX_RM<intrinsic, instruction, vtilist>;
+                                 list<VTypeInfoToWide> vtilist, bit isSEWAware = 0>
+    : XVPatBinaryW_WV_RM<intrinsic, instruction, vtilist, isSEWAware>,
+      XVPatBinaryW_WX_RM<intrinsic, instruction, vtilist, isSEWAware>;
 
 multiclass XVPatTernaryV_VV_VX_AAXA_RM<string intrinsic, string instruction,
-                                       list<VTypeInfo> vtilist>
-    : XVPatTernaryV_VV_AAXA_RM<intrinsic, instruction, vtilist>,
-      XVPatTernaryV_VX_AAXA_RM<intrinsic, instruction, vtilist>;
+                                       list<VTypeInfo> vtilist, bit isSEWAware = 0>
+    : XVPatTernaryV_VV_AAXA_RM<intrinsic, instruction, vtilist, isSEWAware>,
+      XVPatTernaryV_VX_AAXA_RM<intrinsic, instruction, vtilist, isSEWAware>;
 
 multiclass XVPatTernaryW_VV_VX_RM<string intrinsic, string instruction,
-                                  list<VTypeInfoToWide> vtilist>
-    : XVPatTernaryW_VV_RM<intrinsic, instruction, vtilist>,
-      XVPatTernaryW_VX_RM<intrinsic, instruction, vtilist>;
+                                  list<VTypeInfoToWide> vtilist, bit isSEWAware = 1>
+    : XVPatTernaryW_VV_RM<intrinsic, instruction, vtilist, isSEWAware>,
+      XVPatTernaryW_VX_RM<intrinsic, instruction, vtilist, isSEWAware>;
 
 multiclass XVPatTernaryV_VI<string intrinsic, string instruction,
                            list<VTypeInfo> vtilist, Operand Imm_type> {
