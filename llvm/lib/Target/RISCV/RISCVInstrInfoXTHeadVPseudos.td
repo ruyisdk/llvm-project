@@ -3352,23 +3352,19 @@ multiclass XVPseudoVSLDV_VX<LMULInfo m, string Constraint = ""> {
   defm _VX : XVPseudoVSLDVNoPolicy<m.vrclass, m.vrclass, GPR, m, Constraint>;
 }
 
-multiclass XVPseudoVSLDV_VI<Operand ImmType = simm5, LMULInfo m, string Constraint = ""> {
-  defm _VI : XVPseudoVSLDVNoPolicy<m.vrclass, m.vrclass, ImmType, m, Constraint>;
+multiclass XVPseudoVSLDV_VI<LMULInfo m, string Constraint = ""> {
+  defm _VI : XVPseudoVSLDVNoPolicy<m.vrclass, m.vrclass, uimm5, m, Constraint>;
 }
 
-multiclass XVPseudoVSLD_VX_VI<Operand ImmType = simm5, string Constraint = ""> {
+multiclass XVPseudoVSLD_VX_VI<bit slidesUp = false, string Constraint = ""> {
+  defvar WriteSlideX = !if(slidesUp, "WriteVSlideUpX", "WriteVSlideDownX");
   foreach m = MxListXTHeadV in {
     defvar mx = m.MX;
-    defvar WriteVISlideX_MX = !cast<SchedWrite>("WriteVISlideX_" # mx);
-    defvar WriteVISlideI_MX = !cast<SchedWrite>("WriteVISlideI_" # mx);
-    defvar ReadVISlideV_MX = !cast<SchedRead>("ReadVISlideV_" # mx);
-    defvar ReadVISlideX_MX = !cast<SchedRead>("ReadVISlideX_" # mx);
-
     defm "" : XVPseudoVSLDV_VX<m, Constraint>,
-              Sched<[WriteVISlideX_MX, ReadVISlideV_MX, ReadVISlideV_MX,
-                     ReadVISlideX_MX, ReadVMask]>;
-    defm "" : XVPseudoVSLDV_VI<ImmType, m, Constraint>,
-              Sched<[WriteVISlideI_MX, ReadVISlideV_MX, ReadVISlideV_MX, ReadVMask]>;
+              SchedTernary<WriteSlideX, "ReadVISlideV", "ReadVISlideV",
+                           "ReadVISlideX", mx>;
+    defm "" : XVPseudoVSLDV_VI<m, Constraint>,
+              SchedBinary<"WriteVSlideI", "ReadVISlideV", "ReadVISlideV", mx>;
   }
 }
 
@@ -6002,7 +5998,7 @@ let Predicates = [HasVendorXTHeadV],
       let HasSEWOp = 1, BaseInstr = TH_VEXT_X_V in
       def "PseudoTH_VMV_X_S" # "_" # mx:
         Pseudo<(outs GPR:$rd), (ins m.vrclass:$rs2, ixlenimm:$sew), []>,
-        Sched<[WriteVIMovVX, ReadVIMovVX]>,
+        Sched<[WriteVMovXS, ReadVMovXS]>,
         RISCVVPseudo;
       let HasVLOp = 1, HasSEWOp = 1, BaseInstr = TH_VMV_S_X,
           Constraints = "$rd = $rs1" in
@@ -6010,7 +6006,7 @@ let Predicates = [HasVendorXTHeadV],
                                              (ins m.vrclass:$rs1, GPR:$rs2,
                                                   AVL:$vl, ixlenimm:$sew),
                                              []>,
-        Sched<[WriteVIMovXV, ReadVIMovXV, ReadVIMovXX]>,
+        Sched<[WriteVMovSX, ReadVMovSX_V, ReadVMovSX_X]>,
         RISCVVPseudo;
     }
   }
@@ -6030,7 +6026,7 @@ let Predicates = [HasVendorXTHeadV],
         def "PseudoTH_VFMV_" # f.FX # "_S_" # mx :
           Pseudo<(outs f.fprclass:$rd),
                  (ins m.vrclass:$rs2, ixlenimm:$sew), []>,
-          Sched<[WriteVFMovVF, ReadVFMovVF]>,
+          Sched<[WriteVMovFS, ReadVMovFS]>,
           RISCVVPseudo;
         let HasVLOp = 1, HasSEWOp = 1, BaseInstr = TH_VFMV_S_F,
             Constraints = "$rd = $rs1" in
@@ -6039,7 +6035,7 @@ let Predicates = [HasVendorXTHeadV],
                                                  (ins m.vrclass:$rs1, f.fprclass:$rs2,
                                                       AVL:$vl, ixlenimm:$sew),
                                                  []>,
-          Sched<[WriteVFMovFV, ReadVFMovFV, ReadVFMovFX]>,
+          Sched<[WriteVMovSF, ReadVMovSF_V, ReadVMovSF_F]>,
           RISCVVPseudo;
       }
     }
@@ -6069,8 +6065,8 @@ foreach fvti = AllFloatXVectors in {
 // 17.4. Vector Slide Operations
 //===----------------------------------------------------------------------===//
 let Predicates = [HasVendorXTHeadV] in {
-  defm PseudoTH_VSLIDEUP     : XVPseudoVSLD_VX_VI<uimm5, "@earlyclobber $rd">;
-  defm PseudoTH_VSLIDEDOWN   : XVPseudoVSLD_VX_VI<uimm5>;
+  defm PseudoTH_VSLIDEUP     : XVPseudoVSLD_VX_VI</*slidesUp=*/true, "@earlyclobber $rd">;
+  defm PseudoTH_VSLIDEDOWN   : XVPseudoVSLD_VX_VI</*slidesUp=*/false>;
   defm PseudoTH_VSLIDE1UP    : XVPseudoVSLD1_VX<"@earlyclobber $rd">;
   defm PseudoTH_VSLIDE1DOWN  : XVPseudoVSLD1_VX;
 }
