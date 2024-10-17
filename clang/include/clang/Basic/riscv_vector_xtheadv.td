@@ -1695,11 +1695,19 @@ def  th_vmset     : RVVMaskNullaryBuiltin;
 defm th_vmmv_m    : RVVPseudoMaskBuiltin<"th_vmand", "c">;
 defm th_vmnot_m   : RVVPseudoMaskBuiltin<"th_vmnand", "c">;
 
+
+class XTHeadVMaskOp0Builtin<string ir, string prototype> : RVVOp0Builtin<"m", prototype, "c"> {
+  let Name = NAME # "_m";
+  let IRName = ir;
+  let MaskedIRName = ir # "_mask";
+  let HasMaskedOffOperand = false;
+}
+
 let MaskedPolicyScheme = NonePolicy in {
   // 16.2. Vector count population in mask vcpop.m
-  def th_vcpop : RVVMaskOp0Builtin<"th_vmpopc", "um">;
+  def th_vcpop : XTHeadVMaskOp0Builtin<"th_vmpopc", "um">;
   // 16.3. vfirst find-first-set mask bit
-  def th_vfirst : RVVMaskOp0Builtin<"th_vmfirst", "lm">;
+  def th_vfirst : XTHeadVMaskOp0Builtin<"th_vmfirst", "lm">;
 }
 
 let MaskedPolicyScheme = HasPassthruOperand,
@@ -1736,7 +1744,7 @@ let UnMaskedPolicyScheme = NonePolicy,
       IntrinsicTypes = {ResultType, Ops.back()->getType()};
     }]
     in {
-  multiclass RVVSlideUpBuiltinSet {
+  multiclass XTHeadVSlideUpBuiltinSet {
     defm "" : RVVOutBuiltinSet<NAME, "csilxfd",
                                [["vx","v", "vvvz"]]>;
     defm "" : RVVOutBuiltinSet<NAME, "csil",
@@ -1761,7 +1769,7 @@ let UnMaskedPolicyScheme = NonePolicy,
       // Ops.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
       IntrinsicTypes = {ResultType, Ops.back()->getType()};
     }] in {
-  multiclass RVVSlideDownBuiltinSet {
+  multiclass XTHeadVSlideDownBuiltinSet {
     defm "" : RVVOutBuiltinSet<NAME, "csilxfd",
                                [["vx","v", "vvz"]]>;
     defm "" : RVVOutBuiltinSet<NAME, "csil",
@@ -1769,8 +1777,8 @@ let UnMaskedPolicyScheme = NonePolicy,
   }
 }
 
-defm th_vslideup   : RVVSlideUpBuiltinSet;
-defm th_vslidedown : RVVSlideDownBuiltinSet;
+defm th_vslideup   : XTHeadVSlideUpBuiltinSet;
+defm th_vslidedown : XTHeadVSlideDownBuiltinSet;
 
 let UnMaskedPolicyScheme = HasPassthruOperand,
     MaskedPolicyScheme = HasPassthruOperand in {
