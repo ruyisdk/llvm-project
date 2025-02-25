@@ -13,7 +13,7 @@
 // CHECK-RV64-NEXT:    ret void
 //
 void test_th_vsoxei64_v_f64m1(double *base, vuint64m1_t bindex, vfloat64m1_t value, size_t vl) {
-  return __riscv_th_vsoxei64_v_f64m1(base, bindex, value, vl);
+  return __riscv_vsoxei64_v_f64m1(base, bindex, value, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local void @test_th_vsoxei64_v_f64m2
@@ -23,7 +23,7 @@ void test_th_vsoxei64_v_f64m1(double *base, vuint64m1_t bindex, vfloat64m1_t val
 // CHECK-RV64-NEXT:    ret void
 //
 void test_th_vsoxei64_v_f64m2(double *base, vuint64m2_t bindex, vfloat64m2_t value, size_t vl) {
-  return __riscv_th_vsoxei64_v_f64m2(base, bindex, value, vl);
+  return __riscv_vsoxei64_v_f64m2(base, bindex, value, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local void @test_th_vsoxei64_v_f64m4
@@ -33,7 +33,7 @@ void test_th_vsoxei64_v_f64m2(double *base, vuint64m2_t bindex, vfloat64m2_t val
 // CHECK-RV64-NEXT:    ret void
 //
 void test_th_vsoxei64_v_f64m4(double *base, vuint64m4_t bindex, vfloat64m4_t value, size_t vl) {
-  return __riscv_th_vsoxei64_v_f64m4(base, bindex, value, vl);
+  return __riscv_vsoxei64_v_f64m4(base, bindex, value, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local void @test_th_vsoxei64_v_f64m8
@@ -43,7 +43,7 @@ void test_th_vsoxei64_v_f64m4(double *base, vuint64m4_t bindex, vfloat64m4_t val
 // CHECK-RV64-NEXT:    ret void
 //
 void test_th_vsoxei64_v_f64m8(double *base, vuint64m8_t bindex, vfloat64m8_t value, size_t vl) {
-  return __riscv_th_vsoxei64_v_f64m8(base, bindex, value, vl);
+  return __riscv_vsoxei64_v_f64m8(base, bindex, value, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local void @test_th_vsoxei64_v_i64m1
@@ -53,7 +53,7 @@ void test_th_vsoxei64_v_f64m8(double *base, vuint64m8_t bindex, vfloat64m8_t val
 // CHECK-RV64-NEXT:    ret void
 //
 void test_th_vsoxei64_v_i64m1(int64_t *base, vuint64m1_t bindex, vint64m1_t value, size_t vl) {
-  return __riscv_th_vsoxei64_v_i64m1(base, bindex, value, vl);
+  return __riscv_vsoxei64_v_i64m1(base, bindex, value, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local void @test_th_vsoxei64_v_i64m2
@@ -63,7 +63,7 @@ void test_th_vsoxei64_v_i64m1(int64_t *base, vuint64m1_t bindex, vint64m1_t valu
 // CHECK-RV64-NEXT:    ret void
 //
 void test_th_vsoxei64_v_i64m2(int64_t *base, vuint64m2_t bindex, vint64m2_t value, size_t vl) {
-  return __riscv_th_vsoxei64_v_i64m2(base, bindex, value, vl);
+  return __riscv_vsoxei64_v_i64m2(base, bindex, value, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local void @test_th_vsoxei64_v_i64m4
@@ -73,7 +73,7 @@ void test_th_vsoxei64_v_i64m2(int64_t *base, vuint64m2_t bindex, vint64m2_t valu
 // CHECK-RV64-NEXT:    ret void
 //
 void test_th_vsoxei64_v_i64m4(int64_t *base, vuint64m4_t bindex, vint64m4_t value, size_t vl) {
-  return __riscv_th_vsoxei64_v_i64m4(base, bindex, value, vl);
+  return __riscv_vsoxei64_v_i64m4(base, bindex, value, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local void @test_th_vsoxei64_v_i64m8
@@ -83,7 +83,7 @@ void test_th_vsoxei64_v_i64m4(int64_t *base, vuint64m4_t bindex, vint64m4_t valu
 // CHECK-RV64-NEXT:    ret void
 //
 void test_th_vsoxei64_v_i64m8(int64_t *base, vuint64m8_t bindex, vint64m8_t value, size_t vl) {
-  return __riscv_th_vsoxei64_v_i64m8(base, bindex, value, vl);
+  return __riscv_vsoxei64_v_i64m8(base, bindex, value, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local void @test_th_vsoxei64_v_u64m1
@@ -93,7 +93,7 @@ void test_th_vsoxei64_v_i64m8(int64_t *base, vuint64m8_t bindex, vint64m8_t valu
 // CHECK-RV64-NEXT:    ret void
 //
 void test_th_vsoxei64_v_u64m1(uint64_t *base, vuint64m1_t bindex, vuint64m1_t value, size_t vl) {
-  return __riscv_th_vsoxei64_v_u64m1(base, bindex, value, vl);
+  return __riscv_vsoxei64_v_u64m1(base, bindex, value, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local void @test_th_vsoxei64_v_u64m2
@@ -103,7 +103,7 @@ void test_th_vsoxei64_v_u64m1(uint64_t *base, vuint64m1_t bindex, vuint64m1_t va
 // CHECK-RV64-NEXT:    ret void
 //
 void test_th_vsoxei64_v_u64m2(uint64_t *base, vuint64m2_t bindex, vuint64m2_t value, size_t vl) {
-  return __riscv_th_vsoxei64_v_u64m2(base, bindex, value, vl);
+  return __riscv_vsoxei64_v_u64m2(base, bindex, value, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local void @test_th_vsoxei64_v_u64m4
@@ -113,7 +113,7 @@ void test_th_vsoxei64_v_u64m2(uint64_t *base, vuint64m2_t bindex, vuint64m2_t va
 // CHECK-RV64-NEXT:    ret void
 //
 void test_th_vsoxei64_v_u64m4(uint64_t *base, vuint64m4_t bindex, vuint64m4_t value, size_t vl) {
-  return __riscv_th_vsoxei64_v_u64m4(base, bindex, value, vl);
+  return __riscv_vsoxei64_v_u64m4(base, bindex, value, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local void @test_th_vsoxei64_v_u64m8
@@ -123,5 +123,5 @@ void test_th_vsoxei64_v_u64m4(uint64_t *base, vuint64m4_t bindex, vuint64m4_t va
 // CHECK-RV64-NEXT:    ret void
 //
 void test_th_vsoxei64_v_u64m8(uint64_t *base, vuint64m8_t bindex, vuint64m8_t value, size_t vl) {
-  return __riscv_th_vsoxei64_v_u64m8(base, bindex, value, vl);
+  return __riscv_vsoxei64_v_u64m8(base, bindex, value, vl);
 }
