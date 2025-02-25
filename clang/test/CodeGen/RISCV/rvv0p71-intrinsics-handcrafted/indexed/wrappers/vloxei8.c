@@ -13,7 +13,7 @@
 // CHECK-RV64-NEXT:    ret <vscale x 8 x i8> [[TMP0]]
 //
 vint8m1_t test_th_vloxei8_v_i8m1(const int8_t *base, vuint8m1_t bindex, size_t vl) {
-  return __riscv_th_vloxei8_v_i8m1(base, bindex, vl);
+  return __riscv_vloxei8_v_i8m1(base, bindex, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 16 x i8> @test_th_vloxei8_v_i8m2
@@ -23,7 +23,7 @@ vint8m1_t test_th_vloxei8_v_i8m1(const int8_t *base, vuint8m1_t bindex, size_t v
 // CHECK-RV64-NEXT:    ret <vscale x 16 x i8> [[TMP0]]
 //
 vint8m2_t test_th_vloxei8_v_i8m2(const int8_t *base, vuint8m2_t bindex, size_t vl) {
-  return __riscv_th_vloxei8_v_i8m2(base, bindex, vl);
+  return __riscv_vloxei8_v_i8m2(base, bindex, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 32 x i8> @test_th_vloxei8_v_i8m4
@@ -33,7 +33,7 @@ vint8m2_t test_th_vloxei8_v_i8m2(const int8_t *base, vuint8m2_t bindex, size_t v
 // CHECK-RV64-NEXT:    ret <vscale x 32 x i8> [[TMP0]]
 //
 vint8m4_t test_th_vloxei8_v_i8m4(const int8_t *base, vuint8m4_t bindex, size_t vl) {
-  return __riscv_th_vloxei8_v_i8m4(base, bindex, vl);
+  return __riscv_vloxei8_v_i8m4(base, bindex, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 64 x i8> @test_th_vloxei8_v_i8m8
@@ -43,7 +43,7 @@ vint8m4_t test_th_vloxei8_v_i8m4(const int8_t *base, vuint8m4_t bindex, size_t v
 // CHECK-RV64-NEXT:    ret <vscale x 64 x i8> [[TMP0]]
 //
 vint8m8_t test_th_vloxei8_v_i8m8(const int8_t *base, vuint8m8_t bindex, size_t vl) {
-  return __riscv_th_vloxei8_v_i8m8(base, bindex, vl);
+  return __riscv_vloxei8_v_i8m8(base, bindex, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 8 x i8> @test_th_vloxei8_v_u8m1
@@ -53,7 +53,7 @@ vint8m8_t test_th_vloxei8_v_i8m8(const int8_t *base, vuint8m8_t bindex, size_t v
 // CHECK-RV64-NEXT:    ret <vscale x 8 x i8> [[TMP0]]
 //
 vuint8m1_t test_th_vloxei8_v_u8m1(const uint8_t *base, vuint8m1_t bindex, size_t vl) {
-  return __riscv_th_vloxei8_v_u8m1(base, bindex, vl);
+  return __riscv_vloxei8_v_u8m1(base, bindex, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 16 x i8> @test_th_vloxei8_v_u8m2
@@ -63,7 +63,7 @@ vuint8m1_t test_th_vloxei8_v_u8m1(const uint8_t *base, vuint8m1_t bindex, size_t
 // CHECK-RV64-NEXT:    ret <vscale x 16 x i8> [[TMP0]]
 //
 vuint8m2_t test_th_vloxei8_v_u8m2(const uint8_t *base, vuint8m2_t bindex, size_t vl) {
-  return __riscv_th_vloxei8_v_u8m2(base, bindex, vl);
+  return __riscv_vloxei8_v_u8m2(base, bindex, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 32 x i8> @test_th_vloxei8_v_u8m4
@@ -73,7 +73,7 @@ vuint8m2_t test_th_vloxei8_v_u8m2(const uint8_t *base, vuint8m2_t bindex, size_t
 // CHECK-RV64-NEXT:    ret <vscale x 32 x i8> [[TMP0]]
 //
 vuint8m4_t test_th_vloxei8_v_u8m4(const uint8_t *base, vuint8m4_t bindex, size_t vl) {
-  return __riscv_th_vloxei8_v_u8m4(base, bindex, vl);
+  return __riscv_vloxei8_v_u8m4(base, bindex, vl);
 }
 
 // CHECK-RV64-LABEL: define dso_local <vscale x 64 x i8> @test_th_vloxei8_v_u8m8
@@ -83,5 +83,5 @@ vuint8m4_t test_th_vloxei8_v_u8m4(const uint8_t *base, vuint8m4_t bindex, size_t
 // CHECK-RV64-NEXT:    ret <vscale x 64 x i8> [[TMP0]]
 //
 vuint8m8_t test_th_vloxei8_v_u8m8(const uint8_t *base, vuint8m8_t bindex, size_t vl) {
-  return __riscv_th_vloxei8_v_u8m8(base, bindex, vl);
+  return __riscv_vloxei8_v_u8m8(base, bindex, vl);
 }
