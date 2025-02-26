@@ -5,7 +5,7 @@
 # RUN:        | FileCheck %s --check-prefix=CHECK-ERROR
 # RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadvector %s \
 # RUN:         --mattr=+f \
-# RUN:        | llvm-objdump -d --mattr=+xtheadvector --mattr=+f - \
+# RUN:        | llvm-objdump -d --mattr=+xtheadvector --no-print-imm-hex --mattr=+f - \
 # RUN:        | FileCheck %s --check-prefix=CHECK-INST
 # RUN: llvm-mc -triple=riscv64 -filetype=obj --mattr=+xtheadvector %s \
 # RUN:         --mattr=+f \
@@ -15,16 +15,16 @@ th.vfmv.v.f v8, fa0
 # CHECK-INST: th.vfmv.v.f v8, fa0
 # CHECK-ENCODING: [0x57,0x54,0x05,0x5e]
 # CHECK-ERROR: instruction requires the following: 'F' (Single-Precision Floating-Point), 'xtheadvector' (T-Head Base Vector Instructions){{$}}
-# CHECK-UNKNOWN: 57 54 05 5e <unknown>
+# CHECK-UNKNOWN: 5e055457 <unknown>
 
 th.vfmv.f.s fa0, v4
 # CHECK-INST: th.vfmv.f.s fa0, v4
 # CHECK-ENCODING: [0x57,0x15,0x40,0x32]
 # CHECK-ERROR: instruction requires the following: 'F' (Single-Precision Floating-Point), 'xtheadvector' (T-Head Base Vector Instructions){{$}}
-# CHECK-UNKNOWN: 57 15 40 32 <unknown>
+# CHECK-UNKNOWN: 32401557 <unknown>
 
 th.vfmv.s.f v8, fa0
 # CHECK-INST: th.vfmv.s.f v8, fa0
 # CHECK-ENCODING: [0x57,0x54,0x05,0x36]
 # CHECK-ERROR: instruction requires the following: 'F' (Single-Precision Floating-Point), 'xtheadvector' (T-Head Base Vector Instructions){{$}}
-# CHECK-UNKNOWN: 57 54 05 36 <unknown>
+# CHECK-UNKNOWN: 36055457 <unknown>
