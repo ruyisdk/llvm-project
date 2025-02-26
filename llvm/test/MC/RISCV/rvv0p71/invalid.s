@@ -8,7 +8,7 @@ th.vmsgeu.vx v2, v4, a0, v0.t, v0
 # CHECK-ERROR: invalid operand for instruction
 
 th.vmsge.vx v2, v4, a0, v0.t, v2
-# CHECK-ERROR: The temporary vector register cannot be the same as the destination register.
+# CHECK-ERROR: the temporary vector register cannot be the same as the destination register
 
 th.vmsgeu.vx v2, v4, a0, v0.t, v2
-# CHECK-ERROR: The temporary vector register cannot be the same as the destination register.
+# CHECK-ERROR: the temporary vector register cannot be the same as the destination register
