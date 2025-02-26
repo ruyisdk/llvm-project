@@ -395,7 +395,9 @@ FunctionPass *RISCVPassConfig::createRVVRegAllocPass(bool Optimized) {
   if (Ctor != useDefaultRegisterAllocator)
     return Ctor();
 
-  if (Optimized)
+  // TODO[XTHeadVector]: Support GAGreedy for XTHeadVector.
+  auto hasXTHeadVector = TM->getMCSubtargetInfo()->hasFeature(RISCV::FeatureVendorXTHeadV);
+  if (Optimized && !hasXTHeadVector)
     return createGreedyRVVRegisterAllocator();
 
   return createFastRVVRegisterAllocator();
