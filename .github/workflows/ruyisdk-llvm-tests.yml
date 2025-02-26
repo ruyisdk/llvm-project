@@ -33,7 +33,7 @@ jobs:
   check_all:
     if: github.repository_owner == 'ruyisdk'
     name: Test llvm,clang
-    uses: ./.github/workflows/llvm-project-tests.yml
+    uses: ./.github/workflows/ruyisdk-llvm-project-tests-template.yml
     with:
       build_target: check-all
       projects: clang
