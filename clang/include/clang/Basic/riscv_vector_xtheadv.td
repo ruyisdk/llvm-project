@@ -1138,6 +1138,7 @@ multiclass RVVPseudoVNotBuiltin<string ir, string type_range> {
       IRName = ir,
       MaskedIRName = ir # "_mask",
       UnMaskedPolicyScheme = HasPassthruOperand,
+      MaskedPolicyScheme = HasPassthruOperand,
       ManualCodegen = [{
       {
         if (IsMasked) {
@@ -1153,7 +1154,7 @@ multiclass RVVPseudoVNotBuiltin<string ir, string type_range> {
                    llvm::Constant::getAllOnesValue(ElemTy));
         if (IsMasked) {
           // TODO: no policy in LLVM side for masked intrinsics.
-          Ops.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+          // Ops.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
           // maskedoff, op1, po2, mask, vl, policy
           IntrinsicTypes = {ResultType,
                             ElemTy,
@@ -1205,7 +1206,8 @@ let HasMasked = false, MaskedPolicyScheme = NonePolicy in {
 }
 
 // 12.4. Vector Bitwise Logical Instructions
-let UnMaskedPolicyScheme = HasPassthruOperand in {
+let UnMaskedPolicyScheme = HasPassthruOperand,
+    MaskedPolicyScheme = HasPassthruOperand in {
   defm th_vand : RVVIntBinBuiltinSet;
   defm th_vxor : RVVIntBinBuiltinSet;
   defm th_vor  : RVVIntBinBuiltinSet;
