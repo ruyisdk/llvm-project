@@ -1467,11 +1467,15 @@ let HasMasked = false,
     UnMaskedPolicyScheme = HasPassthruOperand,
     MaskedPolicyScheme = NonePolicy,
     ManualCodegen = [{
-      // insert poison passthru
+    {
+      // Builtin: (mask, op1, op2, vl), Intrinsic: (passthru, op1, op2, mask, vl)
       if (PolicyAttrs & RVV_VTA)
-        Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType));
+        Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType)); // passthru
       IntrinsicTypes = {ResultType, Ops[2]->getType(), Ops.back()->getType()};
+    }
     }] in {
+  defm th_vmerge : RVVOutOp1BuiltinSet<"th_vmerge", "xfd",
+                                      [["vvm", "v", "vvvm"]]>;
   defm th_vfmerge : RVVOutOp1BuiltinSet<"th_vfmerge", "xfd",
                                         [["vfm", "v", "vvem"]]>;
 }
