@@ -3420,6 +3420,74 @@ def th_integer_comparison_wrapper_macros: RVVHeader;
 // 12.13. Vector Widening Integer Multiply-Add Operations
 
 // 12.14. Vector Integer Merge Operations
+let HeaderCode =
+[{
+#define __riscv_vmerge_vvm_i8m1(op1, op2, mask, vl) __riscv_th_vmerge_vvm_i8m1(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_i8m1(op1, op2, mask, vl) __riscv_th_vmerge_vxm_i8m1(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_i8m2(op1, op2, mask, vl) __riscv_th_vmerge_vvm_i8m2(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_i8m2(op1, op2, mask, vl) __riscv_th_vmerge_vxm_i8m2(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_i8m4(op1, op2, mask, vl) __riscv_th_vmerge_vvm_i8m4(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_i8m4(op1, op2, mask, vl) __riscv_th_vmerge_vxm_i8m4(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_i8m8(op1, op2, mask, vl) __riscv_th_vmerge_vvm_i8m8(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_i8m8(op1, op2, mask, vl) __riscv_th_vmerge_vxm_i8m8(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_i16m1(op1, op2, mask, vl) __riscv_th_vmerge_vvm_i16m1(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_i16m1(op1, op2, mask, vl) __riscv_th_vmerge_vxm_i16m1(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_i16m2(op1, op2, mask, vl) __riscv_th_vmerge_vvm_i16m2(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_i16m2(op1, op2, mask, vl) __riscv_th_vmerge_vxm_i16m2(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_i16m4(op1, op2, mask, vl) __riscv_th_vmerge_vvm_i16m4(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_i16m4(op1, op2, mask, vl) __riscv_th_vmerge_vxm_i16m4(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_i16m8(op1, op2, mask, vl) __riscv_th_vmerge_vvm_i16m8(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_i16m8(op1, op2, mask, vl) __riscv_th_vmerge_vxm_i16m8(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_i32m1(op1, op2, mask, vl) __riscv_th_vmerge_vvm_i32m1(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_i32m1(op1, op2, mask, vl) __riscv_th_vmerge_vxm_i32m1(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_i32m2(op1, op2, mask, vl) __riscv_th_vmerge_vvm_i32m2(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_i32m2(op1, op2, mask, vl) __riscv_th_vmerge_vxm_i32m2(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_i32m4(op1, op2, mask, vl) __riscv_th_vmerge_vvm_i32m4(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_i32m4(op1, op2, mask, vl) __riscv_th_vmerge_vxm_i32m4(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_i32m8(op1, op2, mask, vl) __riscv_th_vmerge_vvm_i32m8(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_i32m8(op1, op2, mask, vl) __riscv_th_vmerge_vxm_i32m8(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_i64m1(op1, op2, mask, vl) __riscv_th_vmerge_vvm_i64m1(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_i64m1(op1, op2, mask, vl) __riscv_th_vmerge_vxm_i64m1(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_i64m2(op1, op2, mask, vl) __riscv_th_vmerge_vvm_i64m2(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_i64m2(op1, op2, mask, vl) __riscv_th_vmerge_vxm_i64m2(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_i64m4(op1, op2, mask, vl) __riscv_th_vmerge_vvm_i64m4(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_i64m4(op1, op2, mask, vl) __riscv_th_vmerge_vxm_i64m4(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_i64m8(op1, op2, mask, vl) __riscv_th_vmerge_vvm_i64m8(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_i64m8(op1, op2, mask, vl) __riscv_th_vmerge_vxm_i64m8(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_u8m1(op1, op2, mask, vl) __riscv_th_vmerge_vvm_u8m1(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_u8m1(op1, op2, mask, vl) __riscv_th_vmerge_vxm_u8m1(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_u8m2(op1, op2, mask, vl) __riscv_th_vmerge_vvm_u8m2(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_u8m2(op1, op2, mask, vl) __riscv_th_vmerge_vxm_u8m2(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_u8m4(op1, op2, mask, vl) __riscv_th_vmerge_vvm_u8m4(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_u8m4(op1, op2, mask, vl) __riscv_th_vmerge_vxm_u8m4(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_u8m8(op1, op2, mask, vl) __riscv_th_vmerge_vvm_u8m8(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_u8m8(op1, op2, mask, vl) __riscv_th_vmerge_vxm_u8m8(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_u16m1(op1, op2, mask, vl) __riscv_th_vmerge_vvm_u16m1(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_u16m1(op1, op2, mask, vl) __riscv_th_vmerge_vxm_u16m1(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_u16m2(op1, op2, mask, vl) __riscv_th_vmerge_vvm_u16m2(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_u16m2(op1, op2, mask, vl) __riscv_th_vmerge_vxm_u16m2(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_u16m4(op1, op2, mask, vl) __riscv_th_vmerge_vvm_u16m4(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_u16m4(op1, op2, mask, vl) __riscv_th_vmerge_vxm_u16m4(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_u16m8(op1, op2, mask, vl) __riscv_th_vmerge_vvm_u16m8(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_u16m8(op1, op2, mask, vl) __riscv_th_vmerge_vxm_u16m8(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_u32m1(op1, op2, mask, vl) __riscv_th_vmerge_vvm_u32m1(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_u32m1(op1, op2, mask, vl) __riscv_th_vmerge_vxm_u32m1(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_u32m2(op1, op2, mask, vl) __riscv_th_vmerge_vvm_u32m2(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_u32m2(op1, op2, mask, vl) __riscv_th_vmerge_vxm_u32m2(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_u32m4(op1, op2, mask, vl) __riscv_th_vmerge_vvm_u32m4(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_u32m4(op1, op2, mask, vl) __riscv_th_vmerge_vxm_u32m4(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_u32m8(op1, op2, mask, vl) __riscv_th_vmerge_vvm_u32m8(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_u32m8(op1, op2, mask, vl) __riscv_th_vmerge_vxm_u32m8(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_u64m1(op1, op2, mask, vl) __riscv_th_vmerge_vvm_u64m1(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_u64m1(op1, op2, mask, vl) __riscv_th_vmerge_vxm_u64m1(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_u64m2(op1, op2, mask, vl) __riscv_th_vmerge_vvm_u64m2(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_u64m2(op1, op2, mask, vl) __riscv_th_vmerge_vxm_u64m2(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_u64m4(op1, op2, mask, vl) __riscv_th_vmerge_vvm_u64m4(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_u64m4(op1, op2, mask, vl) __riscv_th_vmerge_vxm_u64m4(op1, op2, mask, vl)
+#define __riscv_vmerge_vvm_u64m8(op1, op2, mask, vl) __riscv_th_vmerge_vvm_u64m8(op1, op2, mask, vl)
+#define __riscv_vmerge_vxm_u64m8(op1, op2, mask, vl) __riscv_th_vmerge_vxm_u64m8(op1, op2, mask, vl)
+}] in
+def th_integer_merge_wrapper_macros : RVVHeader;
 
 // 12.15. Vector Integer Move Operations
 let HeaderCode =
@@ -3501,9 +3569,8 @@ let HeaderCode =
 #define __riscv_vmv_v_v_f64m2(src, vl) __riscv_th_vmv_v_v_f64m2(src, vl)
 #define __riscv_vmv_v_v_f64m4(src, vl) __riscv_th_vmv_v_v_f64m4(src, vl)
 #define __riscv_vmv_v_v_f64m8(src, vl) __riscv_th_vmv_v_v_f64m8(src, vl)
-
 }] in
-def th_integer_merge_wrapper_macros: RVVHeader;
+def th_integer_move_wrapper_macros: RVVHeader;
 
 // 13.1. Vector Single-Width Saturating Add and Subtract
 
