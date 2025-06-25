@@ -826,6 +826,7 @@ defm th_vlxb   : RVVVLXBHWBuiltin<"th_vlxb", ["c", "s", "i", "l"]>; // i8, i16, 
 defm th_vlxh   : RVVVLXBHWBuiltin<"th_vlxh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
 defm th_vlxw   : RVVVLXBHWBuiltin<"th_vlxw", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
 defm th_vloxei : RVVVLXEEWBuiltin<"th_vlxe", TypeList>;             // all types
+// TODO: th_vluxei?
 
 defm th_vsxb   : RVVVSXBHWBuiltin<"th_vsxb", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
 defm th_vsxh   : RVVVSXBHWBuiltin<"th_vsxh", ["c", "s", "i", "l"]>; // i8, i16, i32, i64
@@ -1149,25 +1150,145 @@ multiclass RVVSSegStore<string ir, string bhwe, bit with_eew, list<string> types
   }
 }
 
+// 7.5.3. Vector Indexed Segment Loads (Zvlsseg)
+
+// TODO: Indexed load for b, h, w, bu, hu, wu variant
+// TODO: multiclass RVVISegLoadBHW<string ir, string bhw, list<string> types> { ... }
+
+// Indexed load for EEW variant
+multiclass RVVISegLoadEEW<string name, string ir, list<string> types> {
+  foreach type = types in {
+    foreach eew_info = EEWList in {
+      defvar eew = eew_info[0];
+      defvar eew_type = eew_info[1];
+      foreach nf = NFList in {
+        let Name = name # nf # "ei" # eew # "_v",
+            IRName = ir # nf # "e",
+            MaskedIRName = ir # nf # "e" # "_mask",
+            NF = nf,
+            ManualCodegen = [{
+    {
+      llvm::Type *ElementVectorType = cast<StructType>(ResultType)->elements()[0];
+      IntrinsicTypes = {ElementVectorType, Ops.back()->getType()};
+      SmallVector<llvm::Value*, 12> Operands;
+
+      bool NoPassthru =
+        (IsMasked && (PolicyAttrs & RVV_VTA) && (PolicyAttrs & RVV_VMA)) |
+        (!IsMasked && (PolicyAttrs & RVV_VTA));
+      unsigned Offset = IsMasked ? NoPassthru ? 1 : 2 : NoPassthru ? 0 : 1;
+
+      if (NoPassthru) { // Push poison into passthru
+        Operands.append(NF, llvm::PoisonValue::get(ElementVectorType));
+      } else { // Push intrinsics operands into passthru
+        llvm::Value *PassthruOperand = IsMasked ? Ops[1] : Ops[0];
+        for (unsigned I = 0; I < NF; ++I)
+          Operands.push_back(Builder.CreateExtractValue(PassthruOperand, {I}));
+      }
+
+      Operands.push_back(Ops[Offset]); // Ptr
+      Operands.push_back(Ops[Offset + 1]); // Idx
+      if (IsMasked)
+        Operands.push_back(Ops[0]);
+      Operands.push_back(Ops[Offset + 2]); // VL
+      if (IsMasked)
+        Operands.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+
+      IntrinsicTypes = {ElementVectorType, Ops[Offset + 1]->getType(),
+                        Ops.back()->getType()};
+      llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
+      llvm::Value *LoadValue = Builder.CreateCall(F, Operands, "");
+
+      if (ReturnValue.isNull())
+        return LoadValue;
+      else
+        return Builder.CreateStore(LoadValue, ReturnValue.getValue());
+    }
+    }] in {
+          defvar T = "(Tuple:" # nf # ")";
+          def : RVVBuiltin<T # "v", T # "vPCe" # eew_type # "Uv", type>;
+          if !not(IsFloat<type>.val) then {
+            def : RVVBuiltin<T # "Uv", T # "UvPCUe" # eew_type # "Uv", type>;
+          }
+        }
+      }
+    }
+  }
+}
+
+// TODO: Indexed store for b, h, w variant
+// TODO: multiclass RVVISegStoreBHW<string ir, string bhw, list<string> types> { ... }
+
+// 7.5.3. Vector Indexed Segment Stores (Zvlsseg)
+multiclass RVVISegStoreEEW<string name, string ir, list<string> types> {
+  foreach type = types in {
+    foreach eew_info = EEWList in {
+      defvar eew = eew_info[0];
+      defvar eew_type = eew_info[1];
+      foreach nf = NFList in {
+        let Name = name # nf # "ei" # eew # "_v",
+            IRName = ir # nf # "e",
+            MaskedIRName = ir # nf # "e" # "_mask",
+            NF = nf,
+            HasMaskedOffOperand = false,
+            MaskedPolicyScheme = NonePolicy,
+            ManualCodegen = [{
+    {
+      // Masked
+      // Builtin: (mask, ptr, index, v_tuple, vl)
+      // Intrinsic: (val0, val1, ..., ptr, index, mask, vl)
+      // Unmasked
+      // Builtin: (ptr, index, v_tuple, vl)
+      // Intrinsic: (val0, val1, ..., ptr, index, vl)
+      unsigned Offset = IsMasked ? 1 : 0;
+      llvm::Value *VTupleOperand = Ops[Offset + 2];
+
+      SmallVector<llvm::Value*, 12> Operands;
+      for (unsigned I = 0; I < NF; ++I) {
+        llvm::Value *V = Builder.CreateExtractValue(VTupleOperand, {I});
+        Operands.push_back(V);
+      }
+      Operands.push_back(Ops[Offset]); // Ptr
+      Operands.push_back(Ops[Offset + 1]); // Idx
+      if (IsMasked)
+        Operands.push_back(Ops[0]);
+      Operands.push_back(Ops[Offset + 3]); // VL
+
+      IntrinsicTypes = {Operands[0]->getType(), Ops[Offset + 1]->getType(),
+                        Operands.back()->getType()};
+      llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
+      return Builder.CreateCall(F, Operands, "");
+    }
+            }] in {
+          defvar T = "(Tuple:" # nf # ")";
+          def : RVVBuiltin<T # "v", "0Pe" # eew_type # "Uv" # T # "v", type>;
+          if !not(IsFloat<type>.val) then {
+            def : RVVBuiltin<T # "Uv", "0PUe" # eew_type # "Uv" # T # "Uv", type>;
+          }
+        }
+      }
+    }
+  }
+}
+
 // 7.5. Vector Load/Store Segment Operations (Zvlsseg)
 
 let UnMaskedPolicyScheme = HasPassthruOperand,
     IsTuple = true in {
   // Unit-stride segment load
-  defm :   RVVUSSegLoad<"th_vlseg", "b", 0, TypeList>;
-  defm :   RVVUSSegLoad<"th_vlseg", "h", 0, TypeList>;
-  defm :   RVVUSSegLoad<"th_vlseg", "w", 0, TypeList>;
-  defm :   RVVUSSegLoad<"th_vlseg", "e", 1, TypeList>;
+  defm : RVVUSSegLoad<"th_vlseg", "b", 0, TypeList>;
+  defm : RVVUSSegLoad<"th_vlseg", "h", 0, TypeList>;
+  defm : RVVUSSegLoad<"th_vlseg", "w", 0, TypeList>;
+  defm : RVVUSSegLoad<"th_vlseg", "e", 1, TypeList>;
   defm : RVVUSSegLoadFF<"th_vlseg", "e", 1, TypeList>;
 
   // Strided segment load
-  defm :   RVVSSegLoad<"th_vlsseg", "b", 0, TypeList>;
-  defm :   RVVSSegLoad<"th_vlsseg", "h", 0, TypeList>;
-  defm :   RVVSSegLoad<"th_vlsseg", "w", 0, TypeList>;
-  defm :   RVVSSegLoad<"th_vlsseg", "e", 1, TypeList>;
+  defm : RVVSSegLoad<"th_vlsseg", "b", 0, TypeList>;
+  defm : RVVSSegLoad<"th_vlsseg", "h", 0, TypeList>;
+  defm : RVVSSegLoad<"th_vlsseg", "w", 0, TypeList>;
+  defm : RVVSSegLoad<"th_vlsseg", "e", 1, TypeList>;
 
-  // TODO: indexed segment load
-  // defm : RVVSSegLoadEEW<"th_vlsseg", TypeList>;
+  // TODO: th_vluxseg?
+  defm : RVVISegLoadEEW<"th_vloxseg", "th_vlxseg", TypeList>;
 }
 
 let UnMaskedPolicyScheme = NonePolicy,
@@ -1184,8 +1305,8 @@ let UnMaskedPolicyScheme = NonePolicy,
   defm : RVVSSegStore<"th_vssseg", "w", 0, TypeList>;
   defm : RVVSSegStore<"th_vssseg", "e", 1, TypeList>;
 
-  // TODO: indexed segment store
-  // defm : RVVSSegStoreEEW<"th_vssseg", TypeList>;
+  // TODO: th_vsuxseg?
+  defm : RVVISegStoreEEW<"th_vsoxseg", "th_vsxseg", TypeList>;
 }
 
 //===----------------------------------------------------------------------===//
