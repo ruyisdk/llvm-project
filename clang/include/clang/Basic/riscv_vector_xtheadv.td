@@ -1190,8 +1190,9 @@ multiclass RVVISegLoadEEW<string name, string ir, list<string> types> {
       if (IsMasked)
         Operands.push_back(Ops[0]);
       Operands.push_back(Ops[Offset + 2]); // VL
-      if (IsMasked)
-        Operands.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+      // TODO: no policy in LLVM side for masked intrinsics.
+      //if (IsMasked)
+      //  Operands.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
 
       IntrinsicTypes = {ElementVectorType, Ops[Offset + 1]->getType(),
                         Ops.back()->getType()};
@@ -1258,7 +1259,7 @@ multiclass RVVISegStoreEEW<string name, string ir, list<string> types> {
       llvm::Function *F = CGM.getIntrinsic(ID, IntrinsicTypes);
       return Builder.CreateCall(F, Operands, "");
     }
-            }] in {
+    }] in {
           defvar T = "(Tuple:" # nf # ")";
           def : RVVBuiltin<T # "v", "0Pe" # eew_type # "Uv" # T # "v", type>;
           if !not(IsFloat<type>.val) then {
