@@ -4,12 +4,8 @@
 // RUN:   opt -S -passes=mem2reg | \
 // RUN:   FileCheck --check-prefix=CHECK-IR %s
 
-#include <riscv_vector.h>
-
 // Modified from the original test from:
 // https://github.com/ruyisdk/llvm-project/issues/141
-
-#include <riscv_vector.h>
 
 #include <riscv_vector.h>
 
