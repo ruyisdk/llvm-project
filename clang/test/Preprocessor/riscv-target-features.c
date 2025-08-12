@@ -242,7 +242,7 @@
 // RUN: -march=rv64i_xtheadvector -x c -E -dM %s \
 // RUN: -o - | FileCheck --check-prefix=CHECK-V0P7-EXT-RV64 %s
 // CHECK-V0P7-EXT-RV64: __riscv_v_elen 64
-// CHECK-V0P7-EXT-RV64: __riscv_v_elen_fp 64
+// CHECK-V0P7-EXT-RV64: __riscv_v_elen_fp 32
 
 // RUN: %clang -target riscv32-unknown-linux-gnu \
 // RUN: -march=rv32izfhmin1p0 -x c -E -dM %s \
