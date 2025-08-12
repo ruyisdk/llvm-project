@@ -978,6 +978,7 @@ Error RISCVISAInfo::checkDependency() {
 static const char *ImpliedExtsD[] = {"f"};
 static const char *ImpliedExtsF[] = {"zicsr"};
 static const char *ImpliedExtsV[] = {"zvl128b", "zve64d"};
+static const char *ImpliedExtsXTHeadVector[] = {"zfh"};
 static const char *ImpliedExtsXTHeadZvamo[] = {"a"};
 static const char *ImpliedExtsXTHeadVdot[] = {"v"};
 static const char *ImpliedExtsXsfvcp[] = {"zve32x"};
@@ -1047,6 +1048,7 @@ static constexpr ImpliedExtsEntry ImpliedExts[] = {
     {{"v"}, {ImpliedExtsV}},
     {{"xsfvcp"}, {ImpliedExtsXsfvcp}},
     {{"xtheadvdot"}, {ImpliedExtsXTHeadVdot}},
+    {{"xtheadvector"}, {ImpliedExtsXTHeadVector}},
     {{"xtheadzvamo"}, {ImpliedExtsXTHeadZvamo}},
     {{"zacas"}, {ImpliedExtsZacas}},
     {{"zcb"}, {ImpliedExtsZcb}},

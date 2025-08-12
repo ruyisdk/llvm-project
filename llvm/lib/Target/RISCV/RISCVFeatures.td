@@ -898,7 +898,8 @@ def FeatureTaggedGlobals : SubtargetFeature<"tagged-globals",
 
 def FeatureVendorXTHeadV
     : SubtargetFeature<"xtheadvector", "HasVendorXTHeadV", "true",
-                       "'xtheadvector' (T-Head Base Vector Instructions)">;
+                       "'xtheadvector' (T-Head Base Vector Instructions)",
+                       [FeatureStdExtZfh]>;
 def HasVendorXTHeadV : Predicate<"Subtarget->hasVendorXTHeadV()">,
                                   AssemblerPredicate<(all_of FeatureVendorXTHeadV),
                                   "'xtheadvector' (T-Head Base Vector Instructions)">;
