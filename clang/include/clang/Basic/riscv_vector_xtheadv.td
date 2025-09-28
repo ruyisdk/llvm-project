@@ -1423,6 +1423,49 @@ multiclass RVVPseudoVNotBuiltin<string ir, string type_range> {
   }
 }
 
+multiclass RVVPseudoVWCVTBuiltin<string IR, string MName, string type_range,
+                                 list<list<string>> suffixes_prototypes> {
+  let Name = NAME,
+      OverloadedName = MName,
+      IRName = IR,
+      MaskedIRName = IR # "_mask",
+      UnMaskedPolicyScheme = HasPassthruOperand,
+      ManualCodegen = [{
+      {
+        if (IsMasked) {
+          std::rotate(Ops.begin(), Ops.begin() + 1, Ops.end() - 1);
+          if ((PolicyAttrs & RVV_VTA) && (PolicyAttrs & RVV_VMA))
+            Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType));
+        } else {
+          if (PolicyAttrs & RVV_VTA)
+            Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType));
+        }
+        auto ElemTy = cast<llvm::VectorType>(ResultType)->getElementType();
+        Ops.insert(Ops.begin() + 2, llvm::Constant::getNullValue(ElemTy));
+        if (IsMasked) {
+          // TODO: no policy in LLVM side for masked intrinsics.
+          // Ops.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+          // maskedoff, op1, op2, mask, vl, policy
+          IntrinsicTypes = {ResultType,
+                            Ops[1]->getType(),
+                            ElemTy,
+                            Ops[4]->getType()};
+        } else {
+          // passtru, op1, op2, vl
+          IntrinsicTypes = {ResultType,
+                            Ops[1]->getType(),
+                            ElemTy,
+                            Ops[3]->getType()};
+        }
+        break;
+      }
+      }] in {
+        foreach s_p = suffixes_prototypes in {
+          def : RVVBuiltin<s_p[0], s_p[1], type_range>;
+        }
+  }
+}
+
 // 12.1. Vector Single-Width Integer Add and Subtract
 let UnMaskedPolicyScheme = HasPassthruOperand in {
   defm th_vadd : RVVIntBinBuiltinSet;
@@ -1444,6 +1487,10 @@ let UnMaskedPolicyScheme = HasPassthruOperand in {
   defm th_vwsub : RVVSignedWidenBinBuiltinSet;
   defm th_vwsub : RVVSignedWidenOp0BinBuiltinSet;
 }
+defm th_vwcvtu_x_x_v : RVVPseudoVWCVTBuiltin<"th_vwaddu", "th_vwcvtu_x", "csi",
+                                             [["Uw", "UwUv"]]>;
+defm th_vwcvt_x_x_v : RVVPseudoVWCVTBuiltin<"th_vwadd", "th_vwcvt_x", "csi",
+                                            [["w", "wv"]]>;
 
 // 12.3. Vector Integer Add-with-Carry / Subtract-with-Borrow Operations
 let HasMasked = false, MaskedPolicyScheme = NonePolicy in {
