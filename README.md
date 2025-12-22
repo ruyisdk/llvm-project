@@ -1,6 +1,13 @@
 # The XTHeadVector extension in LLVM
 
 This repository is a fork of the LLVM project, with the addition of the [T-Head Vector (`XTHeadVector`) extension](https://github.com/T-head-Semi/thead-extension-spec/blob/master/xtheadvector.adoc).
+**For users who do not need XTHeadVector support, we recommend using the project in [rebase-21.1.0 branch](https://github.com/ruyisdk/llvm-project/tree/rebase-21.1.0)**,
+which provides more stable features and better performance than the default branch.
+To clone the repo with the `rebase-21.1.0` branch:
+
+```bash
+git clone --branch rebase-21.1.0 https://github.com/ruyisdk/llvm-project
+```
 
 Currently, the work is still in progress.
 We listed features that have been implemented or are being worked on in the following itemized table,
@@ -10,19 +17,19 @@ while the one marked as `(WIP)` means that only part of it has been implemented 
 Any feature not listed below but present in the specification should be considered as a `(TODO)`.
 
 - (Done) LLVM MC instruction definitions, assembly and disassembly.
-- (WIP) LLVM intrinsics related to the `XTHeadVector` extension:
-  - (WIP) `6. Configuration-Setting and Utility`
+- (Done) LLVM intrinsics related to the `XTHeadVector` extension:
+  - (Done) `6. Configuration-Setting and Utility`
     - (Done) `6.1. Set vl and vtype`
     - (Done) `6.2. Set vl to VLMAX with specific vtype`
     - (Done) `6.6. Read/Write URW vector CSRs`
-  - (WIP) `7. Vector Load/Store`
+  - (Done) `7. Vector Load/Store`
     - (Done) `7.1. Vector Unit-Stride Operations`
     - (Done) `7.2. Vector Strided Load/Store Operations`
     - (Done) `7.3. Vector Indexed Load/Store Operations`
     - (Done) `7.4. Unit-stride Fault-Only-First Loads Operations`
     - (Done) `7.5. Vector Load/Store Segment Operations (Zvlsseg)`, which is an essential part of `XTHeadVector`
   - (Done) `8. Vector AMO Operations (Zvamo)`, which is `XTHeadZvamo` [regarding the `XTHeadVector` extension](https://github.com/T-head-Semi/thead-extension-spec/blob/24349e6df223e8b268ba9672297018f508670acb/xtheadvector.adoc?plain=1#L27).
-  - (WIP) `12. Vector Integer Arithmetic Operations`
+  - (Done) `12. Vector Integer Arithmetic Operations`
     - (Done) `12.1. Vector Single-Width Integer Add and Subtract`
       - (Done) `vadd.{vv,vx,vi}`
       - (Done) `vsub.{vv,vx}`
@@ -52,26 +59,26 @@ Any feature not listed below but present in the specification should be consider
     - (Done) `12.12. Vector Single-Width Integer Multiply-Add Instructions`
     - (Done) `12.13. Vector Widening Integer Multiply-Add Instructions`
     - (Done) `12.14. Vector Integer Merge and Move Instructions`
-  - (WIP) `13. Vector Fixed-Point Arithmetic Instructions`
+  - (Done) `13. Vector Fixed-Point Arithmetic Instructions`
     - (Done) `13.1. Vector Single-Width Saturating Add and Subtract`
     - (Done) `13.2. Vector Single-Width Averaging Add and Subtract`
     - (Done) `13.3. Vector Single-Width Fractional Multiply with Rounding and Saturation`
     - (Done) `13.6. Vector Narrowing Fixed-Point Clip Instructions`
-  - (WIP) `14. Vector Floating-Point Instructions`
+  - (Done) `14. Vector Floating-Point Instructions`
     - (Done) `14.2. Vector Single-Width Floating-Point Add/Subtract Instructions`
     - (Done) `14.3. Vector Widening Floating-Point Add/Subtract Instructions`
     - (Done) `14.4. Vector Single-Width Floating-Point Multiply/Divide Instructions`
     - (Done) `14.5. Vector Widening Floating-Point Multiply`
-- (WIP) Clang intrinsics related to the `XTHeadVector` extension:
-  - (WIP) `6. Configuration-Setting and Utility`
+- (Done) Clang intrinsics related to the `XTHeadVector` extension:
+  - (Done) `6. Configuration-Setting and Utility`
     - (Done) `6.1. Set vl and vtype`
     - (Done) `6.2. Set vl to VLMAX with specific vtype`
-  - (WIP) `7. Vector Load/Store`
+  - (Done) `7. Vector Load/Store`
     - (Done) `7.1. Vector Unit-Stride Operations`
     - (Done) `7.2. Vector Strided Load/Store Operations`
     - (Done) `7.3. Vector Indexed Load/Store Operations`
     - (Done) `7.4 Unit-stride Fault-Only-First Loads Operations`
-    - (WIP) `7.5. Vector Load/Store Segment Operations (Zvlsseg)`
+    - (Done) `7.5. Vector Load/Store Segment Operations (Zvlsseg)`
       - (Done) `7.5.1. Vector Unit-Stride Segment Loads and Stores`
 
 ## Q & A
