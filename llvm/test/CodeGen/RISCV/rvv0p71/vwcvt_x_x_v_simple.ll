@@ -36,8 +36,8 @@ declare <vscale x 8 x i16> @llvm.riscv.th.vwcvt.x.x.v.mask.nxv8i16.nxv8i8(
   <vscale x 8 x i1>,
   iXLen);
 
-define <vscale x 8 x i16> @intrinsic_vwadd_mask_vx_nxv8i16_nxv8i8_i8(<vscale x 8 x i16> %0, <vscale x 8 x i8> %1, <vscale x 8 x i1> %2, iXLen %3) nounwind {
-; CHECK-LABEL: intrinsic_vwadd_mask_vx_nxv8i16_nxv8i8_i8:
+define <vscale x 8 x i16> @intrinsic_vwcvt_x_x_v_mask_vx_nxv8i16_nxv8i8_i8(<vscale x 8 x i16> %0, <vscale x 8 x i8> %1, <vscale x 8 x i1> %2, iXLen %3) nounwind {
+; CHECK-LABEL: intrinsic_vwcvt_x_x_v_mask_vx_nxv8i16_nxv8i8_i8:
 ; CHECK:       # %bb.0: # %entry
 ; CHECK-NEXT:    th.vsetvli zero, a0, e8, m1, d1
 ; CHECK-NEXT:    th.vwcvt.x.x.v v8, v10, v0.t
