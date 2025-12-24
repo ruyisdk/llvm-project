@@ -781,6 +781,17 @@ let TargetPrefix = "riscv" in {
     let VLOperand = 4;
   }
 
+  // For destination vector type is NOT the same as source vector (with mask, no policy).
+  // Input: (maskedoff, vector_in, mask, vl)
+  class XVUnaryABMasked
+        : DefaultAttrsIntrinsic<[llvm_anyvector_ty],
+                    [LLVMMatchType<0>, llvm_anyvector_ty,
+                     LLVMScalarOrSameVectorWidth<1, llvm_i1_ty>,
+                     llvm_anyint_ty],
+                    [IntrNoMem]>, RISCVVIntrinsic {
+    let VLOperand = 3;
+  }
+
   // For destination vector type is the same as first and second source vector.
   // Input: (vector_in, vector_in, int_vector_in, vl)
   class XVRGatherVVMasked
@@ -923,6 +934,11 @@ let TargetPrefix = "riscv" in {
     def "int_riscv_" # NAME # "_mask" : XVUnaryAAMaskedRoundingMode;
   }
 
+  multiclass XVUnaryAB {
+    def "int_riscv_" # NAME : RISCVUnaryABUnMasked;
+    def "int_riscv_" # NAME # "_mask" : XVUnaryABMasked;
+  }
+
   multiclass XVClassify {
     def "int_riscv_" # NAME : RISCVClassifyUnMasked;
     def "int_riscv_" # NAME # "_mask" : XVClassifyMasked;
@@ -970,6 +986,8 @@ let TargetPrefix = "riscv" in {
   defm th_vwsub : XVBinaryABX;
   defm th_vwsubu_w : XVBinaryAAX;
   defm th_vwsub_w : XVBinaryAAX;
+  defm th_vwcvt_x_x_v : XVUnaryAB;
+  defm th_vwcvtu_x_x_v : XVUnaryAB;
 
   // 12.3. Vector Integer Add-with-Carry / Subtract-with-Borrow Instructions
   defm th_vadc : RISCVBinaryWithV0;

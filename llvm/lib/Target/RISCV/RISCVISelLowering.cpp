@@ -7548,6 +7548,31 @@ SDValue RISCVTargetLowering::LowerINTRINSIC_WO_CHAIN(SDValue Op,
     return DAG.getNode(RISCVISD::VSELECT_VL, DL, VT, SelectCond, SplattedVal,
                        Vec, VL);
   }
+  case Intrinsic::riscv_th_vwcvt_x_x_v:
+  case Intrinsic::riscv_th_vwcvtu_x_x_v: {
+    auto Underlying = IntNo == Intrinsic::riscv_th_vwcvt_x_x_v
+                          ? Intrinsic::riscv_th_vwadd
+                          : Intrinsic::riscv_th_vwaddu;
+    SDValue ID = DAG.getTargetConstant(Underlying, DL, XLenVT);
+    return DAG.getNode(ISD::INTRINSIC_WO_CHAIN, DL, Op.getValueType(), ID,
+                       Op.getOperand(1), Op.getOperand(2),
+                       DAG.getRegister(RISCV::X0, XLenVT), Op.getOperand(3));
+    break;
+  }
+  case Intrinsic::riscv_th_vwcvt_x_x_v_mask:
+  case Intrinsic::riscv_th_vwcvtu_x_x_v_mask: {
+    auto Underlying = IntNo == Intrinsic::riscv_th_vwcvt_x_x_v_mask
+                          ? Intrinsic::riscv_th_vwadd_mask
+                          : Intrinsic::riscv_th_vwaddu_mask;
+    SDValue ID = DAG.getTargetConstant(Underlying, DL, XLenVT);
+    SDValue Ops[] = {ID,
+                     Op.getOperand(1),
+                     Op.getOperand(2),
+                     DAG.getRegister(RISCV::X0, XLenVT),
+                     Op.getOperand(3),
+                     Op.getOperand(4)};
+    return DAG.getNode(ISD::INTRINSIC_WO_CHAIN, DL, Op.getValueType(), Ops);
+  }
   }
 
   return lowerVectorIntrinsicScalars(Op, DAG, Subtarget);
