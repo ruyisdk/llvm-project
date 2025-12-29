@@ -1467,7 +1467,8 @@ multiclass RVVPseudoVWCVTBuiltin<string IR, string MName, string type_range,
 }
 
 // 12.1. Vector Single-Width Integer Add and Subtract
-let UnMaskedPolicyScheme = HasPassthruOperand in {
+let UnMaskedPolicyScheme = HasPassthruOperand,
+    MaskedPolicyScheme = HasPassthruOperand in {
   defm th_vadd : RVVIntBinBuiltinSet;
   defm th_vsub : RVVIntBinBuiltinSet;
   defm th_vrsub : RVVOutOp1BuiltinSet<"th_vrsub", "csil",

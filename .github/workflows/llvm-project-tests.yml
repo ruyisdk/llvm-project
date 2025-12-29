@@ -76,7 +76,7 @@ jobs:
           key: sccache-${{ matrix.os }}
           variant: sccache
       - name: Build and Test
-        uses: llvm/actions/build-test-llvm-project@main
+        uses: llvm/actions/build-test-llvm-project@a1ea791b03c8e61f53a0e66f2f73db283aa0f01e
         env:
           # Workaround for https://github.com/actions/virtual-environments/issues/5900.
           # This should be a no-op for non-mac OSes
