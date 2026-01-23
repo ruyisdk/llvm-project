@@ -348,6 +348,48 @@ class RVVConvBuiltin<string suffix, string prototype, string type_range,
   let OverloadedName = overloaded_name;
 }
 
+multiclass RVVPseudoVNCVTBuiltin<string IR, string MName, string type_range,
+                                 list<list<string>> suffixes_prototypes> {
+  let Name = NAME,
+      OverloadedName = MName,
+      IRName = IR,
+      MaskedIRName = IR # "_mask",
+      UnMaskedPolicyScheme = HasPassthruOperand,
+      ManualCodegen = [{
+      {
+        if (IsMasked) {
+          std::rotate(Ops.begin(), Ops.begin() + 1, Ops.end() - 1);
+          if ((PolicyAttrs & RVV_VTA) && (PolicyAttrs & RVV_VMA))
+            Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType));
+        } else {
+          if (PolicyAttrs & RVV_VTA)
+            Ops.insert(Ops.begin(), llvm::PoisonValue::get(ResultType));
+        }
+        Ops.insert(Ops.begin() + 2, llvm::Constant::getNullValue(Ops.back()->getType()));
+        if (IsMasked) {
+          // TODO: no policy in LLVM side for masked intrinsics.
+          // Ops.push_back(ConstantInt::get(Ops.back()->getType(), PolicyAttrs));
+          // maskedoff, op1, xlen, mask, vl
+          IntrinsicTypes = {ResultType,
+                            Ops[1]->getType(),
+                            Ops[4]->getType(),
+                            Ops[4]->getType()};
+        } else {
+          // passthru, op1, xlen, vl
+          IntrinsicTypes = {ResultType,
+                  Ops[1]->getType(),
+                  Ops[3]->getType(),
+                  Ops[3]->getType()};
+        }
+        break;
+      }
+      }] in {
+        foreach s_p = suffixes_prototypes in {
+          def : RVVBuiltin<s_p[0], s_p[1], type_range>;
+        }
+  }
+}
+
 //===----------------------------------------------------------------------===//
 // 6. Configuration-Setting and Utility
 //===----------------------------------------------------------------------===//
@@ -1524,6 +1566,9 @@ let UnMaskedPolicyScheme = HasPassthruOperand in {
   defm th_vnsrl : RVVUnsignedNShiftBuiltinSet;
   defm th_vnsra : RVVSignedNShiftBuiltinSet;
 }
+defm th_vncvt_x_x_w : RVVPseudoVNCVTBuiltin<"th_vnsrl", "th_vncvt_x", "csi",
+                                            [["v", "vw"],
+                                             ["Uv", "UvUw"]]>;
 
 // 12.7. Vector Integer Comparison Operations
 let MaskedPolicyScheme = HasPassthruOperand,
