@@ -978,7 +978,6 @@ def : InstAlias<"th.vmnot.m $vd, $vs",
 //   th.vmmv.m vd,v          => th.vmand.mm vd,vs,vs
 //   th.vneg.v vd,vs         => th.vrsub.vx vd,vs,x0
 //   th.vncvt.x.x.v vd,vs,vm => th.vnsrl.vx vd,vs,x0,vm
-//   th.vncvt.x.x.w vd,vs,vm => th.vnsrl.vx vd,vs,x0,vm
 //   th.vfneg.v vd,vs        => th.vfsgnjn.vv vd,vs,vs
 //   th.vfabs.v vd,vs        => th.vfsgnjx.vv vd,vs,vs
 
@@ -990,10 +989,6 @@ def : InstAlias<"th.vneg.v $vd, $vs",
                 (TH_VRSUB_VX VR:$vd, VR:$vs, X0, zero_reg)>;
 def : InstAlias<"th.vncvt.x.x.v $vd, $vs$vm",
                 (TH_VNSRL_VX VR:$vd, VR:$vs, X0, VMaskOp:$vm)>;
-def : InstAlias<"th.vncvt.x.x.w $vd, $vs$vm",
-                (TH_VNSRL_VX VR:$vd, VR:$vs, X0, VMaskOp:$vm)>;
-def : InstAlias<"th.vncvt.x.x.w $vd, $vs",
-                (TH_VNSRL_VX VR:$vd, VR:$vs, X0, zero_reg)>;
 def : InstAlias<"th.vfneg.v $vd, $vs",
                 (TH_VFSGNJN_VV VR:$vd, VR:$vs, VR:$vs, zero_reg)>;
 def : InstAlias<"th.vfabs.v $vd, $vs",
