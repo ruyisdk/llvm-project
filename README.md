@@ -1,12 +1,12 @@
 # The XTHeadVector extension in LLVM
 
 This repository is a fork of the LLVM project, with the addition of the [T-Head Vector (`XTHeadVector`) extension](https://github.com/T-head-Semi/thead-extension-spec/blob/master/xtheadvector.adoc).
-**For users who do not need XTHeadVector support, we recommend using the project in [rebase-21.1.0 branch](https://github.com/ruyisdk/llvm-project/tree/rebase-21.1.0)**,
+**For users who do not need XTHeadVector support, we recommend using the project in [rebase-22.1.1 branch](https://github.com/ruyisdk/llvm-project/tree/rebase-22.1.1)**,
 which provides more stable features and better performance than the default branch.
-To clone the repo with the `rebase-21.1.0` branch:
+To clone the repo with the `rebase-22.1.1` branch:
 
 ```bash
-git clone --branch rebase-21.1.0 https://github.com/ruyisdk/llvm-project
+git clone --branch rebase-22.1.1 https://github.com/ruyisdk/llvm-project
 ```
 
 Currently, the work is still in progress.
