@@ -6,6 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "MCTargetDesc/RISCVInstPrinter.h"
 #include "RISCVInstrInfo.h"
 #include "RISCVSubtarget.h"
 #include "RISCVTargetMachine.h"
@@ -21,6 +22,7 @@
 #include "gtest/gtest.h"
 
 #include <memory>
+#include <string>
 
 using namespace llvm;
 
@@ -470,6 +472,59 @@ TEST_P(RISCVXQCIInstrInfoTest, XQCIEInstSize) {
   CheckSize(MakeBranch(RISCV::QC_E_BGEUI));
   CheckSize(MakeBranch(RISCV::QC_E_BLTUI));
   CheckSize(MakeBranch(RISCV::QC_E_BGEI));
+}
+
+TEST_P(RISCVInstrInfoTest, ZttRegisterBanks) {
+  const RISCVRegisterInfo *TRI = ST->getRegisterInfo();
+  const TargetRegisterClass *MRC = TRI->getRegClass(RISCV::ZTTMRRegClassID);
+  const TargetRegisterClass *ARC = TRI->getRegClass(RISCV::ZTTARRegClassID);
+  ASSERT_EQ(MRC->getNumRegs(), 32u);
+  ASSERT_EQ(ARC->getNumRegs(), 16u);
+
+  for (unsigned I = 0; I != 32; ++I) {
+    MCRegister Reg = RISCV::ZTTM0 + I;
+    EXPECT_TRUE(MRC->contains(Reg));
+    EXPECT_FALSE(ARC->contains(Reg));
+    EXPECT_EQ(TRI->getEncodingValue(Reg), I);
+    EXPECT_EQ("m" + std::to_string(I),
+              RISCVInstPrinter::getRegisterName(Reg, RISCV::NoRegAltName));
+    EXPECT_STREQ(RISCVInstPrinter::getRegisterName(Reg, RISCV::NoRegAltName),
+                 RISCVInstPrinter::getRegisterName(Reg, RISCV::ABIRegAltName));
+  }
+  for (unsigned I = 0; I != 16; ++I) {
+    MCRegister Reg = RISCV::ZTTA0 + I;
+    EXPECT_TRUE(ARC->contains(Reg));
+    EXPECT_FALSE(MRC->contains(Reg));
+    EXPECT_EQ(TRI->getEncodingValue(Reg), I);
+    EXPECT_EQ("acc" + std::to_string(I),
+              RISCVInstPrinter::getRegisterName(Reg, RISCV::NoRegAltName));
+    EXPECT_STREQ(RISCVInstPrinter::getRegisterName(Reg, RISCV::NoRegAltName),
+                 RISCVInstPrinter::getRegisterName(Reg, RISCV::ABIRegAltName));
+  }
+  for (MCRegister Reg : {RISCV::X0, RISCV::F0_D, RISCV::V0, RISCV::M0}) {
+    EXPECT_FALSE(MRC->contains(Reg));
+    EXPECT_FALSE(ARC->contains(Reg));
+  }
+}
+
+TEST_P(RISCVInstrInfoTest, ZttValueTypes) {
+  const MVT Types[] = {
+      MVT::riscv_zttm4,    MVT::riscv_zttm8,    MVT::riscv_zttm16,   MVT::riscv_zttm32, MVT::riscv_zttm64,
+      MVT::riscv_zttm128,  MVT::riscv_zttm256,  MVT::riscv_zttm512,  MVT::riscv_zttm1024,
+      MVT::riscv_zttm2048, MVT::riscv_zttm4096, MVT::riscv_ztta1,    MVT::riscv_ztta2,
+      MVT::riscv_ztta4,    MVT::riscv_ztta8};
+  const unsigned Sizes[] = {4,   8,   16,  32,   64,   128, 256, 512,
+                            1024, 2048, 4096, 16, 32, 64, 128};
+  for (unsigned I = 0; I != std::size(Types); ++I) {
+    MVT VT = Types[I];
+    EXPECT_TRUE(VT.isRISCVZtt());
+    EXPECT_TRUE(VT.isScalableTargetExtVT());
+    EXPECT_TRUE(VT.isScalableVT());
+    EXPECT_FALSE(VT.isVector());
+    EXPECT_EQ(VT.getSizeInBits(), TypeSize::getScalable(Sizes[I]));
+  }
+  for (MVT VT : {MVT::i16, MVT::f32, MVT::nxv1i8, MVT::aarch64svcount})
+    EXPECT_FALSE(VT.isRISCVZtt());
 }
 
 } // namespace

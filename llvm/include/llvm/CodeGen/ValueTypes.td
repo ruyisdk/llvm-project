@@ -373,6 +373,28 @@ def aarch64mfp8 : ValueType<8>; // 8-bit value in FPR (AArch64)
 def c64 : VTCheriCapability<64>;   // 64-bit CHERI capability value
 def c128 : VTCheriCapability<128>; // 128-bit CHERI capability value
 
+// Ztt values have target-dependent scalable size, but are not RVV vectors.
+// M widths are element bits times square count. For legal types, width / UDS
+// gives the M-register count (e.g. 16 / 8 = 2).
+def riscv_zttm4 : ValueType<4>;
+def riscv_zttm8 : ValueType<8>;
+def riscv_zttm16 : ValueType<16>;
+def riscv_zttm32 : ValueType<32>;
+def riscv_zttm64 : ValueType<64>;
+def riscv_zttm128 : ValueType<128>;
+def riscv_zttm256 : ValueType<256>;
+def riscv_zttm512 : ValueType<512>;
+def riscv_zttm1024 : ValueType<1024>;
+def riscv_zttm2048 : ValueType<2048>;
+def riscv_zttm4096 : ValueType<4096>;
+
+// Each ACC square occupies one register, so no logical bit count is needed.
+// These nominal MVT widths do not describe datatype or runtime register size.
+def riscv_ztta1 : ValueType<16>;
+def riscv_ztta2 : ValueType<32>;
+def riscv_ztta4 : ValueType<64>;
+def riscv_ztta8 : ValueType<128>;
+
 let isNormalValueType = false in {
 // Pseudo valuetype mapped to the current CHERI capability pointer size.
 // Should only be used in TableGen.

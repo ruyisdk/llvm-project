@@ -2540,3 +2540,5 @@ include "RISCVInstrInfoXAIF.td"
 //===----------------------------------------------------------------------===//
 
 include "RISCVInstrGISel.td"
+
+include "RISCVInstrInfoZtt.td"

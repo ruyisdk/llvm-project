@@ -122,6 +122,30 @@ static DecodeStatus DecodeSingleRegister(MCInst &Inst, uint32_t RegNo,
   return MCDisassembler::Success;
 }
 
+static DecodeStatus DecodeZTTARRegisterClass(MCInst &Inst, uint32_t RegNo,
+                                             uint64_t Address,
+                                             const MCDisassembler *Decoder) {
+  const FeatureBitset &FeatureBits =
+      Decoder->getSubtargetInfo().getFeatureBits();
+  if (!FeatureBits[RISCV::FeatureStdExtZtt] || RegNo >= 16)
+    return MCDisassembler::Fail;
+
+  Inst.addOperand(MCOperand::createReg(RISCV::ZTTA0 + RegNo));
+  return MCDisassembler::Success;
+}
+
+static DecodeStatus DecodeZTTMRRegisterClass(MCInst &Inst, uint32_t RegNo,
+                                             uint64_t Address,
+                                             const MCDisassembler *Decoder) {
+  const FeatureBitset &FeatureBits =
+      Decoder->getSubtargetInfo().getFeatureBits();
+  if (!FeatureBits[RISCV::FeatureStdExtZtt] || RegNo >= 32)
+    return MCDisassembler::Fail;
+
+  Inst.addOperand(MCOperand::createReg(RISCV::ZTTM0 + RegNo));
+  return MCDisassembler::Success;
+}
+
 template <unsigned PhysReg, unsigned Encoding>
 static DecodeStatus DecodeSingleRegister(MCInst &Inst,
                                          const MCDisassembler *Decoder) {

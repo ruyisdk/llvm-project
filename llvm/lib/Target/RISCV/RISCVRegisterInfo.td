@@ -372,6 +372,23 @@ def GPRNoX0X2 : GPRRegisterClass<(sub GPR, X0, X2)> {
 
 def GPRX7 : GPRRegisterClass<(add X7)>;
 
+// Ztt matrix registers.
+foreach Index = 0-31 in
+  def ZTTM#Index : RISCVReg<Index, "m"#Index>, DwarfRegNum<[]>;
+
+defvar ZTTMVTs = [riscv_zttm4, riscv_zttm8, riscv_zttm16, riscv_zttm32, riscv_zttm64, riscv_zttm128,
+                  riscv_zttm256, riscv_zttm512, riscv_zttm1024, riscv_zttm2048, riscv_zttm4096];
+def ZTTMR : RegisterClass<"RISCV", ZTTMVTs, 16,
+                          (add (sequence "ZTTM%u", 0, 31))> { let Size = 16; }
+
+// Ztt accumulator registers. Acc groups may begin at any register; unlike M
+// groups, they have no power-of-two base-register alignment requirement.
+foreach Index = 0-15 in
+  def ZTTA#Index : RISCVReg<Index, "acc"#Index>, DwarfRegNum<[]>;
+
+def ZTTAR : RegisterClass<"RISCV", [riscv_ztta1], 16,
+                          (add (sequence "ZTTA%u", 0, 15))> { let Size = 16; }
+
 // Don't use X1 or X5 for JALR since that is a hint to pop the return address
 // stack on some microarchitectures. Also remove the reserved registers X0, X2,
 // X3, and X4 as it reduces the number of register classes that get synthesized
