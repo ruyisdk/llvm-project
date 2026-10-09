@@ -637,3 +637,11 @@ let FeaturesRequired = [{ {RISCV::FeatureVendorXAIFET} }] in {
   def : SysReg<"aif.validation2", 0x8d2>;
   def : SysReg<"aif.validation3", 0x8d3>;
 } // FeatureVendorXAIFET
+
+def SysRegAMENLEN : SysReg<"amenlen", 0xCC0>;
+def SysRegAMEUDSZ : SysReg<"ameudsz", 0xCC1>;
+def SysRegAMESTYPE : SysReg<"amestype", 0x810>;
+def SysRegAMEOWN : SysReg<"ameown", 0xCC3>;
+def SysRegAMEFFLAGS : SysReg<"amefflags", 0x811>;
+def SysRegAMEXSAT : SysReg<"amexsat", 0x812>;
+def SysRegAMESTATUS : SysReg<"amestatus", 0x800>;
