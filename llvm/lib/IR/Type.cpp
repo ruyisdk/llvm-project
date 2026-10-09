@@ -21,6 +21,7 @@
 #include "llvm/IR/Constants.h"
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/RISCVZttTypes.h"
 #include "llvm/IR/Value.h"
 #include "llvm/Support/Casting.h"
 #include "llvm/Support/Error.h"
@@ -1108,6 +1109,10 @@ static TargetTypeInfo getTargetTypeInfo(const TargetExtType *Ty) {
     return TargetTypeInfo(PointerType::getUnqual(C), TargetExtType::HasZeroInit,
                           TargetExtType::CanBeGlobal,
                           TargetExtType::CanBeLocal);
+
+  if (auto RISCVZtt = getRISCVZttTypeInfo(Ty); RISCVZtt && RISCVZtt->HasValidLayout)
+    return TargetTypeInfo(ArrayType::get(RISCVZtt->ElementType, RISCVZtt->NumSquares),
+                          TargetExtType::HasZeroInit, TargetExtType::CanBeLocal);
 
   return TargetTypeInfo(Type::getVoidTy(C));
 }

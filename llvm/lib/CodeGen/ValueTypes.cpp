@@ -10,6 +10,7 @@
 #include "llvm/ADT/APFloat.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/RISCVZttTypes.h"
 #include "llvm/IR/Type.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/ErrorHandling.h"
@@ -202,6 +203,22 @@ std::string EVT::getEVTString() const {
     return "amdgpuBufferStridedPointer";
   case MVT::aarch64mfp8:
     return "aarch64mfp8";
+
+  case MVT::riscv_zttm4:    return "riscv_zttm4";
+  case MVT::riscv_zttm8:    return "riscv_zttm8";
+  case MVT::riscv_zttm16:   return "riscv_zttm16";
+  case MVT::riscv_zttm32:   return "riscv_zttm32";
+  case MVT::riscv_zttm64:   return "riscv_zttm64";
+  case MVT::riscv_zttm128:  return "riscv_zttm128";
+  case MVT::riscv_zttm256:  return "riscv_zttm256";
+  case MVT::riscv_zttm512:  return "riscv_zttm512";
+  case MVT::riscv_zttm1024: return "riscv_zttm1024";
+  case MVT::riscv_zttm2048: return "riscv_zttm2048";
+  case MVT::riscv_zttm4096: return "riscv_zttm4096";
+  case MVT::riscv_ztta1:    return "riscv_ztta1";
+  case MVT::riscv_ztta2:    return "riscv_ztta2";
+  case MVT::riscv_ztta4:    return "riscv_ztta4";
+  case MVT::riscv_ztta8:    return "riscv_ztta8";
   }
 }
 
@@ -234,6 +251,25 @@ Type *EVT::getTypeForEVT(LLVMContext &Context) const {
   case MVT::externref: return Type::getWasm_ExternrefTy(Context);
   case MVT::funcref: return Type::getWasm_FuncrefTy(Context);
   case MVT::Metadata: return Type::getMetadataTy(Context);
+
+  // Use the nominal MVT width as a carrier, not a datatype or runtime size.
+  case MVT::riscv_zttm4:
+  case MVT::riscv_zttm8:
+  case MVT::riscv_zttm16:
+  case MVT::riscv_zttm32:
+  case MVT::riscv_zttm64:
+  case MVT::riscv_zttm128:
+  case MVT::riscv_zttm256:
+  case MVT::riscv_zttm512:
+  case MVT::riscv_zttm1024:
+  case MVT::riscv_zttm2048:
+  case MVT::riscv_zttm4096:
+  case MVT::riscv_ztta1:
+  case MVT::riscv_ztta2:
+  case MVT::riscv_ztta4:
+  case MVT::riscv_ztta8:
+    return Type::getIntNTy(Context, getSizeInBits().getKnownMinValue());
+
 #define GET_VT_EVT(Ty, EVT) case MVT::Ty: return EVT;
 #include "llvm/CodeGen/GenVT.inc"
 #undef GET_VT_EVT
@@ -266,6 +302,32 @@ MVT MVT::getVT(Type *Ty, bool HandleUnknown){
     return MVT(MVT::f80);
   case Type::TargetExtTyID: {
     TargetExtType *TargetExtTy = cast<TargetExtType>(Ty);
+    if (auto RISCVZtt = getRISCVZttTypeInfo(TargetExtTy)) {
+      if (!RISCVZtt->IsACC) {
+        switch (RISCVZtt->getLogicalBits()) {
+        case 4:    return MVT::riscv_zttm4;
+        case 8:    return MVT::riscv_zttm8;
+        case 16:   return MVT::riscv_zttm16;
+        case 32:   return MVT::riscv_zttm32;
+        case 64:   return MVT::riscv_zttm64;
+        case 128:  return MVT::riscv_zttm128;
+        case 256:  return MVT::riscv_zttm256;
+        case 512:  return MVT::riscv_zttm512;
+        case 1024: return MVT::riscv_zttm1024;
+        case 2048: return MVT::riscv_zttm2048;
+        case 4096: return MVT::riscv_zttm4096;
+        default: break;
+        }
+      } else {
+        switch (RISCVZtt->NumSquares) {
+        case 1: return MVT::riscv_ztta1;
+        case 2: return MVT::riscv_ztta2;
+        case 4: return MVT::riscv_ztta4;
+        case 8: return MVT::riscv_ztta8;
+        default: break;
+        }
+      }
+    }
     if (TargetExtTy->getName() == "aarch64.svcount")
       return MVT(MVT::aarch64svcount);
     else if (TargetExtTy->getName() == "wasm.externref")
