@@ -474,6 +474,42 @@ TEST_P(RISCVXQCIInstrInfoTest, XQCIEInstSize) {
   CheckSize(MakeBranch(RISCV::QC_E_BGEI));
 }
 
+TEST_P(RISCVInstrInfoTest, ZttInstructionEffects) {
+  const RISCVInstrInfo *TII = ST->getInstrInfo();
+  for (unsigned Opcode : {RISCV::ZTT_MCOLZIP_EW, RISCV::ZTT_MCOLUNZIP_EW,
+                          RISCV::ZTT_MROWZIP_EW, RISCV::ZTT_MROWUNZIP_EW}) {
+    const MCInstrDesc &Desc = TII->get(Opcode);
+    EXPECT_FALSE(Desc.hasUnmodeledSideEffects());
+    EXPECT_EQ(Desc.getNumDefs(), 2u);
+    EXPECT_EQ(Desc.getNumOperands(), 4u);
+    EXPECT_EQ(Desc.getOperandConstraint(2, MCOI::TIED_TO), 0);
+    EXPECT_EQ(Desc.getOperandConstraint(3, MCOI::TIED_TO), 1);
+  }
+
+  // Ownership, type updates and amestype dependencies remain observable.
+  for (unsigned Opcode : {RISCV::ZTT_AME_ACQUIRE, RISCV::ZTT_AME_RELEASE,
+                          RISCV::ZTT_MSETTYP, RISCV::ZTT_ASETTYP,
+                          RISCV::ZTT_MADD_EW_X})
+    EXPECT_TRUE(TII->get(Opcode).hasUnmodeledSideEffects());
+  for (unsigned Opcode : {RISCV::ZTT_MADD_EW, RISCV::ZTT_MSLL_EW_X,
+                          RISCV::ZTT_MBCAST_M_X, RISCV::ZTT_MMOV_M_M})
+    EXPECT_FALSE(TII->get(Opcode).hasUnmodeledSideEffects());
+
+  // Memory effects are represented by load/store flags.
+  for (unsigned Opcode : {RISCV::ZTT_MLS_1R, RISCV::ZTT_MLS_RM,
+                          RISCV::ZTT_MLS_ST}) {
+    EXPECT_TRUE(TII->get(Opcode).mayLoad());
+    EXPECT_FALSE(TII->get(Opcode).mayStore());
+    EXPECT_FALSE(TII->get(Opcode).hasUnmodeledSideEffects());
+  }
+  for (unsigned Opcode : {RISCV::ZTT_MSS_1R, RISCV::ZTT_MSS_RM,
+                          RISCV::ZTT_MSS_ST}) {
+    EXPECT_FALSE(TII->get(Opcode).mayLoad());
+    EXPECT_TRUE(TII->get(Opcode).mayStore());
+    EXPECT_FALSE(TII->get(Opcode).hasUnmodeledSideEffects());
+  }
+}
+
 TEST_P(RISCVInstrInfoTest, ZttRegisterBanks) {
   const RISCVRegisterInfo *TRI = ST->getRegisterInfo();
   const TargetRegisterClass *MRC = TRI->getRegClass(RISCV::ZTTMRRegClassID);

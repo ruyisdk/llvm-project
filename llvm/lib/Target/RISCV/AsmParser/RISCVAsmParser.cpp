@@ -4271,6 +4271,13 @@ bool RISCVAsmParser::validateInstruction(MCInst &Inst,
                                          OperandVector &Operands) {
   unsigned Opcode = Inst.getOpcode();
 
+  if (Opcode == RISCV::ZTT_MCOLUNZIP_EW || Opcode == RISCV::ZTT_MCOLZIP_EW ||
+      Opcode == RISCV::ZTT_MROWUNZIP_EW || Opcode == RISCV::ZTT_MROWZIP_EW) {
+    if (Inst.getOperand(0).getReg() == Inst.getOperand(1).getReg())
+      return Error(Operands[2]->getStartLoc(),
+                   "zip/unzip operands must be distinct M registers");
+  }
+
   if (Opcode == RISCV::PseudoVMSGEU_VX_M_T ||
       Opcode == RISCV::PseudoVMSGE_VX_M_T) {
     MCRegister DestReg = Inst.getOperand(0).getReg();
