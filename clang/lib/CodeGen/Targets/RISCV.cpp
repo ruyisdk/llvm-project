@@ -1103,6 +1103,7 @@ public:
 
   void setTargetAttributes(const Decl *D, llvm::GlobalValue *GV,
                            CodeGen::CodeGenModule &CGM) const override {
+    setZttProfile(D, GV, CGM);
     const auto *FD = dyn_cast_or_null<FunctionDecl>(D);
     if (!FD) return;
 
@@ -1154,6 +1155,31 @@ public:
     }
 
     Fn->addFnAttr("interrupt", Kind);
+  }
+
+private:
+  // Also cover compiler-generated functions without a FunctionDecl. Functions
+  // that explicitly disable Ztt must not inherit the translation unit's profile.
+  void setZttProfile(const Decl *D, llvm::GlobalValue *GV,
+                     CodeGenModule &CGM) const {
+    auto *Fn = dyn_cast<llvm::Function>(GV);
+    if (!Fn)
+      return;
+
+    // Target initialization has already validated the last profile option.
+    for (StringRef Feature :
+         llvm::reverse(CGM.getTarget().getTargetOpts().FeaturesAsWritten)) {
+      if (!Feature.consume_front("+ztt-profile="))
+        continue;
+      llvm::StringMap<bool> Features;
+      CGM.getContext().getFunctionFeatureMap(
+          Features, dyn_cast_or_null<FunctionDecl>(D));
+      if (Features.lookup("ztt"))
+        Fn->addFnAttr("riscv-ztt-profile", Feature);
+      else
+        Fn->removeFnAttr("riscv-ztt-profile");
+      return;
+    }
   }
 };
 } // namespace

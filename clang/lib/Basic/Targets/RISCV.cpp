@@ -12,6 +12,7 @@
 
 #include "RISCV.h"
 #include "clang/Basic/Diagnostic.h"
+#include "clang/Basic/DiagnosticDriver.h"
 #include "clang/Basic/MacroBuilder.h"
 #include "clang/Basic/TargetBuiltins.h"
 #include "llvm/ADT/StringSwitch.h"
@@ -264,6 +265,20 @@ void RISCVTargetInfo::getTargetDefines(const LangOptions &Opts,
                        "transformed to other scheme");
     }
   }
+
+  // Expose the selected resources and whether N is known at compile time.
+  if (ZttConfig) {
+    Builder.defineMacro("__riscv_ztt_uds", Twine(ZttConfig->UdsBits));
+    Builder.defineMacro("__riscv_ztt_mregs", Twine(ZttConfig->MRegs));
+    Builder.defineMacro("__riscv_ztt_accregs", Twine(ZttConfig->ARegs));
+    if (!ZttConfig->N) {
+      Builder.defineMacro("__riscv_ztt_runtime_n");
+    } else {
+      Builder.defineMacro("__riscv_ztt_n", Twine(ZttConfig->N));
+      Builder.defineMacro("__riscv_ztt_nelem",
+                          Twine(uint64_t(ZttConfig->N) * ZttConfig->N));
+    }
+  }
 }
 
 static constexpr int NumRVVBuiltins =
@@ -353,7 +368,11 @@ bool RISCVTargetInfo::initFeatureMap(
   }
 
   std::vector<std::string> AllFeatures = FeaturesVec;
-  auto ParseResult = llvm::RISCVISAInfo::parseFeatures(XLen, FeaturesVec);
+  // Profiles configure matrix resources, not ISA features.
+  llvm::erase_if(AllFeatures, [](StringRef Feature) {
+    return Feature.starts_with("+ztt-profile=");
+  });
+  auto ParseResult = llvm::RISCVISAInfo::parseFeatures(XLen, AllFeatures);
   if (!ParseResult) {
     std::string Buffer;
     llvm::raw_string_ostream OutputErrMsg(Buffer);
@@ -444,6 +463,29 @@ bool RISCVTargetInfo::handleTargetFeatures(std::vector<std::string> &Features,
         << "ILP32E cannot be used with the D ISA extension";
     return false;
   }
+
+  // Initialize frontend configuration, including direct cc1 invocations that
+  // bypass the driver's profile checks.
+  ZttConfig.reset();
+  if (auto Value = getZttProfileName()) {
+    if (Value->empty()) {
+      Diags.Report(diag::err_drv_invalid_value) << "-mztt-profile=" << *Value;
+      return false;
+    }
+    auto Profile = llvm::RISCV::ZttProfile::parse(*Value);
+    if (!Profile) {
+      Diags.Report(diag::err_invalid_feature_combination)
+          << llvm::toString(Profile.takeError());
+      return false;
+    }
+    if (!ISAInfo->hasExtension("ztt")) {
+      Diags.Report(diag::err_invalid_feature_combination)
+          << "-mztt-profile requires the Ztt extension";
+      return false;
+    }
+    ZttConfig = *Profile;
+  }
+
   return true;
 }
 
@@ -665,4 +707,11 @@ bool RISCVTargetInfo::checkCFBranchLabelSchemeSupported(
     return false;
   }
   return TargetInfo::checkCFBranchLabelSchemeSupported(Scheme, Diags);
+}
+
+std::optional<StringRef> RISCVTargetInfo::getZttProfileName() const {
+  for (StringRef Feature : llvm::reverse(getTargetOpts().FeaturesAsWritten))
+    if (Feature.consume_front("+ztt-profile="))
+      return Feature;
+  return std::nullopt;
 }
