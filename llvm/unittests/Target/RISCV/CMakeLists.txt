@@ -22,4 +22,5 @@ add_llvm_target_unittest(RISCVTests
   RISCVBaseInfoTest.cpp
   RISCVInstrInfoTest.cpp
   RISCVSelectionDAGTest.cpp
+  RISCVZttProfileTest.cpp
   )
