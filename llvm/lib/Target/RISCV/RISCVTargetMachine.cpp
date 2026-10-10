@@ -258,6 +258,10 @@ RISCVTargetMachine::getSubtargetImpl(const Function &F) const {
   SmallString<512> Key;
   raw_svector_ostream(Key) << "RVVMin" << RVVBitsMin << "RVVMax" << RVVBitsMax
                            << CPU << TuneCPU << FS;
+  // Identical ISAs can use different matrix dimensions and register resources.
+  if (ZttProfileAttr.isValid())
+    raw_svector_ostream(Key) << ";ZttProfile="
+                             << ZttProfileAttr.getValueAsString();
   auto &I = SubtargetMap[Key];
   if (!I) {
     StringRef ABIName = getTargetABIName(*F.getParent());
