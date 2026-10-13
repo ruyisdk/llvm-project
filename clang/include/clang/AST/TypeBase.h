@@ -1975,7 +1975,7 @@ protected:
     unsigned : NumTypeBits;
 
     /// The kind (BuiltinType::Kind) of builtin type this is.
-    static constexpr unsigned NumOfBuiltinTypeBits = 10;
+    static constexpr unsigned NumOfBuiltinTypeBits = 12;
     unsigned Kind : NumOfBuiltinTypeBits;
   };
 
