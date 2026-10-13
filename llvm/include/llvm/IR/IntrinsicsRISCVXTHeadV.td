@@ -218,6 +218,10 @@ let TargetPrefix = "riscv" in {
   def int_riscv_th_vlxb : XVILoad;
   def int_riscv_th_vlxh : XVILoad;
   def int_riscv_th_vlxw : XVILoad;
+  // vlxe/vsxe accept integer byte offsets with the same element count as the
+  // data, but a potentially different element width. Offsets are signed, as in
+  // RVV 0.7.1. The backend widens the narrower operand to satisfy the hardware's
+  // common SEW requirement without truncating offsets or changing memory width.
   def int_riscv_th_vlxe : XVILoad;
   def int_riscv_th_vlxbu : XVILoad;
   def int_riscv_th_vlxhu : XVILoad;

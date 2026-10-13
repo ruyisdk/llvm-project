@@ -648,7 +648,8 @@ let SupportOverloading = false,
 
 // 7.3 Indexed Load Operations: vlxei<eew>
 multiclass RVVVLXEEWBuiltin<string ir, list<string> types> {
-  let UnMaskedPolicyScheme = HasPassthruOperand in {
+  let UnMaskedPolicyScheme = HasPassthruOperand,
+      MaskedPolicyScheme = HasPassthruOperand in {
     foreach type = types in {
       foreach eew_list = EEWList in {
         defvar eew = eew_list[0];

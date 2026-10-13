@@ -7578,11 +7578,128 @@ SDValue RISCVTargetLowering::LowerINTRINSIC_WO_CHAIN(SDValue Op,
   return lowerVectorIntrinsicScalars(Op, DAG, Subtarget);
 }
 
+// XTHeadVector indexed memory instructions use SEW for both the data and the
+// byte offsets. The intrinsics can have differently sized data and index
+// elements, so widen the narrower operand before selecting an instruction.
+// Offsets are signed, as in RVV 0.7.1, and must never be truncated to the data
+// width. Widening the data instead uses a fixed-width memory instruction and
+// narrows the loaded result back to its original type.
+static SDValue
+lowerXTHeadVectorIndexedLoadStore(SDValue Op, SelectionDAG &DAG,
+                                  const RISCVSubtarget &Subtarget) {
+  if (!Subtarget.hasVendorXTHeadV())
+    return SDValue();
+
+  bool IsLoad = Op.getOpcode() == ISD::INTRINSIC_W_CHAIN;
+  unsigned IntNo = Op.getConstantOperandVal(1);
+  bool IsMasked = IntNo == Intrinsic::riscv_th_vlxe_mask ||
+                  IntNo == Intrinsic::riscv_th_vsxe_mask;
+  MVT DataVT = Op.getOperand(2).getSimpleValueType();
+  SDValue Index = Op.getOperand(4);
+  MVT IndexVT = Index.getSimpleValueType();
+  assert(IndexVT.getVectorElementCount() == DataVT.getVectorElementCount() &&
+         "Expected the same element count for the index and data");
+  unsigned DataBits = DataVT.getScalarSizeInBits();
+  unsigned IndexBits = IndexVT.getScalarSizeInBits();
+  if (DataBits == IndexBits)
+    return SDValue();
+
+  SDLoc DL(Op);
+  MVT XLenVT = Subtarget.getXLenVT();
+  SDValue VL = Op.getOperand(IsMasked ? 6 : 5);
+  if (isNullConstant(VL)) {
+    if (IsLoad)
+      return DAG.getMergeValues({Op.getOperand(2), Op.getOperand(0)}, DL);
+    return Op.getOperand(0);
+  }
+  SDValue Zero = DAG.getRegister(RISCV::X0, XLenVT);
+
+  // Use widening adds and narrowing shifts rather than generic vector casts,
+  // whose lowering uses RVV 1.0 instructions. All intermediate types have the
+  // same number of elements and fit in the larger input's register group.
+  auto Widen = [&](SDValue Value, unsigned Bits, bool Signed) {
+    MVT IntVT = Value.getSimpleValueType().changeVectorElementTypeToInteger();
+    Value = DAG.getBitcast(IntVT, Value);
+    while (IntVT.getScalarSizeInBits() < Bits) {
+      IntVT =
+          MVT::getVectorVT(MVT::getIntegerVT(IntVT.getScalarSizeInBits() * 2),
+                           IntVT.getVectorElementCount());
+      if (Value.isUndef()) {
+        Value = DAG.getUNDEF(IntVT);
+        continue;
+      }
+      SDValue ID = DAG.getTargetConstant(Signed ? Intrinsic::riscv_th_vwadd
+                                                : Intrinsic::riscv_th_vwaddu,
+                                         DL, XLenVT);
+      Value = DAG.getNode(ISD::INTRINSIC_WO_CHAIN, DL, IntVT, ID,
+                          DAG.getUNDEF(IntVT), Value, Zero, VL);
+    }
+    return Value;
+  };
+
+  SmallVector<SDValue, 8> Ops(Op->ops());
+  auto *Mem = cast<MemIntrinsicSDNode>(Op);
+  if (IndexBits < DataBits) {
+    Ops[4] = Widen(Index, DataBits, /*Signed=*/true);
+    return DAG.getMemIntrinsicNode(Op.getOpcode(), DL, Op->getVTList(), Ops,
+                                   Mem->getMemoryVT(), Mem->getMemOperand());
+  }
+
+  // Keep all index bits, and keep the memory access size unchanged. Floating
+  // point data is widened and narrowed as integer bits, not converted.
+  static const Intrinsic::ID Loads[] = {Intrinsic::riscv_th_vlxbu,
+                                        Intrinsic::riscv_th_vlxhu,
+                                        Intrinsic::riscv_th_vlxwu};
+  static const Intrinsic::ID MaskedLoads[] = {Intrinsic::riscv_th_vlxbu_mask,
+                                              Intrinsic::riscv_th_vlxhu_mask,
+                                              Intrinsic::riscv_th_vlxwu_mask};
+  static const Intrinsic::ID Stores[] = {Intrinsic::riscv_th_vsxb,
+                                         Intrinsic::riscv_th_vsxh,
+                                         Intrinsic::riscv_th_vsxw};
+  static const Intrinsic::ID MaskedStores[] = {Intrinsic::riscv_th_vsxb_mask,
+                                               Intrinsic::riscv_th_vsxh_mask,
+                                               Intrinsic::riscv_th_vsxw_mask};
+  unsigned Width = Log2_32(DataBits) - 3;
+  Intrinsic::ID NewID = IsLoad ? (IsMasked ? MaskedLoads : Loads)[Width]
+                               : (IsMasked ? MaskedStores : Stores)[Width];
+  Ops[1] = DAG.getTargetConstant(NewID, DL, XLenVT);
+  Ops[2] = Widen(Ops[2], IndexBits, /*Signed=*/false);
+  IndexVT = IndexVT.changeVectorElementTypeToInteger();
+  Ops[4] = DAG.getBitcast(IndexVT, Index);
+  SDVTList VTs = IsLoad ? DAG.getVTList(IndexVT, MVT::Other) : Op->getVTList();
+  SDValue Result = DAG.getMemIntrinsicNode(
+      Op.getOpcode(), DL, VTs, Ops, Mem->getMemoryVT(), Mem->getMemOperand());
+  if (!IsLoad)
+    return Result;
+
+  SDValue Chain = Result.getValue(1);
+  MVT ResultVT = IndexVT;
+  while (ResultVT.getScalarSizeInBits() > DataBits) {
+    ResultVT =
+        MVT::getVectorVT(MVT::getIntegerVT(ResultVT.getScalarSizeInBits() / 2),
+                         ResultVT.getVectorElementCount());
+    SDValue ID = DAG.getTargetConstant(Intrinsic::riscv_th_vnsrl, DL, XLenVT);
+    // With vl=0 no destination elements are written, so the final narrowing
+    // operation must retain the original load's passthru value.
+    SDValue Passthru = ResultVT.getScalarSizeInBits() == DataBits
+                           ? DAG.getBitcast(ResultVT, Op.getOperand(2))
+                           : DAG.getUNDEF(ResultVT);
+    Result = DAG.getNode(ISD::INTRINSIC_WO_CHAIN, DL, ResultVT, ID, Passthru,
+                         Result, Zero, VL);
+  }
+  return DAG.getMergeValues({DAG.getBitcast(DataVT, Result), Chain}, DL);
+}
+
 SDValue RISCVTargetLowering::LowerINTRINSIC_W_CHAIN(SDValue Op,
                                                     SelectionDAG &DAG) const {
   unsigned IntNo = Op.getConstantOperandVal(1);
   switch (IntNo) {
   default:
+    break;
+  case Intrinsic::riscv_th_vlxe:
+  case Intrinsic::riscv_th_vlxe_mask:
+    if (SDValue V = lowerXTHeadVectorIndexedLoadStore(Op, DAG, Subtarget))
+      return V;
     break;
   case Intrinsic::riscv_masked_strided_load: {
     SDLoc DL(Op);
@@ -7703,6 +7820,11 @@ SDValue RISCVTargetLowering::LowerINTRINSIC_VOID(SDValue Op,
   unsigned IntNo = Op.getConstantOperandVal(1);
   switch (IntNo) {
   default:
+    break;
+  case Intrinsic::riscv_th_vsxe:
+  case Intrinsic::riscv_th_vsxe_mask:
+    if (SDValue V = lowerXTHeadVectorIndexedLoadStore(Op, DAG, Subtarget))
+      return V;
     break;
   case Intrinsic::riscv_masked_strided_store: {
     SDLoc DL(Op);
