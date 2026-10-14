@@ -1146,6 +1146,13 @@ llvm::DIType *CGDebugInfo::CreateType(const BuiltinType *BT) {
 #include "clang/Basic/RISCVZttTypes.def"
     // TODO: Add DWARF layout for RISC-V Ztt matrix types.
     return DBuilder.createUnspecifiedType(BT->getName(CGM.getLangOpts()));
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttScalarTypes.def"
+    return DBuilder.createTypedef(
+        getOrCreateType(CGM.getContext().getBuiltinRISCVZttScalarTypeInfo(BT)
+                            .ValueType,
+                        TheCU->getFile()),
+        BT->getName(CGM.getLangOpts()), TheCU->getFile(), 0, TheCU);
   case BuiltinType::UChar:
   case BuiltinType::Char_U:
     Encoding = llvm::dwarf::DW_ATE_unsigned_char;

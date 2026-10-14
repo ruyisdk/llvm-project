@@ -3117,6 +3117,18 @@ void CastOperation::CheckCStyleCast() {
     return;
   }
 
+  if (SrcType->isRISCVZttScalarBuiltinType() ||
+      DestType->isRISCVZttScalarBuiltinType()) {
+    if (Self.RISCV().isValidRISCVZttScalarConversion(SrcType, DestType)) {
+      Kind = CK_NoOp;
+      return;
+    }
+    Self.Diag(OpRange.getBegin(), diag::err_riscv_ztt_scalar_conversion)
+        << SrcType << DestType;
+    SrcExpr = ExprError();
+    return;
+  }
+
   if (!DestType->isScalarType() && !DestType->isVectorType() &&
       !DestType->isMatrixType()) {
     if (const RecordType *DestRecordTy =

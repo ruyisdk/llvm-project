@@ -70,6 +70,7 @@ module Clang_Basic {
   textual header "clang/Basic/PPCTypes.def"
   textual header "clang/Basic/RISCVVTypes.def"
   textual header "clang/Basic/RISCVZttTypes.def"
+  textual header "clang/Basic/RISCVZttScalarTypes.def"
   textual header "clang/Basic/Sanitizers.def"
   textual header "clang/Basic/TargetCXXABI.def"
   textual header "clang/Basic/TargetOSMacros.def"

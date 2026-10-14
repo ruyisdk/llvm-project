@@ -2590,6 +2590,26 @@ Type::ScalarTypeKind Type::getScalarTypeKind() const {
       return STK_Floating;
     if (BT->isFixedPointType())
       return STK_FixedPoint;
+    switch (BT->getKind()) {
+#define RISCV_ZTT_KIND_SignedInt STK_Integral
+#define RISCV_ZTT_KIND_UnsignedInt STK_Integral
+#define RISCV_ZTT_KIND_Float16 STK_Floating
+#define RISCV_ZTT_KIND_BFloat16 STK_Floating
+#define RISCV_ZTT_KIND_Float32 STK_Floating
+#define RISCV_ZTT_KIND_Float64 STK_Floating
+#define RISCV_ZTT_SCALAR_TYPE(Name, Id, SingletonId, Kind, Bits, Options) \
+  case BuiltinType::Id:                                                 \
+    return RISCV_ZTT_KIND_##Kind;
+#include "clang/Basic/RISCVZttScalarTypes.def"
+#undef RISCV_ZTT_KIND_SignedInt
+#undef RISCV_ZTT_KIND_UnsignedInt
+#undef RISCV_ZTT_KIND_Float16
+#undef RISCV_ZTT_KIND_BFloat16
+#undef RISCV_ZTT_KIND_Float32
+#undef RISCV_ZTT_KIND_Float64
+    default:
+      break;
+    }
     llvm_unreachable("unknown scalar builtin type");
   } else if (isa<PointerType>(T)) {
     return STK_CPointer;
@@ -2830,6 +2850,19 @@ bool Type::isRISCVZttBuiltinType() const {
     switch (BT->getKind()) {
 #define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
 #include "clang/Basic/RISCVZttTypes.def"
+      return true;
+    default:
+      return false;
+    }
+  }
+  return false;
+}
+
+bool Type::isRISCVZttScalarBuiltinType() const {
+  if (const auto *BT = getAs<BuiltinType>()) {
+    switch (BT->getKind()) {
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttScalarTypes.def"
       return true;
     default:
       return false;
@@ -3815,6 +3848,10 @@ StringRef BuiltinType::getName(const PrintingPolicy &Policy) const {
   case Id:                            \
     return Name;
 #include "clang/Basic/RISCVZttTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) \
+  case Id:                                 \
+    return Name;
+#include "clang/Basic/RISCVZttScalarTypes.def"
   }
 
   llvm_unreachable("Invalid builtin type.");
@@ -5436,6 +5473,8 @@ bool Type::canHaveNullability(bool ResultIfUnknown) const {
 #include "clang/Basic/SPIRVTypes.def"
 #define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
 #include "clang/Basic/RISCVZttTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttScalarTypes.def"
     case BuiltinType::BuiltinFn:
     case BuiltinType::NullPtr:
     case BuiltinType::IncompleteMatrixIdx:

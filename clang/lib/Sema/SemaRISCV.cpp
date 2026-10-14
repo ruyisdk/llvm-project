@@ -1914,4 +1914,19 @@ bool SemaRISCV::checkTargetClonesAttr(
 
 SemaRISCV::SemaRISCV(Sema &S) : SemaBase(S) {}
 
+bool SemaRISCV::isValidRISCVZttScalarConversion(QualType From, QualType To) {
+  bool FromScalar = From->isRISCVZttScalarBuiltinType();
+  bool ToScalar = To->isRISCVZttScalarBuiltinType();
+  assert((FromScalar || ToScalar) && "expected a RISC-V Ztt scalar conversion");
+  ASTContext &Ctx = getASTContext();
+  if (Ctx.hasSameUnqualifiedType(From, To))
+    return true;
+  if (FromScalar && ToScalar)
+    return false;
+  QualType ValueType = Ctx.getBuiltinRISCVZttScalarTypeInfo(
+                             (FromScalar ? From : To)->castAs<BuiltinType>())
+                           .ValueType;
+  return Ctx.hasSameUnqualifiedType(ValueType, FromScalar ? To : From);
+}
+
 } // namespace clang

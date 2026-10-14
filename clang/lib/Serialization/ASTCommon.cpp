@@ -296,6 +296,11 @@ serialization::TypeIdxFromBuiltin(const BuiltinType *BT) {
     ID = PREDEF_TYPE_##Id##_ID;         \
     break;
 #include "clang/Basic/RISCVZttTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) \
+  case BuiltinType::Id:                     \
+    ID = PREDEF_TYPE_##Id##_ID;             \
+    break;
+#include "clang/Basic/RISCVZttScalarTypes.def"
   }
 
   return TypeIdx(0, ID);

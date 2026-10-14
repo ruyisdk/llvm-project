@@ -62,6 +62,10 @@ public:
                              const SmallVectorImpl<SourceLocation> &Locs,
                              SmallVectorImpl<SmallString<64>> &NewParams,
                              SourceLocation AttrLoc);
+
+  /// RISC-V Ztt scalars convert only to/from their exact C type or themselves.
+  /// At least one type must be a RISC-V Ztt scalar.
+  bool isValidRISCVZttScalarConversion(QualType From, QualType To);
 };
 
 std::unique_ptr<sema::RISCVIntrinsicManager>

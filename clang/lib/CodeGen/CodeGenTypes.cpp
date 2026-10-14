@@ -625,6 +625,12 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
             getLLVMContext(), Name, {ConvertType(Info.ElementType)}, IntParams);
         break;
       }
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttScalarTypes.def"
+      ResultType = ConvertType(
+          Context.getBuiltinRISCVZttScalarTypeInfo(cast<BuiltinType>(Ty))
+              .ValueType);
+      break;
     case BuiltinType::Dependent:
 #define BUILTIN_TYPE(Id, SingletonId)
 #define PLACEHOLDER_TYPE(Id, SingletonId) \

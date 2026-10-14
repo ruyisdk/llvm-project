@@ -1495,6 +1495,9 @@ void ASTContext::InitBuiltinTypes(const TargetInfo &Target,
 #define RISCV_ZTT_TYPE(Name, Id, SingletonId) \
   InitBuiltinType(SingletonId, BuiltinType::Id);
 #include "clang/Basic/RISCVZttTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) \
+  InitBuiltinType(SingletonId, BuiltinType::Id);
+#include "clang/Basic/RISCVZttScalarTypes.def"
   }
 
   // Builtin type for __objc_yes and __objc_no
@@ -1862,6 +1865,10 @@ const llvm::fltSemantics &ASTContext::getFloatTypeSemantics(QualType T) const {
     if (getLangOpts().OpenMP && getLangOpts().OpenMPIsTargetDevice)
       return AuxTarget->getFloat128Format();
     return Target->getFloat128Format();
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttScalarTypes.def"
+    return getFloatTypeSemantics(
+        getBuiltinRISCVZttScalarTypeInfo(T->castAs<BuiltinType>()).ValueType);
   }
 }
 
@@ -2469,6 +2476,10 @@ TypeInfo ASTContext::getTypeInfoImpl(const Type *T) const {
       Width = 0;
       Align = std::max(8U, getBuiltinRISCVZttTypeInfo(cast<BuiltinType>(T)).ElementBits);
       break;
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttScalarTypes.def"
+      return getTypeInfo(
+          getBuiltinRISCVZttScalarTypeInfo(cast<BuiltinType>(T)).ValueType);
     }
     break;
   case Type::ObjCObjectPointer:
@@ -3629,6 +3640,10 @@ static void encodeTypeForFunctionPointerAuth(const ASTContext &Ctx,
 #include "clang/Basic/RISCVZttTypes.def"
       OS << "?";
       return;
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttScalarTypes.def"
+      OS << "?";
+      return;
     }
     llvm_unreachable("should never get here");
   }
@@ -4696,6 +4711,33 @@ ASTContext::getBuiltinRISCVZttTypeInfo(const BuiltinType *Ty) const {
 #undef RISCV_ZTT_ELEMENT_BFloat16
 #undef RISCV_ZTT_ELEMENT_Float32
 #undef RISCV_ZTT_ELEMENT_Float64
+}
+
+ASTContext::BuiltinRISCVZttScalarTypeInfo
+ASTContext::getBuiltinRISCVZttScalarTypeInfo(const BuiltinType *Ty) const {
+  // Use the target's exact C integer type; i128/u128 use _BitInt on RV32/RV64.
+#define RISCV_ZTT_VALUE_SignedInt(Bits) \
+  ((Bits) == 128 ? getBitIntType(false, Bits) : getIntTypeForBitwidth(Bits, true))
+#define RISCV_ZTT_VALUE_UnsignedInt(Bits) \
+  ((Bits) == 128 ? getBitIntType(true, Bits) : getIntTypeForBitwidth(Bits, false))
+#define RISCV_ZTT_VALUE_Float16(Bits) Float16Ty
+#define RISCV_ZTT_VALUE_BFloat16(Bits) BFloat16Ty
+#define RISCV_ZTT_VALUE_Float32(Bits) FloatTy
+#define RISCV_ZTT_VALUE_Float64(Bits) DoubleTy
+  switch (Ty->getKind()) {
+#define RISCV_ZTT_SCALAR_TYPE(Name, Id, SingletonId, Kind, Bits, Options) \
+  case BuiltinType::Id:                                                 \
+    return {RISCV_ZTT_VALUE_##Kind(Bits), Bits, Options};
+#include "clang/Basic/RISCVZttScalarTypes.def"
+  default:
+    llvm_unreachable("Not a RISC-V Ztt scalar builtin type");
+  }
+#undef RISCV_ZTT_VALUE_SignedInt
+#undef RISCV_ZTT_VALUE_UnsignedInt
+#undef RISCV_ZTT_VALUE_Float16
+#undef RISCV_ZTT_VALUE_BFloat16
+#undef RISCV_ZTT_VALUE_Float32
+#undef RISCV_ZTT_VALUE_Float64
 }
 
 /// getExternrefType - Return a WebAssembly externref type, which represents an
@@ -9336,6 +9378,8 @@ static char getObjCEncodingForPrimitiveType(const ASTContext *C,
 #include "clang/Basic/SPIRVTypes.def"
 #define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
 #include "clang/Basic/RISCVZttTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttScalarTypes.def"
       {
         DiagnosticsEngine &Diags = C->getDiagnostics();
         Diags.Report(diag::err_unsupported_objc_primitive_encoding)

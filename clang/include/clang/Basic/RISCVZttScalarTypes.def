@@ -1,0 +1,67 @@
+//===-- RISCVZttScalarTypes.def - RISC-V Ztt scalar builtins -*- C++ -*-===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+//
+// Scalar identity, C value type and datatype options. i4/u4 have no scalar
+// type. Explicit default rounding names are aliases registered by Sema.
+// XLEN limits instruction operands, not the existence of these types.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef RISCV_ZTT_TYPE
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId)
+#endif
+
+#ifndef RISCV_ZTT_SCALAR_TYPE
+#define RISCV_ZTT_SCALAR_TYPE(Name, Id, SingletonId, Kind, Bits, Options)      \
+  RISCV_ZTT_TYPE(Name, Id, SingletonId)
+#endif
+
+#define RISCV_ZTT_SCALAR(Suffix, Id, Kind, Bits, Options)                      \
+  RISCV_ZTT_SCALAR_TYPE("__riscv_ztt_" #Suffix "_scalar_t",                    \
+                        RISCVZtt##Id##Scalar, RISCVZtt##Id##ScalarTy, Kind,    \
+                        Bits, Options)
+
+// Integer rounding occupies bits 2:0; saturation occupies bit 3.
+#define RISCV_ZTT_INTEGER_SCALARS(Suffix, Id, Kind, Bits)                      \
+  RISCV_ZTT_SCALAR(Suffix, Id, Kind, Bits, 0)                                  \
+  RISCV_ZTT_SCALAR(Suffix##_rne, Id##Rne, Kind, Bits, 1)                       \
+  RISCV_ZTT_SCALAR(Suffix##_rdn, Id##Rdn, Kind, Bits, 2)                       \
+  RISCV_ZTT_SCALAR(Suffix##_rod, Id##Rod, Kind, Bits, 3)                       \
+  RISCV_ZTT_SCALAR(Suffix##_sat, Id##Sat, Kind, Bits, 8)                       \
+  RISCV_ZTT_SCALAR(Suffix##_rne_sat, Id##RneSat, Kind, Bits, 9)                \
+  RISCV_ZTT_SCALAR(Suffix##_rdn_sat, Id##RdnSat, Kind, Bits, 10)               \
+  RISCV_ZTT_SCALAR(Suffix##_rod_sat, Id##RodSat, Kind, Bits, 11)
+
+#define RISCV_ZTT_FLOAT_SCALARS(Suffix, Id, Kind, Bits)                        \
+  RISCV_ZTT_SCALAR(Suffix, Id, Kind, Bits, 0)                                  \
+  RISCV_ZTT_SCALAR(Suffix##_rtz, Id##Rtz, Kind, Bits, 1)                       \
+  RISCV_ZTT_SCALAR(Suffix##_rdn, Id##Rdn, Kind, Bits, 2)                       \
+  RISCV_ZTT_SCALAR(Suffix##_rup, Id##Rup, Kind, Bits, 3)                       \
+  RISCV_ZTT_SCALAR(Suffix##_rmm, Id##Rmm, Kind, Bits, 4)                       \
+  RISCV_ZTT_SCALAR(Suffix##_rno, Id##Rno, Kind, Bits, 5)
+
+RISCV_ZTT_INTEGER_SCALARS(i8, Int8, SignedInt, 8)
+RISCV_ZTT_INTEGER_SCALARS(u8, Uint8, UnsignedInt, 8)
+RISCV_ZTT_INTEGER_SCALARS(i16, Int16, SignedInt, 16)
+RISCV_ZTT_INTEGER_SCALARS(u16, Uint16, UnsignedInt, 16)
+RISCV_ZTT_INTEGER_SCALARS(i32, Int32, SignedInt, 32)
+RISCV_ZTT_INTEGER_SCALARS(u32, Uint32, UnsignedInt, 32)
+RISCV_ZTT_INTEGER_SCALARS(i64, Int64, SignedInt, 64)
+RISCV_ZTT_INTEGER_SCALARS(u64, Uint64, UnsignedInt, 64)
+RISCV_ZTT_INTEGER_SCALARS(i128, Int128, SignedInt, 128)
+RISCV_ZTT_INTEGER_SCALARS(u128, Uint128, UnsignedInt, 128)
+RISCV_ZTT_FLOAT_SCALARS(f16, Float16, Float16, 16)
+RISCV_ZTT_FLOAT_SCALARS(bf16, BFloat16, BFloat16, 16)
+RISCV_ZTT_FLOAT_SCALARS(f32, Float32, Float32, 32)
+RISCV_ZTT_FLOAT_SCALARS(f64, Float64, Float64, 64)
+
+#undef RISCV_ZTT_FLOAT_SCALARS
+#undef RISCV_ZTT_INTEGER_SCALARS
+#undef RISCV_ZTT_SCALAR
+#undef RISCV_ZTT_SCALAR_TYPE
+#undef RISCV_ZTT_TYPE

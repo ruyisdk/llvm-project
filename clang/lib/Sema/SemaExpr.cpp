@@ -62,6 +62,7 @@
 #include "clang/Sema/SemaOpenCL.h"
 #include "clang/Sema/SemaOpenMP.h"
 #include "clang/Sema/SemaPseudoObject.h"
+#include "clang/Sema/SemaRISCV.h"
 #include "clang/Sema/Template.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/StringExtras.h"
@@ -6584,6 +6585,8 @@ static bool isPlaceholderToRemoveAsArg(QualType type) {
 #include "clang/Basic/SPIRVTypes.def"
 #define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
 #include "clang/Basic/RISCVZttTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttScalarTypes.def"
 #define PLACEHOLDER_TYPE(ID, SINGLETON_ID)
 #define BUILTIN_TYPE(ID, SINGLETON_ID) case BuiltinType::ID:
 #include "clang/AST/BuiltinTypes.def"
@@ -9823,6 +9826,14 @@ AssignConvertType Sema::CheckAssignmentConstraints(QualType LHSType,
   if (LHSType == RHSType) {
     Kind = CK_NoOp;
     return AssignConvertType::Compatible;
+  }
+
+  if (LHSType->isRISCVZttScalarBuiltinType() ||
+      RHSType->isRISCVZttScalarBuiltinType()) {
+    Kind = CK_NoOp;
+    return RISCV().isValidRISCVZttScalarConversion(RHSType, LHSType)
+               ? AssignConvertType::Compatible
+               : AssignConvertType::Incompatible;
   }
 
   // If the LHS has an __auto_type, there are no additional type constraints
@@ -22384,6 +22395,8 @@ ExprResult Sema::CheckPlaceholderExpr(Expr *E) {
 #include "clang/Basic/SPIRVTypes.def"
 #define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
 #include "clang/Basic/RISCVZttTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttScalarTypes.def"
 #define BUILTIN_TYPE(Id, SingletonId) case BuiltinType::Id:
 #define PLACEHOLDER_TYPE(Id, SingletonId)
 #include "clang/AST/BuiltinTypes.def"

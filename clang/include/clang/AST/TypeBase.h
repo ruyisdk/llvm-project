@@ -2829,6 +2829,9 @@ public:
   /// Whether this is a RISC-V Ztt M or ACC builtin type.
   bool isRISCVZttBuiltinType() const;
 
+  /// Whether this is a RISC-V Ztt data scalar builtin type.
+  bool isRISCVZttScalarBuiltinType() const;
+
   /// Return the implicit lifetime for this type, which must not be dependent.
   Qualifiers::ObjCLifetime getObjCARCImplicitLifetime() const;
 
@@ -3274,6 +3277,9 @@ public:
 // RISC-V Ztt matrix types
 #define RISCV_ZTT_TYPE(Name, Id, SingletonId) Id,
 #include "clang/Basic/RISCVZttTypes.def"
+// RISC-V Ztt data scalar types
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) Id,
+#include "clang/Basic/RISCVZttScalarTypes.def"
 // All other builtin types
 #define BUILTIN_TYPE(Id, SingletonId) Id,
 #define LAST_BUILTIN_TYPE(Id) LastKind = Id
@@ -9147,6 +9153,8 @@ inline bool Type::isUnsignedFixedPointType() const {
 }
 
 inline bool Type::isScalarType() const {
+  if (isRISCVZttScalarBuiltinType())
+    return true;
   if (const auto *BT = dyn_cast<BuiltinType>(CanonicalType))
     return BT->getKind() > BuiltinType::Void &&
            BT->getKind() <= BuiltinType::NullPtr;

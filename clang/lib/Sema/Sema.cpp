@@ -610,6 +610,25 @@ void Sema::Initialize() {
     }
   }
 
+  if (Context.getTargetInfo().getTriple().isRISCV() &&
+      Context.getTargetInfo().hasFeature("ztt")) {
+    for (QualType Ty : {
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) Context.SingletonId,
+#include "clang/Basic/RISCVZttScalarTypes.def"
+         }) {
+      const auto *BT = Ty->castAs<BuiltinType>();
+      StringRef Name = BT->getName(Context.getLangOpts());
+      addImplicitTypedef(Name, Ty);
+      auto Info = Context.getBuiltinRISCVZttScalarTypeInfo(BT);
+      if ((Info.DatatypeOptions & 7) == 0) {
+        std::string Alias = Name.str();
+        Alias.insert(Alias.find('_', sizeof("__riscv_ztt_") - 1),
+                     Info.ValueType->isFloatingType() ? "_rne" : "_rnu");
+        addImplicitTypedef(Alias, Ty);
+      }
+    }
+  }
+
   if (Context.getTargetInfo().hasBuiltinMSVaList()) {
     DeclarationName MSVaList = &Context.Idents.get("__builtin_ms_va_list");
     if (IdResolver.begin(MSVaList) == IdResolver.end())

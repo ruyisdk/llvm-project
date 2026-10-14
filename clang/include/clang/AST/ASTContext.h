@@ -1426,6 +1426,8 @@ public:
 #include "clang/Basic/SPIRVTypes.def"
 #define RISCV_ZTT_TYPE(Name, Id, SingletonId) CanQualType SingletonId;
 #include "clang/Basic/RISCVZttTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) CanQualType SingletonId;
+#include "clang/Basic/RISCVZttScalarTypes.def"
 
   // Types for deductions in C++0x [stmt.ranged]'s desugaring. Built on demand.
   mutable QualType AutoDeductTy;     // Deduction against 'auto'.
@@ -1884,6 +1886,16 @@ public:
   };
 
   BuiltinRISCVZttTypeInfo getBuiltinRISCVZttTypeInfo(const BuiltinType *Ty) const;
+
+  /// C representation and datatype options of a RISC-V Ztt scalar builtin.
+  struct BuiltinRISCVZttScalarTypeInfo {
+    QualType ValueType;
+    unsigned ElementBits;
+    unsigned DatatypeOptions;
+  };
+
+  BuiltinRISCVZttScalarTypeInfo
+  getBuiltinRISCVZttScalarTypeInfo(const BuiltinType *Ty) const;
 
   /// Return the unique reference to a scalable vector type of the specified
   /// element type and scalable number of elements.

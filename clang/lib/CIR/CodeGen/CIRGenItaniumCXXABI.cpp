@@ -759,6 +759,8 @@ static bool typeInfoIsInStandardLibrary(const BuiltinType *ty) {
 #include "clang/Basic/SPIRVTypes.def"
 #define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
 #include "clang/Basic/RISCVZttTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttScalarTypes.def"
   case BuiltinType::ShortAccum:
   case BuiltinType::Accum:
   case BuiltinType::LongAccum:

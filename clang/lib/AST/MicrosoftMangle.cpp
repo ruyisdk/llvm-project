@@ -3062,6 +3062,11 @@ void MicrosoftCXXNameMangler::mangleType(const BuiltinType *T, Qualifiers,
     mangleArtificialTagType(TagTypeKind::Struct, Name, {"__clang"}); \
     break;
 #include "clang/Basic/RISCVZttTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId)                             \
+  case BuiltinType::Id:                                            \
+    mangleArtificialTagType(TagTypeKind::Struct, Name, {"__clang"}); \
+    break;
+#include "clang/Basic/RISCVZttScalarTypes.def"
 
   // Issue an error for any type not explicitly handled.
   default:
