@@ -303,6 +303,19 @@ TEST_P(RISCVZttTypeTest, RequiresRISCVZttFeature) {
     EXPECT_TRUE(Ty.isNull());
 }
 
+TEST_P(RISCVZttTypeTest, PublicTypeNames) {
+  ASTContext &Ctx = AST->getASTContext();
+  for (QualType Ty : getRISCVZttTypes(Ctx)) {
+    SCOPED_TRACE(Ty.getAsString());
+    auto Decls =
+        Ctx.getTranslationUnitDecl()->lookup(&Ctx.Idents.get(Ty.getAsString()));
+    ASSERT_TRUE(Decls.isSingleResult());
+    const auto *TD = cast<TypedefDecl>(Decls.front());
+    EXPECT_TRUE(TD->isImplicit());
+    EXPECT_EQ(Ty, TD->getUnderlyingType());
+  }
+}
+
 TEST_P(RISCVZttTypeTest, DatatypeOptions) {
   ASTContext &Ctx = AST->getASTContext();
   llvm::StringMap<QualType> Types;
@@ -451,6 +464,33 @@ TEST_P(RISCVZttTypeTest, OptionsMangling) {
     EXPECT_EQ(".U" + Name + "@__clang@@", MicrosoftName);
   }
   EXPECT_FALSE(Ctx.getDiagnostics().hasErrorOccurred());
+}
+
+TEST_P(RISCVZttTypeTest, OptionsPublicTypeNamesAndAliases) {
+  ASTContext &Ctx = AST->getASTContext();
+  unsigned NumAliases = 0;
+  for (QualType Ty : getRISCVZttTypes(Ctx, true)) {
+    std::string Name = Ty.getAsString();
+    SCOPED_TRACE(Name);
+    auto Decls = Ctx.getTranslationUnitDecl()->lookup(&Ctx.Idents.get(Name));
+    ASSERT_TRUE(Decls.isSingleResult());
+    const auto *TD = cast<TypedefDecl>(Decls.front());
+    EXPECT_TRUE(TD->isImplicit());
+    EXPECT_EQ(Ty, TD->getUnderlyingType());
+    auto Info = Ctx.getBuiltinRISCVZttTypeInfo(Ty->castAs<BuiltinType>());
+    if ((Info.DatatypeOptions & 7) != 0)
+      continue;
+    std::string Alias = Name;
+    Alias.insert(Alias.find('_', sizeof("__riscv_ztt_") - 1),
+                 Info.ElementType->isFloatingType() ? "_rne" : "_rnu");
+    auto Aliases = Ctx.getTranslationUnitDecl()->lookup(&Ctx.Idents.get(Alias));
+    ASSERT_TRUE(Aliases.isSingleResult()) << Alias;
+    const auto *AliasTD = cast<TypedefDecl>(Aliases.front());
+    EXPECT_TRUE(AliasTD->isImplicit());
+    EXPECT_EQ(Ty, AliasTD->getUnderlyingType());
+    ++NumAliases;
+  }
+  EXPECT_EQ(420u, NumAliases);
 }
 
 INSTANTIATE_TEST_SUITE_P(RISCV, RISCVZttTypeTest,
