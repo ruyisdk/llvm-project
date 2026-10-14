@@ -970,6 +970,10 @@ bool Sema::LookupBuiltin(LookupResult &R) {
           return true;
       }
 
+      if (RISCV().DeclareRISCVZttBuiltins &&
+          RISCV().CreateRISCVZttIntrinsicIfFound(R, II))
+        return true;
+
       // If this is a builtin on this (or all) targets, create the decl.
       if (unsigned BuiltinID = II->getBuiltinID()) {
         // In C++ and OpenCL (spec v1.2 s6.9.f), we don't have any predefined
