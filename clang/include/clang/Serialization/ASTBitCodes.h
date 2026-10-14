@@ -1157,6 +1157,9 @@ enum PredefinedTypeIDs {
 // \brief SPIR-V types with auto numeration
 #define SPIRV_TYPE(Name, Id, SingletonId) PREDEF_TYPE_##Id##_ID,
 #include "clang/Basic/SPIRVTypes.def"
+// RISC-V Ztt matrix types.
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) PREDEF_TYPE_##Id##_ID,
+#include "clang/Basic/RISCVZttTypes.def"
 
   /// The placeholder type for unresolved templates.
   PREDEF_TYPE_UNRESOLVED_TEMPLATE,

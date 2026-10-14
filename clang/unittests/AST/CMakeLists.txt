@@ -39,6 +39,7 @@ add_clang_unittest(ASTTests
   TemplateNameTest.cpp
   TypePrinterTest.cpp
   UnresolvedSetTest.cpp
+  RISCVZttTypeTest.cpp
   CLANG_LIBS
   clangAST
   clangASTMatchers

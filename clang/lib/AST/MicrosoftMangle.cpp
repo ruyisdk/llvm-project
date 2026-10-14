@@ -3057,6 +3057,12 @@ void MicrosoftCXXNameMangler::mangleType(const BuiltinType *T, Qualifiers,
     Error(Range.getBegin(), "SPIR-V built-in type") << Range;
     break;
 
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId)                             \
+  case BuiltinType::Id:                                            \
+    mangleArtificialTagType(TagTypeKind::Struct, Name, {"__clang"}); \
+    break;
+#include "clang/Basic/RISCVZttTypes.def"
+
   // Issue an error for any type not explicitly handled.
   default:
     Error(Range.getBegin(), "built-in type: ",

@@ -459,6 +459,8 @@ NSAPI::getNSNumberFactoryMethodKind(QualType T) const {
 #include "clang/Basic/HLSLIntangibleTypes.def"
 #define SPIRV_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
 #include "clang/Basic/SPIRVTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttTypes.def"
   case BuiltinType::BoundMember:
   case BuiltinType::UnresolvedTemplate:
   case BuiltinType::Dependent:

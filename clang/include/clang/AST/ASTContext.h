@@ -1424,6 +1424,8 @@ public:
 #include "clang/Basic/HLSLIntangibleTypes.def"
 #define SPIRV_TYPE(Name, Id, SingletonId) CanQualType SingletonId;
 #include "clang/Basic/SPIRVTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) CanQualType SingletonId;
+#include "clang/Basic/RISCVZttTypes.def"
 
   // Types for deductions in C++0x [stmt.ranged]'s desugaring. Built on demand.
   mutable QualType AutoDeductTy;     // Deduction against 'auto'.
@@ -1861,6 +1863,27 @@ public:
   /// (in case of tuple) for a builtin vector type.
   BuiltinVectorTypeInfo
   getBuiltinVectorTypeInfo(const BuiltinType *VecTy) const;
+
+  /// Element type and shape of a RISC-V Ztt M or ACC builtin type.
+  struct BuiltinRISCVZttTypeInfo {
+    QualType ElementType;
+    unsigned ElementBits;
+    // M shape; both are 1 for ACC types.
+    unsigned NumRows;
+    unsigned NumColumns;
+    // Zero for M types. Each ACC register holds one square.
+    unsigned NumACCRegisters;
+    // Rounding mode in bits 2:0; integer saturation in bit 3.
+    unsigned DatatypeOptions;
+
+    bool isMType() const { return NumACCRegisters == 0; }
+    bool isACCType() const { return NumACCRegisters != 0; }
+    unsigned getLogicalSquareCount() const {
+      return isACCType() ? NumACCRegisters : NumRows * NumColumns;
+    }
+  };
+
+  BuiltinRISCVZttTypeInfo getBuiltinRISCVZttTypeInfo(const BuiltinType *Ty) const;
 
   /// Return the unique reference to a scalable vector type of the specified
   /// element type and scalable number of elements.

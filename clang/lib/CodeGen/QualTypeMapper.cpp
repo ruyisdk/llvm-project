@@ -315,6 +315,10 @@ QualTypeMapper::convertBuiltinType(const BuiltinType *BT) {
 #include "clang/Basic/SPIRVTypes.def"
     llvm::reportFatalInternalError(
         "SPIR-V types not yet supported in ABI lowering library");
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttTypes.def"
+    llvm::reportFatalInternalError(
+        "RISC-V Ztt types not yet supported in ABI lowering library");
 
     // Placeholder types should never reach ABI lowering.
 #define PLACEHOLDER_TYPE(Id, SingletonId) case BuiltinType::Id:

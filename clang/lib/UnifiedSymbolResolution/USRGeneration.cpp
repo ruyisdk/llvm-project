@@ -863,6 +863,11 @@ void USRGenerator::VisitType(QualType T) {
     Out << "@BT@" << Name;                                                     \
     break;
 #include "clang/Basic/SPIRVTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) \
+  case BuiltinType::Id:                \
+    Out << "@BT@" << Name;             \
+    break;
+#include "clang/Basic/RISCVZttTypes.def"
       case BuiltinType::ShortAccum:
         Out << "@BT@ShortAccum";
         break;

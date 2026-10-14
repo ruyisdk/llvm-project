@@ -2758,6 +2758,9 @@ bool Type::isSizelessBuiltinType() const {
 #include "clang/Basic/HLSLIntangibleTypes.def"
       // AMDGPU feature predicate type
     case BuiltinType::AMDGPUFeaturePredicate:
+      // RISC-V Ztt matrix types
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttTypes.def"
       return true;
     default:
       return false;
@@ -2814,6 +2817,19 @@ bool Type::isRVVSizelessBuiltinType() const {
     switch (BT->getKind()) {
 #define RVV_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
 #include "clang/Basic/RISCVVTypes.def"
+      return true;
+    default:
+      return false;
+    }
+  }
+  return false;
+}
+
+bool Type::isRISCVZttBuiltinType() const {
+  if (const auto *BT = getAs<BuiltinType>()) {
+    switch (BT->getKind()) {
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttTypes.def"
       return true;
     default:
       return false;
@@ -3795,6 +3811,10 @@ StringRef BuiltinType::getName(const PrintingPolicy &Policy) const {
   case Id:                                                                     \
     return Name;
 #include "clang/Basic/SPIRVTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) \
+  case Id:                            \
+    return Name;
+#include "clang/Basic/RISCVZttTypes.def"
   }
 
   llvm_unreachable("Invalid builtin type.");
@@ -5414,6 +5434,8 @@ bool Type::canHaveNullability(bool ResultIfUnknown) const {
 #include "clang/Basic/HLSLIntangibleTypes.def"
 #define SPIRV_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
 #include "clang/Basic/SPIRVTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttTypes.def"
     case BuiltinType::BuiltinFn:
     case BuiltinType::NullPtr:
     case BuiltinType::IncompleteMatrixIdx:

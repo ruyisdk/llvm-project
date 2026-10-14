@@ -3576,6 +3576,11 @@ void CXXNameMangler::mangleType(const BuiltinType *T) {
     mangleVendorType(Name);                                                    \
     break;
 #include "clang/Basic/SPIRVTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) \
+  case BuiltinType::Id:                \
+    mangleVendorType(Name);            \
+    break;
+#include "clang/Basic/RISCVZttTypes.def"
   }
 }
 

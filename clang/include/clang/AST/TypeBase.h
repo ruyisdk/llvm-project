@@ -2826,6 +2826,9 @@ public:
   /// barrier wrapper, or an array thereof.
   bool isAMDGPUNamedBarrierTypeOrWrapper() const;
 
+  /// Whether this is a RISC-V Ztt M or ACC builtin type.
+  bool isRISCVZttBuiltinType() const;
+
   /// Return the implicit lifetime for this type, which must not be dependent.
   Qualifiers::ObjCLifetime getObjCARCImplicitLifetime() const;
 
@@ -3268,6 +3271,9 @@ public:
 // SPIRV types
 #define SPIRV_TYPE(Name, Id, SingletonId) Id,
 #include "clang/Basic/SPIRVTypes.def"
+// RISC-V Ztt matrix types
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) Id,
+#include "clang/Basic/RISCVZttTypes.def"
 // All other builtin types
 #define BUILTIN_TYPE(Id, SingletonId) Id,
 #define LAST_BUILTIN_TYPE(Id) LastKind = Id

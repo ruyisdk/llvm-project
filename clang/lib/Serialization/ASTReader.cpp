@@ -8176,6 +8176,11 @@ QualType ASTReader::GetType(TypeID ID) {
     T = Context.SingletonId;                                                   \
     break;
 #include "clang/Basic/SPIRVTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) \
+  case PREDEF_TYPE_##Id##_ID:           \
+    T = Context.SingletonId;           \
+    break;
+#include "clang/Basic/RISCVZttTypes.def"
     }
 
     assert(!T.isNull() && "Unknown predefined type");
