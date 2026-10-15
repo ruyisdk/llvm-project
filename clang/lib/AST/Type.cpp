@@ -3100,6 +3100,9 @@ static bool isTriviallyCopyableTypeImpl(const QualType &type,
   //   called trivially copy constructible types.
 
   QualType CanonicalType = type.getCanonicalType();
+  if (CanonicalType->isRISCVZttBuiltinType())
+    return false;
+
   if (CanonicalType->isDependentType())
     return false;
 

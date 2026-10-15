@@ -11,6 +11,7 @@
 #include "clang/Basic/Builtins.h"
 #include "clang/Basic/RISCVZttBuiltins.h"
 #include "clang/Basic/TargetInfo.h"
+#include "clang/Sema/Initialization.h"
 #include "clang/Sema/Sema.h"
 #include "clang/Sema/SemaRISCV.h"
 #include "llvm/ADT/ScopeExit.h"
@@ -553,4 +554,28 @@ bool SemaRISCV::CheckRISCVZttBuiltinFunctionCall(const TargetInfo &TI,
                 diag::err_riscv_ztt_builtin_requires_profile);
   return RISCVZttCallChecker(SemaRef, TI, *Profile, *Builtin, Info, TheCall)
       .check();
+}
+
+bool SemaRISCV::isValidRISCVZttInitialization(
+    const InitializedEntity &Entity, const InitializationKind &Kind,
+    ArrayRef<Expr *> Args) {
+  // Arguments and return values can use existing matrices.
+  switch (Entity.getKind()) {
+  case InitializedEntity::EK_Parameter:
+  case InitializedEntity::EK_Parameter_CF_Audited:
+  case InitializedEntity::EK_Result:
+  case InitializedEntity::EK_RelatedResult:
+  case InitializedEntity::EK_StmtExprResult:
+    return true;
+  default:
+    break;
+  }
+
+  // Only parentheses may surround the call, not casts or other expressions.
+  if (Kind.isExplicitCast() || Args.size() != 1)
+    return false;
+  const auto *Call = dyn_cast<CallExpr>(Args[0]->IgnoreParens());
+  const auto *Callee = Call ? Call->getDirectCallee() : nullptr;
+  return Callee && RISCV::getRISCVZttBuiltinInfo(Callee->getBuiltinID()) &&
+         Call->getType()->isRISCVZttBuiltinType();
 }

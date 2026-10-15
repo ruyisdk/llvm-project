@@ -29,6 +29,8 @@ class RISCVIntrinsicManager;
 class ParsedAttr;
 class TargetInfo;
 class LookupResult;
+class InitializedEntity;
+class InitializationKind;
 
 class SemaRISCV : public SemaBase {
 public:
@@ -76,6 +78,11 @@ public:
   // Check RISC-V Ztt profiles, matrix layouts and operation operands.
   bool CheckRISCVZttBuiltinFunctionCall(const TargetInfo &TI, unsigned BuiltinID,
                                       CallExpr *TheCall);
+
+  /// Matrix objects require a direct RISC-V Ztt intrinsic initializer.
+  bool isValidRISCVZttInitialization(const InitializedEntity &Entity,
+                                    const InitializationKind &Kind,
+                                    ArrayRef<Expr *> Args);
 };
 
 std::unique_ptr<sema::RISCVIntrinsicManager>

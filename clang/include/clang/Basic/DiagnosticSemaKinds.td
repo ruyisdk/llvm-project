@@ -13683,6 +13683,9 @@ def err_riscv_ztt_too_many_m_registers : Error<
   "RISC-V Ztt type %0 requires %1 M registers, exceeding the architectural limit "
   "of 32">;
 
+def err_riscv_ztt_invalid_initialization : Error<
+  "RISC-V Ztt type %0 must be initialized directly by a RISC-V Ztt intrinsic call">;
+
 // RISC-V Ztt intrinsic arguments.
 def err_riscv_ztt_result_marker : Error<
   "RISC-V Ztt intrinsic requires a null pointer result-type marker with a supported "

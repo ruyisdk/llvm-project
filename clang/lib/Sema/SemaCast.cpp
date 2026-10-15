@@ -3096,6 +3096,14 @@ void CastOperation::CheckCStyleCast() {
     return;
   }
 
+  if (DestType->isRISCVZttBuiltinType() &&
+      Self.Context.hasSameUnqualifiedType(DestType, SrcType)) {
+    Self.Diag(OpRange.getBegin(), diag::err_typecheck_cond_expect_scalar)
+        << DestType << SrcExpr.get()->getSourceRange();
+    SrcExpr = ExprError();
+    return;
+  }
+
   // Allow casting a sizeless built-in type to itself.
   if (DestType->isSizelessBuiltinType() &&
       Self.Context.hasSameUnqualifiedType(DestType, SrcType)) {
