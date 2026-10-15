@@ -9332,11 +9332,12 @@ void ASTReader::UpdateSema() {
   }
   SemaObj->CUDA().ForceHostDeviceDepth = ForceHostDeviceDepth;
   if (!RISCVVecIntrinsicPragma.empty()) {
-    assert(RISCVVecIntrinsicPragma.size() == 3 &&
+    assert(RISCVVecIntrinsicPragma.size() == 4 &&
            "Wrong number of RISCVVecIntrinsicPragma");
     SemaObj->RISCV().DeclareRVVBuiltins = RISCVVecIntrinsicPragma[0];
     SemaObj->RISCV().DeclareSiFiveVectorBuiltins = RISCVVecIntrinsicPragma[1];
     SemaObj->RISCV().DeclareAndesVectorBuiltins = RISCVVecIntrinsicPragma[2];
+    SemaObj->RISCV().DeclareRISCVZttBuiltins = RISCVVecIntrinsicPragma[3];
   }
 
   if (PragmaAlignPackCurrentValue) {

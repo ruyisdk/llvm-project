@@ -113,3 +113,29 @@ static_assert((int)select_i(false, const_i, 2 + 3) == 5);
 static_assert((float)select_f(true, const_f, 2.0f + 3.0f) == 1.5f);
 static_assert((float)select_f(false, const_f, 2.0f + 3.0f) == 5.0f);
 #endif
+
+// RUN: %clang_cc1 -x c -triple riscv32 -target-feature +ztt -target-feature +ztt-profile=clang-runtime-u32-m32-a16 -DTEST_GPR_OPERAND -fsyntax-only -verify %s
+// RUN: %clang_cc1 -x c++ -triple riscv32 -target-feature +ztt -target-feature +ztt-profile=clang-runtime-u32-m32-a16 -DTEST_GPR_OPERAND -fsyntax-only -verify %s
+// RUN: %clang_cc1 -x c -triple riscv64 -target-feature +ztt -target-feature +ztt-profile=clang-runtime-u32-m32-a16 -DTEST_GPR_OPERAND -fsyntax-only -verify %s
+// RUN: %clang_cc1 -x c++ -triple riscv64 -target-feature +ztt -target-feature +ztt-profile=clang-runtime-u32-m32-a16 -DTEST_GPR_OPERAND -fsyntax-only -verify %s
+
+#ifdef TEST_GPR_OPERAND
+#include <riscv_ztt.h>
+
+// Scalar arguments must fit XLEN; the types themselves remain available.
+#if __riscv_xlen == 32
+void too_wide32(__riscv_ztt_i128_1x1_t m,
+                __riscv_ztt_i64_scalar_t i, __riscv_ztt_u64_scalar_t u,
+                __riscv_ztt_f64_scalar_t f) {
+  __riscv_ztt_madd_ew_x_i128_1x1(m, i); // expected-error {{has 64 bits, exceeding the 32-bit XLEN}}
+  __riscv_ztt_madd_ew_x_i128_1x1(m, u); // expected-error {{has 64 bits, exceeding the 32-bit XLEN}}
+  __riscv_ztt_madd_ew_x_i128_1x1(m, f); // expected-error {{has 64 bits, exceeding the 32-bit XLEN}}
+}
+#endif
+
+void too_wide(__riscv_ztt_i128_1x1_t m, __riscv_ztt_i128_scalar_t i,
+              __riscv_ztt_u128_scalar_t u) {
+  __riscv_ztt_madd_ew_x_i128_1x1(m, i); // expected-error {{has 128 bits, exceeding}}
+  __riscv_ztt_madd_ew_x_i128_1x1(m, u); // expected-error {{has 128 bits, exceeding}}
+}
+#endif
