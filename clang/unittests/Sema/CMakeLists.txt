@@ -12,6 +12,7 @@ add_distinct_clang_unittest(SemaTests
   SemaNoloadLookupTest.cpp
   RISCVZttScalarTest.cpp
   RISCVZttLookupTest.cpp
+  RISCVZttSemaTest.cpp
   CLANG_LIBS
   clangAST
   clangASTMatchers

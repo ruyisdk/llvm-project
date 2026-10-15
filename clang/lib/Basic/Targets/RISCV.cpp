@@ -431,6 +431,11 @@ bool RISCVZttBuiltinInfo::acceptsResult(bool IsACC, bool IsInteger,
     return true;
   }
 }
+
+const std::optional<llvm::RISCV::ZttProfile> &
+getRISCVZttProfile(const TargetInfo &TI) {
+  return static_cast<const targets::RISCVTargetInfo &>(TI).getZttProfile();
+}
 } // namespace clang::RISCV
 
 bool RISCVTargetInfo::initFeatureMap(

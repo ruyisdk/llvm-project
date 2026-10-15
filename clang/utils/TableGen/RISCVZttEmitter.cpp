@@ -9,6 +9,7 @@
 #include "TableGenBackends.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/TableGen/Record.h"
+#include <set>
 
 using namespace llvm;
 
@@ -32,6 +33,33 @@ void clang::EmitRISCVZtt(const RecordKeeper &Records, raw_ostream &OS) {
        << "RISCVZttResultTypeKind::" << Op->getValueAsString("ResultTypeKind")
        << ", " << Op->getValueAsInt("MaxResultSquares") << ", "
        << Op->getValueAsInt("MinResultSquares") << "},\n";
+  }
+  OS << "#endif\n";
+
+  // Sema rules are shared by all datatypes and shapes of an operation.
+  std::set<StringRef> ArgCheckKinds;
+  for (const Record *Op : Operations)
+    ArgCheckKinds.insert(Op->getValueAsString("SemaArgCheckKind"));
+  OS << "\n#ifdef GET_RISCV_ZTT_SEMA_ARG_CHECK_KINDS\n";
+  for (StringRef ArgCheckKind : ArgCheckKinds)
+    OS << "  " << ArgCheckKind << ",\n";
+  OS << "#endif\n\n";
+
+  OS << "#ifdef GET_RISCV_ZTT_SEMA_TABLE\n";
+  for (const Record *Op : Operations) {
+    StringRef ArgCheckKind = Op->getValueAsString("SemaArgCheckKind");
+    std::string Name = Op->getValueAsString("Name").str();
+    for (char &C : Name)
+      if (C == '_')
+        C = '.';
+    OS << "  {RISCVZttSemaArgCheckKind::" << ArgCheckKind << ", \"" << Name
+       << "\", " << Op->getValueAsInt("NumMatrixArgs")
+       << ", " << Op->getValueAsInt("NumScalarArgs") << ", "
+       << (Op->getValueAsBit("HasOldResult") ? "true" : "false")
+       << ", RISCVZttComputeScalarArgRule::"
+       << Op->getValueAsString("ComputeScalarArgRule")
+       << ", RISCVZttComputeMatrixArgRule::"
+       << Op->getValueAsString("ComputeMatrixArgRule") << "},\n";
   }
   OS << "#endif\n";
 }

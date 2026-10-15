@@ -72,6 +72,10 @@ public:
   bool isValidRISCVZttScalarConversion(QualType From, QualType To);
 
   bool CreateRISCVZttIntrinsicIfFound(LookupResult &R, IdentifierInfo *II);
+
+  // Check RISC-V Ztt profiles, matrix layouts and operation operands.
+  bool CheckRISCVZttBuiltinFunctionCall(const TargetInfo &TI, unsigned BuiltinID,
+                                      CallExpr *TheCall);
 };
 
 std::unique_ptr<sema::RISCVIntrinsicManager>

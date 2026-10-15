@@ -10,6 +10,11 @@
 #define LLVM_CLANG_BASIC_RISCVZTTBUILTINS_H
 
 #include "llvm/ADT/ArrayRef.h"
+#include "llvm/TargetParser/RISCVZttProfile.h"
+
+namespace clang {
+class TargetInfo;
+}
 
 namespace clang::RISCV {
 
@@ -39,6 +44,10 @@ struct RISCVZttBuiltinInfo {
 
 const RISCVZttBuiltinInfo *getRISCVZttBuiltinInfo(unsigned ID);
 llvm::ArrayRef<RISCVZttBuiltinInfo> getRISCVZttBuiltins();
+
+// Return the target's RISC-V Ztt profile, if present.
+const std::optional<llvm::RISCV::ZttProfile> &
+getRISCVZttProfile(const TargetInfo &TI);
 
 } // namespace clang::RISCV
 

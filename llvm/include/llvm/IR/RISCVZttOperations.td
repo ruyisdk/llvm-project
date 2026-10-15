@@ -12,6 +12,10 @@
 // Basic interface structure shared by Clang and LLVM.
 class RISCVZttOperation<string name, int numMatrixArgs, int numScalarArgs>
 {
+  //===------------------------------------------------------------------===//
+  // Common interface: name and C argument layout.
+  //===------------------------------------------------------------------===//
+
   string Name = name;
 
   // M/ACC input arguments, excluding the old result.
@@ -22,6 +26,11 @@ class RISCVZttOperation<string name, int numMatrixArgs, int numScalarArgs>
 
   // The first C argument is the old result matrix and has the result type.
   bit HasOldResult = 0;
+
+  //===------------------------------------------------------------------===//
+  // Builtin interface generation: allowed result types and name suffixes.
+  // Sema also uses these rules to check raw builtin result-type markers.
+  //===------------------------------------------------------------------===//
 
   // Return kind.
   // NonMatrix: Ordinary scalar or void; CSR reads, acquire/release and stores.
@@ -40,26 +49,69 @@ class RISCVZttOperation<string name, int numMatrixArgs, int numScalarArgs>
 
   // Smallest return shape, in squares.
   int MinResultSquares = 1;
+
+  //===------------------------------------------------------------------===//
+  // Sema argument checks: types, shapes and control values.
+  //===------------------------------------------------------------------===//
+
+  // Operand checks for each operation.
+  // None: No operand checks; clear/zero, IDs, CSR reads and release.
+  // Compute: M inputs with the result shape; arithmetic and permutation.
+  // LoadStore: Pointer type, const/volatile and optional byte stride.
+  // Copy: Same datatype and square count; M-to-M also needs the same shape.
+  // Matmul: Matching ACC input/result types and valid M input shapes.
+  // Special: Custom checks for acquire, concat, extract and zip/unzip.
+  string SemaArgCheckKind = "None";
+
+  // Matrix source datatype checks for Compute, excluding the old result.
+  // Any: Any source datatype; add and convert.
+  // FirstFP: First source is floating-point; square root and logarithms.
+  // SecondInt: Second source is integer; exponents and scatter indices.
+  // AllSameAsRes: All sources have the result datatype; min/max and broadcast.
+  // AllInt: All sources are integer; shifts may mix datatypes.
+  // AllSameIntAsRes: All sources have the result's integer datatype; bitwise.
+  // Gather: First source has the result datatype; second source is integer.
+  // Select: Second source has the result datatype; select and conditional move.
+  string ComputeMatrixArgRule = "Any";
+
+  // Scalar and control argument checks for Compute.
+  // None: No scalar/control argument.
+  // Any: Any RISC-V Ztt scalar datatype; compute and broadcast.
+  // Int: Integer RISC-V Ztt scalar; bitwise operations.
+  // ControlSize: Integer control converted to size_t; shifts and indices.
+  // ControlInt: Integer control converted to C int; row/column shifts.
+  // ControlLong: Integer control converted to C long; exponents.
+  string ComputeScalarArgRule = "None";
 }
 
 // Matrix compute interfaces.
 class RISCVZttCompute<string name, int numMatrixArgs, int numScalarArgs>
-    : RISCVZttOperation<name, numMatrixArgs, numScalarArgs>;
+    : RISCVZttOperation<name, numMatrixArgs, numScalarArgs>
+{
+  let SemaArgCheckKind = "Compute";
+}
 
 // () or (scalar); clear/zero, row/column IDs and scalar broadcast.
 class RISCVZttNoMatrixArg<string name, int numScalarArgs>
     : RISCVZttCompute<name, 0, numScalarArgs>;
 
 // () -> M/ACC; clear/zero and row/column IDs.
-class RISCVZttNoArg<string name> : RISCVZttNoMatrixArg<name, 0>;
+class RISCVZttNoArg<string name> : RISCVZttNoMatrixArg<name, 0>
+{
+  let SemaArgCheckKind = "None";
+}
 
 // (scalar); broadcast also carries the scalar datatype.
-class RISCVZttScalarBroadcast<string name> : RISCVZttNoMatrixArg<name, 1>;
+class RISCVZttScalarBroadcast<string name> : RISCVZttNoMatrixArg<name, 1>
+{
+  let ComputeScalarArgRule = "Any";
+}
 
 // (old_d).
 // Zip/unzip expand as a two-square operation with tied input/output registers.
 class RISCVZttZipUnZip<string name> : RISCVZttCompute<name, 0, 0>
 {
+  let SemaArgCheckKind = "Special";
   let HasOldResult = 1;
   let MaxResultSquares = 2;
   let MinResultSquares = 2;
@@ -72,10 +124,16 @@ class RISCVZttUnary<string name> : RISCVZttCompute<name, 1, 0>;
 class RISCVZttBinary<string name> : RISCVZttCompute<name, 2, 0>;
 
 // (matrix, scalar); a value with a RISC-V Ztt scalar datatype.
-class RISCVZttScalarBinary<string name> : RISCVZttCompute<name, 1, 1>;
+class RISCVZttScalarBinary<string name> : RISCVZttCompute<name, 1, 1>
+{
+  let ComputeScalarArgRule = "Any";
+}
 
 // (matrix, control); an ordinary integer for a shift, index or exponent.
-class RISCVZttControlBinary<string name> : RISCVZttCompute<name, 1, 1>;
+class RISCVZttControlBinary<string name, string scalar> : RISCVZttCompute<name, 1, 1>
+{
+  let ComputeScalarArgRule = scalar;
+}
 
 // (old_d, matrix, matrix).
 class RISCVZttBinaryWithOld<string name> : RISCVZttBinary<name>
@@ -90,7 +148,8 @@ class RISCVZttScalarBinaryWithOld<string name> : RISCVZttScalarBinary<name>
 }
 
 // (old_d, matrix, control).
-class RISCVZttControlBinaryWithOld<string name> : RISCVZttControlBinary<name>
+class RISCVZttControlBinaryWithOld<string name, string scalar>
+    : RISCVZttControlBinary<name, scalar>
 {
   let HasOldResult = 1;
 }
@@ -99,13 +158,17 @@ class RISCVZttControlBinaryWithOld<string name> : RISCVZttControlBinary<name>
 // Separate expansion: M input slices accumulate into the first ACC square.
 class RISCVZttMatmul<string name> : RISCVZttOperation<name, 2, 0>
 {
+  let SemaArgCheckKind = "Matmul";
   let HasOldResult = 1;
   let ResultKind = "ACC";
   let MaxResultSquares = 8;
 }
 
 // (matrix) -> M/ACC; mcopy.
-class RISCVZttCopy<string name> : RISCVZttOperation<name, 1, 0>;
+class RISCVZttCopy<string name> : RISCVZttOperation<name, 1, 0>
+{
+  let SemaArgCheckKind = "Copy";
+}
 
 // (M) -> M; input and result have the same type.
 class RISCVZttCopyM2M<string name> : RISCVZttCopy<name>;
@@ -126,18 +189,23 @@ class RISCVZttCopyA2M<string name> : RISCVZttCopy<name>
 // (matrix, matrix); inputs have the same type, result has twice their shape.
 class RISCVZttConcat<string name> : RISCVZttOperation<name, 2, 0>
 {
+  let SemaArgCheckKind = "Special";
   let MinResultSquares = 2;
 }
 
 // (matrix, index); a constant index selects one half of the input shape.
 class RISCVZttExtract<string name> : RISCVZttOperation<name, 1, 1>
 {
+  let SemaArgCheckKind = "Special";
   // The largest source has 32 squares.
   let MaxResultSquares = 16;
 }
 
 // (base) -> M.
-class RISCVZttLoad<string name> : RISCVZttOperation<name, 0, 1>;
+class RISCVZttLoad<string name> : RISCVZttOperation<name, 0, 1>
+{
+  let SemaArgCheckKind = "LoadStore";
+}
 
 // (base, stride) -> M.
 class RISCVZttStridedLoad<string name> : RISCVZttLoad<name>
@@ -148,6 +216,7 @@ class RISCVZttStridedLoad<string name> : RISCVZttLoad<name>
 // (base, matrix) -> void.
 class RISCVZttStore<string name> : RISCVZttOperation<name, 1, 1>
 {
+  let SemaArgCheckKind = "LoadStore";
   let ResultKind = "NonMatrix";
 }
 
@@ -168,7 +237,10 @@ class RISCVZttState<string name, int numScalarArgs>
 class RISCVZttCSRRead<string csr> : RISCVZttState<"get_" # csr, 0>;
 
 // State.
-def riscv_ztt_op_ame_acquire : RISCVZttState<"ame_acquire", 1>;
+def riscv_ztt_op_ame_acquire : RISCVZttState<"ame_acquire", 1>
+{
+  let SemaArgCheckKind = "Special";
+}
 def riscv_ztt_op_ame_release : RISCVZttState<"ame_release", 0>;
 def riscv_ztt_op_get_amefflags : RISCVZttCSRRead<"amefflags">;
 def riscv_ztt_op_get_amenlen : RISCVZttCSRRead<"amenlen">;
@@ -226,22 +298,34 @@ def riscv_ztt_op_madd_ew_x : RISCVZttScalarBinary<"madd_ew_x">;
 def riscv_ztt_op_mand_ew : RISCVZttBinary<"mand_ew">
 {
   let ResultTypeKind = "Integer";
+  let ComputeMatrixArgRule = "AllSameIntAsRes";
 }
 def riscv_ztt_op_mand_ew_x : RISCVZttScalarBinary<"mand_ew_x">
 {
   let ResultTypeKind = "Integer";
+  let ComputeMatrixArgRule = "AllSameIntAsRes";
+  let ComputeScalarArgRule = "Int";
 }
 def riscv_ztt_op_mandnot_ew : RISCVZttBinary<"mandnot_ew">
 {
   let ResultTypeKind = "Integer";
+  let ComputeMatrixArgRule = "AllSameIntAsRes";
 }
 def riscv_ztt_op_mandnot_ew_x : RISCVZttScalarBinary<"mandnot_ew_x">
 {
   let ResultTypeKind = "Integer";
+  let ComputeMatrixArgRule = "AllSameIntAsRes";
+  let ComputeScalarArgRule = "Int";
 }
 def riscv_ztt_op_mbcast_m_x : RISCVZttScalarBroadcast<"mbcast_m_x">;
-def riscv_ztt_op_mcmovge_ew : RISCVZttBinaryWithOld<"mcmovge_ew">;
-def riscv_ztt_op_mcmovlt_ew : RISCVZttBinaryWithOld<"mcmovlt_ew">;
+def riscv_ztt_op_mcmovge_ew : RISCVZttBinaryWithOld<"mcmovge_ew">
+{
+  let ComputeMatrixArgRule = "Select";
+}
+def riscv_ztt_op_mcmovlt_ew : RISCVZttBinaryWithOld<"mcmovlt_ew">
+{
+  let ComputeMatrixArgRule = "Select";
+}
 def riscv_ztt_op_mcmpge_ew : RISCVZttBinary<"mcmpge_ew">
 {
   let ResultTypeKind = "Integer";
@@ -262,51 +346,78 @@ def riscv_ztt_op_mconv_ew : RISCVZttUnary<"mconv_ew">;
 def riscv_ztt_op_mcos_ew : RISCVZttUnary<"mcos_ew">
 {
   let ResultTypeKind = "Float";
+  let ComputeMatrixArgRule = "FirstFP";
 }
 def riscv_ztt_op_mexp2_ew : RISCVZttUnary<"mexp2_ew">
 {
   let ResultTypeKind = "Float";
+  let ComputeMatrixArgRule = "FirstFP";
 }
 def riscv_ztt_op_mfrintm_ew : RISCVZttUnary<"mfrintm_ew">
 {
   let ResultTypeKind = "Float";
+  let ComputeMatrixArgRule = "FirstFP";
 }
 def riscv_ztt_op_mfrintn_ew : RISCVZttUnary<"mfrintn_ew">
 {
   let ResultTypeKind = "Float";
+  let ComputeMatrixArgRule = "FirstFP";
 }
 def riscv_ztt_op_mfrintp_ew : RISCVZttUnary<"mfrintp_ew">
 {
   let ResultTypeKind = "Float";
+  let ComputeMatrixArgRule = "FirstFP";
 }
 def riscv_ztt_op_mfrintz_ew : RISCVZttUnary<"mfrintz_ew">
 {
   let ResultTypeKind = "Float";
+  let ComputeMatrixArgRule = "FirstFP";
 }
 def riscv_ztt_op_mhdiff_ew : RISCVZttBinary<"mhdiff_ew">;
 def riscv_ztt_op_mhdiff_ew_x : RISCVZttScalarBinary<"mhdiff_ew_x">;
-def riscv_ztt_op_mldexp_ew : RISCVZttBinary<"mldexp_ew">;
-def riscv_ztt_op_mldexp_ew_x : RISCVZttControlBinary<"mldexp_ew_x">;
-def riscv_ztt_op_mldexpacc_ew : RISCVZttBinaryWithOld<"mldexpacc_ew">;
-def riscv_ztt_op_mldexpacc_ew_x : RISCVZttControlBinaryWithOld<"mldexpacc_ew_x">;
+def riscv_ztt_op_mldexp_ew : RISCVZttBinary<"mldexp_ew">
+{
+  let ComputeMatrixArgRule = "SecondInt";
+}
+def riscv_ztt_op_mldexp_ew_x : RISCVZttControlBinary<"mldexp_ew_x", "ControlLong">;
+def riscv_ztt_op_mldexpacc_ew : RISCVZttBinaryWithOld<"mldexpacc_ew">
+{
+  let ComputeMatrixArgRule = "SecondInt";
+}
+def riscv_ztt_op_mldexpacc_ew_x : RISCVZttControlBinaryWithOld<"mldexpacc_ew_x", "ControlLong">;
 def riscv_ztt_op_mlog2_ew : RISCVZttUnary<"mlog2_ew">
 {
   let ResultTypeKind = "Float";
+  let ComputeMatrixArgRule = "FirstFP";
 }
 def riscv_ztt_op_mlog2sub_ew : RISCVZttBinary<"mlog2sub_ew">
 {
   let ResultTypeKind = "Float";
+  let ComputeMatrixArgRule = "FirstFP";
 }
 def riscv_ztt_op_mlog2sub_ew_x : RISCVZttScalarBinary<"mlog2sub_ew_x">
 {
   let ResultTypeKind = "Float";
+  let ComputeMatrixArgRule = "FirstFP";
 }
-def riscv_ztt_op_mmax_ew : RISCVZttBinary<"mmax_ew">;
-def riscv_ztt_op_mmax_ew_x : RISCVZttScalarBinary<"mmax_ew_x">;
+def riscv_ztt_op_mmax_ew : RISCVZttBinary<"mmax_ew">
+{
+  let ComputeMatrixArgRule = "AllSameAsRes";
+}
+def riscv_ztt_op_mmax_ew_x : RISCVZttScalarBinary<"mmax_ew_x">
+{
+  let ComputeMatrixArgRule = "AllSameAsRes";
+}
 def riscv_ztt_op_mmean_ew : RISCVZttBinary<"mmean_ew">;
 def riscv_ztt_op_mmean_ew_x : RISCVZttScalarBinary<"mmean_ew_x">;
-def riscv_ztt_op_mmin_ew : RISCVZttBinary<"mmin_ew">;
-def riscv_ztt_op_mmin_ew_x : RISCVZttScalarBinary<"mmin_ew_x">;
+def riscv_ztt_op_mmin_ew : RISCVZttBinary<"mmin_ew">
+{
+  let ComputeMatrixArgRule = "AllSameAsRes";
+}
+def riscv_ztt_op_mmin_ew_x : RISCVZttScalarBinary<"mmin_ew_x">
+{
+  let ComputeMatrixArgRule = "AllSameAsRes";
+}
 def riscv_ztt_op_mmul_ew : RISCVZttBinary<"mmul_ew">;
 def riscv_ztt_op_mmul_ew_x : RISCVZttScalarBinary<"mmul_ew_x">;
 def riscv_ztt_op_mmulacc_ew : RISCVZttBinaryWithOld<"mmulacc_ew">;
@@ -322,84 +433,118 @@ def riscv_ztt_op_mmulsub_ew_x : RISCVZttScalarBinaryWithOld<"mmulsub_ew_x">;
 def riscv_ztt_op_mor_ew : RISCVZttBinary<"mor_ew">
 {
   let ResultTypeKind = "Integer";
+  let ComputeMatrixArgRule = "AllSameIntAsRes";
 }
 def riscv_ztt_op_mor_ew_x : RISCVZttScalarBinary<"mor_ew_x">
 {
   let ResultTypeKind = "Integer";
+  let ComputeMatrixArgRule = "AllSameIntAsRes";
+  let ComputeScalarArgRule = "Int";
 }
 def riscv_ztt_op_mornot_ew : RISCVZttBinary<"mornot_ew">
 {
   let ResultTypeKind = "Integer";
+  let ComputeMatrixArgRule = "AllSameIntAsRes";
 }
 def riscv_ztt_op_mornot_ew_x : RISCVZttScalarBinary<"mornot_ew_x">
 {
   let ResultTypeKind = "Integer";
+  let ComputeMatrixArgRule = "AllSameIntAsRes";
+  let ComputeScalarArgRule = "Int";
 }
-def riscv_ztt_op_mrdexp_ew : RISCVZttBinary<"mrdexp_ew">;
-def riscv_ztt_op_mrdexpacc_ew : RISCVZttBinaryWithOld<"mrdexpacc_ew">;
+def riscv_ztt_op_mrdexp_ew : RISCVZttBinary<"mrdexp_ew">
+{
+  let ComputeMatrixArgRule = "SecondInt";
+}
+def riscv_ztt_op_mrdexpacc_ew : RISCVZttBinaryWithOld<"mrdexpacc_ew">
+{
+  let ComputeMatrixArgRule = "SecondInt";
+}
 def riscv_ztt_op_mrec_ew : RISCVZttUnary<"mrec_ew">
 {
   let ResultTypeKind = "Float";
+  let ComputeMatrixArgRule = "FirstFP";
 }
 def riscv_ztt_op_mrsqrt_ew : RISCVZttUnary<"mrsqrt_ew">
 {
   let ResultTypeKind = "Float";
+  let ComputeMatrixArgRule = "FirstFP";
 }
-def riscv_ztt_op_mselge_ew : RISCVZttBinary<"mselge_ew">;
-def riscv_ztt_op_msellt_ew : RISCVZttBinary<"msellt_ew">;
+def riscv_ztt_op_mselge_ew : RISCVZttBinary<"mselge_ew">
+{
+  let ComputeMatrixArgRule = "Select";
+}
+def riscv_ztt_op_msellt_ew : RISCVZttBinary<"msellt_ew">
+{
+  let ComputeMatrixArgRule = "Select";
+}
 def riscv_ztt_op_msin_ew : RISCVZttUnary<"msin_ew">
 {
   let ResultTypeKind = "Float";
+  let ComputeMatrixArgRule = "FirstFP";
 }
 def riscv_ztt_op_msll_ew : RISCVZttBinary<"msll_ew">
 {
   let ResultTypeKind = "Integer";
+  let ComputeMatrixArgRule = "AllInt";
 }
-def riscv_ztt_op_msll_ew_x : RISCVZttControlBinary<"msll_ew_x">
+def riscv_ztt_op_msll_ew_x : RISCVZttControlBinary<"msll_ew_x", "ControlSize">
 {
   let ResultTypeKind = "Integer";
+  let ComputeMatrixArgRule = "AllInt";
 }
 def riscv_ztt_op_msqrt_ew : RISCVZttUnary<"msqrt_ew">
 {
   let ResultTypeKind = "Float";
+  let ComputeMatrixArgRule = "FirstFP";
 }
 def riscv_ztt_op_msra_ew : RISCVZttBinary<"msra_ew">
 {
   let ResultTypeKind = "Integer";
+  let ComputeMatrixArgRule = "AllInt";
 }
-def riscv_ztt_op_msra_ew_x : RISCVZttControlBinary<"msra_ew_x">
+def riscv_ztt_op_msra_ew_x : RISCVZttControlBinary<"msra_ew_x", "ControlSize">
 {
   let ResultTypeKind = "Integer";
+  let ComputeMatrixArgRule = "AllInt";
 }
 def riscv_ztt_op_msrl_ew : RISCVZttBinary<"msrl_ew">
 {
   let ResultTypeKind = "Integer";
+  let ComputeMatrixArgRule = "AllInt";
 }
-def riscv_ztt_op_msrl_ew_x : RISCVZttControlBinary<"msrl_ew_x">
+def riscv_ztt_op_msrl_ew_x : RISCVZttControlBinary<"msrl_ew_x", "ControlSize">
 {
   let ResultTypeKind = "Integer";
+  let ComputeMatrixArgRule = "AllInt";
 }
 def riscv_ztt_op_msub_ew : RISCVZttBinary<"msub_ew">;
 def riscv_ztt_op_msub_ew_x : RISCVZttScalarBinary<"msub_ew_x">;
 def riscv_ztt_op_msublog2_ew : RISCVZttBinary<"msublog2_ew">
 {
   let ResultTypeKind = "Float";
+  let ComputeMatrixArgRule = "FirstFP";
 }
 def riscv_ztt_op_msublog2_ew_x : RISCVZttScalarBinary<"msublog2_ew_x">
 {
   let ResultTypeKind = "Float";
+  let ComputeMatrixArgRule = "FirstFP";
 }
 def riscv_ztt_op_mtanh_ew : RISCVZttUnary<"mtanh_ew">
 {
   let ResultTypeKind = "Float";
+  let ComputeMatrixArgRule = "FirstFP";
 }
 def riscv_ztt_op_mxor_ew : RISCVZttBinary<"mxor_ew">
 {
   let ResultTypeKind = "Integer";
+  let ComputeMatrixArgRule = "AllSameIntAsRes";
 }
 def riscv_ztt_op_mxor_ew_x : RISCVZttScalarBinary<"mxor_ew_x">
 {
   let ResultTypeKind = "Integer";
+  let ComputeMatrixArgRule = "AllSameIntAsRes";
+  let ComputeScalarArgRule = "Int";
 }
 
 // Reduction and prefix operations.
@@ -415,20 +560,24 @@ def riscv_ztt_op_mreducemin_row : RISCVZttUnary<"mreducemin_row">;
 def riscv_ztt_op_mreducemin_col : RISCVZttUnary<"mreducemin_col">;
 
 // Row and column operations.
-def riscv_ztt_op_mrowbcast_ew_x : RISCVZttControlBinary<"mrowbcast_ew_x">
+def riscv_ztt_op_mrowbcast_ew_x : RISCVZttControlBinary<"mrowbcast_ew_x", "ControlSize">
 {
+  let ComputeMatrixArgRule = "AllSameAsRes";
   let MaxResultSquares = 1;
 }
-def riscv_ztt_op_mcolbcast_ew_x : RISCVZttControlBinary<"mcolbcast_ew_x">
+def riscv_ztt_op_mcolbcast_ew_x : RISCVZttControlBinary<"mcolbcast_ew_x", "ControlSize">
 {
+  let ComputeMatrixArgRule = "AllSameAsRes";
   let MaxResultSquares = 1;
 }
 def riscv_ztt_op_mrowgather_ew : RISCVZttBinary<"mrowgather_ew">
 {
+  let ComputeMatrixArgRule = "Gather";
   let MaxResultSquares = 1;
 }
 def riscv_ztt_op_mcolgather_ew : RISCVZttBinary<"mcolgather_ew">
 {
+  let ComputeMatrixArgRule = "Gather";
   let MaxResultSquares = 1;
 }
 def riscv_ztt_op_mrowid_ew : RISCVZttNoArg<"mrowid_ew">
@@ -443,26 +592,32 @@ def riscv_ztt_op_mcolid_ew : RISCVZttNoArg<"mcolid_ew">
 }
 def riscv_ztt_op_mrowscatadd_ew : RISCVZttBinaryWithOld<"mrowscatadd_ew">
 {
+  let ComputeMatrixArgRule = "SecondInt";
   let MaxResultSquares = 1;
 }
 def riscv_ztt_op_mcolscatadd_ew : RISCVZttBinaryWithOld<"mcolscatadd_ew">
 {
+  let ComputeMatrixArgRule = "SecondInt";
   let MaxResultSquares = 1;
 }
 def riscv_ztt_op_mrowscatmax_ew : RISCVZttBinaryWithOld<"mrowscatmax_ew">
 {
+  let ComputeMatrixArgRule = "SecondInt";
   let MaxResultSquares = 1;
 }
 def riscv_ztt_op_mcolscatmax_ew : RISCVZttBinaryWithOld<"mcolscatmax_ew">
 {
+  let ComputeMatrixArgRule = "SecondInt";
   let MaxResultSquares = 1;
 }
-def riscv_ztt_op_mrowshift_ew_x : RISCVZttControlBinary<"mrowshift_ew_x">
+def riscv_ztt_op_mrowshift_ew_x : RISCVZttControlBinary<"mrowshift_ew_x", "ControlInt">
 {
+  let ComputeMatrixArgRule = "AllSameAsRes";
   let MaxResultSquares = 1;
 }
-def riscv_ztt_op_mcolshift_ew_x : RISCVZttControlBinary<"mcolshift_ew_x">
+def riscv_ztt_op_mcolshift_ew_x : RISCVZttControlBinary<"mcolshift_ew_x", "ControlInt">
 {
+  let ComputeMatrixArgRule = "AllSameAsRes";
   let MaxResultSquares = 1;
 }
 def riscv_ztt_op_mrowunzip_ew : RISCVZttZipUnZip<"mrowunzip_ew">;

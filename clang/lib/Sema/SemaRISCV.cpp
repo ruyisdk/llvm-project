@@ -604,6 +604,10 @@ bool SemaRISCV::CheckBuiltinFunctionCall(const TargetInfo &TI,
                << /* IsExtension */ true << TheCall->getSourceRange() << RF;
   }
 
+  if (BuiltinID >= RISCV::FirstRISCVZttBuiltin &&
+      BuiltinID < RISCV::LastTSBuiltin)
+    return CheckRISCVZttBuiltinFunctionCall(TI, BuiltinID, TheCall);
+
   // vmulh.vv, vmulh.vx, vmulhu.vv, vmulhu.vx, vmulhsu.vv, vmulhsu.vx,
   // vsmul.vv, vsmul.vx are not included for EEW=64 in Zve64*.
   switch (BuiltinID) {
