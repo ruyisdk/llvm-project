@@ -531,6 +531,7 @@ struct OperationInfo {
   bool HasSideEffects;
   bool HasScalar, HasScalarType;
   bool IsLoad, HasScratch;
+  bool Transposed;
 
   bool isMemory() const { return Kind == CodeGenKind::Memory; }
 };

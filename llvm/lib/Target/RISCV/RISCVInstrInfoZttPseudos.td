@@ -70,6 +70,7 @@ class ZttOperationRecord<RISCVZttOperation op> {
                           !isa<RISCVZttScalarBroadcast>(op));
   bit IsLoad = 0;
   bit HasScratch = 0;
+  bit Transposed = 0;
 }
 
 // Shared operation IDs keep machine tables independent of intrinsic IDs.
@@ -85,7 +86,7 @@ def ZttOperationTable : GenericTable {
   let Fields = ["Operation", "IsAcc", "OperandLayout", "Kind", "BaseOpcode",
                 "NumSources", "HasChain", "SameGroups", "HasOld", "Pairwise",
                 "HasSideEffects", "HasScalar", "HasScalarType", "IsLoad",
-                "HasScratch"];
+                "HasScratch", "Transposed"];
   string TypeOf_Operation = "ZttOperationID";
   string TypeOf_OperandLayout = "code";
   string TypeOf_Kind = "code";
@@ -487,6 +488,53 @@ foreach Op = !instances<ZttContiguousMemoryOperation>() in {
     def : ZttGroupMapping<Op, G> {
       let Pseudo = !cast<Instruction>(Op.Prefix # G);
       let DAGOpcode = "RISCVISD::" # Op.Node # G;
+    }
+  }
+}
+
+//===----------------------------------------------------------------------===//
+// Strided memory operations.
+//===----------------------------------------------------------------------===//
+
+class ZttStridedMemoryOperation<RISCVZttOperation op, string node,
+                                string prefix, bit transposed>
+    : ZttMemoryOperation<op, "StridedMemory", node, prefix> {
+  let DAGOpcode = "RISCVISD::" # node;
+  let Transposed = transposed;
+}
+
+def : ZttStridedMemoryOperation<riscv_ztt_op_mls_st, "ZTT_MLS_ST", "PseudoZTTMlsSt", 0>;
+def : ZttStridedMemoryOperation<riscv_ztt_op_mls_tst, "ZTT_MLS_TST", "PseudoZTTMlsTst", 1>;
+def : ZttStridedMemoryOperation<riscv_ztt_op_mss_st, "ZTT_MSS_ST", "PseudoZTTMssSt", 0>;
+def : ZttStridedMemoryOperation<riscv_ztt_op_mss_tst, "ZTT_MSS_TST", "PseudoZTTMssTst", 1>;
+
+def SDT_ZttStridedLoad : SDTypeProfile<2, 5,
+    [SDTCisVT<1, XLenVT>, SDTCisVT<2, XLenVT>, SDTCisVT<3, XLenVT>,
+     SDTCisVT<4, XLenVT>, SDTCisVT<5, XLenVT>, SDTCisVT<6, XLenVT>]>;
+def SDT_ZttStridedStore : SDTypeProfile<1, 6,
+    [SDTCisVT<0, XLenVT>, SDTCisVT<1, XLenVT>, SDTCisVT<2, XLenVT>,
+     SDTCisVT<4, XLenVT>, SDTCisVT<5, XLenVT>, SDTCisVT<6, XLenVT>]>;
+
+foreach Op = !instances<ZttStridedMemoryOperation>() in {
+  def : ZttIntrinsicLowering<Op>;
+  def !tolower(Op.Node) : RVSDNode<Op.Node,
+      !if(Op.IsLoad, SDT_ZttStridedLoad, SDT_ZttStridedStore),
+      !if(Op.IsLoad, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand],
+                    [SDNPHasChain, SDNPMayStore, SDNPMemOperand])>;
+  foreach G = ZttMGroupSizes in {
+    defvar RC = ZttMRegClass<G>.RC;
+    defvar Name = Op.Prefix # "_G" # !if(!lt(G, 10), "0", "") # G;
+    def Name : ZttMemoryPseudo<
+        !if(Op.IsLoad, (outs RC:$rd, GPR:$scratch), (outs GPR:$scratch)),
+        !if(Op.IsLoad,
+            (ins GPR:$base, GPR:$stride, GPR:$dtype,
+                 ztt_xlenimm:$regs_per_square, GPR:$step),
+            (ins GPR:$base, GPR:$stride, RC:$src,
+                 ztt_xlenimm:$dtype, ztt_xlenimm:$regs_per_square, GPR:$step)),
+        Op.IsLoad, 1>;
+    def : ZttGroupMapping<Op, G> {
+      let Pseudo = !cast<Instruction>(Name);
+      let DAGOpcode = Op.DAGOpcode;
     }
   }
 }

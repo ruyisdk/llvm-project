@@ -697,4 +697,20 @@ TEST(RISCVZttInstrInfo, ContiguousMemoryGroups) {
   EXPECT_EQ(getOperationInfo(MSS_CM)->BaseOpcode, RISCV::ZTT_MSS_CM);
 }
 
+TEST(RISCVZttInstrInfo, StridedMemoryGroups) {
+  checkMemoryGroups({Intrinsic::riscv_ztt_mls_st, Intrinsic::riscv_ztt_mls_tst,
+                     Intrinsic::riscv_ztt_mss_st, Intrinsic::riscv_ztt_mss_tst},
+                    true);
+  EXPECT_TRUE(getOperationInfo(MLS_ST)->IsLoad);
+  EXPECT_TRUE(getOperationInfo(MLS_TST)->IsLoad);
+  EXPECT_FALSE(getOperationInfo(MSS_ST)->IsLoad);
+  EXPECT_FALSE(getOperationInfo(MSS_TST)->IsLoad);
+  EXPECT_FALSE(getOperationInfo(MLS_ST)->Transposed);
+  EXPECT_TRUE(getOperationInfo(MLS_TST)->Transposed);
+  EXPECT_FALSE(getOperationInfo(MSS_ST)->Transposed);
+  EXPECT_TRUE(getOperationInfo(MSS_TST)->Transposed);
+  EXPECT_EQ(getOperationInfo(MLS_ST)->BaseOpcode, RISCV::ZTT_MLS_ST);
+  EXPECT_EQ(getOperationInfo(MSS_TST)->BaseOpcode, RISCV::ZTT_MSS_TST);
+}
+
 } // namespace
