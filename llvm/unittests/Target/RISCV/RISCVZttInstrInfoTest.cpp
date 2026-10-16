@@ -405,4 +405,142 @@ TEST(RISCVZttInstrInfo, GroupQueryKeys) {
   EXPECT_NE(Mapped, 0U);
 }
 
+TEST(RISCVZttInstrInfo, ComputationGroups) {
+  LLVMInitializeRISCVTargetInfo();
+  LLVMInitializeRISCVTargetMC();
+  TestDAGInfo DAGInfo;
+  const unsigned Classes[] = {
+      RISCV::ZTTMRRegClassID,    RISCV::ZTTMRM2RegClassID,
+      RISCV::ZTTMRM4RegClassID,  RISCV::ZTTMRM8RegClassID,
+      RISCV::ZTTMRM16RegClassID, RISCV::ZTTMRM32RegClassID};
+  for (StringRef TripleName : {"riscv32", "riscv64"}) {
+    SCOPED_TRACE(TripleName.str());
+    std::string Error;
+    const Target *T = TargetRegistry::lookupTarget(Triple(TripleName), Error);
+    ASSERT_NE(T, nullptr) << Error;
+    std::unique_ptr<MCInstrInfo> MCII(T->createMCInstrInfo());
+    unsigned Operations = 0;
+    for (unsigned ID = 1; ID != Intrinsic::num_intrinsics; ++ID) {
+      const auto *Hook = getIntrinsicLoweringInfo(ID);
+      if (!Hook)
+        continue;
+      const auto *Op = getOperationInfo(Hook->Operation);
+      ASSERT_NE(Op, nullptr);
+      if (Op->Kind != CodeGenKind::Slice || Op->Layout != OperandLayout::Matrix)
+        continue;
+      ++Operations;
+      EXPECT_EQ(Hook->Opcode, Op->HasChain ? ISD::INTRINSIC_W_CHAIN
+                                           : ISD::INTRINSIC_WO_CHAIN);
+      EXPECT_EQ(Op->HasSideEffects, Op->HasChain);
+      EXPECT_FALSE(Op->IsAcc);
+      unsigned Groups = 0;
+      for (unsigned D = 0; D != 6; ++D)
+        for (unsigned S0 = 0; S0 != (Op->NumSources ? 6U : 1U); ++S0)
+          for (unsigned S1 = 0; S1 != (Op->NumSources > 1 ? 6U : 1U); ++S1) {
+            unsigned G0 = Op->NumSources ? 1U << S0 : 0;
+            unsigned G1 = Op->NumSources > 1 ? 1U << S1 : 0;
+            const auto *P = getPseudoForGroups(Op->Operation, 1U << D, G0, G1);
+            if (Op->SameGroups &&
+                ((G0 && G0 != (1U << D)) || (G1 && G1 != (1U << D)))) {
+              EXPECT_EQ(P, nullptr);
+              continue;
+            }
+            ASSERT_NE(P, nullptr);
+            ++Groups;
+            SCOPED_TRACE(MCII->getName(P->Pseudo).str());
+            EXPECT_EQ(getPseudoInfo(P->Pseudo), P);
+            const auto *DAG = getDAGNodeInfo(P->Pseudo);
+            ASSERT_NE(DAG, nullptr);
+            EXPECT_EQ(DAG->DAGOpcode, Hook->DAGOpcode);
+            EXPECT_EQ(getDAGOperationInfo(DAG->DAGOpcode), Op);
+            const MCInstrDesc &Desc = MCII->get(P->Pseudo);
+            EXPECT_TRUE(Desc.isPseudo());
+            EXPECT_FALSE(Desc.mayLoad());
+            EXPECT_FALSE(Desc.mayStore());
+            EXPECT_EQ(Desc.hasUnmodeledSideEffects(), Op->HasSideEffects);
+            EXPECT_EQ(Desc.getNumDefs(), 1U);
+            unsigned NumOperands = 4 + Op->HasOld + Op->NumSources +
+                                   Op->HasScalar + Op->HasScalarType;
+            ASSERT_EQ(Desc.getNumOperands(), NumOperands);
+            EXPECT_EQ(Desc.operands()[0].RegClass, int(Classes[D]));
+            EXPECT_EQ(Desc.getOperandConstraint(0, MCOI::EARLY_CLOBBER) >= 0,
+                      !Op->HasOld);
+            unsigned I = 1;
+            if (Op->HasOld) {
+              EXPECT_EQ(Desc.operands()[I].RegClass, int(Classes[D]));
+              EXPECT_EQ(Desc.getOperandConstraint(I++, MCOI::TIED_TO), 0);
+            }
+            if (G0)
+              EXPECT_EQ(Desc.operands()[I++].RegClass, int(Classes[S0]));
+            if (G1)
+              EXPECT_EQ(Desc.operands()[I++].RegClass, int(Classes[S1]));
+            if (Op->HasScalar)
+              EXPECT_EQ(Desc.operands()[I++].RegClass, RISCV::GPRRegClassID);
+            EXPECT_EQ(Desc.operands()[I++].RegClass,
+                      Op->Pairwise ? -1 : RISCV::GPRRegClassID);
+            if (Op->HasScalarType)
+              EXPECT_EQ(Desc.operands()[I++].RegClass, RISCV::GPRRegClassID);
+            EXPECT_EQ(Desc.operands()[I++].RegClass, -1);
+            EXPECT_EQ(Desc.operands()[I++].RegClass, -1);
+            EXPECT_EQ(I, NumOperands);
+            const auto &Node = DAGInfo.GenNodeInfo.getDesc(DAG->DAGOpcode);
+            EXPECT_EQ(Node.NumResults, 1U);
+            EXPECT_EQ(Node.NumOperands, int(NumOperands - 1));
+          }
+      unsigned Mapped = 0;
+      for (unsigned Opcode = 0; Opcode != RISCV::INSTRUCTION_LIST_END; ++Opcode)
+        if (const auto *P = getPseudoInfo(Opcode))
+          Mapped += P->Operation == Op->Operation;
+      EXPECT_EQ(Mapped, Groups);
+    }
+    EXPECT_EQ(Operations, 101U);
+  }
+}
+
+TEST(RISCVZttInstrInfo, ComputationOperandKinds) {
+  const auto *Mixed = getPseudoForGroups(MSUB_EW, 4, 1, 8);
+  ASSERT_NE(Mixed, nullptr);
+  EXPECT_EQ(Mixed->Pseudo, RISCV::PseudoZTTMsubEw_G004_G101_G208);
+  EXPECT_EQ(getPseudoForGroups(MAND_EW, 4, 1, 8), nullptr);
+  const auto *Same = getPseudoForGroups(MAND_EW, 4, 4, 4);
+  ASSERT_NE(Same, nullptr);
+  EXPECT_EQ(Same->Pseudo, RISCV::PseudoZTTMandEw_G004_G104_G204);
+  for (auto ID : {MADD_EW_X, MMULACC_EW_X}) {
+    const auto *Op = getOperationInfo(ID);
+    ASSERT_NE(Op, nullptr);
+    EXPECT_TRUE(Op->HasScalar);
+    EXPECT_TRUE(Op->HasScalarType);
+    EXPECT_TRUE(Op->HasChain);
+    EXPECT_EQ(Op->NumSources, 1U);
+  }
+  EXPECT_TRUE(getOperationInfo(MMULACC_EW_X)->HasOld);
+  EXPECT_EQ(getOperationInfo(MMULACC_EW_X)->BaseOpcode,
+            RISCV::ZTT_MMULACC_EW_X);
+  EXPECT_FALSE(getOperationInfo(MADD_EW_X)->HasOld);
+  const auto *Shift = getOperationInfo(MSLL_EW_X);
+  ASSERT_NE(Shift, nullptr);
+  EXPECT_TRUE(Shift->HasScalar);
+  EXPECT_FALSE(Shift->HasScalarType);
+  EXPECT_FALSE(Shift->HasChain);
+  const auto *Broadcast = getOperationInfo(MBCAST_M_X);
+  ASSERT_NE(Broadcast, nullptr);
+  EXPECT_TRUE(Broadcast->HasScalarType);
+  EXPECT_FALSE(Broadcast->HasChain);
+  EXPECT_EQ(Broadcast->NumSources, 0U);
+  for (auto ID : {MROWZIP_EW, MCOLZIP_EW, MROWUNZIP_EW, MCOLUNZIP_EW}) {
+    const auto *Op = getOperationInfo(ID);
+    ASSERT_NE(Op, nullptr);
+    EXPECT_TRUE(Op->Pairwise);
+    EXPECT_TRUE(Op->HasOld);
+    EXPECT_EQ(Op->NumSources, 0U);
+  }
+  for (auto ID : {MROWID_EW, MCOLID_EW}) {
+    const auto *Op = getOperationInfo(ID);
+    ASSERT_NE(Op, nullptr);
+    EXPECT_EQ(Op->NumSources, 0U);
+    EXPECT_FALSE(Op->HasScalar);
+    EXPECT_FALSE(Op->HasOld);
+  }
+}
+
 } // namespace

@@ -515,11 +515,21 @@ enum class OperandLayout {
   StridedMemory
 };
 
-/// Operation properties shared by all register-group sizes.
+/// Lowering and expansion paths shared with the operation descriptions.
+enum class CodeGenKind { Slice, Matmul, Transfer, Memory, State };
+
+/// Operand counts and effects shared by all register-group sizes.
 struct OperationInfo {
   ZttOperationID Operation;
   bool IsAcc;
   OperandLayout Layout;
+  CodeGenKind Kind;
+  unsigned BaseOpcode;
+  uint8_t NumSources;
+  bool HasChain, SameGroups, HasOld;
+  bool Pairwise; // Zip/unzip update both squares together.
+  bool HasSideEffects;
+  bool HasScalar, HasScalarType;
 };
 
 /// Physical register counts; zero means absent or fixed by the operand layout.

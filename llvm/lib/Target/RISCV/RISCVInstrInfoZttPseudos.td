@@ -56,6 +56,18 @@ class ZttOperationRecord<RISCVZttOperation op> {
   string DAGOpcode = ?;
   bit IsAcc = !eq(op.ResultKind, "ACC");
   string OperandLayout = ?;
+  string Kind = "CodeGenKind::" # op.CodeGenKind;
+  Instruction BaseOpcode = ZTT_MSETTYP;
+  bits<8> NumSources = 0;
+  bit SameGroups = 0;
+  bit HasOld = 0;
+  // Zip/unzip update both squares in one instruction.
+  bit Pairwise = !isa<RISCVZttZipUnZip>(op);
+  bit HasSideEffects = 0;
+  bit HasScalar = !and(!or(!isa<RISCVZttCompute>(op),
+                          !isa<RISCVZttExtract>(op)), !gt(op.NumScalarArgs, 0));
+  bit HasScalarType = !or(!isa<RISCVZttScalarBinary>(op),
+                          !isa<RISCVZttScalarBroadcast>(op));
 }
 
 // Shared operation IDs keep machine tables independent of intrinsic IDs.
@@ -68,9 +80,12 @@ def ZttOperationID : GenericEnum {
 def ZttOperationTable : GenericTable {
   let FilterClass = "ZttOperationRecord";
   let CppTypeName = "OperationInfo";
-  let Fields = ["Operation", "IsAcc", "OperandLayout"];
+  let Fields = ["Operation", "IsAcc", "OperandLayout", "Kind", "BaseOpcode",
+                "NumSources", "HasChain", "SameGroups", "HasOld", "Pairwise",
+                "HasSideEffects", "HasScalar", "HasScalarType"];
   string TypeOf_Operation = "ZttOperationID";
   string TypeOf_OperandLayout = "code";
+  string TypeOf_Kind = "code";
   let PrimaryKey = ["Operation"];
   let PrimaryKeyName = "getOperationInfo";
 }
@@ -143,6 +158,7 @@ class ZttInitOperation<RISCVZttNoArg op, string kind, string node,
   string Layout = kind;
   string Node = node;
   string Prefix = prefix;
+  let HasSideEffects = 1;
 }
 
 def : ZttInitOperation<riscv_ztt_op_mclear_m, "Clear", "ZTT_MCLEAR_M", "PseudoZTTMSetTypM">;
@@ -182,6 +198,8 @@ class ZttTransferOperation<RISCVZttOperation op, string layout, string node>
     : ZttOperationRecord<op> {
   let OperandLayout = "OperandLayout::" # layout;
   let DAGOpcode = "RISCVISD::" # node;
+  let NumSources = !if(!eq(layout, "Extract"), 1, 0);
+  let HasSideEffects = !ne(layout, "Extract");
 }
 
 // Source/result types match; the remaining operands use XLEN.
@@ -287,3 +305,77 @@ foreach Op = !instances<RISCVZttExtract>() in {
       }
     }
 }
+
+//===----------------------------------------------------------------------===//
+// Matrix and scalar computation.
+//===----------------------------------------------------------------------===//
+
+class ZttComputeOperation<RISCVZttCompute op> : ZttOperationRecord<op> {
+  let OperandLayout = "OperandLayout::Matrix";
+  let DAGOpcode = "RISCVISD::ZTT_" # !toupper(op.Name);
+  let BaseOpcode = !cast<Instruction>("ZTT_" # !toupper(op.Name));
+  let HasOld = op.HasOldResult;
+  let NumSources = op.NumMatrixArgs;
+  let SameGroups = !or(!eq(op.ComputeMatrixArgRule, "AllSameAsRes"),
+                      !eq(op.ComputeMatrixArgRule, "AllSameIntAsRes"));
+  let HasSideEffects = HasChain;
+  string NameSuffix = !subst("_", "", !subst("_ew", "Ew",
+      !subst("_x", "X", !subst("_m", "M", !subst("_row", "Row",
+      !subst("_col", "Col", !substr(op.Name, 1)))))));
+  string PseudoPrefix = !if(Pairwise, "PseudoZTT_" # op.Name,
+                           "PseudoZTTM" # NameSuffix);
+}
+
+// Group suffixes name the result and each independent matrix input.
+class ZttComputeName<ZttComputeOperation op, int dst, int src0, int src1> {
+  string Name = op.PseudoPrefix # "_G0" # !if(!lt(dst, 10), "0", "") # dst #
+      !if(!gt(op.NumSources, 0), "_G1" # !if(!lt(src0, 10), "0", "") # src0, "") #
+      !if(!gt(op.NumSources, 1), "_G2" # !if(!lt(src1, 10), "0", "") # src1, "");
+}
+
+// Matrix inputs precede scalar, datatype and layout operands. Chains are implicit.
+class ZttComputeProfile<ZttComputeOperation op> : SDTypeProfile<1,
+    !add(op.HasOld, op.NumSources, op.HasScalar, 3, op.HasScalarType),
+    !listconcat(!if(op.HasOld, [SDTCisSameAs<0, 1>], []),
+        !foreach(I, !range(!add(1, op.HasOld, op.NumSources),
+            !add(1, op.HasOld, op.NumSources, op.HasScalar,
+                 3, op.HasScalarType)), SDTCisVT<I, XLenVT>))>;
+
+// Computation with optional old result, matrix inputs and scalar/control input.
+class ZttComputePseudo<ZttComputeOperation op, RegisterClass dst,
+                       RegisterClass src0, RegisterClass src1>
+    : ZttRegisterPseudo<(outs dst:$rd),
+        !con(!if(op.HasOld, (ins dst:$old), (ins)),
+             !if(!gt(op.NumSources, 0), (ins src0:$s0), (ins)),
+             !if(!gt(op.NumSources, 1), (ins src1:$s1), (ins)),
+             !if(op.HasScalar, (ins GPR:$scalar), (ins)),
+             !if(op.Pairwise, (ins ztt_xlenimm:$dtype), (ins GPR:$dtype)),
+             !if(op.HasScalarType, (ins GPR:$stype), (ins)),
+             (ins ztt_xlenimm:$num_ops, ztt_xlenimm:$regs_per_square)),
+        op.HasSideEffects> {
+  let Constraints = !if(op.HasOld, "$rd = $old", "@earlyclobber $rd");
+}
+
+foreach Op = !instances<RISCVZttCompute>() in
+  if !not(!or(!eq(Op.Name, "mclear_m"), !eq(Op.Name, "mclear_acc"),
+              !eq(Op.Name, "mzero_m"), !eq(Op.Name, "mzero_acc"))) then {
+    def "ztt_compute_" # Op.Name : ZttComputeOperation<Op>;
+    defvar Info = !cast<ZttComputeOperation>("ztt_compute_" # Op.Name);
+    def : ZttIntrinsicLowering<Info>;
+    def "ztt_" # Op.Name : RVSDNode<"ZTT_" # !toupper(Op.Name),
+        ZttComputeProfile<Info>,
+        !if(Info.HasChain, [SDNPHasChain, SDNPSideEffect], [])>;
+    foreach D = ZttMGroupSizes in
+      foreach S0 = !if(!eq(Info.NumSources, 0), [0],
+                       !if(Info.SameGroups, [D], ZttMGroupSizes)) in
+        foreach S1 = !if(!lt(Info.NumSources, 2), [0],
+                         !if(Info.SameGroups, [D], ZttMGroupSizes)) in {
+          defvar Name = ZttComputeName<Info, D, S0, S1>.Name;
+          def Name : ZttComputePseudo<Info, ZttMRegClass<D>.RC,
+              ZttMRegClass<S0>.RC, ZttMRegClass<S1>.RC>;
+          def : ZttGroupMapping<Info, D, S0, S1> {
+            let Pseudo = !cast<Instruction>(Name);
+            let DAGOpcode = Info.DAGOpcode;
+          }
+        }
+  }
