@@ -123,9 +123,151 @@ private:
                      unsigned GroupSize);
   bool expandAClear(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
                     unsigned GroupSize);
+  // Compute the physical M stride and aligned spill-area size.
+  bool expandMFrameSize(MachineBasicBlock &MBB, MachineBasicBlock::iterator MI);
+  // Save or restore a group's data and square-leader metadata.
+  bool expandMImage(MachineBasicBlock &MBB, MachineBasicBlock::iterator MI,
+                    unsigned GroupSize, bool IsLoad);
 };
 
 char RISCVZttPostRAExpandPseudo::ID = 0;
+
+bool RISCVZttPostRAExpandPseudo::expandMFrameSize(
+    MachineBasicBlock &MBB, MachineBasicBlock::iterator MI) {
+  const auto &ST = MBB.getParent()->getSubtarget<RISCVSubtarget>();
+  unsigned UDS = ST.getZttUdsBits();
+  int64_t Count = MI->getOperand(5).getImm();
+  int64_t Alignment = MI->getOperand(6).getImm();
+  if (!UDS || Count < 0 || !isUInt<31>(Count) || Alignment <= 0 ||
+      Alignment > 2048 || !isPowerOf2_64(Alignment) || Alignment < UDS / 8)
+    report_fatal_error("invalid Ztt M frame size parameters");
+  Register Bytes = MI->getOperand(0).getReg();
+  Register Stride = MI->getOperand(1).getReg();
+  Register A = MI->getOperand(2).getReg();
+  Register B = MI->getOperand(3).getReg();
+  Register T = MI->getOperand(4).getReg();
+  for (unsigned I = 0; I < 5; ++I)
+    for (unsigned J = I + 1; J < 5; ++J)
+      if (MI->getOperand(I).getReg() == MI->getOperand(J).getReg())
+        report_fatal_error("Ztt M frame size registers overlap");
+  DebugLoc DL = MI->getDebugLoc();
+  auto Imm = [&](unsigned Opc, Register D, Register S, int64_t V) {
+    BuildMI(MBB, MI, DL, TII->get(Opc), D).addReg(S).addImm(V);
+  };
+  auto Reg = [&](unsigned Opc, Register D, Register L, Register R) {
+    BuildMI(MBB, MI, DL, TII->get(Opc), D).addReg(L).addReg(R);
+  };
+  if (!Count) {
+    Imm(RISCV::ADDI, Bytes, RISCV::X0, 0);
+    Imm(RISCV::ADDI, Stride, RISCV::X0, 0);
+    MI->eraseFromParent();
+    return true;
+  }
+  const auto *CSR = RISCVSysReg::lookupSysRegByName("AMENLEN");
+  assert(CSR && "missing AMENLEN CSR");
+  BuildMI(MBB, MI, DL, TII->get(RISCV::CSRRS), A)
+      .addImm(CSR->Encoding)
+      .addReg(RISCV::X0);
+  if (ST.hasStdExtZmmul()) {
+    Reg(RISCV::MUL, Stride, A, A);
+  } else {
+    // Compute N*N without calls or new control-flow edges during PEI.
+    Imm(RISCV::ADDI, B, A, 0);
+    Imm(RISCV::ADDI, Stride, RISCV::X0, 0);
+    for (unsigned Bit = 0; Bit < ST.getXLen(); ++Bit) {
+      Imm(RISCV::ANDI, T, A, 1);
+      Reg(RISCV::SUB, T, RISCV::X0, T);
+      Reg(RISCV::AND, T, T, B);
+      Reg(RISCV::ADD, Stride, Stride, T);
+      if (Bit + 1 != ST.getXLen()) {
+        Imm(RISCV::SRLI, A, A, 1);
+        Imm(RISCV::SLLI, B, B, 1);
+      }
+    }
+  }
+  if (UDS != 8)
+    Imm(RISCV::SLLI, Stride, Stride, Log2_32(UDS / 8));
+  // Count is a static number of physical registers, not logical squares.
+  Imm(RISCV::ADDI, Bytes, RISCV::X0, 0);
+  for (int Bit = Log2_64(Count); Bit >= 0; --Bit) {
+    if (Bit != int(Log2_64(Count)))
+      Imm(RISCV::SLLI, Bytes, Bytes, 1);
+    if (uint64_t(Count) & (uint64_t(1) << Bit))
+      Reg(RISCV::ADD, Bytes, Bytes, Stride);
+  }
+  if (Alignment > 1) {
+    Imm(RISCV::ADDI, Bytes, Bytes, Alignment - 1);
+    Imm(RISCV::ANDI, Bytes, Bytes, -Alignment);
+  }
+  MI->eraseFromParent();
+  return true;
+}
+
+bool RISCVZttPostRAExpandPseudo::expandMImage(MachineBasicBlock &MBB,
+                                              MachineBasicBlock::iterator MI,
+                                              unsigned GroupSize, bool IsLoad) {
+  MachineFunction &MF = *MBB.getParent();
+  Register Group = MI->getOperand(IsLoad ? 0 : 2).getReg();
+  Register Cursor = MI->getOperand(IsLoad ? 1 : 0).getReg();
+  Register DType = MI->getOperand(IsLoad ? 2 : 1).getReg();
+  Register Data = MI->getOperand(3).getReg();
+  Register Metadata = MI->getOperand(4).getReg();
+  Register Stride = MI->getOperand(5).getReg();
+  int64_t Width = MI->getOperand(6).getImm();
+  if (Width <= 0 || Width > GroupSize || !isPowerOf2_64(Width))
+    report_fatal_error("invalid Ztt M save/restore square width");
+  // Check aliases before writing anything: scratch must not destroy an input.
+  if (Cursor == DType || Cursor == Data || Cursor == Metadata ||
+      Cursor == Stride || DType == Data || DType == Metadata || DType == Stride)
+    report_fatal_error("Ztt M save/restore scratch overlaps an input");
+  unsigned UDS = MF.getSubtarget<RISCVSubtarget>().getZttUdsBits();
+  auto Flags = IsLoad ? MachineMemOperand::MOLoad : MachineMemOperand::MOStore;
+  DebugLoc DL = MI->getDebugLoc();
+  // Md is 32 bits even on RV64. Store consecutive words for leaders only.
+  // Restore ALL Md before ANY data: msettyp clears the entire wide square.
+  for (unsigned I = 0; I < GroupSize; I += Width) {
+    unsigned Offset = (I / Width) * 4;
+    auto *MMO =
+        MF.getMachineMemOperand(MachinePointerInfo(), Flags, 4, Align(4));
+    if (IsLoad) {
+      BuildMI(MBB, MI, DL, TII->get(RISCV::LW), DType)
+          .addReg(Metadata)
+          .addImm(Offset)
+          .addMemOperand(MMO);
+      emitMSetTyp(MBB, MI, Group, GroupSize, I, Width, DType);
+    } else {
+      BuildMI(MBB, MI, DL, TII->get(RISCV::ZTT_MGETTYP), DType)
+          .addReg(getMReg(Group, GroupSize, I));
+      BuildMI(MBB, MI, DL, TII->get(RISCV::SW))
+          .addReg(DType)
+          .addReg(Metadata)
+          .addImm(Offset)
+          .addMemOperand(MMO);
+    }
+  }
+  BuildMI(MBB, MI, DL, TII->get(RISCV::ADDI), Cursor).addReg(Data).addImm(0);
+  for (unsigned I = 0; I < GroupSize; ++I) {
+    auto *MMO = MF.getMachineMemOperand(MachinePointerInfo(), Flags,
+                                        LocationSize::beforeOrAfterPointer(),
+                                        Align(UDS / 8));
+    Register R = getMReg(Group, GroupSize, I);
+    if (IsLoad)
+      BuildMI(MBB, MI, DL, TII->get(RISCV::ZTT_MLS_1R), R)
+          .addReg(Cursor)
+          .addMemOperand(MMO);
+    else
+      BuildMI(MBB, MI, DL, TII->get(RISCV::ZTT_MSS_1R))
+          .addReg(R)
+          .addReg(Cursor)
+          .addMemOperand(MMO);
+    if (I + 1 != GroupSize)
+      BuildMI(MBB, MI, DL, TII->get(RISCV::ADD), Cursor)
+          .addReg(Cursor)
+          .addReg(Stride);
+  }
+  MI->eraseFromParent();
+  return true;
+}
 
 bool RISCVZttPostRAExpandPseudo::expandMCopies(MachineFunction &MF) {
   auto BaseIndex = [&](Register R) {
@@ -376,7 +518,18 @@ bool RISCVZttPostRAExpandPseudo::expandMI(MachineBasicBlock &MBB,
       break;
     }
   }
-  return false;
+  switch (MBBI->getOpcode()) {
+  case RISCV::PseudoZTTMFrameSize:
+    return expandMFrameSize(MBB, MBBI);
+#define RISCV_ZTT_M_GROUP(G, Class)                                            \
+  case RISCV::PseudoZTTMSaveM##G:                                              \
+    return expandMImage(MBB, MBBI, G, false);                                  \
+  case RISCV::PseudoZTTMRestoreM##G:                                           \
+    return expandMImage(MBB, MBBI, G, true);
+#include "RISCVZttRegisterGroups.def"
+  default:
+    return false;
+  }
 }
 
 bool RISCVZttPostRAExpandPseudo::expandZero(MachineBasicBlock &MBB,
