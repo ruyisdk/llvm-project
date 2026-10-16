@@ -68,6 +68,8 @@ class ZttOperationRecord<RISCVZttOperation op> {
                           !isa<RISCVZttExtract>(op)), !gt(op.NumScalarArgs, 0));
   bit HasScalarType = !or(!isa<RISCVZttScalarBinary>(op),
                           !isa<RISCVZttScalarBroadcast>(op));
+  bit IsLoad = 0;
+  bit HasScratch = 0;
 }
 
 // Shared operation IDs keep machine tables independent of intrinsic IDs.
@@ -82,7 +84,8 @@ def ZttOperationTable : GenericTable {
   let CppTypeName = "OperationInfo";
   let Fields = ["Operation", "IsAcc", "OperandLayout", "Kind", "BaseOpcode",
                 "NumSources", "HasChain", "SameGroups", "HasOld", "Pairwise",
-                "HasSideEffects", "HasScalar", "HasScalarType"];
+                "HasSideEffects", "HasScalar", "HasScalarType", "IsLoad",
+                "HasScratch"];
   string TypeOf_Operation = "ZttOperationID";
   string TypeOf_OperandLayout = "code";
   string TypeOf_Kind = "code";
@@ -421,4 +424,69 @@ foreach Op = !instances<RISCVZttMatmul>() in {
           let DAGOpcode = Info.DAGOpcode;
         }
       }
+}
+
+//===----------------------------------------------------------------------===//
+// Matrix memory operations.
+//===----------------------------------------------------------------------===//
+
+class ZttMemoryOperation<RISCVZttOperation op, string layout, string node,
+                         string prefix> : ZttOperationRecord<op> {
+  let OperandLayout = "OperandLayout::" # layout;
+  let BaseOpcode = !cast<Instruction>("ZTT_" # !toupper(op.Name));
+  let IsLoad = !isa<RISCVZttLoad>(op);
+  let HasScratch = 1;
+  let HasSideEffects = 1;
+  string Node = node;
+  string Prefix = prefix;
+}
+
+// Memory pseudos update a scratch address tied to the input base.
+class ZttMemoryPseudo<dag outs, dag ins, bit load, bit strided>
+    : ZttPseudo<outs, ins, []> {
+  let hasSideEffects = 1;
+  let mayLoad = load;
+  let mayStore = !not(load);
+  let Constraints = "$scratch = $base" #
+                    !if(strided, ",@earlyclobber $scratch", "");
+}
+
+class ZttContiguousMemoryOperation<RISCVZttOperation op, string node,
+                                   string prefix>
+    : ZttMemoryOperation<op, "Memory", node, prefix> {
+  let DAGOpcode = "RISCVISD::" # node # "1";
+}
+
+def : ZttContiguousMemoryOperation<riscv_ztt_op_mls_rm, "ZTT_MLS_RM_M", "PseudoZTTMLoadRMM">;
+def : ZttContiguousMemoryOperation<riscv_ztt_op_mls_cm, "ZTT_MLS_CM_M", "PseudoZTTMLoadCMM">;
+def : ZttContiguousMemoryOperation<riscv_ztt_op_mss_rm, "ZTT_MSS_RM_M", "PseudoZTTMStoreRMM">;
+def : ZttContiguousMemoryOperation<riscv_ztt_op_mss_cm, "ZTT_MSS_CM_M", "PseudoZTTMStoreCMM">;
+
+// Loads return a matrix and scratch address; stores return the scratch address.
+def SDT_ZttMLoad : SDTypeProfile<2, 4,
+    [SDTCisVT<1, XLenVT>, SDTCisPtrTy<2>, SDTCisVT<3, XLenVT>,
+     SDTCisVT<4, XLenVT>, SDTCisVT<5, XLenVT>]>;
+def SDT_ZttMStore : SDTypeProfile<1, 4,
+    [SDTCisVT<0, XLenVT>, SDTCisPtrTy<2>, SDTCisVT<3, XLenVT>,
+     SDTCisVT<4, XLenVT>]>;
+
+foreach Op = !instances<ZttContiguousMemoryOperation>() in {
+  def : ZttIntrinsicLowering<Op>;
+  foreach G = ZttMGroupSizes in {
+    defvar RC = ZttMRegClass<G>.RC;
+    def !tolower(Op.Node) # G : RVSDNode<Op.Node # G,
+        !if(Op.IsLoad, SDT_ZttMLoad, SDT_ZttMStore),
+        !if(Op.IsLoad, [SDNPHasChain, SDNPMayLoad, SDNPMemOperand],
+                      [SDNPHasChain, SDNPMayStore, SDNPMemOperand])>;
+    def Op.Prefix # G : ZttMemoryPseudo<
+        !if(Op.IsLoad, (outs RC:$rd, GPR:$scratch), (outs GPR:$scratch)),
+        !if(Op.IsLoad,
+            (ins GPR:$base, GPR:$dtype, ztt_xlenimm:$regs_per_unit, GPR:$stride),
+            (ins RC:$src, GPR:$base, ztt_xlenimm:$regs_per_unit, GPR:$stride)),
+        Op.IsLoad, 0>;
+    def : ZttGroupMapping<Op, G> {
+      let Pseudo = !cast<Instruction>(Op.Prefix # G);
+      let DAGOpcode = "RISCVISD::" # Op.Node # G;
+    }
+  }
 }

@@ -530,6 +530,9 @@ struct OperationInfo {
   bool Pairwise; // Zip/unzip update both squares together.
   bool HasSideEffects;
   bool HasScalar, HasScalarType;
+  bool IsLoad, HasScratch;
+
+  bool isMemory() const { return Kind == CodeGenKind::Memory; }
 };
 
 /// Physical register counts; zero means absent or fixed by the operand layout.

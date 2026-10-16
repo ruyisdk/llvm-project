@@ -610,4 +610,91 @@ TEST(RISCVZttInstrInfo, MatmulGroups) {
   EXPECT_EQ(P->Pseudo, RISCV::PseudoZTTMMulAcc2D_A8_L16_R2);
 }
 
+// Check matrix, address and datatype operands for every memory register group.
+static void checkMemoryGroups(ArrayRef<unsigned> IDs, bool Strided) {
+  LLVMInitializeRISCVTargetInfo();
+  LLVMInitializeRISCVTargetMC();
+  TestDAGInfo DAGInfo;
+  const unsigned Classes[] = {
+      RISCV::ZTTMRRegClassID,    RISCV::ZTTMRM2RegClassID,
+      RISCV::ZTTMRM4RegClassID,  RISCV::ZTTMRM8RegClassID,
+      RISCV::ZTTMRM16RegClassID, RISCV::ZTTMRM32RegClassID};
+  for (StringRef TripleName : {"riscv32", "riscv64"}) {
+    std::string Error;
+    const Target *T = TargetRegistry::lookupTarget(Triple(TripleName), Error);
+    ASSERT_NE(T, nullptr) << Error;
+    std::unique_ptr<MCInstrInfo> MCII(T->createMCInstrInfo());
+    for (unsigned ID : IDs) {
+      const auto *Hook = getIntrinsicLoweringInfo(ID);
+      ASSERT_NE(Hook, nullptr);
+      const auto *Op = getOperationInfo(Hook->Operation);
+      ASSERT_NE(Op, nullptr);
+      EXPECT_EQ(Op->Kind, CodeGenKind::Memory);
+      EXPECT_TRUE(Op->isMemory());
+      EXPECT_TRUE(Op->HasScratch);
+      EXPECT_TRUE(Op->HasSideEffects);
+      EXPECT_TRUE(Op->HasChain);
+      EXPECT_FALSE(Op->IsAcc);
+      EXPECT_EQ(Op->Layout,
+                Strided ? OperandLayout::StridedMemory : OperandLayout::Memory);
+      EXPECT_EQ(Hook->Opcode,
+                Op->IsLoad ? ISD::INTRINSIC_W_CHAIN : ISD::INTRINSIC_VOID);
+      for (unsigned I = 0; I != 6; ++I) {
+        const auto *P = getPseudoForGroups(Op->Operation, 1U << I);
+        ASSERT_NE(P, nullptr);
+        SCOPED_TRACE(MCII->getName(P->Pseudo).str());
+        EXPECT_EQ(getPseudoInfo(P->Pseudo), P);
+        const auto *DAG = getDAGNodeInfo(P->Pseudo);
+        ASSERT_NE(DAG, nullptr);
+        EXPECT_EQ(getDAGOperationInfo(DAG->DAGOpcode), Op);
+        EXPECT_EQ(getDAGPseudoInfo(DAG->DAGOpcode)->Operation, Op->Operation);
+        if (Strided || I == 0)
+          EXPECT_EQ(DAG->DAGOpcode, Hook->DAGOpcode);
+        const auto &Desc = MCII->get(P->Pseudo);
+        EXPECT_TRUE(Desc.isPseudo());
+        EXPECT_TRUE(Desc.hasUnmodeledSideEffects());
+        EXPECT_EQ(Desc.mayLoad(), Op->IsLoad);
+        EXPECT_EQ(Desc.mayStore(), !Op->IsLoad);
+        unsigned Scratch = Op->IsLoad ? 1 : 0;
+        unsigned Base = Strided ? Scratch + 1 : 2;
+        unsigned Matrix = Op->IsLoad ? 0 : Strided ? 3 : 1;
+        EXPECT_EQ(Desc.getNumDefs(), Op->IsLoad ? 2U : 1U);
+        ASSERT_EQ(Desc.getNumOperands(), Strided ? 7U : Op->IsLoad ? 6U : 5U);
+        EXPECT_EQ(Desc.operands()[Matrix].RegClass, int(Classes[I]));
+        EXPECT_EQ(Desc.operands()[Scratch].RegClass, RISCV::GPRRegClassID);
+        EXPECT_EQ(Desc.operands()[Base].RegClass, RISCV::GPRRegClassID);
+        EXPECT_EQ(Desc.getOperandConstraint(Base, MCOI::TIED_TO), int(Scratch));
+        EXPECT_EQ(Desc.getOperandConstraint(Scratch, MCOI::EARLY_CLOBBER) >= 0,
+                  Strided);
+        EXPECT_EQ(Desc.getOperandConstraint(Matrix, MCOI::EARLY_CLOBBER), -1);
+        EXPECT_EQ(RISCV::getNamedOperandIdx(P->Pseudo, RISCV::OpName::base),
+                  int(Base));
+        EXPECT_EQ(RISCV::getNamedOperandIdx(P->Pseudo, RISCV::OpName::scratch),
+                  int(Scratch));
+        const auto &Node = DAGInfo.GenNodeInfo.getDesc(DAG->DAGOpcode);
+        EXPECT_EQ(Node.NumResults, Op->IsLoad ? 2U : 1U);
+        EXPECT_EQ(Node.NumOperands, Strided ? (Op->IsLoad ? 5 : 6) : 4);
+        EXPECT_TRUE(Node.hasProperty(SDNPHasChain));
+        EXPECT_TRUE(Node.hasProperty(SDNPMemOperand));
+      }
+      EXPECT_EQ(getPseudoForGroups(Op->Operation, 0), nullptr);
+      EXPECT_EQ(getPseudoForGroups(Op->Operation, 3), nullptr);
+      EXPECT_EQ(getPseudoForGroups(Op->Operation, 64), nullptr);
+      EXPECT_EQ(getPseudoForGroups(Op->Operation, 2, 1), nullptr);
+    }
+  }
+}
+
+TEST(RISCVZttInstrInfo, ContiguousMemoryGroups) {
+  checkMemoryGroups({Intrinsic::riscv_ztt_mls_rm, Intrinsic::riscv_ztt_mls_cm,
+                     Intrinsic::riscv_ztt_mss_rm, Intrinsic::riscv_ztt_mss_cm},
+                    false);
+  EXPECT_TRUE(getOperationInfo(MLS_RM)->IsLoad);
+  EXPECT_TRUE(getOperationInfo(MLS_CM)->IsLoad);
+  EXPECT_FALSE(getOperationInfo(MSS_RM)->IsLoad);
+  EXPECT_FALSE(getOperationInfo(MSS_CM)->IsLoad);
+  EXPECT_EQ(getOperationInfo(MLS_RM)->BaseOpcode, RISCV::ZTT_MLS_RM);
+  EXPECT_EQ(getOperationInfo(MSS_CM)->BaseOpcode, RISCV::ZTT_MSS_CM);
+}
+
 } // namespace
