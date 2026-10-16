@@ -60,6 +60,12 @@ private:
   const RISCVInstrInfo *TII;
   const TargetRegisterInfo *TRI;
 
+  // Accumulate M slices into the first ACC square; keep the full ACC
+  // read/write.
+  bool expandMatmul(MachineBasicBlock &MBB, MachineBasicBlock::iterator MI,
+                    unsigned AccGroup, unsigned LGroup, unsigned RGroup,
+                    unsigned Opcode);
+
   // Set AMESTYPE for data-scalar operations that read it.
   void emitScalarType(MachineBasicBlock &MBB, MachineBasicBlock::iterator MI,
                       Register SType);
@@ -344,6 +350,9 @@ bool RISCVZttPostRAExpandPseudo::expandMI(MachineBasicBlock &MBB,
       if (Info->Layout == OperandLayout::Zero)
         return expandZero(MBB, MBBI, P->DstGroup, Info->IsAcc);
       return expandSlice(MBB, MBBI, *P, *Info);
+    case RISCVZttInstrInfo::CodeGenKind::Matmul:
+      return expandMatmul(MBB, MBBI, P->DstGroup, P->Src0Group, P->Src1Group,
+                          Info->BaseOpcode);
     case RISCVZttInstrInfo::CodeGenKind::Transfer:
       switch (Info->Layout) {
       case OperandLayout::Copy:
@@ -721,6 +730,49 @@ bool RISCVZttPostRAExpandPseudo::expandSlice(
   emitMOperations(MBB, MI, Info.BaseOpcode, Dst, P.DstGroup, NumOps, Sources,
                   Scalars);
   MI->eraseFromParent();
+  return true;
+}
+
+bool RISCVZttPostRAExpandPseudo::expandMatmul(MachineBasicBlock &MBB,
+                                              MachineBasicBlock::iterator MBBI,
+                                              unsigned AccGroup,
+                                              unsigned LGroup, unsigned RGroup,
+                                              unsigned Opcode) {
+  Register Acc = MBBI->getOperand(0).getReg();
+  Register AccInput = MBBI->getOperand(1).getReg();
+  Register Lhs = MBBI->getOperand(2).getReg();
+  Register Rhs = MBBI->getOperand(3).getReg();
+  unsigned NumOps = MBBI->getOperand(4).getImm();
+  assert(Acc == AccInput && "Ztt matmul accumulator must be tied");
+  assert(NumOps && "Ztt matmul must emit at least one instruction");
+  assert(LGroup % NumOps == 0 && RGroup % NumOps == 0 &&
+         "Ztt matmul must partition whole M register groups");
+  Register AccRegs = Acc;
+  Acc = getAReg(Acc, AccGroup, 0);
+  for (unsigned I = 0; I != NumOps; ++I) {
+    Register LhsPart = getMReg(Lhs, LGroup, (I * LGroup) / NumOps);
+    Register RhsPart = getMReg(Rhs, RGroup, (I * RGroup) / NumOps);
+    auto Mul = BuildMI(MBB, MBBI, MBBI->getDebugLoc(), TII->get(Opcode), Acc)
+                   .addReg(LhsPart)
+                   .addReg(RhsPart)
+                   .addReg(Acc, RegState::Implicit);
+    // Each instruction consumes its own slice of both input groups. A slice
+    // can span several registers for wide or mixed packed/standard operands.
+    for (unsigned J = 1; J != LGroup / NumOps; ++J)
+      Mul.addReg(getMReg(Lhs, LGroup, I * (LGroup / NumOps) + J),
+                 RegState::Implicit);
+    for (unsigned J = 1; J != RGroup / NumOps; ++J)
+      Mul.addReg(getMReg(Rhs, RGroup, I * (RGroup / NumOps) + J),
+                 RegState::Implicit);
+    // Model the entire C-level accumulator as read/write, preserving its
+    // logical dependency even though hardware only updates the first square.
+    for (unsigned J = 1; J != AccGroup; ++J) {
+      Register Tail = getAReg(AccRegs, AccGroup, J);
+      Mul.addReg(Tail, RegState::Implicit);
+      Mul.addReg(Tail, RegState::ImplicitDefine);
+    }
+  }
+  MBBI->eraseFromParent();
   return true;
 }
 

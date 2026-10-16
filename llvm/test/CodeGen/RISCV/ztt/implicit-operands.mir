@@ -1,0 +1,272 @@
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u16-m32-a16/g' %s > %t.ztt-profile-0.mir
+# RUN: llc -mtriple=riscv64 -mattr=+ztt -verify-machineinstrs -run-pass=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-0.mir -o - | FileCheck %s
+
+# Check full post-expansion bodies, including operands not printed in assembly.
+# Layout operands describe each case independently of the selected UDS.
+--- |
+  define void @load_wide_concat_RM() "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @store_wide_concat_RM() "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @load_wide_concat_CM() "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @store_wide_concat_CM() "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @clear_wide_concat() "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @matmul_accx1() "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @matmul_accx2() "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @matmul_accx4() "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @matmul_accx8() "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @matmul_packed_standard() "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @m2a_packed() "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @a2m_wide() "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @m2a_wide() "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @a2m_packed() "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @clear_accx4() "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+...
+---
+name: load_wide_concat_RM
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $x10, $x11, $x12
+    ; CHECK-LABEL: name: load_wide_concat_RM
+    ; CHECK: bb.0:
+    ; CHECK-NEXT: liveins: $x10, $x11, $x12
+    ; CHECK-NEXT: {{  $}}
+    ; CHECK-NEXT: $zttm0 = ZTT_MSETTYP $x11, implicit-def $zttm1
+    ; CHECK-NEXT: $zttm0 = ZTT_MLS_RM $x10, implicit-def $zttm1
+    ; CHECK-NEXT: $x10 = ADD $x10, $x12
+    ; CHECK-NEXT: $zttm2 = ZTT_MSETTYP $x11, implicit-def $zttm3
+    ; CHECK-NEXT: $zttm2 = ZTT_MLS_RM $x10, implicit-def $zttm3
+    ; CHECK-NEXT: PseudoRET
+    $zttm0m4, $x10 = PseudoZTTMLoadRMM4 $x10, $x11, 2, $x12
+    PseudoRET
+...
+---
+name: store_wide_concat_RM
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $zttm0m4, $x10, $x12
+    ; CHECK-LABEL: name: store_wide_concat_RM
+    ; CHECK: bb.0:
+    ; CHECK-NEXT: liveins: $zttm0m4, $x10, $x12
+    ; CHECK-NEXT: {{  $}}
+    ; CHECK-NEXT: ZTT_MSS_RM $zttm0, $x10, implicit $zttm1
+    ; CHECK-NEXT: $x10 = ADD $x10, $x12
+    ; CHECK-NEXT: ZTT_MSS_RM $zttm2, $x10, implicit $zttm3
+    ; CHECK-NEXT: PseudoRET
+    $x10 = PseudoZTTMStoreRMM4 $zttm0m4, $x10, 2, $x12
+    PseudoRET
+...
+---
+name: load_wide_concat_CM
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $x10, $x11, $x12
+    ; CHECK-LABEL: name: load_wide_concat_CM
+    ; CHECK: bb.0:
+    ; CHECK-NEXT: liveins: $x10, $x11, $x12
+    ; CHECK-NEXT: {{  $}}
+    ; CHECK-NEXT: $zttm0 = ZTT_MSETTYP $x11, implicit-def $zttm1
+    ; CHECK-NEXT: $zttm0 = ZTT_MLS_CM $x10, implicit-def $zttm1
+    ; CHECK-NEXT: $x10 = ADD $x10, $x12
+    ; CHECK-NEXT: $zttm2 = ZTT_MSETTYP $x11, implicit-def $zttm3
+    ; CHECK-NEXT: $zttm2 = ZTT_MLS_CM $x10, implicit-def $zttm3
+    ; CHECK-NEXT: PseudoRET
+    $zttm0m4, $x10 = PseudoZTTMLoadCMM4 $x10, $x11, 2, $x12
+    PseudoRET
+...
+---
+name: store_wide_concat_CM
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $zttm0m4, $x10, $x12
+    ; CHECK-LABEL: name: store_wide_concat_CM
+    ; CHECK: bb.0:
+    ; CHECK-NEXT: liveins: $zttm0m4, $x10, $x12
+    ; CHECK-NEXT: {{  $}}
+    ; CHECK-NEXT: ZTT_MSS_CM $zttm0, $x10, implicit $zttm1
+    ; CHECK-NEXT: $x10 = ADD $x10, $x12
+    ; CHECK-NEXT: ZTT_MSS_CM $zttm2, $x10, implicit $zttm3
+    ; CHECK-NEXT: PseudoRET
+    $x10 = PseudoZTTMStoreCMM4 $zttm0m4, $x10, 2, $x12
+    PseudoRET
+...
+---
+name: clear_wide_concat
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $x11
+    ; CHECK-LABEL: name: clear_wide_concat
+    ; CHECK: bb.0:
+    ; CHECK-NEXT: liveins: $x11
+    ; CHECK-NEXT: {{  $}}
+    ; CHECK-NEXT: $zttm0 = ZTT_MSETTYP $x11, implicit-def $zttm1
+    ; CHECK-NEXT: $zttm2 = ZTT_MSETTYP $x11, implicit-def $zttm3
+    ; CHECK-NEXT: PseudoRET
+    $zttm0m4 = PseudoZTTMSetTypM4 $x11, 2
+    PseudoRET
+...
+---
+name: matmul_accx1
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $ztta0, $zttm0m4, $zttm8m8
+    ; CHECK-LABEL: name: matmul_accx1
+    ; CHECK: bb.0:
+    ; CHECK-NEXT: liveins: $ztta0, $zttm0m4, $zttm8m8
+    ; CHECK-NEXT: {{  $}}
+    ; CHECK-NEXT: $ztta0 = ZTT_MMULACC_2D $zttm0, $zttm8, implicit $ztta0, implicit $zttm1, implicit $zttm9, implicit $zttm10, implicit $zttm11
+    ; CHECK-NEXT: $ztta0 = ZTT_MMULACC_2D $zttm2, $zttm12, implicit $ztta0, implicit $zttm3, implicit $zttm13, implicit $zttm14, implicit $zttm15
+    ; CHECK-NEXT: PseudoRET
+    $ztta0 = PseudoZTTMMulAcc2D_A1_L4_R8 $ztta0, $zttm0m4, $zttm8m8, 2
+    PseudoRET
+...
+---
+name: matmul_accx2
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $ztta0m2, $zttm0m4, $zttm8m8
+    ; CHECK-LABEL: name: matmul_accx2
+    ; CHECK: bb.0:
+    ; CHECK-NEXT: liveins: $ztta0m2, $zttm0m4, $zttm8m8
+    ; CHECK-NEXT: {{  $}}
+    ; CHECK-NEXT: $ztta0 = ZTT_MMULACC_2D $zttm0, $zttm8, implicit $ztta0, implicit $zttm1, implicit $zttm9, implicit $zttm10, implicit $zttm11, implicit $ztta1, implicit-def $ztta1
+    ; CHECK-NEXT: $ztta0 = ZTT_MMULACC_2D $zttm2, $zttm12, implicit $ztta0, implicit $zttm3, implicit $zttm13, implicit $zttm14, implicit $zttm15, implicit $ztta1, implicit-def $ztta1
+    ; CHECK-NEXT: PseudoRET
+    $ztta0m2 = PseudoZTTMMulAcc2D_A2_L4_R8 $ztta0m2, $zttm0m4, $zttm8m8, 2
+    PseudoRET
+...
+---
+name: matmul_accx4
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $ztta0m4, $zttm0m4, $zttm8m8
+    ; CHECK-LABEL: name: matmul_accx4
+    ; CHECK: bb.0:
+    ; CHECK-NEXT: liveins: $ztta0m4, $zttm0m4, $zttm8m8
+    ; CHECK-NEXT: {{  $}}
+    ; CHECK-NEXT: $ztta0 = ZTT_MMULACC_2D $zttm0, $zttm8, implicit $ztta0, implicit $zttm1, implicit $zttm9, implicit $zttm10, implicit $zttm11, implicit $ztta1, implicit-def $ztta1, implicit $ztta2, implicit-def $ztta2, implicit $ztta3, implicit-def $ztta3
+    ; CHECK-NEXT: $ztta0 = ZTT_MMULACC_2D $zttm2, $zttm12, implicit $ztta0, implicit $zttm3, implicit $zttm13, implicit $zttm14, implicit $zttm15, implicit $ztta1, implicit-def $ztta1, implicit $ztta2, implicit-def $ztta2, implicit $ztta3, implicit-def $ztta3
+    ; CHECK-NEXT: PseudoRET
+    $ztta0m4 = PseudoZTTMMulAcc2D_A4_L4_R8 $ztta0m4, $zttm0m4, $zttm8m8, 2
+    PseudoRET
+...
+---
+name: matmul_accx8
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $ztta0m8, $zttm0m4, $zttm8m8
+    ; CHECK-LABEL: name: matmul_accx8
+    ; CHECK: bb.0:
+    ; CHECK-NEXT: liveins: $ztta0m8, $zttm0m4, $zttm8m8
+    ; CHECK-NEXT: {{  $}}
+    ; CHECK-NEXT: $ztta0 = ZTT_MMULACC_2D $zttm0, $zttm8, implicit $ztta0, implicit $zttm1, implicit $zttm9, implicit $zttm10, implicit $zttm11, implicit $ztta1, implicit-def $ztta1, implicit $ztta2, implicit-def $ztta2, implicit $ztta3, implicit-def $ztta3, implicit $ztta4, implicit-def $ztta4, implicit $ztta5, implicit-def $ztta5, implicit $ztta6, implicit-def $ztta6, implicit $ztta7, implicit-def $ztta7
+    ; CHECK-NEXT: $ztta0 = ZTT_MMULACC_2D $zttm2, $zttm12, implicit $ztta0, implicit $zttm3, implicit $zttm13, implicit $zttm14, implicit $zttm15, implicit $ztta1, implicit-def $ztta1, implicit $ztta2, implicit-def $ztta2, implicit $ztta3, implicit-def $ztta3, implicit $ztta4, implicit-def $ztta4, implicit $ztta5, implicit-def $ztta5, implicit $ztta6, implicit-def $ztta6, implicit $ztta7, implicit-def $ztta7
+    ; CHECK-NEXT: PseudoRET
+    $ztta0m8 = PseudoZTTMMulAcc2D_A8_L4_R8 $ztta0m8, $zttm0m4, $zttm8m8, 2
+    PseudoRET
+...
+---
+name: matmul_packed_standard
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $ztta0, $zttm0, $zttm2m2
+    ; CHECK-LABEL: name: matmul_packed_standard
+    ; CHECK: bb.0:
+    ; CHECK-NEXT: liveins: $ztta0, $zttm0, $zttm2m2
+    ; CHECK-NEXT: {{  $}}
+    ; CHECK-NEXT: $ztta0 = ZTT_MMULACC_2D $zttm0, $zttm2, implicit $ztta0, implicit $zttm3
+    ; CHECK-NEXT: PseudoRET
+    $ztta0 = PseudoZTTMMulAcc2D_A1_L1_R2 $ztta0, $zttm0, $zttm2m2, 1
+    PseudoRET
+...
+---
+name: m2a_packed
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $zttm0, $x11
+    ; CHECK-LABEL: name: m2a_packed
+    ; CHECK: bb.0:
+    ; CHECK-NEXT: liveins: $zttm0, $x11
+    ; CHECK-NEXT: {{  $}}
+    ; CHECK-NEXT: $ztta0 = ZTT_ASETTYP $x11
+    ; CHECK-NEXT: $ztta1 = ZTT_ASETTYP $x11
+    ; CHECK-NEXT: $ztta0 = ZTT_MMOV_A_M $zttm0, implicit-def $ztta1
+    ; CHECK-NEXT: PseudoRET
+    $ztta0m2 = PseudoZTTMCopyM2A_A2_M1 $zttm0, 1, 2, $x11
+    PseudoRET
+...
+---
+name: a2m_wide
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $ztta0, $x11
+    ; CHECK-LABEL: name: a2m_wide
+    ; CHECK: bb.0:
+    ; CHECK-NEXT: liveins: $ztta0, $x11
+    ; CHECK-NEXT: {{  $}}
+    ; CHECK-NEXT: $zttm0 = ZTT_MSETTYP $x11, implicit-def $zttm1
+    ; CHECK-NEXT: $zttm0 = ZTT_MMOV_M_A $ztta0, implicit-def $zttm1
+    ; CHECK-NEXT: PseudoRET
+    $zttm0m2 = PseudoZTTMCopyA2M_A1_M2 $ztta0, 2, 1, $x11
+    PseudoRET
+...
+---
+name: m2a_wide
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $zttm0m2, $x11
+    ; CHECK-LABEL: name: m2a_wide
+    ; CHECK: bb.0:
+    ; CHECK-NEXT: liveins: $zttm0m2, $x11
+    ; CHECK-NEXT: {{  $}}
+    ; CHECK-NEXT: $ztta0 = ZTT_ASETTYP $x11
+    ; CHECK-NEXT: $ztta0 = ZTT_MMOV_A_M $zttm0, implicit $zttm1
+    ; CHECK-NEXT: PseudoRET
+    $ztta0 = PseudoZTTMCopyM2A_A1_M2 $zttm0m2, 2, 1, $x11
+    PseudoRET
+...
+---
+name: a2m_packed
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $ztta0m2, $x11
+    ; CHECK-LABEL: name: a2m_packed
+    ; CHECK: bb.0:
+    ; CHECK-NEXT: liveins: $ztta0m2, $x11
+    ; CHECK-NEXT: {{  $}}
+    ; CHECK-NEXT: $zttm0 = ZTT_MSETTYP $x11
+    ; CHECK-NEXT: $zttm0 = ZTT_MMOV_M_A $ztta0, implicit $ztta1
+    ; CHECK-NEXT: PseudoRET
+    $zttm0 = PseudoZTTMCopyA2M_A2_M1 $ztta0m2, 1, 2, $x11
+    PseudoRET
+...
+---
+name: clear_accx4
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $x11
+    ; CHECK-LABEL: name: clear_accx4
+    ; CHECK: bb.0:
+    ; CHECK-NEXT: liveins: $x11
+    ; CHECK-NEXT: {{  $}}
+    ; CHECK-NEXT: $ztta0 = ZTT_ASETTYP $x11
+    ; CHECK-NEXT: $ztta1 = ZTT_ASETTYP $x11
+    ; CHECK-NEXT: $ztta2 = ZTT_ASETTYP $x11
+    ; CHECK-NEXT: $ztta3 = ZTT_ASETTYP $x11
+    ; CHECK-NEXT: PseudoRET
+    $ztta0m4 = PseudoZTTAClearA4 $x11, 32
+    PseudoRET
+...
