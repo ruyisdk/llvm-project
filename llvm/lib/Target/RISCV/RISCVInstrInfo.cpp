@@ -89,6 +89,7 @@ namespace llvm::RISCVZttInstrInfo {
 using namespace RISCV;
 
 #define GET_ZttOperationTable_IMPL
+#define GET_ZttMDPreservingTable_IMPL
 #define GET_ZttPseudoTable_IMPL
 #include "RISCVGenSearchableTables.inc"
 

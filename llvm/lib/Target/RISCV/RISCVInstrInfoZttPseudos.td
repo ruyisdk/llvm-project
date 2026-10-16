@@ -572,3 +572,24 @@ def PseudoZttReadAMEUDSZ : ZttReadCSR<SysRegAMEUDSZ, int_riscv_ztt_get_ameudsz>;
 def PseudoZttReadAMEFFLAGS : ZttReadCSR<SysRegAMEFFLAGS, int_riscv_ztt_get_amefflags>;
 def PseudoZttReadAMEXSAT : ZttReadCSR<SysRegAMEXSAT, int_riscv_ztt_get_amexsat>;
 def PseudoZttReadAMESTATUS : ZttReadCSR<SysRegAMESTATUS, int_riscv_ztt_get_amestatus>;
+
+//===----------------------------------------------------------------------===//
+// Data writes that preserve the existing M datatype layout.
+//===----------------------------------------------------------------------===//
+
+class ZttMDPreservingOpcode<Instruction inst> {
+  Instruction Opcode = inst;
+}
+foreach Op = !instances<ZttComputeOperation>() in
+  def : ZttMDPreservingOpcode<Op.BaseOpcode>;
+foreach Inst = [ZTT_MLS_RM, ZTT_MLS_CM, ZTT_MLS_1R, ZTT_MLS_ST, ZTT_MLS_TST,
+                ZTT_MMOV_M_M, ZTT_MMOV_M_A, ZTT_MZERO_2D_M] in
+  def : ZttMDPreservingOpcode<Inst>;
+
+def ZttMDPreservingTable : GenericTable {
+  let FilterClass = "ZttMDPreservingOpcode";
+  let CppTypeName = "MDPreservingInfo";
+  let Fields = ["Opcode"];
+  let PrimaryKey = ["Opcode"];
+  let PrimaryKeyName = "getMDPreservingInfo";
+}

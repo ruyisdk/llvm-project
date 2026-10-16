@@ -10,6 +10,8 @@
 #include "RISCVInstrInfo.h"
 #include "RISCVSubtarget.h"
 #include "RISCVTargetMachine.h"
+#include "RISCVMachineFunctionInfo.h"
+#include "RISCVZttRegisterLayout.h"
 #include "llvm/ADT/ArrayRef.h"
 #include "llvm/CodeGen/MachineModuleInfo.h"
 #include "llvm/IR/DebugInfoMetadata.h"
@@ -682,6 +684,169 @@ TEST_P(RISCVInstrInfoTest, ZttReservedRegisters) {
                              &RISCV::ZTTARM4RegClass, &RISCV::ZTTARM8RegClass})
         CheckClass(*RC, ACount);
     }
+}
+
+// Borrowing a continuation must discover the original wide leader. Copies
+// propagate that layout, but data-only moves must not erase it.
+TEST_P(RISCVInstrInfoTest, ZttMLayoutTransfer) {
+  auto *BB = MF->CreateMachineBasicBlock();
+  MF->push_back(BB);
+  const auto &TII = *ST->getInstrInfo();
+  const auto &TRI = *ST->getRegisterInfo();
+  ZttMLayout State;
+  State.fill(-1);
+  auto Set = BuildMI(*BB, BB->end(), DebugLoc(), TII.get(RISCV::ZTT_MSETTYP),
+                     RISCV::ZTTM0)
+                 .addReg(RISCV::X10)
+                 .addReg(RISCV::ZTTM1, RegState::ImplicitDefine);
+  transferZttMLayout(*Set, State, TRI);
+  EXPECT_EQ(State[0], 2);
+  EXPECT_EQ(State[1], 0);
+  EXPECT_EQ(State[2], -1);
+  auto Copy = BuildMI(*BB, BB->end(), DebugLoc(), TII.get(TargetOpcode::COPY),
+                      RISCV::ZTTM2M2)
+                  .addReg(RISCV::ZTTM0M2);
+  transferZttMLayout(*Copy, State, TRI);
+  EXPECT_EQ(State[2], 2);
+  EXPECT_EQ(State[3], 0);
+  auto Move = BuildMI(*BB, BB->end(), DebugLoc(), TII.get(RISCV::ZTT_MMOV_M_A),
+                      RISCV::ZTTM2)
+                  .addReg(RISCV::ZTTA0)
+                  .addReg(RISCV::ZTTM3, RegState::ImplicitDefine);
+  transferZttMLayout(*Move, State, TRI);
+  EXPECT_EQ(State[2], 2);
+  EXPECT_EQ(State[3], 0);
+  auto Clobber = BuildMI(*BB, BB->end(), DebugLoc(),
+                         TII.get(TargetOpcode::IMPLICIT_DEF), RISCV::ZTTM2M2);
+  transferZttMLayout(*Clobber, State, TRI);
+  EXPECT_EQ(State[0], 2);
+  EXPECT_EQ(State[1], 0);
+  EXPECT_EQ(State[2], -1);
+  EXPECT_EQ(State[3], -1);
+  EXPECT_EQ(getZttMGroupSize(RISCV::ZTTM0M32), 32u);
+  EXPECT_EQ(getZttMGroupSize(RISCV::ZTTA0M2), 0u);
+  // A call mask invalidates only clobbered registers, even when no explicit
+  // matrix definition occurs on the instruction.
+  auto *Mask = MF->allocateRegMask();
+  std::fill_n(Mask, MachineOperand::getRegMaskSize(TRI.getNumRegs()), ~0u);
+  Mask[RISCV::ZTTM0 / 32] &= ~(1u << (RISCV::ZTTM0 % 32));
+  Mask[RISCV::ZTTM1 / 32] &= ~(1u << (RISCV::ZTTM1 % 32));
+  State[8] = 1;
+  auto Call = BuildMI(*BB, BB->end(), DebugLoc(), TII.get(RISCV::PseudoCALL))
+                  .addExternalSymbol("callee")
+                  .addRegMask(Mask);
+  transferZttMLayout(*Call, State, TRI);
+  EXPECT_EQ(State[0], -1);
+  EXPECT_EQ(State[1], -1);
+  EXPECT_EQ(State[8], 1);
+}
+
+TEST_P(RISCVInstrInfoTest, ZttMLayoutLoopAndConflict) {
+  MF->initTargetMachineFunctionInfo(*ST);
+  auto *Entry = MF->CreateMachineBasicBlock();
+  auto *Loop = MF->CreateMachineBasicBlock();
+  auto *Other = MF->CreateMachineBasicBlock();
+  auto *Merge = MF->CreateMachineBasicBlock();
+  auto *Unreachable = MF->CreateMachineBasicBlock();
+  for (auto *BB : {Entry, Loop, Other, Merge, Unreachable})
+    MF->push_back(BB);
+  Entry->addSuccessor(Loop);
+  Entry->addSuccessor(Other);
+  Loop->addSuccessor(Loop);
+  Loop->addSuccessor(Merge);
+  Other->addSuccessor(Merge);
+  auto &Info = *MF->getInfo<RISCVMachineFunctionInfo>();
+  Info.setZttMArgLayout(0, 2, 2);
+  const auto &TII = *ST->getInstrInfo();
+  BuildMI(*Other, Other->end(), DebugLoc(), TII.get(RISCV::ZTT_MSETTYP),
+          RISCV::ZTTM0)
+      .addReg(RISCV::X10);
+  auto Layouts = analyzeZttMLayouts(*MF);
+  EXPECT_FALSE(Layouts.count(Unreachable));
+  ASSERT_TRUE(Layouts.count(Loop));
+  EXPECT_EQ(Layouts[Loop][0], 2);
+  EXPECT_EQ(Layouts[Loop][1], 0);
+  ASSERT_TRUE(Layouts.count(Merge));
+  EXPECT_EQ(Layouts[Merge][0], -1);
+  // An unknown leader prevents a transfer even if its continuation is known.
+  EXPECT_EQ(Layouts[Merge][1], 0);
+}
+
+TEST_P(RISCVInstrInfoTest, ZttAccTransferLayout) {
+  // Cover all supported widths, shapes and UDS values independently of the
+  // instruction emitter. Packed batches must never be rounded up.
+  for (unsigned U : {8u, 16u, 32u, 64u, 128u})
+    for (unsigned E : {4u, 8u, 16u, 32u, 64u, 128u})
+      for (unsigned K : {1u, 2u, 4u, 8u}) {
+        auto L = getZttAccTransferLayout(E, K, U);
+        if (E * K < U) {
+          EXPECT_FALSE(L);
+          continue;
+        }
+        ASSERT_TRUE(L);
+        EXPECT_EQ(L->MRegsPerMove, E > U ? E / U : 1u);
+        EXPECT_EQ(L->AccsPerMove, E < U ? U / E : 1u);
+        EXPECT_EQ(L->NumMoves * L->AccsPerMove, K);
+        EXPECT_EQ(L->Units * U, K * E);
+      }
+  EXPECT_FALSE(getZttAccTransferLayout(0, 2, 32));
+  EXPECT_FALSE(getZttAccTransferLayout(24, 2, 32));
+  EXPECT_FALSE(getZttAccTransferLayout(16, 3, 32));
+  EXPECT_FALSE(getZttAccTransferLayout(16, 2, 0));
+}
+
+TEST_P(RISCVInstrInfoTest, ZttAccValueLayout) {
+  const auto &TII = *ST->getInstrInfo();
+  auto &MRI = MF->getRegInfo();
+  auto *BB = MF->CreateMachineBasicBlock();
+  MF->push_back(BB);
+  auto Acc = [&]() {
+    return MRI.createVirtualRegister(&RISCV::ZTTARM2RegClass);
+  };
+  Register Seed = Acc(), Copy = Acc(), Sum = Acc(), Phi = Acc();
+  BuildMI(*BB, BB->end(), DebugLoc(), TII.get(RISCV::PseudoZTTAClearA2), Seed)
+      .addReg(RISCV::X10)
+      .addImm(16);
+  BuildMI(*BB, BB->end(), DebugLoc(), TII.get(TargetOpcode::COPY), Copy)
+      .addReg(Seed);
+  BuildMI(*BB, BB->end(), DebugLoc(), TII.get(TargetOpcode::PHI), Phi)
+      .addReg(Copy)
+      .addMBB(BB)
+      .addReg(Sum)
+      .addMBB(BB);
+  BuildMI(*BB, BB->end(), DebugLoc(),
+          TII.get(RISCV::PseudoZTTMMulAcc2D_A2_L1_R1), Sum)
+      .addReg(Phi)
+      .addReg(RISCV::ZTTM0)
+      .addReg(RISCV::ZTTM1)
+      .addImm(1);
+  for (Register R : {Seed, Copy, Phi, Sum})
+    EXPECT_EQ(getZttAccElementBits(R, *MF, 32), 16u);
+
+  Register Cross = Acc();
+  BuildMI(*BB, BB->end(), DebugLoc(), TII.get(RISCV::PseudoZTTMCopyM2A_A2_M1),
+          Cross)
+      .addReg(RISCV::ZTTM0)
+      .addImm(1)
+      .addImm(2)
+      .addReg(RISCV::X10);
+  EXPECT_EQ(getZttAccElementBits(Cross, *MF, 32), 16u);
+  EXPECT_EQ(getZttAccElementBits(Cross, *MF, 64), 32u);
+
+  Register Other = Acc(), Conflict = Acc(), Unknown = Acc();
+  BuildMI(*BB, BB->end(), DebugLoc(), TII.get(RISCV::PseudoZTTAClearA2), Other)
+      .addReg(RISCV::X11)
+      .addImm(32);
+  BuildMI(*BB, BB->end(), DebugLoc(), TII.get(TargetOpcode::PHI), Conflict)
+      .addReg(Seed)
+      .addMBB(BB)
+      .addReg(Other)
+      .addMBB(BB);
+  EXPECT_FALSE(getZttAccElementBits(Conflict, *MF, 32));
+  BuildMI(*BB, BB->end(), DebugLoc(), TII.get(TargetOpcode::IMPLICIT_DEF),
+          Unknown);
+  EXPECT_FALSE(getZttAccElementBits(Unknown, *MF, 32));
+  EXPECT_FALSE(getZttAccElementBits(RISCV::ZTTA0M2, *MF, 32));
 }
 
 } // namespace

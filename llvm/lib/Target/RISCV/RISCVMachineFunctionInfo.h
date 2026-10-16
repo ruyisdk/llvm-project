@@ -18,6 +18,7 @@
 #include "llvm/CodeGen/MIRYamlMapping.h"
 #include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/MachineFunction.h"
+#include <vector>
 
 namespace llvm {
 
@@ -27,6 +28,7 @@ namespace yaml {
 struct RISCVMachineFunctionInfo final : public yaml::MachineFunctionInfo {
   int VarArgsFrameIndex;
   int VarArgsSaveSize;
+  std::vector<int> ZttMArgLayout;
 
   RISCVMachineFunctionInfo() = default;
   RISCVMachineFunctionInfo(const llvm::RISCVMachineFunctionInfo &MFI);
@@ -39,6 +41,7 @@ template <> struct MappingTraits<RISCVMachineFunctionInfo> {
   static void mapping(IO &YamlIO, RISCVMachineFunctionInfo &MFI) {
     YamlIO.mapOptional("varArgsFrameIndex", MFI.VarArgsFrameIndex);
     YamlIO.mapOptional("varArgsSaveSize", MFI.VarArgsSaveSize);
+    YamlIO.mapOptional("zttMArgLayout", MFI.ZttMArgLayout);
   }
 };
 } // end namespace yaml
@@ -97,6 +100,9 @@ private:
 
   /// Whether the function has cf-protection-branch module flag set.
   bool CFProtectionBranch = false;
+
+  // Entry M square layout: -1 unknown, 0 continuation, positive = square width.
+  std::vector<int> ZttMArgLayout;
 
 public:
   RISCVMachineFunctionInfo(const Function &F, const RISCVSubtarget *STI);
@@ -241,6 +247,14 @@ public:
   void setDynamicAllocation() { HasDynamicAllocation = true; }
 
   bool hasCFProtectionBranch() const { return CFProtectionBranch; }
+
+  ArrayRef<int> getZttMArgLayout() const { return ZttMArgLayout; }
+  void setZttMArgLayout(unsigned Base, unsigned Group, unsigned Width) {
+    assert(Base + Group <= 32 && Width && Group % Width == 0);
+    ZttMArgLayout.resize(32, -1);
+    for (unsigned I = 0; I != Group; ++I)
+      ZttMArgLayout[Base + I] = I % Width == 0 ? int(Width) : 0;
+  }
 };
 
 } // end namespace llvm

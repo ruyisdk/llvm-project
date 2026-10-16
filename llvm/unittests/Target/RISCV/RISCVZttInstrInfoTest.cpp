@@ -762,4 +762,24 @@ TEST(RISCVZttInstrInfo, StateOperations) {
   }
 }
 
+TEST(RISCVZttInstrInfo, MetadataPreservation) {
+  for (unsigned Opcode :
+       {RISCV::ZTT_MLS_1R, RISCV::ZTT_MLS_RM, RISCV::ZTT_MLS_TST,
+        RISCV::ZTT_MMOV_M_M, RISCV::ZTT_MMOV_M_A, RISCV::ZTT_MZERO_2D_M,
+        RISCV::ZTT_MADD_EW, RISCV::ZTT_MADD_EW_X})
+    EXPECT_NE(getMDPreservingInfo(Opcode), nullptr);
+  for (unsigned Opcode : {RISCV::ZTT_MSETTYP, RISCV::ZTT_ASETTYP,
+                          RISCV::ZTT_MSS_1R, RISCV::ADD, RISCV::COPY})
+    EXPECT_EQ(getMDPreservingInfo(Opcode), nullptr);
+  for (unsigned ID = 1; ID != Intrinsic::num_intrinsics; ++ID) {
+    const auto *Hook = getIntrinsicLoweringInfo(ID);
+    if (!Hook)
+      continue;
+    const auto *Op = getOperationInfo(Hook->Operation);
+    if (Op->Layout == OperandLayout::Matrix)
+      EXPECT_EQ(getMDPreservingInfo(Op->BaseOpcode) != nullptr,
+                Op->Kind != CodeGenKind::Matmul);
+  }
+}
+
 } // namespace

@@ -546,6 +546,12 @@ struct PseudoInfo {
   uint8_t Src1Group;
 };
 
+/// A data-writing opcode that leaves the M datatype unchanged.
+struct MDPreservingInfo {
+  unsigned Opcode;
+};
+
+#define GET_ZttMDPreservingTable_DECL
 #define GET_ZttOperationTable_DECL
 #define GET_ZttPseudoTable_DECL
 #include "RISCVGenSearchableTables.inc"
