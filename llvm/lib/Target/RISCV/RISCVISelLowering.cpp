@@ -30121,6 +30121,38 @@ namespace llvm::RISCVVIntrinsicsTable {
 
 } // namespace llvm::RISCVVIntrinsicsTable
 
+namespace llvm::RISCVZttLowering {
+using namespace RISCV;
+using namespace RISCVZttInstrInfo;
+
+#define GET_ZttIntrinsicLoweringTable_IMPL
+#define GET_ZttDAGNodeTable_IMPL
+#include "RISCVGenSearchableTables.inc"
+
+const OperationInfo *getDAGOperationInfo(unsigned Opcode) {
+  const auto *P = getDAGPseudoInfo(Opcode);
+  return P ? getOperationInfo(P->Operation) : nullptr;
+}
+
+const PseudoInfo *getDAGPseudoInfo(unsigned Opcode) {
+  // Group-specific nodes have one entry. Shared nodes identify the operation;
+  // instruction selection looks up the actual groups separately.
+  static constexpr auto Index = [] {
+    std::array<const DAGNodeInfo *,
+               RISCVISD::GENERATED_OPCODE_END - ISD::BUILTIN_OP_END>
+        Result{};
+    for (const auto &Info : ZttDAGNodeTable)
+      Result[Info.DAGOpcode - ISD::BUILTIN_OP_END] = &Info;
+    return Result;
+  }();
+  if (Opcode < ISD::BUILTIN_OP_END || Opcode >= RISCVISD::GENERATED_OPCODE_END)
+    return nullptr;
+  const auto *Info = Index[Opcode - ISD::BUILTIN_OP_END];
+  return Info ? getPseudoInfo(Info->Pseudo) : nullptr;
+}
+
+} // namespace llvm::RISCVZttLowering
+
 bool RISCVTargetLowering::hasInlineStackProbe(const MachineFunction &MF) const {
 
   // If the function specifically requests inline stack probes, emit them.

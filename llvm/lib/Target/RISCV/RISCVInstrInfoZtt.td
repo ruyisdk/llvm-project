@@ -269,3 +269,5 @@ let Predicates = [HasStdExtZtt] in {
   def ZTT_MSS_ST : ZttStridedMemoryInst<0b1010110, "mss.st", 1>;
   def ZTT_MSS_TST : ZttStridedMemoryInst<0b1010111, "mss.tst", 1>;
 }
+
+include "RISCVInstrInfoZttPseudos.td"

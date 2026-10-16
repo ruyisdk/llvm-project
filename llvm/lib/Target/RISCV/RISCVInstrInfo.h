@@ -15,6 +15,7 @@
 
 #include "RISCV.h"
 #include "RISCVRegisterInfo.h"
+#include "llvm/ADT/StringTable.h"
 #include "llvm/CodeGen/TargetInstrInfo.h"
 #include "llvm/IR/DiagnosticInfo.h"
 
@@ -495,6 +496,53 @@ struct RISCVMaskedPseudoInfo {
 #define GET_RISCVMaskedPseudosTable_DECL
 #include "RISCVGenSearchableTables.inc"
 } // end namespace RISCV
+
+namespace RISCVZttInstrInfo {
+
+#define GET_ZttOperationID_DECL
+#include "RISCVGenSearchableTables.inc"
+
+/// Matrix, datatype and address operand layouts used by Ztt pseudos.
+enum class OperandLayout {
+  Matrix,
+  Clear,
+  Zero,
+  Copy,
+  Concat,
+  CrossCopy,
+  Extract,
+  Memory,
+  StridedMemory
+};
+
+/// Operation properties shared by all register-group sizes.
+struct OperationInfo {
+  ZttOperationID Operation;
+  bool IsAcc;
+  OperandLayout Layout;
+};
+
+/// Physical register counts; zero means absent or fixed by the operand layout.
+/// DstGroup is the result group, or the stored matrix group for stores.
+struct PseudoInfo {
+  unsigned Pseudo;
+  ZttOperationID Operation;
+  uint8_t DstGroup;
+  uint8_t Src0Group;
+  uint8_t Src1Group;
+};
+
+#define GET_ZttOperationTable_DECL
+#define GET_ZttPseudoTable_DECL
+#include "RISCVGenSearchableTables.inc"
+
+inline const PseudoInfo *getPseudoForGroups(unsigned Operation, unsigned Dst,
+                                            unsigned Src0 = 0,
+                                            unsigned Src1 = 0) {
+  return getPseudoGroupEntry(Operation, Dst, Src0, Src1);
+}
+
+} // namespace RISCVZttInstrInfo
 
 } // end namespace llvm
 #endif

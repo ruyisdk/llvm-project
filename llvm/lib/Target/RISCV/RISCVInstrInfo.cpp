@@ -85,6 +85,15 @@ namespace llvm::RISCV {
 
 } // end namespace llvm::RISCV
 
+namespace llvm::RISCVZttInstrInfo {
+using namespace RISCV;
+
+#define GET_ZttOperationTable_IMPL
+#define GET_ZttPseudoTable_IMPL
+#include "RISCVGenSearchableTables.inc"
+
+} // namespace llvm::RISCVZttInstrInfo
+
 RISCVInstrInfo::RISCVInstrInfo(const RISCVSubtarget &STI)
     : RISCVGenInstrInfo(STI, RegInfo, RISCV::ADJCALLSTACKDOWN,
                         RISCV::ADJCALLSTACKUP),
