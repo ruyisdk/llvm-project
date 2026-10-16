@@ -713,4 +713,53 @@ TEST(RISCVZttInstrInfo, StridedMemoryGroups) {
   EXPECT_EQ(getOperationInfo(MSS_TST)->BaseOpcode, RISCV::ZTT_MSS_TST);
 }
 
+TEST(RISCVZttInstrInfo, StateOperations) {
+  const std::pair<unsigned, ZttOperationID> Operations[] = {
+      {Intrinsic::riscv_ztt_ame_acquire, AME_ACQUIRE},
+      {Intrinsic::riscv_ztt_ame_release, AME_RELEASE},
+      {Intrinsic::riscv_ztt_get_ameown, GET_AMEOWN},
+      {Intrinsic::riscv_ztt_get_amestype, GET_AMESTYPE},
+      {Intrinsic::riscv_ztt_get_amenlen, GET_AMENLEN},
+      {Intrinsic::riscv_ztt_get_ameudsz, GET_AMEUDSZ},
+      {Intrinsic::riscv_ztt_get_amefflags, GET_AMEFFLAGS},
+      {Intrinsic::riscv_ztt_get_amexsat, GET_AMEXSAT},
+      {Intrinsic::riscv_ztt_get_amestatus, GET_AMESTATUS}};
+  for (auto [Intrinsic, Operation] : Operations) {
+    const auto *Info = getOperationInfo(Operation);
+    ASSERT_NE(Info, nullptr);
+    EXPECT_EQ(Info->Kind, CodeGenKind::State);
+    EXPECT_TRUE(Info->HasChain);
+    EXPECT_FALSE(Info->isMemory());
+    EXPECT_FALSE(Info->HasScratch);
+    EXPECT_FALSE(Info->HasScalar);
+    EXPECT_EQ(getIntrinsicLoweringInfo(Intrinsic), nullptr);
+    for (unsigned G : {1U, 2U, 4U, 8U, 16U, 32U})
+      EXPECT_EQ(getPseudoForGroups(Operation, G), nullptr);
+  }
+  LLVMInitializeRISCVTargetInfo();
+  LLVMInitializeRISCVTargetMC();
+  for (StringRef TripleName : {"riscv32", "riscv64"}) {
+    std::string Error;
+    const Target *T = TargetRegistry::lookupTarget(Triple(TripleName), Error);
+    ASSERT_NE(T, nullptr) << Error;
+    std::unique_ptr<MCInstrInfo> MCII(T->createMCInstrInfo());
+    for (unsigned Opcode :
+         {RISCV::PseudoZttReadAMEOWN, RISCV::PseudoZttReadAMESTYPE,
+          RISCV::PseudoZttReadAMENLEN, RISCV::PseudoZttReadAMEUDSZ,
+          RISCV::PseudoZttReadAMEFFLAGS, RISCV::PseudoZttReadAMEXSAT,
+          RISCV::PseudoZttReadAMESTATUS}) {
+      const auto &Desc = MCII->get(Opcode);
+      EXPECT_TRUE(Desc.isPseudo());
+      EXPECT_TRUE(Desc.hasUnmodeledSideEffects());
+      EXPECT_FALSE(Desc.mayLoad());
+      EXPECT_FALSE(Desc.mayStore());
+      EXPECT_EQ(Desc.getNumDefs(), 1U);
+      ASSERT_EQ(Desc.getNumOperands(), 1U);
+      EXPECT_EQ(Desc.operands()[0].RegClass, RISCV::GPRRegClassID);
+      EXPECT_EQ(getPseudoInfo(Opcode), nullptr);
+      EXPECT_EQ(getDAGNodeInfo(Opcode), nullptr);
+    }
+  }
+}
+
 } // namespace

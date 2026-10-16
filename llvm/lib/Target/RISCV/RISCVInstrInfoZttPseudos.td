@@ -538,3 +538,37 @@ foreach Op = !instances<ZttStridedMemoryOperation>() in {
     }
   }
 }
+
+//===----------------------------------------------------------------------===//
+// State and CSR operations.
+//===----------------------------------------------------------------------===//
+
+// State operations have no custom matrix DAG or register-group mappings.
+foreach Op = !instances<RISCVZttOperation>() in
+  if !eq(Op.CodeGenKind, "State") then
+    def "ztt_state_" # Op.Name : ZttOperationRecord<Op> {
+      let DAGOpcode = "0";
+      let OperandLayout = "OperandLayout::Matrix";
+    }
+
+class ZttReadCSR<SysReg csr, Intrinsic read>
+    : ZttPseudo<(outs GPR:$rd), (ins), [(set GPR:$rd, (XLenVT (read)))]>,
+      PseudoInstExpansion<(CSRRS GPR:$rd, csr.Encoding, X0)> {
+  let hasSideEffects = 1;
+  let mayLoad = 0;
+  let mayStore = 0;
+}
+
+let Predicates = [HasStdExtZtt] in {
+  def : Pat<(XLenVT (int_riscv_ztt_ame_acquire (XLenVT GPR:$desc))),
+            (ZTT_AME_ACQUIRE GPR:$desc)>;
+  def : Pat<(int_riscv_ztt_ame_release), (ZTT_AME_RELEASE)>;
+  def PseudoReadAMENLEN : ReadSysReg<SysRegAMENLEN, []>;
+}
+def PseudoZttReadAMEOWN : ZttReadCSR<SysRegAMEOWN, int_riscv_ztt_get_ameown>;
+def PseudoZttReadAMESTYPE : ZttReadCSR<SysRegAMESTYPE, int_riscv_ztt_get_amestype>;
+def PseudoZttReadAMENLEN : ZttReadCSR<SysRegAMENLEN, int_riscv_ztt_get_amenlen>;
+def PseudoZttReadAMEUDSZ : ZttReadCSR<SysRegAMEUDSZ, int_riscv_ztt_get_ameudsz>;
+def PseudoZttReadAMEFFLAGS : ZttReadCSR<SysRegAMEFFLAGS, int_riscv_ztt_get_amefflags>;
+def PseudoZttReadAMEXSAT : ZttReadCSR<SysRegAMEXSAT, int_riscv_ztt_get_amexsat>;
+def PseudoZttReadAMESTATUS : ZttReadCSR<SysRegAMESTATUS, int_riscv_ztt_get_amestatus>;
