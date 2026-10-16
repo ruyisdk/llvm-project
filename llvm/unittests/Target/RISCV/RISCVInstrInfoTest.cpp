@@ -646,6 +646,44 @@ TEST_P(RISCVInstrInfoTest, ZttACCRegisterGroups) {
                          Indices, /*AlignToGroup=*/false);
 }
 
+TEST_P(RISCVInstrInfoTest, ZttReservedRegisters) {
+  for (unsigned MCount : {16U, 32U})
+    for (unsigned ACount : {1U, 2U, 4U, 8U, 16U}) {
+      RISCV::ZttProfile Profile{0, 16, MCount, ACount};
+      RISCVSubtarget ZST(TM->getTargetTriple(), TM->getTargetCPU(),
+                         TM->getTargetCPU(), "+ztt",
+                         ST->is64Bit() ? "lp64" : "ilp32", 0, 0, *TM, Profile);
+      MachineFunction ZMF(MF->getFunction(), *TM, ZST, MMI->getContext(), 43);
+      // Initialize per-function state before querying reserved registers.
+      ZMF.initTargetMachineFunctionInfo(ZST);
+      const auto *RI = ZST.getRegisterInfo();
+      BitVector Reserved = RI->getReservedRegs(ZMF);
+      EXPECT_EQ(ZST.getZttUdsBits(), 16U);
+      EXPECT_EQ(ZST.getZttMRegs(), MCount);
+      EXPECT_EQ(ZST.getZttARegs(), ACount);
+      auto CheckClass = [&](const TargetRegisterClass &RC, unsigned Limit) {
+        for (MCPhysReg Reg : RC) {
+          bool Unavailable = false;
+          for (MCPhysReg Sub : RI->subregs_inclusive(Reg))
+            if (RISCV::ZTTMRRegClass.contains(Sub) ||
+                RISCV::ZTTARRegClass.contains(Sub))
+              Unavailable |= RI->getEncodingValue(Sub) >= Limit;
+          EXPECT_EQ(Reserved.test(Reg), Unavailable) << RI->getName(Reg);
+        }
+      };
+      // Check every physical register and every group, including unaligned
+      // ACC groups which cross the end of the configured register file.
+      for (const auto *RC :
+           {&RISCV::ZTTMRRegClass, &RISCV::ZTTMRM2RegClass,
+            &RISCV::ZTTMRM4RegClass, &RISCV::ZTTMRM8RegClass,
+            &RISCV::ZTTMRM16RegClass, &RISCV::ZTTMRM32RegClass})
+        CheckClass(*RC, MCount);
+      for (const auto *RC : {&RISCV::ZTTARRegClass, &RISCV::ZTTARM2RegClass,
+                             &RISCV::ZTTARM4RegClass, &RISCV::ZTTARM8RegClass})
+        CheckClass(*RC, ACount);
+    }
+}
+
 } // namespace
 
 INSTANTIATE_TEST_SUITE_P(RV32And64, RISCVInstrInfoTest,

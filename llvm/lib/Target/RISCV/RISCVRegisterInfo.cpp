@@ -235,6 +235,16 @@ BitVector RISCVRegisterInfo::getReservedRegs(const MachineFunction &MF) const {
   for (MCPhysReg Reg = RISCV::T0; Reg <= RISCV::T15; Reg++)
     markSuperRegs(Reserved, Reg);
 
+  // Reserve registers beyond the Ztt profile and all groups containing them.
+  if (Subtarget.hasStdExtZtt()) {
+    for (MCPhysReg Reg : RISCV::ZTTMRRegClass)
+      if (getEncodingValue(Reg) >= Subtarget.getZttMRegs())
+        markSuperRegs(Reserved, Reg);
+    for (MCPhysReg Reg : RISCV::ZTTARRegClass)
+      if (getEncodingValue(Reg) >= Subtarget.getZttARegs())
+        markSuperRegs(Reserved, Reg);
+  }
+
   assert(checkAllSuperRegsMarked(Reserved));
   return Reserved;
 }
