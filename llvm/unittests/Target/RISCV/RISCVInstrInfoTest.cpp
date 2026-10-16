@@ -10,6 +10,7 @@
 #include "RISCVInstrInfo.h"
 #include "RISCVSubtarget.h"
 #include "RISCVTargetMachine.h"
+#include "llvm/ADT/ArrayRef.h"
 #include "llvm/CodeGen/MachineModuleInfo.h"
 #include "llvm/IR/DebugInfoMetadata.h"
 #include "llvm/IR/Module.h"
@@ -561,6 +562,88 @@ TEST_P(RISCVInstrInfoTest, ZttValueTypes) {
   }
   for (MVT VT : {MVT::i16, MVT::f32, MVT::nxv1i8, MVT::aarch64svcount})
     EXPECT_FALSE(VT.isRISCVZtt());
+}
+
+struct ZttTestGroup {
+  const TargetRegisterClass *RC;
+  unsigned Size;
+};
+
+static void checkZttRegisterGroups(const RISCVRegisterInfo &TRI,
+                                   const TargetRegisterClass &BaseRC,
+                                   ArrayRef<ZttTestGroup> Groups,
+                                   ArrayRef<unsigned> SubRegIndices,
+                                   bool AlignToGroup) {
+  for (const auto &[RC, Size] : Groups) {
+    unsigned Step = AlignToGroup ? Size : 1;
+    ASSERT_EQ(RC->getNumRegs(), (BaseRC.getNumRegs() - Size) / Step + 1);
+    ASSERT_GE(SubRegIndices.size(), Size);
+    for (unsigned I = 0; I != RC->getNumRegs(); ++I) {
+      MCRegister Reg = RC->getRegister(I);
+      unsigned Base = I * Step;
+      SCOPED_TRACE(TRI.getName(Reg));
+      EXPECT_EQ(TRI.getEncodingValue(Reg), Base);
+      for (unsigned J = 0; J != Size; ++J) {
+        MCRegister SubReg = BaseRC.getRegister(Base + J);
+        EXPECT_EQ(TRI.getSubReg(Reg, SubRegIndices[J]), SubReg);
+        EXPECT_EQ(TRI.getSubRegIndex(Reg, SubReg), SubRegIndices[J]);
+      }
+      for (unsigned J = 0; J != BaseRC.getNumRegs(); ++J)
+        EXPECT_EQ(TRI.regsOverlap(Reg, BaseRC.getRegister(J)),
+                  Base <= J && J < Base + Size);
+
+      // Groups overlap exactly when they share physical registers.
+      for (const auto &[OtherRC, OtherSize] : Groups) {
+        unsigned OtherStep = AlignToGroup ? OtherSize : 1;
+        for (unsigned J = 0; J != OtherRC->getNumRegs(); ++J) {
+          MCRegister Other = OtherRC->getRegister(J);
+          unsigned OtherBase = J * OtherStep;
+          SCOPED_TRACE(TRI.getName(Other));
+          EXPECT_EQ(TRI.regsOverlap(Reg, Other),
+                    Base < OtherBase + OtherSize && OtherBase < Base + Size);
+        }
+      }
+      for (MCRegister Other : {RISCV::X0, RISCV::F0_D, RISCV::V0, RISCV::M0})
+        EXPECT_FALSE(TRI.regsOverlap(Reg, Other));
+    }
+  }
+}
+
+TEST_P(RISCVInstrInfoTest, ZttMRegisterGroups) {
+  const RISCVRegisterInfo *TRI = ST->getRegisterInfo();
+  const ZttTestGroup Groups[] = {{&RISCV::ZTTMRM2RegClass, 2},
+                                 {&RISCV::ZTTMRM4RegClass, 4},
+                                 {&RISCV::ZTTMRM8RegClass, 8},
+                                 {&RISCV::ZTTMRM16RegClass, 16},
+                                 {&RISCV::ZTTMRM32RegClass, 32}};
+  const unsigned Indices[] = {
+      RISCV::sub_zttm_0,  RISCV::sub_zttm_1,  RISCV::sub_zttm_2,
+      RISCV::sub_zttm_3,  RISCV::sub_zttm_4,  RISCV::sub_zttm_5,
+      RISCV::sub_zttm_6,  RISCV::sub_zttm_7,  RISCV::sub_zttm_8,
+      RISCV::sub_zttm_9,  RISCV::sub_zttm_10, RISCV::sub_zttm_11,
+      RISCV::sub_zttm_12, RISCV::sub_zttm_13, RISCV::sub_zttm_14,
+      RISCV::sub_zttm_15, RISCV::sub_zttm_16, RISCV::sub_zttm_17,
+      RISCV::sub_zttm_18, RISCV::sub_zttm_19, RISCV::sub_zttm_20,
+      RISCV::sub_zttm_21, RISCV::sub_zttm_22, RISCV::sub_zttm_23,
+      RISCV::sub_zttm_24, RISCV::sub_zttm_25, RISCV::sub_zttm_26,
+      RISCV::sub_zttm_27, RISCV::sub_zttm_28, RISCV::sub_zttm_29,
+      RISCV::sub_zttm_30, RISCV::sub_zttm_31};
+  checkZttRegisterGroups(*TRI, RISCV::ZTTMRRegClass, Groups, Indices,
+                         /*AlignToGroup=*/true);
+  EXPECT_FALSE(TRI->regsOverlap(RISCV::ZTTM0M32, RISCV::ZTTA0M8));
+  EXPECT_FALSE(TRI->regsOverlap(RISCV::ZTTM0M32, RISCV::ZTTA8M8));
+}
+
+TEST_P(RISCVInstrInfoTest, ZttACCRegisterGroups) {
+  const ZttTestGroup Groups[] = {{&RISCV::ZTTARM2RegClass, 2},
+                                 {&RISCV::ZTTARM4RegClass, 4},
+                                 {&RISCV::ZTTARM8RegClass, 8}};
+  const unsigned Indices[] = {RISCV::sub_ztta_0, RISCV::sub_ztta_1,
+                              RISCV::sub_ztta_2, RISCV::sub_ztta_3,
+                              RISCV::sub_ztta_4, RISCV::sub_ztta_5,
+                              RISCV::sub_ztta_6, RISCV::sub_ztta_7};
+  checkZttRegisterGroups(*ST->getRegisterInfo(), RISCV::ZTTARRegClass, Groups,
+                         Indices, /*AlignToGroup=*/false);
 }
 
 } // namespace
