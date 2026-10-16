@@ -224,6 +224,18 @@ FunctionPass *createRISCVQCRelaxMarkingPass();
 void initializeRISCVQCRelaxMarkingPass(PassRegistry &);
 
 void initializeRISCVAsmPrinterPass(PassRegistry &);
+
+// Keep matrix locals in SSA before instruction selection, including at -O0.
+class RISCVZttPromoteAllocasPass
+    : public RequiredPassInfoMixin<RISCVZttPromoteAllocasPass> {
+  const RISCVTargetMachine *TM;
+
+public:
+  explicit RISCVZttPromoteAllocasPass(const RISCVTargetMachine *TM) : TM(TM) {}
+  PreservedAnalyses run(Function &F, FunctionAnalysisManager &FAM);
+};
+FunctionPass *createRISCVZttPromoteAllocasLegacyPass();
+void initializeRISCVZttPromoteAllocasLegacyPass(PassRegistry &);
 } // namespace llvm
 
 #endif
