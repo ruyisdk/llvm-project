@@ -597,3 +597,51 @@ def ZttMDPreservingTable : GenericTable {
   let PrimaryKey = ["Opcode"];
   let PrimaryKeyName = "getMDPreservingInfo";
 }
+
+//===----------------------------------------------------------------------===//
+// Internal spill and frame operations.
+//===----------------------------------------------------------------------===//
+
+// Compute register stride and aligned payload bytes; count is physical M count.
+def PseudoZTTMFrameSize : ZttRegisterPseudo<
+    (outs GPRNoX0:$bytes, GPRNoX0:$stride, GPRNoX0:$tmp0,
+          GPRNoX0:$tmp1, GPRNoX0:$tmp2),
+    (ins ztt_xlenimm:$count, ztt_xlenimm:$alignment), 1> {
+  let Constraints = "@earlyclobber $bytes,@earlyclobber $stride,"
+                    "@earlyclobber $tmp0,@earlyclobber $tmp1,"
+                    "@earlyclobber $tmp2";
+}
+
+foreach G = ZttMGroupSizes in {
+  defvar RC = ZttMRegClass<G>.RC;
+  let hasSideEffects = 1 in {
+    // Allocator spills carry a frame index and square width.
+    def PseudoZTTMSpillM # G : ZttPseudo<(outs),
+        (ins RC:$src, GPR:$base, ztt_xlenimm:$regs_per_square), []> {
+      let mayLoad = 0;
+      let mayStore = 1;
+    }
+    def PseudoZTTMReloadM # G : ZttPseudo<(outs RC:$dst),
+        (ins GPR:$base, ztt_xlenimm:$regs_per_square), []> {
+      let mayLoad = 1;
+      let mayStore = 0;
+    }
+    // Image transfers use explicit data, metadata and stride addresses.
+    let Constraints = "@earlyclobber $cursor,@earlyclobber $dtype" in {
+      def PseudoZTTMSaveM # G : ZttPseudo<
+          (outs GPRNoX0:$cursor, GPRNoX0:$dtype),
+          (ins RC:$src, GPR:$data, GPR:$metadata, GPR:$stride,
+               ztt_xlenimm:$regs_per_square), []> {
+        let mayLoad = 0;
+        let mayStore = 1;
+      }
+      def PseudoZTTMRestoreM # G : ZttPseudo<
+          (outs RC:$dst, GPRNoX0:$cursor, GPRNoX0:$dtype),
+          (ins GPR:$data, GPR:$metadata, GPR:$stride,
+               ztt_xlenimm:$regs_per_square), []> {
+        let mayLoad = 1;
+        let mayStore = 0;
+      }
+    }
+  }
+}

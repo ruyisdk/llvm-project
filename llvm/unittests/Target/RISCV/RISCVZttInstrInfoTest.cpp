@@ -802,4 +802,67 @@ TEST(RISCVZttInstrInfo, ScalarDatatypeLocation) {
   EXPECT_EQ(getOperationInfo(MSLL_EW_X)->ScalarType, ScalarTypeLocation::None);
 }
 
+TEST(RISCVZttInstrInfo, MSpillPseudos) {
+  LLVMInitializeRISCVTargetInfo();
+  LLVMInitializeRISCVTargetMC();
+  for (StringRef TripleName : {"riscv32", "riscv64"}) {
+    std::string Error;
+    const Target *T = TargetRegistry::lookupTarget(Triple(TripleName), Error);
+    ASSERT_NE(T, nullptr) << Error;
+    std::unique_ptr<MCInstrInfo> MCII(T->createMCInstrInfo());
+    const auto &Size = MCII->get(RISCV::PseudoZTTMFrameSize);
+    EXPECT_TRUE(Size.isPseudo());
+    EXPECT_TRUE(Size.hasUnmodeledSideEffects());
+    EXPECT_FALSE(Size.mayLoad());
+    EXPECT_FALSE(Size.mayStore());
+    ASSERT_EQ(Size.getNumDefs(), 5U);
+    ASSERT_EQ(Size.getNumOperands(), 7U);
+    for (unsigned I = 0; I != 5; ++I) {
+      EXPECT_EQ(Size.operands()[I].RegClass, RISCV::GPRNoX0RegClassID);
+      EXPECT_GE(Size.getOperandConstraint(I, MCOI::EARLY_CLOBBER), 0);
+    }
+    for (unsigned I = 5; I != 7; ++I)
+      EXPECT_EQ(Size.operands()[I].RegClass, -1);
+
+    struct Group {
+      unsigned RC, Spill, Reload, Save, Restore;
+    };
+    const Group Groups[] = {
+#define RISCV_ZTT_M_GROUP(G, Class)                                            \
+  {RISCV::Class##ID, RISCV::PseudoZTTMSpillM##G, RISCV::PseudoZTTMReloadM##G,  \
+   RISCV::PseudoZTTMSaveM##G, RISCV::PseudoZTTMRestoreM##G},
+#include "RISCVZttRegisterGroups.def"
+    };
+    for (auto G : Groups)
+      for (unsigned Op : {G.Spill, G.Reload, G.Save, G.Restore}) {
+        SCOPED_TRACE(MCII->getName(Op).str());
+        const auto &Desc = MCII->get(Op);
+        bool Load = Op == G.Reload || Op == G.Restore;
+        bool Image = Op == G.Save || Op == G.Restore;
+        EXPECT_TRUE(Desc.isPseudo());
+        EXPECT_TRUE(Desc.hasUnmodeledSideEffects());
+        EXPECT_EQ(Desc.mayLoad(), Load);
+        EXPECT_EQ(Desc.mayStore(), !Load);
+        EXPECT_EQ(Desc.getNumDefs(), unsigned(Load) + (Image ? 2 : 0));
+        ASSERT_EQ(Desc.getNumOperands(), Image ? 7U : 3U);
+        unsigned Matrix = Op == G.Save ? 2 : 0;
+        EXPECT_EQ(Desc.operands()[Matrix].RegClass, int(G.RC));
+        if (Image) {
+          unsigned Scratch = Load ? 1 : 0;
+          for (unsigned I = Scratch; I != Scratch + 2; ++I) {
+            EXPECT_EQ(Desc.operands()[I].RegClass, RISCV::GPRNoX0RegClassID);
+            EXPECT_GE(Desc.getOperandConstraint(I, MCOI::EARLY_CLOBBER), 0);
+          }
+          for (unsigned I = 3; I != 6; ++I)
+            EXPECT_EQ(Desc.operands()[I].RegClass, RISCV::GPRRegClassID);
+        } else {
+          EXPECT_EQ(Desc.operands()[1].RegClass, RISCV::GPRRegClassID);
+        }
+        EXPECT_EQ(Desc.operands()[Desc.getNumOperands() - 1].RegClass, -1);
+        EXPECT_EQ(getPseudoInfo(Op), nullptr);
+        EXPECT_EQ(getDAGNodeInfo(Op), nullptr);
+      }
+  }
+}
+
 } // namespace
