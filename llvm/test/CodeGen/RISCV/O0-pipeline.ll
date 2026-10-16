@@ -52,6 +52,7 @@
 ; CHECK-NEXT:       Fast Register Allocator
 ; CHECK-NEXT:       RISC-V Insert VSETVLI pass
 ; CHECK-NEXT:       Fast Register Allocator
+; CHECK-NEXT:       RISC-V Ztt post-regalloc pseudo instruction expansion pass
 ; CHECK-NEXT:       Remove Redundant DEBUG_VALUE analysis
 ; CHECK-NEXT:       Fixup Statepoint Caller Saved
 ; CHECK-NEXT:       Lazy Machine Block Frequency Analysis

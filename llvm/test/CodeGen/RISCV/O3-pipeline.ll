@@ -183,6 +183,7 @@
 ; CHECK-NEXT:       Stack Slot Coloring
 ; CHECK-NEXT:       Machine Copy Propagation Pass
 ; CHECK-NEXT:       Machine Loop Invariant Code Motion
+; CHECK-NEXT:       RISC-V Ztt post-regalloc pseudo instruction expansion pass
 ; CHECK-NEXT:       RISC-V Redundant Copy Elimination
 ; CHECK-NEXT:       Remove Redundant DEBUG_VALUE analysis
 ; CHECK-NEXT:       Fixup Statepoint Caller Saved

@@ -236,6 +236,8 @@ public:
 };
 FunctionPass *createRISCVZttPromoteAllocasLegacyPass();
 void initializeRISCVZttPromoteAllocasLegacyPass(PassRegistry &);
+FunctionPass *createRISCVZttPostRAExpandPseudoPass();
+void initializeRISCVZttPostRAExpandPseudoPass(PassRegistry &);
 } // namespace llvm
 
 #endif

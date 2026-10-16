@@ -152,6 +152,7 @@ extern "C" LLVM_ABI LLVM_EXTERNAL_VISIBILITY void LLVMInitializeRISCVTarget() {
   initializeRISCVAsmPrinterPass(*PR);
   initializeRISCVPromoteConstantPass(*PR);
   initializeRISCVZttPromoteAllocasLegacyPass(*PR);
+  initializeRISCVZttPostRAExpandPseudoPass(*PR);
 }
 
 static Reloc::Model getEffectiveRelocModel(const Triple &TT,
@@ -680,6 +681,7 @@ void RISCVPassConfig::addFastRegAlloc() {
 
 
 void RISCVPassConfig::addPostRegAlloc() {
+  addPass(createRISCVZttPostRAExpandPseudoPass());
   if (TM->getOptLevel() != CodeGenOptLevel::None &&
       EnableRedundantCopyElimination)
     addPass(createRISCVRedundantCopyEliminationPass());
