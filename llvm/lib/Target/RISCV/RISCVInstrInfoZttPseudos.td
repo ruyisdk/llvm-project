@@ -71,6 +71,7 @@ class ZttOperationRecord<RISCVZttOperation op> {
   bit IsLoad = 0;
   bit HasScratch = 0;
   bit Transposed = 0;
+  string Name = !subst("_", ".", op.Name);
 }
 
 // Shared operation IDs keep machine tables independent of intrinsic IDs.
@@ -86,7 +87,7 @@ def ZttOperationTable : GenericTable {
   let Fields = ["Operation", "IsAcc", "OperandLayout", "Kind", "BaseOpcode",
                 "NumSources", "HasChain", "SameGroups", "HasOld", "Pairwise",
                 "HasSideEffects", "HasScalar", "HasScalarType", "IsLoad",
-                "HasScratch", "Transposed"];
+                "HasScratch", "Transposed", "Name"];
   string TypeOf_Operation = "ZttOperationID";
   string TypeOf_OperandLayout = "code";
   string TypeOf_Kind = "code";

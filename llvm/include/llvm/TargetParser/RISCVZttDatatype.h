@@ -43,6 +43,12 @@ inline constexpr uint32_t floatingType(unsigned Bits, unsigned ExponentBits,
          Bits | ((Options & RoundingMask) << FloatRoundingShift);
 }
 
+// The low byte holds the element width for integer and floating types.
+inline constexpr uint32_t SizeMask = 0xff;
+inline constexpr unsigned elementBits(uint32_t Descriptor) {
+  return Descriptor & SizeMask;
+}
+
 } // namespace llvm::RISCVZtt
 
 #endif

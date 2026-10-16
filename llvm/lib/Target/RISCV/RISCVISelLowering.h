@@ -653,6 +653,10 @@ private:
 
   std::pair<const TargetRegisterClass *, uint8_t>
   findRepresentativeClass(const TargetRegisterInfo *TRI, MVT VT) const override;
+
+  // Lower matrix intrinsics to Ztt DAG nodes.
+  SDValue lowerZttIntrinsic(SDValue Op, SelectionDAG &DAG,
+                            unsigned IntNo) const;
 };
 
 namespace RISCVVIntrinsicsTable {

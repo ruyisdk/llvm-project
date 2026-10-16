@@ -17,6 +17,7 @@
 #include "RISCVISelLowering.h"
 #include "RISCVInstrInfo.h"
 #include "RISCVSelectionDAGInfo.h"
+#include "RISCVZttUtils.h"
 #include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/IR/IntrinsicsRISCV.h"
 #include "llvm/Support/Alignment.h"
@@ -3414,6 +3415,17 @@ void RISCVDAGToDAGISel::Select(SDNode *Node) {
   }
 
   // Select the default instruction.
+  if (const auto *Info = RISCVZttLowering::getDAGOperationInfo(Opcode)) {
+    if (Info->Kind == RISCVZttInstrInfo::CodeGenKind::Matmul)
+      selectZttMatmul(Node, Info->Operation, Info->getName());
+    else if (Info->Layout != RISCVZttInstrInfo::OperandLayout::Matrix)
+      selectZttOperandLayout(Node);
+    else
+      selectZttSlice(Node, Info->Operation, Info->NumSources, Info->HasChain,
+                     Info->SameGroups, Info->getName(), Info->HasOld);
+    return;
+  }
+
   SelectCode(Node);
 }
 
@@ -5231,3 +5243,123 @@ RISCVDAGToDAGISelLegacy::RISCVDAGToDAGISelLegacy(RISCVTargetMachine &TM,
           ID, std::make_unique<RISCVDAGToDAGISel>(TM, OptLevel)) {}
 
 INITIALIZE_PASS(RISCVDAGToDAGISelLegacy, DEBUG_TYPE, PASS_NAME, false, false)
+
+// Select a slice operation from its source/result register groups.
+// Move a chain to the last machine operand; old_d shares the result group.
+void RISCVDAGToDAGISel::selectZttSlice(SDNode *Node, unsigned Operation,
+                                       unsigned NumSources, bool HasChain,
+                                       bool SameGroups, StringRef Name,
+                                       bool HasOldDestination) {
+  auto GroupSize = [&](MVT VT) {
+    return getZttMRegisterGroupSize(getZttMatrixLogicalBits(VT),
+                                    Subtarget->getZttUdsBits());
+  };
+  unsigned DstGroup = GroupSize(Node->getSimpleValueType(0));
+  unsigned SrcGroups[2] = {};
+  for (unsigned I = 0; I != NumSources; ++I) {
+    SrcGroups[I] = GroupSize(
+        Node->getOperand(I + unsigned(HasChain) + unsigned(HasOldDestination))
+            .getSimpleValueType());
+    if (SameGroups && DstGroup != SrcGroups[I])
+      report_fatal_error(Twine("Ztt ") + Name +
+                         " requires matching M register groups");
+  }
+  const auto *Pseudo = RISCVZttInstrInfo::getPseudoForGroups(
+      Operation, DstGroup, SrcGroups[0], SrcGroups[1]);
+  assert(Pseudo && "missing Ztt pseudo group mapping");
+  SmallVector<SDValue, 10> Ops;
+  for (unsigned I = unsigned(HasChain); I != Node->getNumOperands(); ++I)
+    Ops.push_back(Node->getOperand(I));
+  if (HasChain)
+    Ops.push_back(Node->getOperand(0));
+  ReplaceNode(Node, CurDAG->getMachineNode(Pseudo->Pseudo, SDLoc(Node),
+                                           Node->getVTList(), Ops));
+}
+
+// A hardware matmul handles the largest packed-square count of its sources.
+void RISCVDAGToDAGISel::selectZttMatmul(SDNode *Node, unsigned Operation,
+                                        StringRef Name) {
+  MVT AccVT = Node->getSimpleValueType(0);
+  MVT LVT = Node->getOperand(1).getSimpleValueType();
+  MVT RVT = Node->getOperand(2).getSimpleValueType();
+  unsigned AccGroup = 1U << (AccVT.SimpleTy - unsigned(MVT::riscv_ztta1));
+  unsigned UdsBits = Subtarget->getZttUdsBits();
+  auto GetMGroup = [&](MVT VT) {
+    unsigned LogicalBits = getZttMatrixLogicalBits(VT);
+    unsigned Group = getZttMRegisterGroupSize(LogicalBits, UdsBits);
+    return Group;
+  };
+  unsigned LGroup = GetMGroup(LVT);
+  unsigned RGroup = GetMGroup(RVT);
+  unsigned K = cast<ConstantSDNode>(Node->getOperand(3))->getZExtValue();
+  unsigned LLogicalBits = getZttMatrixLogicalBits(LVT);
+  unsigned RLogicalBits = getZttMatrixLogicalBits(RVT);
+  if (!K || LLogicalBits % K || RLogicalBits % K)
+    report_fatal_error(Twine("Ztt ") + Name +
+                       " K must divide both source logical sizes");
+  unsigned SquaresPerOp =
+      std::max(getZttSquaresPerMRegister(LLogicalBits / K, UdsBits),
+               getZttSquaresPerMRegister(RLogicalBits / K, UdsBits));
+  unsigned NumOps = divideCeil(K, SquaresPerOp);
+  const auto *Pseudo = RISCVZttInstrInfo::getPseudoForGroups(
+      Operation, AccGroup, LGroup, RGroup);
+  assert(Pseudo && "missing Ztt matmul pseudo group mapping");
+  SDLoc DL(Node);
+  SDValue Ops[] = {
+      Node->getOperand(0), Node->getOperand(1), Node->getOperand(2),
+      CurDAG->getTargetConstant(NumOps, DL, Subtarget->getXLenVT())};
+  ReplaceNode(
+      Node, CurDAG->getMachineNode(Pseudo->Pseudo, DL, Node->getVTList(), Ops));
+}
+
+bool RISCVDAGToDAGISel::selectZttOperandLayout(SDNode *Node) {
+  using namespace RISCVZttInstrInfo;
+  const auto *P = RISCVZttLowering::getDAGPseudoInfo(Node->getOpcode());
+  if (!P)
+    return false;
+  const auto *Info = getOperationInfo(P->Operation);
+  assert(Info && "missing Ztt operation");
+  auto MGroup = [&](MVT VT) {
+    return getZttMRegisterGroupSize(getZttMatrixLogicalBits(VT),
+                                    Subtarget->getZttUdsBits());
+  };
+  unsigned G = P->DstGroup, S = 0, R = 0;
+  switch (Info->Layout) {
+  case OperandLayout::CrossCopy: {
+    bool ToAcc = Info->IsAcc;
+    MVT AccVT = ToAcc ? Node->getSimpleValueType(0)
+                      : Node->getOperand(0).getSimpleValueType();
+    MVT MVTy = ToAcc ? Node->getOperand(0).getSimpleValueType()
+                     : Node->getSimpleValueType(0);
+    G = 1U << (AccVT.SimpleTy - unsigned(MVT::riscv_ztta1));
+    S = MGroup(MVTy);
+    if (!ToAcc)
+      std::swap(G, S);
+    break;
+  }
+  case OperandLayout::Extract:
+    G = MGroup(Node->getSimpleValueType(0));
+    S = MGroup(Node->getOperand(unsigned(Info->HasChain)).getSimpleValueType());
+    break;
+  case OperandLayout::StridedMemory:
+    G = MGroup(Info->IsLoad ? Node->getSimpleValueType(0)
+                            : Node->getOperand(3).getSimpleValueType());
+    break;
+  default:
+    break;
+  }
+  P = getPseudoForGroups(Info->Operation, G, S, R);
+  if (!P)
+    llvm_unreachable("unsupported Ztt M/Acc copy register groups");
+  SmallVector<SDValue, 8> Ops;
+  for (unsigned I = unsigned(Info->HasChain); I != Node->getNumOperands(); ++I)
+    Ops.push_back(Node->getOperand(I));
+  if (Info->HasChain)
+    Ops.push_back(Node->getOperand(0));
+  auto *Selected =
+      CurDAG->getMachineNode(P->Pseudo, SDLoc(Node), Node->getVTList(), Ops);
+  if (Info->isMemory())
+    CurDAG->setNodeMemRefs(Selected, {cast<MemSDNode>(Node)->getMemOperand()});
+  ReplaceNode(Node, Selected);
+  return true;
+}

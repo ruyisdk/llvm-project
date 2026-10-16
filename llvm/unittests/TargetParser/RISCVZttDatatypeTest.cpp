@@ -49,3 +49,16 @@ TEST(RISCVZttDatatype, FloatingPoint) {
     }
   }
 }
+
+TEST(RISCVZttDatatype, ElementBits) {
+  for (unsigned Bits : {4U, 8U, 16U, 32U, 64U, 128U})
+    for (uint32_t Prefix : {0x00000000U, 0x08000000U, 0x10000000U, 0x18000000U,
+                            0x20000000U, 0x28000000U, 0x30000000U, 0x38000000U})
+      for (uint32_t Sign : {0U, 0x40000000U})
+        EXPECT_EQ(elementBits(Prefix | Sign | Bits), Bits);
+  for (uint32_t Descriptor :
+       {0x14300110U, 0x20300110U, 0x20300120U, 0x2c300140U})
+    for (uint32_t Rounding :
+         {0U, 0x00400000U, 0x00800000U, 0x00c00000U, 0x01000000U, 0x01400000U})
+      EXPECT_EQ(elementBits(Descriptor | Rounding), Descriptor & 255U);
+}

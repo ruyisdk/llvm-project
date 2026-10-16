@@ -532,8 +532,10 @@ struct OperationInfo {
   bool HasScalar, HasScalarType;
   bool IsLoad, HasScratch;
   bool Transposed;
+  StringTable::Offset Name;
 
   bool isMemory() const { return Kind == CodeGenKind::Memory; }
+  StringRef getName() const;
 };
 
 /// Physical register counts; zero means absent or fixed by the operand layout.
@@ -555,6 +557,10 @@ struct MDPreservingInfo {
 #define GET_ZttOperationTable_DECL
 #define GET_ZttPseudoTable_DECL
 #include "RISCVGenSearchableTables.inc"
+
+inline StringRef OperationInfo::getName() const {
+  return getOperationInfoStr(Name);
+}
 
 inline const PseudoInfo *getPseudoForGroups(unsigned Operation, unsigned Dst,
                                             unsigned Src0 = 0,
