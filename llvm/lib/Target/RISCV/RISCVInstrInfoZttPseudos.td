@@ -173,3 +173,117 @@ foreach Op = !instances<ZttInitOperation>() in {
     }
   }
 }
+
+//===----------------------------------------------------------------------===//
+// Copy, concat and extract.
+//===----------------------------------------------------------------------===//
+
+class ZttTransferOperation<RISCVZttOperation op, string layout, string node>
+    : ZttOperationRecord<op> {
+  let OperandLayout = "OperandLayout::" # layout;
+  let DAGOpcode = "RISCVISD::" # node;
+}
+
+// Source/result types match; the remaining operands use XLEN.
+def SDT_ZttMCopy : SDTypeProfile<1, 3,
+    [SDTCisSameAs<0, 1>, SDTCisVT<2, XLenVT>, SDTCisVT<3, XLenVT>]>;
+
+foreach Op = !instances<RISCVZttCopyM2M>() in {
+  def "ztt_transfer_" # Op.Name : ZttTransferOperation<Op, "Copy", "ZTT_MCOPY_M1">;
+  defvar Info = !cast<ZttTransferOperation>("ztt_transfer_" # Op.Name);
+  def : ZttIntrinsicLowering<Info>;
+  foreach G = ZttMGroupSizes in {
+    defvar RC = ZttMRegClass<G>.RC;
+    def ztt_mcopy_m # G : RVSDNode<"ZTT_MCOPY_M" # G, SDT_ZttMCopy>;
+    def PseudoZTTMCopyM # G : ZttRegisterPseudo<(outs RC:$rd),
+        (ins RC:$src, ztt_xlenimm:$regs_per_unit, GPR:$dtype), 1> {
+      let Constraints = "@earlyclobber $rd";
+    }
+    def : ZttGroupMapping<Info, G> {
+      let Pseudo = !cast<Instruction>("PseudoZTTMCopyM" # G);
+      let DAGOpcode = "RISCVISD::ZTT_MCOPY_M" # G;
+    }
+  }
+}
+
+// The two source types match; the result uses twice their register group.
+def SDT_ZttMConcat : SDTypeProfile<1, 4,
+    [SDTCisSameAs<1, 2>, SDTCisVT<3, XLenVT>, SDTCisVT<4, XLenVT>]>;
+
+foreach Op = !instances<RISCVZttConcat>() in {
+  def "ztt_transfer_" # Op.Name : ZttTransferOperation<Op, "Concat", "ZTT_MCONCAT_M2">;
+  defvar Info = !cast<ZttTransferOperation>("ztt_transfer_" # Op.Name);
+  def : ZttIntrinsicLowering<Info>;
+  foreach G = [2, 4, 8, 16, 32] in {
+    defvar RC = ZttMRegClass<G>.RC;
+    defvar Half = ZttMRegClass<!srl(G, 1)>.RC;
+    def ztt_mconcat_m # G : RVSDNode<"ZTT_MCONCAT_M" # G, SDT_ZttMConcat>;
+    def PseudoZTTMConcatM # G : ZttRegisterPseudo<(outs RC:$rd),
+        (ins Half:$lhs, Half:$rhs, ztt_xlenimm:$regs_per_square, GPR:$dtype), 1> {
+      let Constraints = "@earlyclobber $rd";
+    }
+    def : ZttGroupMapping<Info, G> {
+      let Pseudo = !cast<Instruction>("PseudoZTTMConcatM" # G);
+      let DAGOpcode = "RISCVISD::ZTT_MCONCAT_M" # G;
+    }
+  }
+}
+
+// M and ACC use separate groups; layout and datatype operands use XLEN.
+def SDT_ZttMCopyCross : SDTypeProfile<1, 4,
+    [SDTCisVT<2, XLenVT>, SDTCisVT<3, XLenVT>, SDTCisVT<4, XLenVT>]>;
+
+foreach Op = !listconcat(!instances<RISCVZttCopyM2A>(),
+                        !instances<RISCVZttCopyA2M>()) in {
+  defvar Node = "ZTT_" # !toupper(Op.Name);
+  def "ztt_transfer_" # Op.Name : ZttTransferOperation<Op, "CrossCopy", Node>;
+  defvar Info = !cast<ZttTransferOperation>("ztt_transfer_" # Op.Name);
+  defvar Prefix = !if(Info.IsAcc, "PseudoZTTMCopyM2A", "PseudoZTTMCopyA2M");
+  def : ZttIntrinsicLowering<Info>;
+  def "ztt_" # Op.Name : RVSDNode<Node, SDT_ZttMCopyCross>;
+  foreach A = ZttAGroupSizes in
+    foreach M = ZttMGroupSizes in
+      if !or(!eq(A, 1), !le(M, !mul(A, 4))) then {
+        defvar ARC = ZttARegClass<A>.RC;
+        defvar MRC = ZttMRegClass<M>.RC;
+        defvar Name = Prefix # "_A" # A # "_M" # M;
+        def Name : ZttRegisterPseudo<
+            !if(Info.IsAcc, (outs ARC:$rd), (outs MRC:$rd)),
+            !con(!if(Info.IsAcc, (ins MRC:$src), (ins ARC:$src)),
+                 (ins ztt_xlenimm:$mregs_per_square,
+                      ztt_xlenimm:$accs_per_move, GPR:$dtype)), 1>;
+        def : ZttGroupMapping<Info, !if(Info.IsAcc, A, M),
+                                   !if(Info.IsAcc, M, A)> {
+          let Pseudo = !cast<Instruction>(Name);
+          let DAGOpcode = Info.DAGOpcode;
+        }
+      }
+}
+
+// Source, constant half index, datatype, move count and registers per square.
+def SDT_ZttMextract : SDTypeProfile<1, 5,
+    [SDTCisVT<2, XLenVT>, SDTCisVT<3, XLenVT>,
+     SDTCisVT<4, XLenVT>, SDTCisVT<5, XLenVT>]>;
+
+foreach Op = !instances<RISCVZttExtract>() in {
+  def "ztt_transfer_" # Op.Name : ZttTransferOperation<Op, "Extract", "ZTT_MEXTRACT">;
+  defvar Info = !cast<ZttTransferOperation>("ztt_transfer_" # Op.Name);
+  def : ZttIntrinsicLowering<Info>;
+  def ztt_mextract : RVSDNode<"ZTT_MEXTRACT", SDT_ZttMextract>;
+  foreach D = ZttMGroupSizes in
+    foreach S = ZttMGroupSizes in {
+      defvar DRC = ZttMRegClass<D>.RC;
+      defvar SRC = ZttMRegClass<S>.RC;
+      defvar Name = "PseudoZTTMextract_G0" # !if(!lt(D, 10), "0", "") # D #
+                   "_G1" # !if(!lt(S, 10), "0", "") # S;
+      def Name : ZttRegisterPseudo<(outs DRC:$rd),
+          (ins SRC:$s0, ztt_xlenimm:$scalar, GPR:$dtype,
+               ztt_xlenimm:$num_ops, ztt_xlenimm:$regs_per_square), 0> {
+        let Constraints = "@earlyclobber $rd";
+      }
+      def : ZttGroupMapping<Info, D, S> {
+        let Pseudo = !cast<Instruction>(Name);
+        let DAGOpcode = Info.DAGOpcode;
+      }
+    }
+}
