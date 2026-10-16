@@ -543,4 +543,71 @@ TEST(RISCVZttInstrInfo, ComputationOperandKinds) {
   }
 }
 
+TEST(RISCVZttInstrInfo, MatmulGroups) {
+  LLVMInitializeRISCVTargetInfo();
+  LLVMInitializeRISCVTargetMC();
+  const unsigned MClasses[] = {
+      RISCV::ZTTMRRegClassID,    RISCV::ZTTMRM2RegClassID,
+      RISCV::ZTTMRM4RegClassID,  RISCV::ZTTMRM8RegClassID,
+      RISCV::ZTTMRM16RegClassID, RISCV::ZTTMRM32RegClassID};
+  const unsigned AClasses[] = {RISCV::ZTTARRegClassID, RISCV::ZTTARM2RegClassID,
+                               RISCV::ZTTARM4RegClassID,
+                               RISCV::ZTTARM8RegClassID};
+  for (StringRef TripleName : {"riscv32", "riscv64"}) {
+    std::string Error;
+    const Target *T = TargetRegistry::lookupTarget(Triple(TripleName), Error);
+    ASSERT_NE(T, nullptr) << Error;
+    std::unique_ptr<MCInstrInfo> MCII(T->createMCInstrInfo());
+    for (unsigned ID :
+         {Intrinsic::riscv_ztt_mmulacc_2d, Intrinsic::riscv_ztt_mmulaccneg_2d,
+          Intrinsic::riscv_ztt_mmulatacc_2d,
+          Intrinsic::riscv_ztt_mmulataccneg_2d,
+          Intrinsic::riscv_ztt_mmulbtacc_2d,
+          Intrinsic::riscv_ztt_mmulbtaccneg_2d}) {
+      const auto *Hook = getIntrinsicLoweringInfo(ID);
+      ASSERT_NE(Hook, nullptr);
+      const auto *Op = getOperationInfo(Hook->Operation);
+      ASSERT_NE(Op, nullptr);
+      EXPECT_EQ(Op->Kind, CodeGenKind::Matmul);
+      EXPECT_TRUE(Op->HasOld);
+      EXPECT_TRUE(Op->HasSideEffects);
+      EXPECT_TRUE(Op->IsAcc);
+      EXPECT_FALSE(Op->HasChain);
+      EXPECT_FALSE(Op->SameGroups);
+      EXPECT_EQ(Op->NumSources, 2U);
+      EXPECT_EQ(Hook->Opcode, ISD::INTRINSIC_WO_CHAIN);
+      for (unsigned A = 0; A != 4; ++A)
+        for (unsigned L = 0; L != 6; ++L)
+          for (unsigned R = 0; R != 6; ++R) {
+            const auto *P =
+                getPseudoForGroups(Op->Operation, 1U << A, 1U << L, 1U << R);
+            ASSERT_NE(P, nullptr);
+            EXPECT_EQ(getPseudoInfo(P->Pseudo), P);
+            EXPECT_EQ(getDAGNodeInfo(P->Pseudo)->DAGOpcode, Hook->DAGOpcode);
+            EXPECT_EQ(getDAGOperationInfo(Hook->DAGOpcode), Op);
+            const auto &Desc = MCII->get(P->Pseudo);
+            EXPECT_EQ(Desc.getNumDefs(), 1U);
+            ASSERT_EQ(Desc.getNumOperands(), 5U);
+            EXPECT_TRUE(Desc.isPseudo());
+            EXPECT_TRUE(Desc.hasUnmodeledSideEffects());
+            EXPECT_FALSE(Desc.mayLoad());
+            EXPECT_FALSE(Desc.mayStore());
+            EXPECT_EQ(Desc.operands()[0].RegClass, int(AClasses[A]));
+            EXPECT_EQ(Desc.operands()[1].RegClass, int(AClasses[A]));
+            EXPECT_EQ(Desc.operands()[2].RegClass, int(MClasses[L]));
+            EXPECT_EQ(Desc.operands()[3].RegClass, int(MClasses[R]));
+            EXPECT_EQ(Desc.operands()[4].RegClass, -1);
+            EXPECT_EQ(Desc.getOperandConstraint(1, MCOI::TIED_TO), 0);
+            EXPECT_EQ(Desc.getOperandConstraint(0, MCOI::EARLY_CLOBBER), -1);
+          }
+      EXPECT_EQ(getPseudoForGroups(Op->Operation, 16, 1, 1), nullptr);
+      EXPECT_EQ(getPseudoForGroups(Op->Operation, 1, 3, 1), nullptr);
+      EXPECT_EQ(getPseudoForGroups(Op->Operation, 1, 1, 64), nullptr);
+    }
+  }
+  const auto *P = getPseudoForGroups(MMULACC_2D, 8, 16, 2);
+  ASSERT_NE(P, nullptr);
+  EXPECT_EQ(P->Pseudo, RISCV::PseudoZTTMMulAcc2D_A8_L16_R2);
+}
+
 } // namespace

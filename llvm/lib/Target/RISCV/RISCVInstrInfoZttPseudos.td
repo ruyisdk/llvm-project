@@ -379,3 +379,46 @@ foreach Op = !instances<RISCVZttCompute>() in
           }
         }
   }
+
+//===----------------------------------------------------------------------===//
+// Matrix multiplication.
+//===----------------------------------------------------------------------===//
+
+class ZttMatmulOperation<RISCVZttMatmul op> : ZttOperationRecord<op> {
+  let OperandLayout = "OperandLayout::Matrix";
+  let DAGOpcode = "RISCVISD::ZTT_" # !toupper(op.Name);
+  let BaseOpcode = !cast<Instruction>("ZTT_" # !toupper(op.Name));
+  let NumSources = op.NumMatrixArgs;
+  let HasOld = op.HasOldResult;
+  let HasSideEffects = 1;
+  string PseudoPrefix = !if(!eq(op.Name, "mmulacc_2d"), "PseudoZTTMMulAcc2D",
+      "PseudoZTTM" # !subst("_", "", !substr(op.Name, 1)));
+}
+
+def SDT_ZttMatmul : SDTypeProfile<1, 4,
+    [SDTCisSameAs<0, 1>, SDTCisVT<4, XLenVT>]>;
+
+// The complete ACC group is tied, although hardware updates its first square.
+class ZttMatmulPseudo<RegisterClass acc, RegisterClass lhs, RegisterClass rhs>
+    : ZttRegisterPseudo<(outs acc:$rd),
+        (ins acc:$acc, lhs:$lhs, rhs:$rhs, ztt_xlenimm:$num_ops), 1> {
+  let Constraints = "$rd = $acc";
+}
+
+foreach Op = !instances<RISCVZttMatmul>() in {
+  def "ztt_matmul_" # Op.Name : ZttMatmulOperation<Op>;
+  defvar Info = !cast<ZttMatmulOperation>("ztt_matmul_" # Op.Name);
+  def : ZttIntrinsicLowering<Info>;
+  def "ztt_" # Op.Name : RVSDNode<"ZTT_" # !toupper(Op.Name), SDT_ZttMatmul>;
+  foreach A = ZttAGroupSizes in
+    foreach L = ZttMGroupSizes in
+      foreach R = ZttMGroupSizes in {
+        defvar Name = Info.PseudoPrefix # "_A" # A # "_L" # L # "_R" # R;
+        def Name : ZttMatmulPseudo<ZttARegClass<A>.RC,
+                                  ZttMRegClass<L>.RC, ZttMRegClass<R>.RC>;
+        def : ZttGroupMapping<Info, A, L, R> {
+          let Pseudo = !cast<Instruction>(Name);
+          let DAGOpcode = Info.DAGOpcode;
+        }
+      }
+}
