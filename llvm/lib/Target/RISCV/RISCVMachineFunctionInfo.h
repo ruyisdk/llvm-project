@@ -283,6 +283,13 @@ public:
   // Ordinary stack slots protecting borrowed GPRs during image transfers.
   SmallVector<int, 5> ZttScratchFIs;
   bool hasZttMSpills() const { return ZttMSpillUnits != 0; }
+
+  // Retain ACC element widths before register allocation and slot coloring.
+  DenseMap<int, unsigned> ZttAccSpillBits;
+  // Reusable M protection image, used only within an ACC save or restore.
+  int ZttAccScratchFI = 0;
+  unsigned ZttAccScratchOffset = 0;
+  bool ZttHasAccSpills = false;
 };
 
 } // end namespace llvm

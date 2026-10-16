@@ -84,6 +84,7 @@ add_llvm_target(RISCVCodeGen
   RISCVZttPromoteAllocas.cpp
   RISCVZttPostRAExpandPseudoInsts.cpp
   RISCVZttSpill.cpp
+  RISCVZttAccSpill.cpp
   GISel/RISCVCallLowering.cpp
   GISel/RISCVInlineAsmLowering.cpp
   GISel/RISCVInstructionSelector.cpp

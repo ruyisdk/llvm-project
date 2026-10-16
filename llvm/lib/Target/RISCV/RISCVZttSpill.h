@@ -26,8 +26,14 @@ bool emitZttSpill(MachineBasicBlock &MBB, MachineBasicBlock::iterator I,
                   MachineInstr::MIFlag Flags);
 /// Decode allocator image pseudos. Zero means an unrelated instruction.
 unsigned getZttSpillGroup(unsigned Opcode, bool &IsLoad);
+/// Decode ACC spill pseudos. Zero means an unrelated instruction.
+unsigned getZttAccSpillGroup(unsigned Opcode, bool &IsLoad);
+/// Turn ACC COPYs into save/reload pairs while typed producers are available.
+bool prepareZttAccCopies(MachineFunction &MF);
 /// Finalize M/ACC image slots after allocation and stack-slot coloring.
 bool prepareZttSpillFrame(MachineFunction &MF);
+/// Expand ACC transfers after M producers and copies expose their layouts.
+bool expandZttAccSpills(MachineFunction &MF);
 /// Borrowable (not necessarily dead) GPRs, excluding every reserved register.
 /// Callers must preserve live values; no globally free registers are required.
 SmallVector<Register, 5> getZttSpillScratchRegs(const MachineFunction &MF);

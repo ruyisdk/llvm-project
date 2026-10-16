@@ -47,6 +47,21 @@ unsigned llvm::getZttSpillGroup(unsigned Opcode, bool &IsLoad) {
   }
 }
 
+unsigned llvm::getZttAccSpillGroup(unsigned Opcode, bool &IsLoad) {
+  switch (Opcode) {
+#define RISCV_ZTT_ACC_GROUP(G, Class)                                          \
+  case RISCV::PseudoZTTASpillA##G:                                             \
+    IsLoad = false;                                                            \
+    return G;                                                                  \
+  case RISCV::PseudoZTTAReloadA##G:                                            \
+    IsLoad = true;                                                             \
+    return G;
+#include "RISCVZttRegisterGroups.def"
+  default:
+    return 0;
+  }
+}
+
 bool llvm::emitZttSpill(MachineBasicBlock &MBB, MachineBasicBlock::iterator I,
                         Register Reg, bool IsLoad, bool Kill, int FI,
                         const TargetRegisterClass *RC, Register VReg,
@@ -54,6 +69,35 @@ bool llvm::emitZttSpill(MachineBasicBlock &MBB, MachineBasicBlock::iterator I,
   unsigned Group = 0, Spill = 0, Reload = 0;
   auto &MF = *MBB.getParent();
   const auto &ST = MF.getSubtarget<RISCVSubtarget>();
+#define RISCV_ZTT_ACC_GROUP(N, Class)                                          \
+  if (RISCV::Class.hasSubClassEq(RC)) {                                        \
+    Group = N;                                                                 \
+    Spill = RISCV::PseudoZTTASpillA##N;                                        \
+    Reload = RISCV::PseudoZTTAReloadA##N;                                      \
+  }
+#include "RISCVZttRegisterGroups.def"
+  if (Group) {
+    auto Bits = getZttAccElementBits(VReg ? VReg : Reg, MF, ST.getZttUdsBits());
+    auto &Saved = MF.getInfo<RISCVMachineFunctionInfo>()->ZttAccSpillBits;
+    if (!Bits && Saved.count(FI))
+      Bits = Saved.lookup(FI);
+    if (!Bits)
+      reportFatalUsageError("Ztt ACC spill element width is unavailable");
+    if (!getZttAccTransferLayout(*Bits, Group, ST.getZttUdsBits()))
+      reportFatalUsageError("Ztt ACC spill requires a complete transfer group");
+    Saved[FI] = *Bits;
+    auto *MMO = MF.getMachineMemOperand(
+        MachinePointerInfo::getFixedStack(MF, FI),
+        IsLoad ? MachineMemOperand::MOLoad : MachineMemOperand::MOStore,
+        LocationSize::beforeOrAfterPointer(), Align(1));
+    BuildMI(MBB, I, DebugLoc(), ST.getInstrInfo()->get(IsLoad ? Reload : Spill))
+        .addReg(Reg, IsLoad ? RegState::Define : getKillRegState(Kill))
+        .addFrameIndex(FI)
+        .addImm(*Bits)
+        .addMemOperand(MMO)
+        .setMIFlag(Flags);
+    return true;
+  }
 #define RISCV_ZTT_M_GROUP(N, Class)                                            \
   if (RISCV::Class.hasSubClassEq(RC)) {                                        \
     Group = N;                                                                 \
@@ -134,6 +178,19 @@ bool llvm::prepareZttSpillFrame(MachineFunction &MF) {
       bool IsLoad;
       unsigned Group = getZttSpillGroup(MI.getOpcode(), IsLoad);
       unsigned Units = Group;
+      if (!Group) {
+        Group = getZttAccSpillGroup(MI.getOpcode(), IsLoad);
+        if (Group) {
+          auto L = getZttAccTransferLayout(
+              MI.getOperand(2).getImm(), Group,
+              MF.getSubtarget<RISCVSubtarget>().getZttUdsBits());
+          if (!L)
+            reportFatalUsageError(
+                "Ztt ACC spill requires a complete transfer group");
+          Units = L->Units;
+          Info.ZttHasAccSpills = true;
+        }
+      }
       if (!Group)
         continue;
       int FI = MI.getOperand(1).getIndex();
@@ -159,6 +216,12 @@ bool llvm::prepareZttSpillFrame(MachineFunction &MF) {
                                                    Slot.Group * 4));
     Frame.setObjectAlignment(Slot.FI,
                              std::max(Frame.getObjectAlign(Slot.FI), Align(4)));
+  }
+  if (Info.ZttHasAccSpills) {
+    unsigned Count = MF.getSubtarget<RISCVSubtarget>().getZttMRegs();
+    Info.ZttAccScratchOffset = Info.ZttMSpillUnits;
+    Info.ZttMSpillUnits += Count;
+    Info.ZttAccScratchFI = Frame.CreateStackObject(Count * 4, Align(4), false);
   }
   if (!Info.hasZttMSpills())
     return false;

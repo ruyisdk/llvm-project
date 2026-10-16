@@ -478,7 +478,7 @@ bool RISCVZttPostRAExpandPseudo::runOnMachineFunction(MachineFunction &MF) {
 
   TII = static_cast<const RISCVInstrInfo *>(MF.getSubtarget().getInstrInfo());
   TRI = MF.getSubtarget().getRegisterInfo();
-  bool Modified = false;
+  bool Modified = prepareZttAccCopies(MF);
   bool FrameChanged = prepareZttSpillFrame(MF);
   Modified |= FrameChanged;
   if (FrameChanged && MF.getInfo<RISCVMachineFunctionInfo>()->ZttMStrideReg)
@@ -494,6 +494,7 @@ bool RISCVZttPostRAExpandPseudo::runOnMachineFunction(MachineFunction &MF) {
     }
   }
   Modified |= expandMCopies(MF);
+  Modified |= expandZttAccSpills(MF);
   return Modified;
 }
 
