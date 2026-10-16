@@ -20,7 +20,9 @@ yaml::RISCVMachineFunctionInfo::RISCVMachineFunctionInfo(
     : VarArgsFrameIndex(MFI.getVarArgsFrameIndex()),
       VarArgsSaveSize(MFI.getVarArgsSaveSize()),
       ZttMArgLayout(MFI.getZttMArgLayout().begin(),
-                    MFI.getZttMArgLayout().end()) {}
+                    MFI.getZttMArgLayout().end()),
+      ZttMFrameFI(MFI.ZttMFrameFI), ZttMSpillUnits(MFI.ZttMSpillUnits),
+      ZttMStrideReg(MFI.ZttMStrideReg) {}
 
 MachineFunctionInfo *RISCVMachineFunctionInfo::clone(
     BumpPtrAllocator &Allocator, MachineFunction &DestMF,
@@ -142,6 +144,9 @@ void RISCVMachineFunctionInfo::initializeBaseYamlFields(
   VarArgsFrameIndex = YamlMFI.VarArgsFrameIndex;
   VarArgsSaveSize = YamlMFI.VarArgsSaveSize;
   ZttMArgLayout = YamlMFI.ZttMArgLayout;
+  ZttMFrameFI = YamlMFI.ZttMFrameFI;
+  ZttMSpillUnits = YamlMFI.ZttMSpillUnits;
+  ZttMStrideReg = YamlMFI.ZttMStrideReg;
 }
 
 void RISCVMachineFunctionInfo::addSExt32Register(Register Reg) {

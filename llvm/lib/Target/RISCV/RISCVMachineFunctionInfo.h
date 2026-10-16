@@ -30,6 +30,10 @@ struct RISCVMachineFunctionInfo final : public yaml::MachineFunctionInfo {
   int VarArgsSaveSize;
   std::vector<int> ZttMArgLayout;
 
+  int ZttMFrameFI = 0;
+  unsigned ZttMSpillUnits = 0;
+  unsigned ZttMStrideReg = 0;
+
   RISCVMachineFunctionInfo() = default;
   RISCVMachineFunctionInfo(const llvm::RISCVMachineFunctionInfo &MFI);
 
@@ -42,6 +46,9 @@ template <> struct MappingTraits<RISCVMachineFunctionInfo> {
     YamlIO.mapOptional("varArgsFrameIndex", MFI.VarArgsFrameIndex);
     YamlIO.mapOptional("varArgsSaveSize", MFI.VarArgsSaveSize);
     YamlIO.mapOptional("zttMArgLayout", MFI.ZttMArgLayout);
+    YamlIO.mapOptional("zttMFrameFI", MFI.ZttMFrameFI, 0);
+    YamlIO.mapOptional("zttMSpillUnits", MFI.ZttMSpillUnits, 0U);
+    YamlIO.mapOptional("zttMStrideReg", MFI.ZttMStrideReg, 0U);
   }
 };
 } // end namespace yaml
@@ -142,7 +149,8 @@ public:
   bool useSaveRestoreLibCalls(const MachineFunction &MF) const {
     // We cannot use fixed locations for the callee saved spill slots if the
     // function uses a varargs save area, or is an interrupt handler.
-    return !isPushable(MF) &&
+    // A restore tail call cannot release the surrounding Ztt runtime area.
+    return !hasZttMSpills() && !isPushable(MF) &&
            MF.getSubtarget<RISCVSubtarget>().enableSaveRestore() &&
            VarArgsSaveSize == 0 && !MF.getFrameInfo().hasTailCall() &&
            !MF.getFunction().hasFnAttribute("interrupt");
@@ -255,6 +263,26 @@ public:
     for (unsigned I = 0; I != Group; ++I)
       ZttMArgLayout[Base + I] = I % Width == 0 ? int(Width) : 0;
   }
+
+  // Fixed metadata slot and payload offset/capacity in physical M registers.
+  // Group counts metadata words; Units counts data registers.
+  struct ZttMSpillSlot {
+    int FI;
+    unsigned Group;
+    unsigned Offset;
+    unsigned Units = 0;
+  };
+  SmallVector<ZttMSpillSlot> ZttMSpillSlots;
+  // Retain square widths while the allocator replaces defining registers.
+  DenseMap<int, unsigned> ZttSpillWidths;
+  // Header above the ordinary frame: total runtime bytes and M register stride.
+  int ZttMFrameFI = 0;
+  unsigned ZttMSpillUnits = 0;
+  // Optional unused saved GPR for the stride; zero uses the stack header.
+  unsigned ZttMStrideReg = 0;
+  // Ordinary stack slots protecting borrowed GPRs during image transfers.
+  SmallVector<int, 5> ZttScratchFIs;
+  bool hasZttMSpills() const { return ZttMSpillUnits != 0; }
 };
 
 } // end namespace llvm

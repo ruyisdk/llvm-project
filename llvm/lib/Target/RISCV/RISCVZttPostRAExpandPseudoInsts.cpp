@@ -12,6 +12,7 @@
 #include "RISCVMachineFunctionInfo.h"
 #include "RISCVSubtarget.h"
 #include "RISCVZttRegisterLayout.h"
+#include "RISCVZttSpill.h"
 #include "llvm/CodeGen/LivePhysRegs.h"
 #include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/MachineFunctionPass.h"
@@ -54,6 +55,12 @@ public:
   }
   StringRef getPassName() const override {
     return "RISC-V Ztt post-regalloc pseudo instruction expansion pass";
+  }
+
+  // PEI also uses this expansion after inserting the spill-area allocation.
+  void expandFrameSize(MachineInstr &MI) {
+    TII = MI.getMF()->getSubtarget<RISCVSubtarget>().getInstrInfo();
+    expandMFrameSize(*MI.getParent(), MI.getIterator());
   }
 
 private:
@@ -128,9 +135,93 @@ private:
   // Save or restore a group's data and square-leader metadata.
   bool expandMImage(MachineBasicBlock &MBB, MachineBasicBlock::iterator MI,
                     unsigned GroupSize, bool IsLoad);
+  // Resolve an allocator spill into protected GPRs and an image transfer.
+  bool expandSpill(MachineBasicBlock &MBB, MachineBasicBlock::iterator MI,
+                   unsigned Group, bool IsLoad);
 };
 
 char RISCVZttPostRAExpandPseudo::ID = 0;
+
+bool RISCVZttPostRAExpandPseudo::expandSpill(MachineBasicBlock &MBB,
+                                             MachineBasicBlock::iterator MI,
+                                             unsigned Group, bool IsLoad) {
+  auto &MF = *MBB.getParent();
+  const auto &Info = *MF.getInfo<RISCVMachineFunctionInfo>();
+  int FI = MI->getOperand(1).getIndex();
+  auto Slot =
+      llvm::find_if(Info.ZttMSpillSlots, [&](auto S) { return S.FI == FI; });
+  assert(Slot != Info.ZttMSpillSlots.end());
+  auto Scratch = getZttSpillScratchRegs(MF);
+  LivePhysRegs Live(*TRI);
+  Live.addLiveOuts(MBB);
+  for (auto I = MBB.rbegin(); &*I != &*MI; ++I)
+    Live.stepBackward(*I);
+  Live.stepBackward(*MI);
+  for (unsigned J = 0; J != 5; ++J) {
+    TII->storeRegToStackSlot(MBB, MI, Scratch[J], false, Info.ZttScratchFIs[J],
+                             &RISCV::GPRRegClass, Register());
+    if (!Live.contains(Scratch[J]))
+      std::prev(MI)->getOperand(0).setIsUndef();
+  }
+  // The arena anchor is an ordinary fixed object immediately above the scalar
+  // frame. Loading the cached stride needs no amenlen or multiplication.
+  Register Data = Scratch[0], Meta = Scratch[1], Stride = Scratch[2];
+  Register Cursor = Scratch[3], Type = Scratch[4];
+  DebugLoc DL = MI->getDebugLoc();
+  BuildMI(MBB, MI, DL, TII->get(RISCV::ADDI), Data)
+      .addFrameIndex(Info.ZttMFrameFI)
+      .addImm(0);
+  unsigned Bytes = MF.getSubtarget<RISCVSubtarget>().getXLen() / 8;
+  if (Info.ZttMStrideReg)
+    Stride = Info.ZttMStrideReg;
+  else
+    BuildMI(MBB, MI, DL, TII->get(Bytes == 8 ? RISCV::LD : RISCV::LW), Stride)
+        .addReg(Data)
+        .addImm(Bytes)
+        .addMemOperand(MF.getMachineMemOperand(MachinePointerInfo(),
+                                               MachineMemOperand::MOLoad, Bytes,
+                                               Align(Bytes)));
+  BuildMI(MBB, MI, DL, TII->get(RISCV::ADDI), Data)
+      .addReg(Data)
+      .addImm(ZttMFrameHeaderSize);
+  // Constant physical-register offsets: add shifted stride terms, without a
+  // hardware multiply or a libcall. This is not a logical-square offset.
+  for (unsigned Bit = 0; (Slot->Offset >> Bit) != 0; ++Bit)
+    if (Slot->Offset & (1U << Bit)) {
+      BuildMI(MBB, MI, DL, TII->get(RISCV::SLLI), Cursor)
+          .addReg(Stride)
+          .addImm(Bit);
+      BuildMI(MBB, MI, DL, TII->get(RISCV::ADD), Data)
+          .addReg(Data)
+          .addReg(Cursor);
+    }
+  BuildMI(MBB, MI, DL, TII->get(RISCV::ADDI), Meta).addFrameIndex(FI).addImm(0);
+  unsigned Opcode;
+  switch (Group) {
+#define RISCV_ZTT_M_GROUP(G, Class)                                            \
+  case G:                                                                      \
+    Opcode =                                                                   \
+        IsLoad ? RISCV::PseudoZTTMRestoreM##G : RISCV::PseudoZTTMSaveM##G;     \
+    break;
+#include "RISCVZttRegisterGroups.def"
+  default:
+    llvm_unreachable("invalid M spill group");
+  }
+  auto Image = BuildMI(MBB, MI, DL, TII->get(Opcode));
+  Register M = MI->getOperand(0).getReg();
+  if (IsLoad)
+    Image.addDef(M).addDef(Cursor).addDef(Type);
+  else
+    Image.addDef(Cursor).addDef(Type).addUse(M);
+  Image.addUse(Data).addUse(Meta).addUse(Stride).addImm(
+      MI->getOperand(2).getImm());
+  expandMImage(MBB, Image->getIterator(), Group, IsLoad);
+  for (unsigned J = 0; J != 5; ++J)
+    TII->loadRegFromStackSlot(MBB, MI, Scratch[J], Info.ZttScratchFIs[J],
+                              &RISCV::GPRRegClass, Register());
+  MI->eraseFromParent();
+  return true;
+}
 
 bool RISCVZttPostRAExpandPseudo::expandMFrameSize(
     MachineBasicBlock &MBB, MachineBasicBlock::iterator MI) {
@@ -388,6 +479,12 @@ bool RISCVZttPostRAExpandPseudo::runOnMachineFunction(MachineFunction &MF) {
   TII = static_cast<const RISCVInstrInfo *>(MF.getSubtarget().getInstrInfo());
   TRI = MF.getSubtarget().getRegisterInfo();
   bool Modified = false;
+  bool FrameChanged = prepareZttSpillFrame(MF);
+  Modified |= FrameChanged;
+  if (FrameChanged && MF.getInfo<RISCVMachineFunctionInfo>()->ZttMStrideReg)
+    if (auto *Info =
+            getAnalysisIfAvailable<MachineRegisterClassInfoWrapperPass>())
+      Info->getRCI().updateReservedRegs(MF.getRegInfo().getReservedRegs());
   for (MachineBasicBlock &MBB : MF) {
     auto MBBI = MBB.begin();
     while (MBBI != MBB.end()) {
@@ -518,6 +615,9 @@ bool RISCVZttPostRAExpandPseudo::expandMI(MachineBasicBlock &MBB,
       break;
     }
   }
+  bool IsLoad;
+  if (unsigned Group = getZttSpillGroup(MBBI->getOpcode(), IsLoad))
+    return expandSpill(MBB, MBBI, Group, IsLoad);
   switch (MBBI->getOpcode()) {
   case RISCV::PseudoZTTMFrameSize:
     return expandMFrameSize(MBB, MBBI);
@@ -936,6 +1036,10 @@ INITIALIZE_PASS(RISCVZttPostRAExpandPseudo, "riscv-ztt-post-ra-expand-pseudo",
                 false, false)
 
 namespace llvm {
+void expandZttFrameSize(MachineInstr &MI) {
+  RISCVZttPostRAExpandPseudo().expandFrameSize(MI);
+}
+
 FunctionPass *createRISCVZttPostRAExpandPseudoPass() {
   return new RISCVZttPostRAExpandPseudo();
 }

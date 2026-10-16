@@ -12,7 +12,9 @@
 
 #include "RISCVRegisterInfo.h"
 #include "RISCV.h"
+#include "RISCVMachineFunctionInfo.h"
 #include "RISCVSubtarget.h"
+#include "RISCVZttSpill.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/BinaryFormat/Dwarf.h"
 #include "llvm/CodeGen/MachineFrameInfo.h"
@@ -237,6 +239,9 @@ BitVector RISCVRegisterInfo::getReservedRegs(const MachineFunction &MF) const {
 
   // Reserve registers beyond the Ztt profile and all groups containing them.
   if (Subtarget.hasStdExtZtt()) {
+    // Protect the optional stride cache from later register scavenging.
+    if (unsigned R = MF.getInfo<RISCVMachineFunctionInfo>()->ZttMStrideReg)
+      markSuperRegs(Reserved, R);
     for (MCPhysReg Reg : RISCV::ZTTMRRegClass)
       if (getEncodingValue(Reg) >= Subtarget.getZttMRegs())
         markSuperRegs(Reserved, Reg);
@@ -418,6 +423,16 @@ void RISCVRegisterInfo::adjustReg(MachineBasicBlock &MBB,
         .addReg(DestReg, RegState::Kill)
         .addImm(Val)
         .setMIFlag(Flag);
+    return;
+  }
+
+  // Preserve scratch at stable addresses across a large Ztt SP adjustment.
+  if (ST.hasStdExtZtt() && !Offset.getScalable() && DestReg == RISCV::X2 &&
+      SrcReg == RISCV::X2 &&
+      (Flag == MachineInstr::FrameSetup ||
+       Flag == MachineInstr::FrameDestroy) &&
+      MF.getInfo<RISCVMachineFunctionInfo>()->hasZttMSpills()) {
+    emitZttFixedSPAdjustment(MF, MBB, II, Val, Flag);
     return;
   }
 

@@ -1,0 +1,275 @@
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u8-m16-a4/g' %s > %t.ztt-profile-0.mir
+# RUN: llc -mtriple=riscv32 -mattr=+m,+ztt,+reserve-x10,+reserve-x11,+reserve-x12 -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-0.mir -o %t.rv32.s
+# RUN: FileCheck %s --check-prefix=RV32 < %t.rv32.s
+# RUN: %python %S/Inputs/check-spill-frame.py %t.rv32.s 32 busy 32 1 8 0 a0,a1,a2
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u8-m16-a4/g' %s > %t.ztt-profile-1.mir
+# RUN: llc -mtriple=riscv64 -mattr=+m,+ztt,+reserve-x10,+reserve-x11,+reserve-x12 -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-1.mir -o %t.rv64.s
+# RUN: FileCheck %s --check-prefix=RV64 < %t.rv64.s
+# RUN: %python %S/Inputs/check-spill-frame.py %t.rv64.s 64 busy 32 1 8 0 a0,a1,a2
+
+# The 8192-byte object forces non-immediate fixed SP adjustments. All scalar
+# registers are live, and a0-a2 are user-reserved. The M header must survive,
+# as must every GPR and all four physical registers of the i32 square.
+# Entry saves scratch below the header and reloads via the old saved address.
+# Exit moves scratch into the last 16 bytes before releasing the fixed frame.
+# No SP-relative scavenger spill may straddle either SP adjustment.
+
+# RV32-LABEL: busy:
+# RV32-NEXT: # %bb.0:
+# RV32-NEXT: addi	sp, sp, -32
+# RV32-NEXT: sw	a3, 0(sp)
+# RV32-NEXT: sw	a4, 4(sp)
+# RV32-NEXT: sw	a5, 8(sp)
+# RV32-NEXT: sw	a6, 12(sp)
+# RV32-NEXT: sw	a7, 16(sp)
+# RV32-NEXT: csrr	a5, amenlen
+# RV32-NEXT: mul	a4, a5, a5
+# RV32-NEXT: li	a3, 0
+# RV32-NEXT: add	a3, a3, a4
+# RV32-NEXT: slli	a3, a3, 1
+# RV32-NEXT: slli	a3, a3, 1
+# RV32-NEXT: addi	a3, a3, 15
+# RV32-NEXT: andi	a3, a3, -16
+# RV32-NEXT: addi	a3, a3, 64
+# RV32-NEXT: mv	a7, sp
+# RV32-NEXT: sub	sp, sp, a3
+# RV32-NEXT: sw	a3, 32(sp)
+# RV32-NEXT: sw	a4, 36(sp)
+# RV32-NEXT: lw	a3, 0(a7)
+# RV32-NEXT: lw	a4, 4(a7)
+# RV32-NEXT: lw	a5, 8(a7)
+# RV32-NEXT: lw	a6, 12(a7)
+# RV32-NEXT: lw	a7, 16(a7)
+# RV32-NEXT: addi	sp, sp, 32
+# RV32-NEXT: addi	sp, sp, -16
+# RV32-NEXT: sw	a3, 0(sp)
+# RV32-NEXT: lui	a3, 2
+# RV32-NEXT: addi	a3, a3, 32
+# RV32-NEXT: sub	sp, sp, a3
+# RV32-NEXT: add	a3, sp, a3
+# RV32-NEXT: lw	a3, 0(a3)
+# RV32-NEXT: sw	t0, 32(sp)
+# RV32-NEXT: sw	a3, 28(sp)
+# RV32-NEXT: sw	a4, 24(sp)
+# RV32-NEXT: sw	a5, 20(sp)
+# RV32-NEXT: sw	a6, 16(sp)
+# RV32-NEXT: sw	a7, 12(sp)
+# RV32-NEXT: lui	a3, 2
+# RV32-NEXT: addi	a3, a3, 48
+# RV32-NEXT: add	a3, sp, a3
+# RV32-NEXT: lw	a5, 4(a3)
+# RV32-NEXT: addi	a3, a3, 16
+# RV32-NEXT: lui	a4, 2
+# RV32-NEXT: addi	a4, a4, 32
+# RV32-NEXT: add	a4, sp, a4
+# RV32-NEXT: mgettyp	a7, m0
+# RV32-NEXT: sw	a7, 0(a4)
+# RV32-NEXT: mv	a6, a3
+# RV32-NEXT: mss.1r	m0, a6
+# RV32-NEXT: add	a6, a6, a5
+# RV32-NEXT: mss.1r	m1, a6
+# RV32-NEXT: add	a6, a6, a5
+# RV32-NEXT: mss.1r	m2, a6
+# RV32-NEXT: add	a6, a6, a5
+# RV32-NEXT: mss.1r	m3, a6
+# RV32-NEXT: lw	a3, 28(sp)
+# RV32-NEXT: lw	a4, 24(sp)
+# RV32-NEXT: lw	a5, 20(sp)
+# RV32-NEXT: lw	a6, 16(sp)
+# RV32-NEXT: lw	a7, 12(sp)
+# RV32-NEXT: sw	a3, 28(sp)
+# RV32-NEXT: sw	a4, 24(sp)
+# RV32-NEXT: sw	a5, 20(sp)
+# RV32-NEXT: sw	a6, 16(sp)
+# RV32-NEXT: sw	a7, 12(sp)
+# RV32-NEXT: lui	a3, 2
+# RV32-NEXT: addi	a3, a3, 48
+# RV32-NEXT: add	a3, sp, a3
+# RV32-NEXT: lw	a5, 4(a3)
+# RV32-NEXT: addi	a3, a3, 16
+# RV32-NEXT: lui	a4, 2
+# RV32-NEXT: addi	a4, a4, 32
+# RV32-NEXT: add	a4, sp, a4
+# RV32-NEXT: lw	a7, 0(a4)
+# RV32-NEXT: msettyp	m0, a7
+# RV32-NEXT: mv	a6, a3
+# RV32-NEXT: mls.1r	m0, a6
+# RV32-NEXT: add	a6, a6, a5
+# RV32-NEXT: mls.1r	m1, a6
+# RV32-NEXT: add	a6, a6, a5
+# RV32-NEXT: mls.1r	m2, a6
+# RV32-NEXT: add	a6, a6, a5
+# RV32-NEXT: mls.1r	m3, a6
+# RV32-NEXT: lw	a3, 28(sp)
+# RV32-NEXT: lw	a4, 24(sp)
+# RV32-NEXT: lw	a5, 20(sp)
+# RV32-NEXT: lw	a6, 16(sp)
+# RV32-NEXT: lw	a7, 12(sp)
+# RV32-NEXT: addi	sp, sp, -16
+# RV32-NEXT: sw	a3, 0(sp)
+# RV32-NEXT: sw	a4, 4(sp)
+# RV32-NEXT: lui	a3, 2
+# RV32-NEXT: addi	a3, a3, 48
+# RV32-NEXT: add	a4, sp, a3
+# RV32-NEXT: lw	a3, 0(sp)
+# RV32-NEXT: sw	a3, 0(a4)
+# RV32-NEXT: lw	a3, 4(sp)
+# RV32-NEXT: sw	a3, 4(a4)
+# RV32-NEXT: mv	sp, a4
+# RV32-NEXT: lw	a3, 0(sp)
+# RV32-NEXT: lw	a4, 4(sp)
+# RV32-NEXT: addi	sp, sp, 16
+# RV32-NEXT: addi	sp, sp, -16
+# RV32-NEXT: sw	a3, 0(sp)
+# RV32-NEXT: sw	a4, 4(sp)
+# RV32-NEXT: lw	a3, 16(sp)
+# RV32-NEXT: add	a4, sp, a3
+# RV32-NEXT: lw	a3, 0(sp)
+# RV32-NEXT: sw	a3, 0(a4)
+# RV32-NEXT: lw	a3, 4(sp)
+# RV32-NEXT: sw	a3, 4(a4)
+# RV32-NEXT: mv	sp, a4
+# RV32-NEXT: lw	a3, 0(sp)
+# RV32-NEXT: lw	a4, 4(sp)
+# RV32-NEXT: addi	sp, sp, 16
+# RV32-NEXT: ret
+# RV64-LABEL: busy:
+# RV64-NEXT: # %bb.0:
+# RV64-NEXT: addi	sp, sp, -48
+# RV64-NEXT: sd	a3, 0(sp)
+# RV64-NEXT: sd	a4, 8(sp)
+# RV64-NEXT: sd	a5, 16(sp)
+# RV64-NEXT: sd	a6, 24(sp)
+# RV64-NEXT: sd	a7, 32(sp)
+# RV64-NEXT: csrr	a5, amenlen
+# RV64-NEXT: mul	a4, a5, a5
+# RV64-NEXT: li	a3, 0
+# RV64-NEXT: add	a3, a3, a4
+# RV64-NEXT: slli	a3, a3, 1
+# RV64-NEXT: slli	a3, a3, 1
+# RV64-NEXT: addi	a3, a3, 15
+# RV64-NEXT: andi	a3, a3, -16
+# RV64-NEXT: addi	a3, a3, 64
+# RV64-NEXT: mv	a7, sp
+# RV64-NEXT: sub	sp, sp, a3
+# RV64-NEXT: sd	a3, 48(sp)
+# RV64-NEXT: sd	a4, 56(sp)
+# RV64-NEXT: ld	a3, 0(a7)
+# RV64-NEXT: ld	a4, 8(a7)
+# RV64-NEXT: ld	a5, 16(a7)
+# RV64-NEXT: ld	a6, 24(a7)
+# RV64-NEXT: ld	a7, 32(a7)
+# RV64-NEXT: addi	sp, sp, 48
+# RV64-NEXT: addi	sp, sp, -16
+# RV64-NEXT: sd	a3, 0(sp)
+# RV64-NEXT: lui	a3, 2
+# RV64-NEXT: addi	a3, a3, 48
+# RV64-NEXT: sub	sp, sp, a3
+# RV64-NEXT: add	a3, sp, a3
+# RV64-NEXT: ld	a3, 0(a3)
+# RV64-NEXT: sw	t0, 48(sp)
+# RV64-NEXT: sd	a3, 40(sp)
+# RV64-NEXT: sd	a4, 32(sp)
+# RV64-NEXT: sd	a5, 24(sp)
+# RV64-NEXT: sd	a6, 16(sp)
+# RV64-NEXT: sd	a7, 8(sp)
+# RV64-NEXT: lui	a3, 2
+# RV64-NEXT: addi	a3, a3, 64
+# RV64-NEXT: add	a3, sp, a3
+# RV64-NEXT: ld	a5, 8(a3)
+# RV64-NEXT: addi	a3, a3, 16
+# RV64-NEXT: lui	a4, 2
+# RV64-NEXT: addi	a4, a4, 48
+# RV64-NEXT: add	a4, sp, a4
+# RV64-NEXT: mgettyp	a7, m0
+# RV64-NEXT: sw	a7, 0(a4)
+# RV64-NEXT: mv	a6, a3
+# RV64-NEXT: mss.1r	m0, a6
+# RV64-NEXT: add	a6, a6, a5
+# RV64-NEXT: mss.1r	m1, a6
+# RV64-NEXT: add	a6, a6, a5
+# RV64-NEXT: mss.1r	m2, a6
+# RV64-NEXT: add	a6, a6, a5
+# RV64-NEXT: mss.1r	m3, a6
+# RV64-NEXT: ld	a3, 40(sp)
+# RV64-NEXT: ld	a4, 32(sp)
+# RV64-NEXT: ld	a5, 24(sp)
+# RV64-NEXT: ld	a6, 16(sp)
+# RV64-NEXT: ld	a7, 8(sp)
+# RV64-NEXT: sd	a3, 40(sp)
+# RV64-NEXT: sd	a4, 32(sp)
+# RV64-NEXT: sd	a5, 24(sp)
+# RV64-NEXT: sd	a6, 16(sp)
+# RV64-NEXT: sd	a7, 8(sp)
+# RV64-NEXT: lui	a3, 2
+# RV64-NEXT: addi	a3, a3, 64
+# RV64-NEXT: add	a3, sp, a3
+# RV64-NEXT: ld	a5, 8(a3)
+# RV64-NEXT: addi	a3, a3, 16
+# RV64-NEXT: lui	a4, 2
+# RV64-NEXT: addi	a4, a4, 48
+# RV64-NEXT: add	a4, sp, a4
+# RV64-NEXT: lw	a7, 0(a4)
+# RV64-NEXT: msettyp	m0, a7
+# RV64-NEXT: mv	a6, a3
+# RV64-NEXT: mls.1r	m0, a6
+# RV64-NEXT: add	a6, a6, a5
+# RV64-NEXT: mls.1r	m1, a6
+# RV64-NEXT: add	a6, a6, a5
+# RV64-NEXT: mls.1r	m2, a6
+# RV64-NEXT: add	a6, a6, a5
+# RV64-NEXT: mls.1r	m3, a6
+# RV64-NEXT: ld	a3, 40(sp)
+# RV64-NEXT: ld	a4, 32(sp)
+# RV64-NEXT: ld	a5, 24(sp)
+# RV64-NEXT: ld	a6, 16(sp)
+# RV64-NEXT: ld	a7, 8(sp)
+# RV64-NEXT: addi	sp, sp, -16
+# RV64-NEXT: sd	a3, 0(sp)
+# RV64-NEXT: sd	a4, 8(sp)
+# RV64-NEXT: lui	a3, 2
+# RV64-NEXT: addi	a3, a3, 64
+# RV64-NEXT: add	a4, sp, a3
+# RV64-NEXT: ld	a3, 0(sp)
+# RV64-NEXT: sd	a3, 0(a4)
+# RV64-NEXT: ld	a3, 8(sp)
+# RV64-NEXT: sd	a3, 8(a4)
+# RV64-NEXT: mv	sp, a4
+# RV64-NEXT: ld	a3, 0(sp)
+# RV64-NEXT: ld	a4, 8(sp)
+# RV64-NEXT: addi	sp, sp, 16
+# RV64-NEXT: addi	sp, sp, -16
+# RV64-NEXT: sd	a3, 0(sp)
+# RV64-NEXT: sd	a4, 8(sp)
+# RV64-NEXT: ld	a3, 16(sp)
+# RV64-NEXT: add	a4, sp, a3
+# RV64-NEXT: ld	a3, 0(sp)
+# RV64-NEXT: sd	a3, 0(a4)
+# RV64-NEXT: ld	a3, 8(sp)
+# RV64-NEXT: sd	a3, 8(a4)
+# RV64-NEXT: mv	sp, a4
+# RV64-NEXT: ld	a3, 0(sp)
+# RV64-NEXT: ld	a4, 8(sp)
+# RV64-NEXT: addi	sp, sp, 16
+# RV64-NEXT: ret
+
+# Large scalar frame plus busy GPRs: force frame-index scavenging while all
+# incoming scalar values and a wide M square must survive. Fixed a0-a2 must
+# never be borrowed. No saved GPR is free for the stride cache.
+--- |
+  define void @busy() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+...
+---
+name: busy
+tracksRegLiveness: true
+stack:
+  - { id: 0, size: 8, alignment: 8 }
+  - { id: 1, size: 8192, alignment: 16 }
+body: |
+  bb.0:
+    liveins: $zttm0m4, $x1, $x5, $x6, $x7, $x8, $x9, $x10, $x11, $x12, $x13, $x14, $x15, $x16, $x17, $x18, $x19, $x20, $x21, $x22, $x23, $x24, $x25, $x26, $x27, $x28, $x29, $x30, $x31
+    SW $x5, %stack.1, 0
+    PseudoZTTMSpillM4 $zttm0m4, %stack.0, 4
+    $zttm0m4 = PseudoZTTMReloadM4 %stack.0, 4
+    PseudoRET implicit $zttm0m4, implicit $x1, implicit $x5, implicit $x6, implicit $x7, implicit $x8, implicit $x9, implicit $x10, implicit $x11, implicit $x12, implicit $x13, implicit $x14, implicit $x15, implicit $x16, implicit $x17, implicit $x18, implicit $x19, implicit $x20, implicit $x21, implicit $x22, implicit $x23, implicit $x24, implicit $x25, implicit $x26, implicit $x27, implicit $x28, implicit $x29, implicit $x30, implicit $x31
+...

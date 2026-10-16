@@ -1,0 +1,43 @@
+# RUN: split-file %s %t
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u8-m16-a4/g' %t/unwind.mir > %t.ztt-profile-0.mir
+# RUN: not llc -mtriple=riscv64 -mattr=+m,+ztt -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-0.mir -o /dev/null 2>&1 | FileCheck %s
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u8-m16-a4/g' %t/incoming.mir > %t.ztt-profile-1.mir
+# RUN: not llc -mtriple=riscv32 -mattr=+m,+ztt -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-1.mir -o /dev/null 2>&1 | FileCheck %s
+
+# Do not emit ordinary fixed-frame unwind/argument rules for the runtime area.
+# These combinations need their own frame integration, not guessed offsets.
+# CHECK: LLVM ERROR: Ztt M spill with incoming stack objects, dynamic alloca, frame address, unwind information or stack probing is not yet supported
+
+#--- unwind.mir
+--- |
+  define void @unsupported() nounwind uwtable "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+...
+---
+name: unsupported
+tracksRegLiveness: true
+stack:
+  - { id: 0, size: 8, alignment: 8 }
+body: |
+  bb.0:
+    liveins: $zttm0m4
+    PseudoZTTMSpillM4 $zttm0m4, %stack.0, 4
+    PseudoRET
+...
+
+#--- incoming.mir
+--- |
+  define void @unsupported() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+...
+---
+name: unsupported
+tracksRegLiveness: true
+fixedStack:
+  - { id: 0, offset: 0, size: 4, alignment: 4, isImmutable: true }
+stack:
+  - { id: 0, size: 8, alignment: 8 }
+body: |
+  bb.0:
+    liveins: $zttm0m4
+    PseudoZTTMSpillM4 $zttm0m4, %stack.0, 4
+    PseudoRET
+...
