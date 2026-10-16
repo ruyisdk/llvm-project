@@ -2,6 +2,8 @@
 // RUN: FileCheck %s < %t
 // RUN: FileCheck %s --check-prefix=COUNT < %t
 // RUN: FileCheck %s --check-prefix=REGISTRATION < %t
+// RUN: FileCheck %s --check-prefix=CODEGEN < %t
+// RUN: FileCheck %s --check-prefix=CGCOUNT < %t
 
 include "clang/Basic/BuiltinsRISCVZtt.td"
 
@@ -17,6 +19,26 @@ include "clang/Basic/BuiltinsRISCVZtt.td"
 // COUNT: #ifdef GET_RISCV_ZTT_OPERATION_ENUM
 // COUNT-COUNT-133: {{^  riscv_ztt_op_[a-z0-9_]+,$}}
 // COUNT-NEXT: #endif
+
+// CODEGEN-LABEL: #ifdef GET_RISCV_ZTT_CODEGEN_TABLE
+// CODEGEN-NEXT: {Intrinsic::riscv_ztt_ame_acquire, RISCVZttCodeGenKind::State},
+// CODEGEN-NEXT: {Intrinsic::riscv_ztt_ame_release, RISCVZttCodeGenKind::State},
+// CODEGEN: {Intrinsic::riscv_ztt_madd_ew, RISCVZttCodeGenKind::Slice},
+// CODEGEN-NEXT: {Intrinsic::riscv_ztt_madd_ew_x, RISCVZttCodeGenKind::Slice},
+// CODEGEN: {Intrinsic::riscv_ztt_mconcat_m, RISCVZttCodeGenKind::Transfer},
+// CODEGEN: {Intrinsic::riscv_ztt_mcopy_m2a, RISCVZttCodeGenKind::Transfer},
+// CODEGEN: {Intrinsic::riscv_ztt_mextract, RISCVZttCodeGenKind::Transfer},
+// CODEGEN: {Intrinsic::riscv_ztt_mls_rm, RISCVZttCodeGenKind::Memory},
+// CODEGEN: {Intrinsic::riscv_ztt_mmulacc_2d, RISCVZttCodeGenKind::Matmul},
+// CODEGEN: {Intrinsic::riscv_ztt_mss_st, RISCVZttCodeGenKind::Memory},
+// CODEGEN: {Intrinsic::riscv_ztt_mzero_acc, RISCVZttCodeGenKind::Slice},
+// CODEGEN-NEXT: {Intrinsic::riscv_ztt_mzero_m, RISCVZttCodeGenKind::Slice},
+// CODEGEN-NEXT: #endif
+
+// Each operation also has one code generation entry.
+// CGCOUNT-LABEL: #ifdef GET_RISCV_ZTT_CODEGEN_TABLE
+// CGCOUNT-COUNT-133: {{^  \{Intrinsic::riscv_ztt_}}
+// CGCOUNT-NEXT: #endif
 // COUNT: #ifdef GET_RISCV_ZTT_BUILTIN_TABLE
 // COUNT-COUNT-133: {{^  \{BI__builtin_riscv_ztt_}}
 // COUNT-NEXT: #endif

@@ -82,6 +82,17 @@ class RISCVZttOperation<string name, int numMatrixArgs, int numScalarArgs>
   // ControlInt: Integer control converted to C int; row/column shifts.
   // ControlLong: Integer control converted to C long; exponents.
   string ComputeScalarArgRule = "None";
+
+  //===------------------------------------------------------------------===//
+  // Code generation: Clang IR emission and LLVM lowering/expansion.
+  //===------------------------------------------------------------------===//
+
+  // Slice: Process each result slice; clear/zero and ordinary operations.
+  // Matmul: Accumulate M input slices into the first ACC square.
+  // Transfer: Copy groups or halves; copy, concat and extract.
+  // Memory: Load/store slices with address updates and memory dependencies.
+  // State: CSR reads and acquire/release, without matrix datatype or shape.
+  string CodeGenKind = "Slice";
 }
 
 // Matrix compute interfaces.
@@ -158,6 +169,7 @@ class RISCVZttControlBinaryWithOld<string name, string scalar>
 // Separate expansion: M input slices accumulate into the first ACC square.
 class RISCVZttMatmul<string name> : RISCVZttOperation<name, 2, 0>
 {
+  let CodeGenKind = "Matmul";
   let SemaArgCheckKind = "Matmul";
   let HasOldResult = 1;
   let ResultKind = "ACC";
@@ -167,6 +179,7 @@ class RISCVZttMatmul<string name> : RISCVZttOperation<name, 2, 0>
 // (matrix) -> M/ACC; mcopy.
 class RISCVZttCopy<string name> : RISCVZttOperation<name, 1, 0>
 {
+  let CodeGenKind = "Transfer";
   let SemaArgCheckKind = "Copy";
 }
 
@@ -189,6 +202,7 @@ class RISCVZttCopyA2M<string name> : RISCVZttCopy<name>
 // (matrix, matrix); inputs have the same type, result has twice their shape.
 class RISCVZttConcat<string name> : RISCVZttOperation<name, 2, 0>
 {
+  let CodeGenKind = "Transfer";
   let SemaArgCheckKind = "Special";
   let MinResultSquares = 2;
 }
@@ -196,6 +210,7 @@ class RISCVZttConcat<string name> : RISCVZttOperation<name, 2, 0>
 // (matrix, index); a constant index selects one half of the input shape.
 class RISCVZttExtract<string name> : RISCVZttOperation<name, 1, 1>
 {
+  let CodeGenKind = "Transfer";
   let SemaArgCheckKind = "Special";
   // The largest source has 32 squares.
   let MaxResultSquares = 16;
@@ -204,6 +219,7 @@ class RISCVZttExtract<string name> : RISCVZttOperation<name, 1, 1>
 // (base) -> M.
 class RISCVZttLoad<string name> : RISCVZttOperation<name, 0, 1>
 {
+  let CodeGenKind = "Memory";
   let SemaArgCheckKind = "LoadStore";
 }
 
@@ -216,6 +232,7 @@ class RISCVZttStridedLoad<string name> : RISCVZttLoad<name>
 // (base, matrix) -> void.
 class RISCVZttStore<string name> : RISCVZttOperation<name, 1, 1>
 {
+  let CodeGenKind = "Memory";
   let SemaArgCheckKind = "LoadStore";
   let ResultKind = "NonMatrix";
 }
@@ -230,6 +247,7 @@ class RISCVZttStridedStore<string name> : RISCVZttStore<name>
 class RISCVZttState<string name, int numScalarArgs>
     : RISCVZttOperation<name, 0, numScalarArgs>
 {
+  let CodeGenKind = "State";
   let ResultKind = "NonMatrix";
 }
 

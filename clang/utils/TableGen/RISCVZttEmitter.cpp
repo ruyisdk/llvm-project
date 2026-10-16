@@ -62,4 +62,11 @@ void clang::EmitRISCVZtt(const RecordKeeper &Records, raw_ostream &OS) {
        << Op->getValueAsString("ComputeMatrixArgRule") << "},\n";
   }
   OS << "#endif\n";
+
+  OS << "\n#ifdef GET_RISCV_ZTT_CODEGEN_TABLE\n";
+  for (const Record *Op : Operations)
+    OS << "  {Intrinsic::riscv_ztt_" << Op->getValueAsString("Name")
+       << ", RISCVZttCodeGenKind::" << Op->getValueAsString("CodeGenKind")
+       << "},\n";
+  OS << "#endif\n";
 }
