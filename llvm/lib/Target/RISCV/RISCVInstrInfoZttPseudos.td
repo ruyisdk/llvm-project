@@ -68,6 +68,8 @@ class ZttOperationRecord<RISCVZttOperation op> {
                           !isa<RISCVZttExtract>(op)), !gt(op.NumScalarArgs, 0));
   bit HasScalarType = !or(!isa<RISCVZttScalarBinary>(op),
                           !isa<RISCVZttScalarBroadcast>(op));
+  string ScalarType = "ScalarTypeLocation::" # !if(HasScalarType,
+      !if(!isa<RISCVZttScalarBroadcast>(op), "Operand", "CSR"), "None");
   bit IsLoad = 0;
   bit HasScratch = 0;
   bit Transposed = 0;
@@ -86,11 +88,12 @@ def ZttOperationTable : GenericTable {
   let CppTypeName = "OperationInfo";
   let Fields = ["Operation", "IsAcc", "OperandLayout", "Kind", "BaseOpcode",
                 "NumSources", "HasChain", "SameGroups", "HasOld", "Pairwise",
-                "HasSideEffects", "HasScalar", "HasScalarType", "IsLoad",
+                "HasSideEffects", "HasScalar", "HasScalarType", "ScalarType", "IsLoad",
                 "HasScratch", "Transposed", "Name"];
   string TypeOf_Operation = "ZttOperationID";
   string TypeOf_OperandLayout = "code";
   string TypeOf_Kind = "code";
+  string TypeOf_ScalarType = "code";
   let PrimaryKey = ["Operation"];
   let PrimaryKeyName = "getOperationInfo";
 }

@@ -1,0 +1,541 @@
+; RUN: sed 's/iXLEN/i32/g' %s | llc -mtriple=riscv32 -verify-machineinstrs | FileCheck %s --check-prefixes=CHECK,RV32
+; RUN: sed 's/iXLEN/i64/g' %s | llc -mtriple=riscv64 -verify-machineinstrs | FileCheck %s --check-prefixes=CHECK,RV64
+;
+; Scalar width never contributes to packing. Hardware covers
+; max(1, UDS/D, UDS/S) squares; destination metadata steps max(1,D/UDS).
+; All matrices are defined locally, without relying on a matrix argument ABI.
+
+; standard8: D/S groups 1/1; 1 madd.ew.x operations.
+define void @standard8(iXLEN %scalar, ptr %out) #0 {
+; CHECK-LABEL: standard8:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    lui a2, 262144
+; CHECK-NEXT:    addi a3, a2, 8
+; CHECK-NEXT:    msettyp m0, a3
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    addi a2, a2, 32
+; CHECK-NEXT:    csrw amestype, a2
+; CHECK-NEXT:    msettyp m1, a3
+; CHECK-NEXT:    madd.ew.x m1, a0, m0
+; CHECK-NEXT:    mss.rm m1, a1
+; CHECK-NEXT:    ret
+  %src = call target("riscv.ztt.m.i8", i8, 8, 1, 1) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i8_i8_8_1_1t(i32 1073741832, i32 1)
+  %dst = call target("riscv.ztt.m.i8", i8, 8, 1, 1) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i8_i8_8_1_1t.triscv.ztt.m.i8_i8_8_1_1t.iXLEN(target("riscv.ztt.m.i8", i8, 8, 1, 1) %src, iXLEN %scalar, i32 1073741832, i32 1073741856, i32 1)
+  call void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i8_i8_8_1_1t(ptr %out, target("riscv.ztt.m.i8", i8, 8, 1, 1) %dst, i32 1073741832, i32 1)
+  ret void
+}
+
+; standard16: D/S groups 1/1; 1 madd.ew.x operations.
+define void @standard16(iXLEN %scalar, ptr %out) #1 {
+; CHECK-LABEL: standard16:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    lui a2, 262144
+; CHECK-NEXT:    addi a2, a2, 16
+; CHECK-NEXT:    msettyp m0, a2
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    li a3, 16
+; CHECK-NEXT:    csrw amestype, a3
+; CHECK-NEXT:    msettyp m1, a2
+; CHECK-NEXT:    madd.ew.x m1, a0, m0
+; CHECK-NEXT:    mss.rm m1, a1
+; CHECK-NEXT:    ret
+  %src = call target("riscv.ztt.m.i16", i16, 16, 1, 1) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i16_i16_16_1_1t(i32 1073741840, i32 1)
+  %dst = call target("riscv.ztt.m.i16", i16, 16, 1, 1) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i16_i16_16_1_1t.triscv.ztt.m.i16_i16_16_1_1t.iXLEN(target("riscv.ztt.m.i16", i16, 16, 1, 1) %src, iXLEN %scalar, i32 1073741840, i32 16, i32 1)
+  call void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i16_i16_16_1_1t(ptr %out, target("riscv.ztt.m.i16", i16, 16, 1, 1) %dst, i32 1073741840, i32 1)
+  ret void
+}
+
+; standard32: D/S groups 1/1; 1 madd.ew.x operations.
+define void @standard32(iXLEN %scalar, ptr %out) #2 {
+; CHECK-LABEL: standard32:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    lui a2, 262144
+; CHECK-NEXT:    addi a2, a2, 32
+; CHECK-NEXT:    msettyp m0, a2
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    csrw amestype, a2
+; CHECK-NEXT:    msettyp m1, a2
+; CHECK-NEXT:    madd.ew.x m1, a0, m0
+; CHECK-NEXT:    mss.rm m1, a1
+; CHECK-NEXT:    ret
+  %src = call target("riscv.ztt.m.i32", i32, 32, 1, 1) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i32_i32_32_1_1t(i32 1073741856, i32 1)
+  %dst = call target("riscv.ztt.m.i32", i32, 32, 1, 1) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i32_i32_32_1_1t.triscv.ztt.m.i32_i32_32_1_1t.iXLEN(target("riscv.ztt.m.i32", i32, 32, 1, 1) %src, iXLEN %scalar, i32 1073741856, i32 1073741856, i32 1)
+  call void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i32_i32_32_1_1t(ptr %out, target("riscv.ztt.m.i32", i32, 32, 1, 1) %dst, i32 1073741856, i32 1)
+  ret void
+}
+
+; standard64: D/S groups 1/1; 1 madd.ew.x operations.
+define void @standard64(iXLEN %scalar, ptr %out) #3 {
+; CHECK-LABEL: standard64:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    lui a2, 262144
+; CHECK-NEXT:    addi a2, a2, 64
+; CHECK-NEXT:    lui a3, 131840
+; CHECK-NEXT:    msettyp m0, a2
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    addi a3, a3, 288
+; CHECK-NEXT:    csrw amestype, a3
+; CHECK-NEXT:    msettyp m1, a2
+; CHECK-NEXT:    madd.ew.x m1, a0, m0
+; CHECK-NEXT:    mss.rm m1, a1
+; CHECK-NEXT:    ret
+  %src = call target("riscv.ztt.m.i64", i64, 64, 1, 1) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i64_i64_64_1_1t(i32 1073741888, i32 1)
+  %dst = call target("riscv.ztt.m.i64", i64, 64, 1, 1) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i64_i64_64_1_1t.triscv.ztt.m.i64_i64_64_1_1t.iXLEN(target("riscv.ztt.m.i64", i64, 64, 1, 1) %src, iXLEN %scalar, i32 1073741888, i32 540016928, i32 1)
+  call void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i64_i64_64_1_1t(ptr %out, target("riscv.ztt.m.i64", i64, 64, 1, 1) %dst, i32 1073741888, i32 1)
+  ret void
+}
+
+; standard128: D/S groups 1/1; 1 madd.ew.x operations.
+define void @standard128(iXLEN %scalar, ptr %out) #4 {
+; CHECK-LABEL: standard128:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    lui a2, 262144
+; CHECK-NEXT:    addi a3, a2, 128
+; CHECK-NEXT:    msettyp m0, a3
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    addi a2, a2, 32
+; CHECK-NEXT:    csrw amestype, a2
+; CHECK-NEXT:    msettyp m1, a3
+; CHECK-NEXT:    madd.ew.x m1, a0, m0
+; CHECK-NEXT:    mss.rm m1, a1
+; CHECK-NEXT:    ret
+  %src = call target("riscv.ztt.m.i128", i128, 128, 1, 1) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i128_i128_128_1_1t(i32 1073741952, i32 1)
+  %dst = call target("riscv.ztt.m.i128", i128, 128, 1, 1) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i128_i128_128_1_1t.triscv.ztt.m.i128_i128_128_1_1t.iXLEN(target("riscv.ztt.m.i128", i128, 128, 1, 1) %src, iXLEN %scalar, i32 1073741952, i32 1073741856, i32 1)
+  call void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i128_i128_128_1_1t(ptr %out, target("riscv.ztt.m.i128", i128, 128, 1, 1) %dst, i32 1073741952, i32 1)
+  ret void
+}
+
+; doc8: D/S groups 4/8; 2 madd.ew.x operations.
+define void @doc8(iXLEN %scalar, ptr %out) #5 {
+; CHECK-LABEL: doc8:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    csrr a2, amenlen
+; CHECK-NEXT:    mul a2, a2, a2
+; CHECK-NEXT:    lui a3, 262144
+; CHECK-NEXT:    addi a4, a3, 32
+; CHECK-NEXT:    msettyp m0, a4
+; CHECK-NEXT:    msettyp m4, a4
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    mzero.2d.m m4
+; CHECK-NEXT:    addi a3, a3, 16
+; CHECK-NEXT:    csrw amestype, a4
+; CHECK-NEXT:    msettyp m8, a3
+; CHECK-NEXT:    msettyp m10, a3
+; CHECK-NEXT:    madd.ew.x m8, a0, m0
+; CHECK-NEXT:    madd.ew.x m10, a0, m4
+; CHECK-NEXT:    slli a2, a2, 1
+; CHECK-NEXT:    mss.rm m8, a1
+; CHECK-NEXT:    add a1, a1, a2
+; CHECK-NEXT:    mss.rm m10, a1
+; CHECK-NEXT:    ret
+  %src = call target("riscv.ztt.m.i32", i32, 32, 1, 2) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i32_i32_32_1_2t(i32 1073741856, i32 2)
+  %dst = call target("riscv.ztt.m.i16", i16, 16, 1, 2) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i16_i16_16_1_2t.triscv.ztt.m.i32_i32_32_1_2t.iXLEN(target("riscv.ztt.m.i32", i32, 32, 1, 2) %src, iXLEN %scalar, i32 1073741840, i32 1073741856, i32 2)
+  call void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i16_i16_16_1_2t(ptr %out, target("riscv.ztt.m.i16", i16, 16, 1, 2) %dst, i32 1073741840, i32 2)
+  ret void
+}
+
+; doc16: D/S groups 2/4; 2 madd.ew.x operations.
+define void @doc16(iXLEN %scalar, ptr %out) #6 {
+; CHECK-LABEL: doc16:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    csrr a2, amenlen
+; CHECK-NEXT:    mul a2, a2, a2
+; CHECK-NEXT:    lui a3, 262144
+; CHECK-NEXT:    addi a4, a3, 32
+; CHECK-NEXT:    msettyp m0, a4
+; CHECK-NEXT:    msettyp m2, a4
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    mzero.2d.m m2
+; CHECK-NEXT:    addi a3, a3, 16
+; CHECK-NEXT:    csrw amestype, a4
+; CHECK-NEXT:    msettyp m4, a3
+; CHECK-NEXT:    msettyp m5, a3
+; CHECK-NEXT:    madd.ew.x m4, a0, m0
+; CHECK-NEXT:    madd.ew.x m5, a0, m2
+; CHECK-NEXT:    slli a2, a2, 1
+; CHECK-NEXT:    mss.rm m4, a1
+; CHECK-NEXT:    add a1, a1, a2
+; CHECK-NEXT:    mss.rm m5, a1
+; CHECK-NEXT:    ret
+  %src = call target("riscv.ztt.m.i32", i32, 32, 1, 2) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i32_i32_32_1_2t(i32 1073741856, i32 2)
+  %dst = call target("riscv.ztt.m.i16", i16, 16, 1, 2) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i16_i16_16_1_2t.triscv.ztt.m.i32_i32_32_1_2t.iXLEN(target("riscv.ztt.m.i32", i32, 32, 1, 2) %src, iXLEN %scalar, i32 1073741840, i32 1073741856, i32 2)
+  call void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i16_i16_16_1_2t(ptr %out, target("riscv.ztt.m.i16", i16, 16, 1, 2) %dst, i32 1073741840, i32 2)
+  ret void
+}
+
+; doc32: D/S groups 1/2; 1 madd.ew.x operations.
+define void @doc32(iXLEN %scalar, ptr %out) #7 {
+; CHECK-LABEL: doc32:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    lui a2, 262144
+; CHECK-NEXT:    addi a3, a2, 32
+; CHECK-NEXT:    msettyp m0, a3
+; CHECK-NEXT:    msettyp m1, a3
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    mzero.2d.m m1
+; CHECK-NEXT:    addi a2, a2, 16
+; CHECK-NEXT:    csrw amestype, a3
+; CHECK-NEXT:    msettyp m2, a2
+; CHECK-NEXT:    madd.ew.x m2, a0, m0
+; CHECK-NEXT:    mss.rm m2, a1
+; CHECK-NEXT:    ret
+  %src = call target("riscv.ztt.m.i32", i32, 32, 1, 2) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i32_i32_32_1_2t(i32 1073741856, i32 2)
+  %dst = call target("riscv.ztt.m.i16", i16, 16, 1, 2) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i16_i16_16_1_2t.triscv.ztt.m.i32_i32_32_1_2t.iXLEN(target("riscv.ztt.m.i32", i32, 32, 1, 2) %src, iXLEN %scalar, i32 1073741840, i32 1073741856, i32 2)
+  call void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i16_i16_16_1_2t(ptr %out, target("riscv.ztt.m.i16", i16, 16, 1, 2) %dst, i32 1073741840, i32 2)
+  ret void
+}
+
+; packed_source: D/S groups 4/2; 2 madd.ew.x operations.
+define void @packed_source(iXLEN %scalar, ptr %out) #8 {
+; CHECK-LABEL: packed_source:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    csrr a2, amenlen
+; CHECK-NEXT:    mul a2, a2, a2
+; CHECK-NEXT:    lui a3, 262144
+; CHECK-NEXT:    addi a4, a3, 16
+; CHECK-NEXT:    msettyp m0, a4
+; CHECK-NEXT:    msettyp m1, a4
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    mzero.2d.m m1
+; CHECK-NEXT:    lui a4, 131840
+; CHECK-NEXT:    addi a4, a4, 288
+; CHECK-NEXT:    addi a3, a3, 32
+; CHECK-NEXT:    csrw amestype, a4
+; CHECK-NEXT:    msettyp m4, a3
+; CHECK-NEXT:    msettyp m5, a3
+; CHECK-NEXT:    msettyp m6, a3
+; CHECK-NEXT:    msettyp m7, a3
+; CHECK-NEXT:    madd.ew.x m4, a0, m0
+; CHECK-NEXT:    madd.ew.x m6, a0, m1
+; CHECK-NEXT:    slli a2, a2, 2
+; CHECK-NEXT:    mss.rm m4, a1
+; CHECK-NEXT:    add a1, a1, a2
+; CHECK-NEXT:    mss.rm m5, a1
+; CHECK-NEXT:    add a1, a1, a2
+; CHECK-NEXT:    mss.rm m6, a1
+; CHECK-NEXT:    add a1, a1, a2
+; CHECK-NEXT:    mss.rm m7, a1
+; CHECK-NEXT:    ret
+  %src = call target("riscv.ztt.m.i16", i16, 16, 1, 4) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i16_i16_16_1_4t(i32 1073741840, i32 4)
+  %dst = call target("riscv.ztt.m.i32", i32, 32, 1, 4) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i32_i32_32_1_4t.triscv.ztt.m.i16_i16_16_1_4t.iXLEN(target("riscv.ztt.m.i16", i16, 16, 1, 4) %src, iXLEN %scalar, i32 1073741856, i32 540016928, i32 4)
+  call void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i32_i32_32_1_4t(ptr %out, target("riscv.ztt.m.i32", i32, 32, 1, 4) %dst, i32 1073741856, i32 4)
+  ret void
+}
+
+; packed_both: D/S groups 2/1; 1 madd.ew.x operations.
+define void @packed_both(iXLEN %scalar, ptr %out) #9 {
+; CHECK-LABEL: packed_both:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    csrr a2, amenlen
+; CHECK-NEXT:    mul a2, a2, a2
+; CHECK-NEXT:    lui a3, 262144
+; CHECK-NEXT:    addi a4, a3, 8
+; CHECK-NEXT:    msettyp m0, a4
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    addi a3, a3, 16
+; CHECK-NEXT:    csrw amestype, a4
+; CHECK-NEXT:    msettyp m2, a3
+; CHECK-NEXT:    msettyp m3, a3
+; CHECK-NEXT:    madd.ew.x m2, a0, m0
+; CHECK-NEXT:    slli a2, a2, 3
+; CHECK-NEXT:    mss.rm m2, a1
+; CHECK-NEXT:    add a1, a1, a2
+; CHECK-NEXT:    mss.rm m3, a1
+; CHECK-NEXT:    ret
+  %src = call target("riscv.ztt.m.i8", i8, 8, 1, 8) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i8_i8_8_1_8t(i32 1073741832, i32 8)
+  %dst = call target("riscv.ztt.m.i16", i16, 16, 1, 8) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i16_i16_16_1_8t.triscv.ztt.m.i8_i8_8_1_8t.iXLEN(target("riscv.ztt.m.i8", i8, 8, 1, 8) %src, iXLEN %scalar, i32 1073741840, i32 1073741832, i32 8)
+  call void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i16_i16_16_1_8t(ptr %out, target("riscv.ztt.m.i16", i16, 16, 1, 8) %dst, i32 1073741840, i32 8)
+  ret void
+}
+
+; packed128: D/S groups 2/4; 2 madd.ew.x operations.
+define void @packed128(iXLEN %scalar, ptr %out) #10 {
+; CHECK-LABEL: packed128:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    csrr a2, amenlen
+; CHECK-NEXT:    mul a2, a2, a2
+; CHECK-NEXT:    lui a3, 262144
+; CHECK-NEXT:    addi a4, a3, 32
+; CHECK-NEXT:    msettyp m0, a4
+; CHECK-NEXT:    msettyp m1, a4
+; CHECK-NEXT:    msettyp m2, a4
+; CHECK-NEXT:    msettyp m3, a4
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    mzero.2d.m m1
+; CHECK-NEXT:    mzero.2d.m m2
+; CHECK-NEXT:    mzero.2d.m m3
+; CHECK-NEXT:    addi a3, a3, 16
+; CHECK-NEXT:    csrw amestype, a4
+; CHECK-NEXT:    msettyp m4, a3
+; CHECK-NEXT:    msettyp m5, a3
+; CHECK-NEXT:    madd.ew.x m4, a0, m0
+; CHECK-NEXT:    madd.ew.x m5, a0, m2
+; CHECK-NEXT:    slli a2, a2, 4
+; CHECK-NEXT:    mss.rm m4, a1
+; CHECK-NEXT:    add a1, a1, a2
+; CHECK-NEXT:    mss.rm m5, a1
+; CHECK-NEXT:    ret
+  %src = call target("riscv.ztt.m.i32", i32, 32, 1, 16) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i32_i32_32_1_16t(i32 1073741856, i32 16)
+  %dst = call target("riscv.ztt.m.i16", i16, 16, 1, 16) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i16_i16_16_1_16t.triscv.ztt.m.i32_i32_32_1_16t.iXLEN(target("riscv.ztt.m.i32", i32, 32, 1, 16) %src, iXLEN %scalar, i32 1073741840, i32 1073741856, i32 16)
+  call void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i16_i16_16_1_16t(ptr %out, target("riscv.ztt.m.i16", i16, 16, 1, 16) %dst, i32 1073741840, i32 16)
+  ret void
+}
+
+; vertical_wide: D/S groups 16/8; 4 madd.ew.x operations.
+define void @vertical_wide(iXLEN %scalar, ptr %out) #11 {
+; CHECK-LABEL: vertical_wide:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    csrr a2, amenlen
+; CHECK-NEXT:    mul a2, a2, a2
+; CHECK-NEXT:    lui a3, 262144
+; CHECK-NEXT:    addi a4, a3, 16
+; CHECK-NEXT:    msettyp m0, a4
+; CHECK-NEXT:    msettyp m2, a4
+; CHECK-NEXT:    msettyp m4, a4
+; CHECK-NEXT:    msettyp m6, a4
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    mzero.2d.m m2
+; CHECK-NEXT:    mzero.2d.m m4
+; CHECK-NEXT:    mzero.2d.m m6
+; CHECK-NEXT:    addi a3, a3, 32
+; CHECK-NEXT:    csrw amestype, a3
+; CHECK-NEXT:    msettyp m16, a3
+; CHECK-NEXT:    msettyp m20, a3
+; CHECK-NEXT:    msettyp m24, a3
+; CHECK-NEXT:    msettyp m28, a3
+; CHECK-NEXT:    madd.ew.x m16, a0, m0
+; CHECK-NEXT:    madd.ew.x m20, a0, m2
+; CHECK-NEXT:    madd.ew.x m24, a0, m4
+; CHECK-NEXT:    madd.ew.x m28, a0, m6
+; CHECK-NEXT:    slli a2, a2, 2
+; CHECK-NEXT:    mss.rm m16, a1
+; CHECK-NEXT:    add a1, a1, a2
+; CHECK-NEXT:    mss.rm m20, a1
+; CHECK-NEXT:    add a1, a1, a2
+; CHECK-NEXT:    mss.rm m24, a1
+; CHECK-NEXT:    add a1, a1, a2
+; CHECK-NEXT:    mss.rm m28, a1
+; CHECK-NEXT:    ret
+  %src = call target("riscv.ztt.m.i16", i16, 16, 4, 1) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i16_i16_16_4_1t(i32 1073741840, i32 4)
+  %dst = call target("riscv.ztt.m.i32", i32, 32, 4, 1) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i32_i32_32_4_1t.triscv.ztt.m.i16_i16_16_4_1t.iXLEN(target("riscv.ztt.m.i16", i16, 16, 4, 1) %src, iXLEN %scalar, i32 1073741856, i32 1073741856, i32 4)
+  call void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i32_i32_32_4_1t(ptr %out, target("riscv.ztt.m.i32", i32, 32, 4, 1) %dst, i32 1073741856, i32 4)
+  ret void
+}
+
+; subbyte_output: D/S groups 1/4; 1 madd.ew.x operations.
+define void @subbyte_output(iXLEN %scalar, ptr %out) #12 {
+; CHECK-LABEL: subbyte_output:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    lui a1, 262144
+; CHECK-NEXT:    addi a2, a1, 16
+; CHECK-NEXT:    msettyp m0, a2
+; CHECK-NEXT:    msettyp m1, a2
+; CHECK-NEXT:    msettyp m2, a2
+; CHECK-NEXT:    msettyp m3, a2
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    mzero.2d.m m1
+; CHECK-NEXT:    mzero.2d.m m2
+; CHECK-NEXT:    mzero.2d.m m3
+; CHECK-NEXT:    addi a2, a1, 32
+; CHECK-NEXT:    addi a1, a1, 4
+; CHECK-NEXT:    csrw amestype, a2
+; CHECK-NEXT:    msettyp m4, a1
+; CHECK-NEXT:    madd.ew.x m4, a0, m0
+; CHECK-NEXT:    ret
+  %src = call target("riscv.ztt.m.i16", i16, 16, 1, 8) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i16_i16_16_1_8t(i32 1073741840, i32 8)
+  %dst = call target("riscv.ztt.m.i4", i4, 4, 1, 8) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i4_i4_4_1_8t.triscv.ztt.m.i16_i16_16_1_8t.iXLEN(target("riscv.ztt.m.i16", i16, 16, 1, 8) %src, iXLEN %scalar, i32 1073741828, i32 1073741856, i32 8)
+  ; The amestype write remains observable even when the result is unused.
+  ret void
+}
+
+declare target("riscv.ztt.m.i8", i8, 8, 1, 1) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i8_i8_8_1_1t(i32, i32)
+declare target("riscv.ztt.m.i8", i8, 8, 1, 1) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i8_i8_8_1_1t.triscv.ztt.m.i8_i8_8_1_1t.iXLEN(target("riscv.ztt.m.i8", i8, 8, 1, 1), iXLEN, i32, i32, i32)
+declare void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i8_i8_8_1_1t(ptr, target("riscv.ztt.m.i8", i8, 8, 1, 1), i32, i32)
+declare target("riscv.ztt.m.i16", i16, 16, 1, 1) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i16_i16_16_1_1t(i32, i32)
+declare target("riscv.ztt.m.i16", i16, 16, 1, 1) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i16_i16_16_1_1t.triscv.ztt.m.i16_i16_16_1_1t.iXLEN(target("riscv.ztt.m.i16", i16, 16, 1, 1), iXLEN, i32, i32, i32)
+declare void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i16_i16_16_1_1t(ptr, target("riscv.ztt.m.i16", i16, 16, 1, 1), i32, i32)
+
+declare target("riscv.ztt.m.i32", i32, 32, 1, 1) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i32_i32_32_1_1t(i32, i32)
+declare target("riscv.ztt.m.i32", i32, 32, 1, 1) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i32_i32_32_1_1t.triscv.ztt.m.i32_i32_32_1_1t.iXLEN(target("riscv.ztt.m.i32", i32, 32, 1, 1), iXLEN, i32, i32, i32)
+declare void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i32_i32_32_1_1t(ptr, target("riscv.ztt.m.i32", i32, 32, 1, 1), i32, i32)
+declare target("riscv.ztt.m.i64", i64, 64, 1, 1) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i64_i64_64_1_1t(i32, i32)
+declare target("riscv.ztt.m.i64", i64, 64, 1, 1) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i64_i64_64_1_1t.triscv.ztt.m.i64_i64_64_1_1t.iXLEN(target("riscv.ztt.m.i64", i64, 64, 1, 1), iXLEN, i32, i32, i32)
+declare void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i64_i64_64_1_1t(ptr, target("riscv.ztt.m.i64", i64, 64, 1, 1), i32, i32)
+declare target("riscv.ztt.m.i128", i128, 128, 1, 1) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i128_i128_128_1_1t(i32, i32)
+declare target("riscv.ztt.m.i128", i128, 128, 1, 1) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i128_i128_128_1_1t.triscv.ztt.m.i128_i128_128_1_1t.iXLEN(target("riscv.ztt.m.i128", i128, 128, 1, 1), iXLEN, i32, i32, i32)
+declare void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i128_i128_128_1_1t(ptr, target("riscv.ztt.m.i128", i128, 128, 1, 1), i32, i32)
+declare target("riscv.ztt.m.i32", i32, 32, 1, 2) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i32_i32_32_1_2t(i32, i32)
+declare target("riscv.ztt.m.i16", i16, 16, 1, 2) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i16_i16_16_1_2t.triscv.ztt.m.i32_i32_32_1_2t.iXLEN(target("riscv.ztt.m.i32", i32, 32, 1, 2), iXLEN, i32, i32, i32)
+declare void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i16_i16_16_1_2t(ptr, target("riscv.ztt.m.i16", i16, 16, 1, 2), i32, i32)
+declare target("riscv.ztt.m.i16", i16, 16, 1, 4) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i16_i16_16_1_4t(i32, i32)
+declare target("riscv.ztt.m.i32", i32, 32, 1, 4) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i32_i32_32_1_4t.triscv.ztt.m.i16_i16_16_1_4t.iXLEN(target("riscv.ztt.m.i16", i16, 16, 1, 4), iXLEN, i32, i32, i32)
+declare void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i32_i32_32_1_4t(ptr, target("riscv.ztt.m.i32", i32, 32, 1, 4), i32, i32)
+declare target("riscv.ztt.m.i8", i8, 8, 1, 8) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i8_i8_8_1_8t(i32, i32)
+declare target("riscv.ztt.m.i16", i16, 16, 1, 8) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i16_i16_16_1_8t.triscv.ztt.m.i8_i8_8_1_8t.iXLEN(target("riscv.ztt.m.i8", i8, 8, 1, 8), iXLEN, i32, i32, i32)
+declare void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i16_i16_16_1_8t(ptr, target("riscv.ztt.m.i16", i16, 16, 1, 8), i32, i32)
+declare target("riscv.ztt.m.i32", i32, 32, 1, 16) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i32_i32_32_1_16t(i32, i32)
+declare target("riscv.ztt.m.i16", i16, 16, 1, 16) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i16_i16_16_1_16t.triscv.ztt.m.i32_i32_32_1_16t.iXLEN(target("riscv.ztt.m.i32", i32, 32, 1, 16), iXLEN, i32, i32, i32)
+declare void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i16_i16_16_1_16t(ptr, target("riscv.ztt.m.i16", i16, 16, 1, 16), i32, i32)
+declare target("riscv.ztt.m.i16", i16, 16, 4, 1) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i16_i16_16_4_1t(i32, i32)
+declare target("riscv.ztt.m.i32", i32, 32, 4, 1) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i32_i32_32_4_1t.triscv.ztt.m.i16_i16_16_4_1t.iXLEN(target("riscv.ztt.m.i16", i16, 16, 4, 1), iXLEN, i32, i32, i32)
+declare void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i32_i32_32_4_1t(ptr, target("riscv.ztt.m.i32", i32, 32, 4, 1), i32, i32)
+declare target("riscv.ztt.m.i16", i16, 16, 1, 8) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i16_i16_16_1_8t(i32, i32)
+declare target("riscv.ztt.m.i4", i4, 4, 1, 8) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i4_i4_4_1_8t.triscv.ztt.m.i16_i16_16_1_8t.iXLEN(target("riscv.ztt.m.i16", i16, 16, 1, 8), iXLEN, i32, i32, i32)
+
+
+; Mixed matrix datatypes use the complete destination descriptor as well.
+define void @mixed_float(iXLEN %scalar, ptr %out) #5 {
+; CHECK-LABEL: mixed_float:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    csrr a2, amenlen
+; CHECK-NEXT:    mul a2, a2, a2
+; CHECK-NEXT:    lui a3, 131840
+; CHECK-NEXT:    addi a4, a3, 288
+; CHECK-NEXT:    msettyp m0, a4
+; CHECK-NEXT:    msettyp m4, a4
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    mzero.2d.m m4
+; CHECK-NEXT:    addi a3, a3, 272
+; CHECK-NEXT:    li a4, 16
+; CHECK-NEXT:    csrw amestype, a4
+; CHECK-NEXT:    msettyp m8, a3
+; CHECK-NEXT:    msettyp m10, a3
+; CHECK-NEXT:    madd.ew.x m8, a0, m0
+; CHECK-NEXT:    madd.ew.x m10, a0, m4
+; CHECK-NEXT:    slli a2, a2, 1
+; CHECK-NEXT:    mss.rm m8, a1
+; CHECK-NEXT:    add a1, a1, a2
+; CHECK-NEXT:    mss.rm m10, a1
+; CHECK-NEXT:    ret
+  %src = call target("riscv.ztt.m.f32", float, 32, 2, 1) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.f32_f32_32_2_1t(i32 540016928, i32 2)
+  %dst = call target("riscv.ztt.m.bf16", bfloat, 16, 2, 1) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.bf16_bf16_16_2_1t.triscv.ztt.m.f32_f32_32_2_1t.iXLEN(target("riscv.ztt.m.f32", float, 32, 2, 1) %src, iXLEN %scalar, i32 540016912, i32 16, i32 2)
+  call void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.bf16_bf16_16_2_1t(ptr %out, target("riscv.ztt.m.bf16", bfloat, 16, 2, 1) %dst, i32 540016912, i32 2)
+  ret void
+}
+declare target("riscv.ztt.m.f32", float, 32, 2, 1) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.f32_f32_32_2_1t(i32, i32)
+declare target("riscv.ztt.m.bf16", bfloat, 16, 2, 1) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.bf16_bf16_16_2_1t.triscv.ztt.m.f32_f32_32_2_1t.iXLEN(target("riscv.ztt.m.f32", float, 32, 2, 1), iXLEN, i32, i32, i32)
+declare void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.bf16_bf16_16_2_1t(ptr, target("riscv.ztt.m.bf16", bfloat, 16, 2, 1), i32, i32)
+
+; UDS64: one packed source square group feeds four standard destination squares.
+define void @packed_float(iXLEN %scalar, ptr %out) #3 {
+; CHECK-LABEL: packed_float:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    csrr a2, amenlen
+; CHECK-NEXT:    mul a2, a2, a2
+; CHECK-NEXT:    lui a3, 82688
+; CHECK-NEXT:    addi a3, a3, 272
+; CHECK-NEXT:    msettyp m0, a3
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    lui a3, 131840
+; CHECK-NEXT:    lui a4, 180992
+; CHECK-NEXT:    addi a3, a3, 288
+; CHECK-NEXT:    addi a4, a4, 320
+; CHECK-NEXT:    csrw amestype, a3
+; CHECK-NEXT:    msettyp m4, a4
+; CHECK-NEXT:    msettyp m5, a4
+; CHECK-NEXT:    msettyp m6, a4
+; CHECK-NEXT:    msettyp m7, a4
+; CHECK-NEXT:    madd.ew.x m4, a0, m0
+; CHECK-NEXT:    slli a2, a2, 3
+; CHECK-NEXT:    mss.rm m4, a1
+; CHECK-NEXT:    add a1, a1, a2
+; CHECK-NEXT:    mss.rm m5, a1
+; CHECK-NEXT:    add a1, a1, a2
+; CHECK-NEXT:    mss.rm m6, a1
+; CHECK-NEXT:    add a1, a1, a2
+; CHECK-NEXT:    mss.rm m7, a1
+; CHECK-NEXT:    ret
+  %src = call target("riscv.ztt.m.f16", half, 16, 1, 4) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.f16_f16_16_1_4t(i32 338690320, i32 4)
+  %dst = call target("riscv.ztt.m.f64", double, 64, 1, 4) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.f64_f64_64_1_4t.triscv.ztt.m.f16_f16_16_1_4t.iXLEN(target("riscv.ztt.m.f16", half, 16, 1, 4) %src, iXLEN %scalar, i32 741343552, i32 540016928, i32 4)
+  call void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.f64_f64_64_1_4t(ptr %out, target("riscv.ztt.m.f64", double, 64, 1, 4) %dst, i32 741343552, i32 4)
+  ret void
+}
+declare target("riscv.ztt.m.f16", half, 16, 1, 4) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.f16_f16_16_1_4t(i32, i32)
+declare target("riscv.ztt.m.f64", double, 64, 1, 4) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.f64_f64_64_1_4t.triscv.ztt.m.f16_f16_16_1_4t.iXLEN(target("riscv.ztt.m.f16", half, 16, 1, 4), iXLEN, i32, i32, i32)
+declare void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.f64_f64_64_1_4t(ptr, target("riscv.ztt.m.f64", double, 64, 1, 4), i32, i32)
+
+; A public CSR read separates two distinct scalar datatype writes.
+define void @ordered_scalar_types(iXLEN %scalar, ptr %out, ptr %metadata) #2 {
+; CHECK-LABEL: ordered_scalar_types:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    lui a3, 262144
+; CHECK-NEXT:    addi a3, a3, 32
+; CHECK-NEXT:    msettyp m0, a3
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    lui a4, 131840
+; CHECK-NEXT:    csrw amestype, a3
+; CHECK-NEXT:    msettyp m1, a3
+; CHECK-NEXT:    madd.ew.x m1, a0, m0
+; CHECK-NEXT:    csrr a5, amestype
+; CHECK-NEXT:    addi a4, a4, 288
+; RV32-NEXT:    sw a5, 0(a2)
+; RV64-NEXT:    sd a5, 0(a2)
+; CHECK-NEXT:    csrw amestype, a4
+; CHECK-NEXT:    msettyp m0, a3
+; CHECK-NEXT:    madd.ew.x m0, a0, m1
+; CHECK-NEXT:    mss.rm m0, a1
+; CHECK-NEXT:    ret
+  %src = call target("riscv.ztt.m.i32", i32, 32, 1, 1) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i32_i32_32_1_1t(i32 1073741856, i32 1)
+  %first = call target("riscv.ztt.m.i32", i32, 32, 1, 1) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i32_i32_32_1_1t.triscv.ztt.m.i32_i32_32_1_1t.iXLEN(target("riscv.ztt.m.i32", i32, 32, 1, 1) %src, iXLEN %scalar, i32 1073741856, i32 1073741856, i32 1)
+  %st = call iXLEN @llvm.riscv.ztt.get.amestype.iXLEN()
+  store iXLEN %st, ptr %metadata
+  %second = call target("riscv.ztt.m.i32", i32, 32, 1, 1) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i32_i32_32_1_1t.triscv.ztt.m.i32_i32_32_1_1t.iXLEN(target("riscv.ztt.m.i32", i32, 32, 1, 1) %first, iXLEN %scalar, i32 1073741856, i32 540016928, i32 1)
+  call void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i32_i32_32_1_1t(ptr %out, target("riscv.ztt.m.i32", i32, 32, 1, 1) %second, i32 1073741856, i32 1)
+  ret void
+}
+declare iXLEN @llvm.riscv.ztt.get.amestype.iXLEN()
+
+; No matrix is live across the call. Even for the same scalar datatype, the
+; second operation must set amestype again: the callee may have changed it.
+define void @scalar_type_after_call() #2 {
+; CHECK-LABEL: scalar_type_after_call:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    addi sp, sp, -16
+; RV32-NEXT:    sw ra, 12(sp) # 4-byte Folded Spill
+; RV32-NEXT:    sw s0, 8(sp) # 4-byte Folded Spill
+; RV64-NEXT:    sd ra, 8(sp) # 8-byte Folded Spill
+; RV64-NEXT:    sd s0, 0(sp) # 8-byte Folded Spill
+; CHECK-NEXT:    lui a0, 262144
+; CHECK-NEXT:    addi s0, a0, 32
+; CHECK-NEXT:    msettyp m0, s0
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    li a0, 1
+; CHECK-NEXT:    csrw amestype, s0
+; CHECK-NEXT:    msettyp m1, s0
+; CHECK-NEXT:    madd.ew.x m1, a0, m0
+; CHECK-NEXT:    call clobber
+; CHECK-NEXT:    msettyp m0, s0
+; CHECK-NEXT:    mls.rm m0, a0
+; CHECK-NEXT:    li a0, 2
+; CHECK-NEXT:    csrw amestype, s0
+; CHECK-NEXT:    msettyp m1, s0
+; CHECK-NEXT:    madd.ew.x m1, a0, m0
+; RV32-NEXT:    lw ra, 12(sp) # 4-byte Folded Reload
+; RV32-NEXT:    lw s0, 8(sp) # 4-byte Folded Reload
+; RV64-NEXT:    ld ra, 8(sp) # 8-byte Folded Reload
+; RV64-NEXT:    ld s0, 0(sp) # 8-byte Folded Reload
+; CHECK-NEXT:    addi sp, sp, 16
+; CHECK-NEXT:    ret
+  %src = call target("riscv.ztt.m.i32", i32, 32, 1, 1) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i32_i32_32_1_1t(i32 1073741856, i32 1)
+  %first = call target("riscv.ztt.m.i32", i32, 32, 1, 1) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i32_i32_32_1_1t.triscv.ztt.m.i32_i32_32_1_1t.iXLEN(target("riscv.ztt.m.i32", i32, 32, 1, 1) %src, iXLEN 1, i32 1073741856, i32 1073741856, i32 1)
+  %base = call ptr @clobber()
+  %newsrc = call target("riscv.ztt.m.i32", i32, 32, 1, 1) @llvm.riscv.ztt.mls.rm.triscv.ztt.m.i32_i32_32_1_1t(ptr %base, i32 1073741856, i32 1)
+  %second = call target("riscv.ztt.m.i32", i32, 32, 1, 1) @llvm.riscv.ztt.madd.ew.x.triscv.ztt.m.i32_i32_32_1_1t.triscv.ztt.m.i32_i32_32_1_1t.iXLEN(target("riscv.ztt.m.i32", i32, 32, 1, 1) %newsrc, iXLEN 2, i32 1073741856, i32 1073741856, i32 1)
+  ret void
+}
+declare ptr @clobber()
+declare target("riscv.ztt.m.i32", i32, 32, 1, 1) @llvm.riscv.ztt.mls.rm.triscv.ztt.m.i32_i32_32_1_1t(ptr, i32, i32)
+
+attributes #0 = { nounwind "target-features"="+m,+ztt" "riscv-ztt-profile"="clang-runtime-u8-m32-a16" }
+attributes #1 = { nounwind "target-features"="+m,+ztt" "riscv-ztt-profile"="clang-runtime-u16-m32-a16" }
+attributes #2 = { nounwind "target-features"="+m,+ztt" "riscv-ztt-profile"="clang-runtime-u32-m32-a16" }
+attributes #3 = { nounwind "target-features"="+m,+ztt" "riscv-ztt-profile"="clang-runtime-u64-m32-a16" }
+attributes #4 = { nounwind "target-features"="+m,+ztt" "riscv-ztt-profile"="clang-runtime-u128-m32-a16" }
+attributes #5 = { nounwind "target-features"="+m,+ztt" "riscv-ztt-profile"="clang-runtime-u8-m32-a16" }
+attributes #6 = { nounwind "target-features"="+m,+ztt" "riscv-ztt-profile"="clang-runtime-u16-m32-a16" }
+attributes #7 = { nounwind "target-features"="+m,+ztt" "riscv-ztt-profile"="clang-runtime-u32-m32-a16" }
+attributes #8 = { nounwind "target-features"="+m,+ztt" "riscv-ztt-profile"="clang-runtime-u32-m32-a16" }
+attributes #9 = { nounwind "target-features"="+m,+ztt" "riscv-ztt-profile"="clang-runtime-u64-m32-a16" }
+attributes #10 = { nounwind "target-features"="+m,+ztt" "riscv-ztt-profile"="clang-runtime-u128-m32-a16" }
+attributes #11 = { nounwind "target-features"="+m,+ztt" "riscv-ztt-profile"="clang-runtime-u8-m32-a16" }
+attributes #12 = { nounwind "target-features"="+m,+ztt" "riscv-ztt-profile"="clang-runtime-u32-m32-a16" }

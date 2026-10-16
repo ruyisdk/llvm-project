@@ -60,6 +60,14 @@ private:
   const RISCVInstrInfo *TII;
   const TargetRegisterInfo *TRI;
 
+  // Set AMESTYPE for data-scalar operations that read it.
+  void emitScalarType(MachineBasicBlock &MBB, MachineBasicBlock::iterator MI,
+                      Register SType);
+  // Expand matrix, scalar and old-result operations one slice at a time.
+  bool expandSlice(MachineBasicBlock &MBB, MachineBasicBlock::iterator MI,
+                   const RISCVZttInstrInfo::PseudoInfo &P,
+                   const RISCVZttInstrInfo::OperationInfo &Info);
+
   // A matrix source slice; extract also supplies its selected base and width.
   struct MInput {
     Register Reg;
@@ -335,7 +343,7 @@ bool RISCVZttPostRAExpandPseudo::expandMI(MachineBasicBlock &MBB,
                            : expandMSetTyp(MBB, MBBI, P->DstGroup);
       if (Info->Layout == OperandLayout::Zero)
         return expandZero(MBB, MBBI, P->DstGroup, Info->IsAcc);
-      break;
+      return expandSlice(MBB, MBBI, *P, *Info);
     case RISCVZttInstrInfo::CodeGenKind::Transfer:
       switch (Info->Layout) {
       case OperandLayout::Copy:
@@ -631,6 +639,87 @@ bool RISCVZttPostRAExpandPseudo::expandMextract(MachineBasicBlock &MBB,
       MBB, MI, RISCV::ZTT_MMOV_M_M, Dst, DGroup, NumOps,
       {{S0, S0Group, unsigned(MI->getOperand(2).getImm()) * DGroup, Width}});
 
+  MI->eraseFromParent();
+  return true;
+}
+
+void RISCVZttPostRAExpandPseudo::emitScalarType(MachineBasicBlock &MBB,
+                                                MachineBasicBlock::iterator MI,
+                                                Register SType) {
+  const auto *CSR = RISCVSysReg::lookupSysRegByName("AMESTYPE");
+  assert(CSR && "missing AMESTYPE CSR");
+  BuildMI(MBB, MI, MI->getDebugLoc(), TII->get(RISCV::CSRRW), RISCV::X0)
+      .addImm(CSR->Encoding)
+      .addReg(SType);
+}
+
+bool RISCVZttPostRAExpandPseudo::expandSlice(
+    MachineBasicBlock &MBB, MachineBasicBlock::iterator MI,
+    const RISCVZttInstrInfo::PseudoInfo &P,
+    const RISCVZttInstrInfo::OperationInfo &Info) {
+  Register Dst = MI->getOperand(0).getReg();
+  unsigned First = 1 + Info.HasOld;
+  unsigned ScalarIndex = First + Info.NumSources;
+  unsigned DIndex = ScalarIndex + Info.HasScalar;
+  unsigned CountIndex = DIndex + 1 + Info.HasScalarType;
+  unsigned NumOps = MI->getOperand(CountIndex).getImm();
+  unsigned Width = MI->getOperand(CountIndex + 1).getImm();
+  assert(NumOps && P.DstGroup % NumOps == 0 && Width &&
+         P.DstGroup % Width == 0 && "invalid Ztt operation layout");
+  if (Info.HasOld)
+    assert(Dst == MI->getOperand(1).getReg() && "tied Ztt destination");
+  if (Info.Pairwise) {
+    assert(NumOps == 1 && P.DstGroup == 2 * Width &&
+           "zip/unzip needs two disjoint square groups");
+    Register FirstSquare = getMReg(Dst, P.DstGroup, 0);
+    Register SecondSquare = getMReg(Dst, P.DstGroup, Width);
+    auto Pair = BuildMI(MBB, MI, MI->getDebugLoc(), TII->get(Info.BaseOpcode),
+                        FirstSquare)
+                    .addDef(SecondSquare)
+                    .addUse(FirstSquare)
+                    .addUse(SecondSquare);
+    // The encoded leaders read and write all wide continuation registers.
+    for (unsigned I = 0; I != P.DstGroup; ++I)
+      if (I != 0 && I != Width) {
+        Register Tail = getMReg(Dst, P.DstGroup, I);
+        Pair.addReg(Tail, RegState::Implicit);
+        Pair.addReg(Tail, RegState::ImplicitDefine);
+      }
+    MI->eraseFromParent();
+    return true;
+  }
+  SmallVector<MInput, 2> Sources;
+  unsigned Groups[] = {P.Src0Group, P.Src1Group};
+  for (unsigned I = 0; I != Info.NumSources; ++I) {
+    Register Src = MI->getOperand(First + I).getReg();
+    if (!Info.HasOld && TRI->regsOverlap(Dst, Src)) {
+      report_fatal_error(
+          Info.HasScalar
+              ? "Ztt scalar operation destination overlaps its source"
+          : Info.NumSources == 1
+              ? "Ztt unary destination overlaps its source"
+              : "Ztt elementwise destination overlaps a source");
+    }
+    assert(Groups[I] % NumOps == 0 && "invalid Ztt source slice");
+    Sources.push_back({Src, Groups[I]});
+  }
+  SmallVector<Register, 2> Scalars;
+  if (Info.HasScalar)
+    Scalars.push_back(MI->getOperand(ScalarIndex).getReg());
+  if (Info.HasScalarType) {
+    Register SType = MI->getOperand(DIndex + 1).getReg();
+    if (Info.ScalarType == RISCVZttInstrInfo::ScalarTypeLocation::CSR)
+      emitScalarType(MBB, MI, SType);
+    else
+      Scalars.push_back(SType);
+  }
+  // old_d carries its metadata; resetting it would erase the input payload.
+  if (!Info.HasOld)
+    for (unsigned I = 0; I != P.DstGroup; I += Width)
+      emitMSetTyp(MBB, MI, Dst, P.DstGroup, I, Width,
+                  MI->getOperand(DIndex).getReg());
+  emitMOperations(MBB, MI, Info.BaseOpcode, Dst, P.DstGroup, NumOps, Sources,
+                  Scalars);
   MI->eraseFromParent();
   return true;
 }

@@ -782,4 +782,24 @@ TEST(RISCVZttInstrInfo, MetadataPreservation) {
   }
 }
 
+TEST(RISCVZttInstrInfo, ScalarDatatypeLocation) {
+  for (unsigned ID = 1; ID != Intrinsic::num_intrinsics; ++ID) {
+    const auto *Hook = getIntrinsicLoweringInfo(ID);
+    if (!Hook)
+      continue;
+    const auto *Op = getOperationInfo(Hook->Operation);
+    ASSERT_NE(Op, nullptr);
+    auto Expected = !Op->HasScalarType            ? ScalarTypeLocation::None
+                    : Op->Operation == MBCAST_M_X ? ScalarTypeLocation::Operand
+                                                  : ScalarTypeLocation::CSR;
+    EXPECT_EQ(Op->ScalarType, Expected) << Op->getName().str();
+    if (Expected == ScalarTypeLocation::CSR)
+      EXPECT_TRUE(Op->HasChain);
+  }
+  EXPECT_EQ(getOperationInfo(MADD_EW_X)->ScalarType, ScalarTypeLocation::CSR);
+  EXPECT_EQ(getOperationInfo(MBCAST_M_X)->ScalarType,
+            ScalarTypeLocation::Operand);
+  EXPECT_EQ(getOperationInfo(MSLL_EW_X)->ScalarType, ScalarTypeLocation::None);
+}
+
 } // namespace

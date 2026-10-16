@@ -518,6 +518,9 @@ enum class OperandLayout {
 /// Lowering and expansion paths shared with the operation descriptions.
 enum class CodeGenKind { Slice, Matmul, Transfer, Memory, State };
 
+/// Scalar datatype: none, AMESTYPE, or an instruction operand (mbcast).
+enum class ScalarTypeLocation { None, CSR, Operand };
+
 /// Operand counts and effects shared by all register-group sizes.
 struct OperationInfo {
   ZttOperationID Operation;
@@ -530,6 +533,7 @@ struct OperationInfo {
   bool Pairwise; // Zip/unzip update both squares together.
   bool HasSideEffects;
   bool HasScalar, HasScalarType;
+  ScalarTypeLocation ScalarType;
   bool IsLoad, HasScratch;
   bool Transposed;
   StringTable::Offset Name;
