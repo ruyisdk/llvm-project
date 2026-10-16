@@ -1,4 +1,4 @@
-//===-- RISCVZttPostRAExpandPseudoInsts.cpp - Expand Ztt pseudos ------------===//
+//===-- RISCVZttPostRAExpandPseudoInsts.cpp - Expand Ztt pseudos ----------===//
 //
 // Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
 // See https://llvm.org/LICENSE.txt for license information.
@@ -59,6 +59,30 @@ public:
 private:
   const RISCVInstrInfo *TII;
   const TargetRegisterInfo *TRI;
+
+  // A matrix source slice; extract also supplies its selected base and width.
+  struct MInput {
+    Register Reg;
+    unsigned Group;
+    unsigned Base = 0;
+    unsigned Width = 0;
+  };
+  // Emit slices and their full register uses/definitions after metadata setup.
+  void emitMOperations(MachineBasicBlock &MBB, MachineBasicBlock::iterator MI,
+                       unsigned Opcode, Register Dst, unsigned DGroup,
+                       unsigned NumOps, ArrayRef<MInput> Sources,
+                       ArrayRef<Register> Scalars = {});
+  bool expandMemory(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
+                    unsigned GroupSize, unsigned MemoryOpcode, bool IsLoad,
+                    bool Strided);
+  bool expandMCopy(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
+                   unsigned GroupSize);
+  bool expandMConcat(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
+                     unsigned GroupSize);
+  bool expandCrossCopy(MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI,
+                       unsigned AccGroup, unsigned MGroup, bool IsM2A);
+  bool expandMextract(MachineBasicBlock &MBB, MachineBasicBlock::iterator MI,
+                      unsigned DGroup, unsigned S0Group);
 
   // Resolve a physical register within an M or ACC group.
   Register getMReg(Register Group, unsigned GroupSize, unsigned Index) const;
@@ -312,6 +336,25 @@ bool RISCVZttPostRAExpandPseudo::expandMI(MachineBasicBlock &MBB,
       if (Info->Layout == OperandLayout::Zero)
         return expandZero(MBB, MBBI, P->DstGroup, Info->IsAcc);
       break;
+    case RISCVZttInstrInfo::CodeGenKind::Transfer:
+      switch (Info->Layout) {
+      case OperandLayout::Copy:
+        return expandMCopy(MBB, MBBI, P->DstGroup);
+      case OperandLayout::Concat:
+        return expandMConcat(MBB, MBBI, P->DstGroup);
+      case OperandLayout::CrossCopy:
+        return expandCrossCopy(
+            MBB, MBBI, Info->IsAcc ? P->DstGroup : P->Src0Group,
+            Info->IsAcc ? P->Src0Group : P->DstGroup, Info->IsAcc);
+      case OperandLayout::Extract:
+        return expandMextract(MBB, MBBI, P->DstGroup, P->Src0Group);
+      default:
+        llvm_unreachable("invalid transfer operand layout");
+      }
+    case RISCVZttInstrInfo::CodeGenKind::Memory:
+      return expandMemory(MBB, MBBI, P->DstGroup, Info->BaseOpcode,
+                          Info->IsLoad,
+                          Info->Layout == OperandLayout::StridedMemory);
     default:
       break;
     }
@@ -377,6 +420,218 @@ bool RISCVZttPostRAExpandPseudo::expandAClear(MachineBasicBlock &MBB,
         .addReg(MBBI->getOperand(1).getReg());
   }
   MBBI->eraseFromParent();
+  return true;
+}
+
+bool RISCVZttPostRAExpandPseudo::expandMemory(MachineBasicBlock &MBB,
+                                              MachineBasicBlock::iterator MBBI,
+                                              unsigned GroupSize,
+                                              unsigned MemoryOpcode,
+                                              bool IsLoad, bool Strided) {
+  // Named operands isolate signature differences from the slice walk.
+  auto Operand = [&](RISCV::OpName Name) -> const MachineOperand & {
+    int Index = RISCV::getNamedOperandIdx(MBBI->getOpcode(), Name);
+    assert(Index >= 0 && "missing Ztt memory operand");
+    return MBBI->getOperand(Index);
+  };
+  Register GroupReg =
+      Operand(IsLoad ? RISCV::OpName::rd : RISCV::OpName::src).getReg();
+  Register AddressReg = Operand(RISCV::OpName::scratch).getReg();
+  Register Step =
+      Operand(Strided ? RISCV::OpName::step : RISCV::OpName::stride).getReg();
+  Register ByteStride =
+      Strided ? Operand(RISCV::OpName::stride).getReg() : Register();
+  Register DType = IsLoad ? Operand(RISCV::OpName::dtype).getReg() : Register();
+  unsigned RegsPerUnit = Operand(Strided ? RISCV::OpName::regs_per_square
+                                         : RISCV::OpName::regs_per_unit)
+                             .getImm();
+  assert(RegsPerUnit && GroupSize % RegsPerUnit == 0 &&
+         "invalid Ztt memory register group");
+  for (unsigned Base = 0; Base != GroupSize; Base += RegsPerUnit) {
+    if (Base)
+      BuildMI(MBB, MBBI, MBBI->getDebugLoc(), TII->get(RISCV::ADD), AddressReg)
+          .addReg(AddressReg)
+          .addReg(Step);
+    Register BaseReg = getMReg(GroupReg, GroupSize, Base);
+    if (IsLoad)
+      emitMSetTyp(MBB, MBBI, GroupReg, GroupSize, Base, RegsPerUnit, DType);
+    MachineInstrBuilder Mem =
+        IsLoad ? BuildMI(MBB, MBBI, MBBI->getDebugLoc(), TII->get(MemoryOpcode),
+                         BaseReg)
+                     .addReg(AddressReg)
+               : BuildMI(MBB, MBBI, MBBI->getDebugLoc(), TII->get(MemoryOpcode))
+                     .addReg(BaseReg)
+                     .addReg(AddressReg);
+    if (Strided)
+      Mem.addReg(ByteStride);
+    // The encoded base names the entire square, including wide continuation
+    // registers. Loads define them; stores read them.
+    for (unsigned I = 1; I != RegsPerUnit; ++I)
+      Mem.addReg(getMReg(GroupReg, GroupSize, Base + I),
+                 IsLoad ? RegState::ImplicitDefine : RegState::Implicit);
+    Mem.cloneMemRefs(*MBBI);
+  }
+  MBBI->eraseFromParent();
+  return true;
+}
+
+bool RISCVZttPostRAExpandPseudo::expandMCopy(MachineBasicBlock &MBB,
+                                             MachineBasicBlock::iterator MBBI,
+                                             unsigned GroupSize) {
+  Register DstGroup = MBBI->getOperand(0).getReg();
+  Register SrcGroup = MBBI->getOperand(1).getReg();
+  unsigned RegsPerUnit = MBBI->getOperand(2).getImm();
+  assert(RegsPerUnit && GroupSize % RegsPerUnit == 0 &&
+         "invalid Ztt mcopy register group");
+
+  if (needsMCopy(DstGroup, SrcGroup))
+    for (unsigned Base = 0; Base != GroupSize; Base += RegsPerUnit)
+      emitMCopySquare(MBB, MBBI, Register(), DstGroup, GroupSize, Base,
+                      SrcGroup, GroupSize, Base, RegsPerUnit,
+                      MBBI->getOperand(3).getReg());
+
+  MBBI->eraseFromParent();
+  return true;
+}
+
+bool RISCVZttPostRAExpandPseudo::expandMConcat(MachineBasicBlock &MBB,
+                                               MachineBasicBlock::iterator MBBI,
+                                               unsigned GroupSize) {
+  assert(GroupSize >= 2 && isPowerOf2_32(GroupSize) &&
+         "invalid Ztt mconcat.m destination group");
+  unsigned SrcGroupSize = GroupSize / 2;
+  Register DstGroup = MBBI->getOperand(0).getReg();
+  Register LhsGroup = MBBI->getOperand(1).getReg();
+  Register RhsGroup = MBBI->getOperand(2).getReg();
+  // Check aliases of the whole groups, not just their starting registers.
+  // MSETTYP clears data, so even a partially overlapping destination is unsafe.
+  // The two read-only sources may still alias each other.
+  if (TRI->regsOverlap(DstGroup, LhsGroup) ||
+      TRI->regsOverlap(DstGroup, RhsGroup))
+    report_fatal_error(
+        "Ztt mconcat.m destination register group overlaps a source");
+  unsigned RegsPerSquare = MBBI->getOperand(3).getImm();
+  // Intrinsic sources and result have the same statically known datatype.
+  Register DType = MBBI->getOperand(4).getReg();
+  assert(RegsPerSquare && SrcGroupSize % RegsPerSquare == 0 &&
+         "invalid Ztt mconcat.m source layout");
+
+  // The first source forms the low half and the second source forms the high
+  // half of the contiguous destination group.
+  for (unsigned Base = 0; Base != SrcGroupSize; Base += RegsPerSquare) {
+    emitMCopySquare(MBB, MBBI, Register(), DstGroup, GroupSize, Base, LhsGroup,
+                    SrcGroupSize, Base, RegsPerSquare, DType);
+    emitMCopySquare(MBB, MBBI, Register(), DstGroup, GroupSize,
+                    SrcGroupSize + Base, RhsGroup, SrcGroupSize, Base,
+                    RegsPerSquare, DType);
+  }
+
+  MBBI->eraseFromParent();
+  return true;
+}
+
+bool RISCVZttPostRAExpandPseudo::expandCrossCopy(
+    MachineBasicBlock &MBB, MachineBasicBlock::iterator MBBI, unsigned AccGroup,
+    unsigned MGroup, bool IsM2A) {
+  Register DstGroup = MBBI->getOperand(0).getReg();
+  Register DType = MBBI->getOperand(4).getReg();
+  Register SrcGroup = MBBI->getOperand(1).getReg();
+  unsigned MRegsPerSquare = MBBI->getOperand(2).getImm();
+  unsigned AccsPerMove = MBBI->getOperand(3).getImm();
+  assert(MRegsPerSquare && AccsPerMove && AccGroup % AccsPerMove == 0 &&
+         MGroup == (AccGroup / AccsPerMove) * MRegsPerSquare &&
+         "invalid Ztt M/Acc copy grouping");
+
+  Register MGroupReg = IsM2A ? SrcGroup : DstGroup;
+  Register AGroupReg = IsM2A ? DstGroup : SrcGroup;
+  for (unsigned AccBase = 0, MBase = 0; AccBase != AccGroup;
+       AccBase += AccsPerMove, MBase += MRegsPerSquare) {
+    Register MBaseReg = getMReg(MGroupReg, MGroup, MBase);
+    Register ABaseReg = getAReg(AGroupReg, AccGroup, AccBase);
+    if (IsM2A) {
+      for (unsigned I = 0; I != AccsPerMove; ++I)
+        BuildMI(MBB, MBBI, MBBI->getDebugLoc(), TII->get(RISCV::ZTT_ASETTYP),
+                getAReg(AGroupReg, AccGroup, AccBase + I))
+            .addReg(DType);
+      auto Move = BuildMI(MBB, MBBI, MBBI->getDebugLoc(),
+                          TII->get(RISCV::ZTT_MMOV_A_M), ABaseReg)
+                      .addReg(MBaseReg);
+      for (unsigned I = 1; I != MRegsPerSquare; ++I)
+        Move.addReg(getMReg(MGroupReg, MGroup, MBase + I), RegState::Implicit);
+      for (unsigned I = 1; I != AccsPerMove; ++I)
+        Move.addReg(getAReg(AGroupReg, AccGroup, AccBase + I),
+                    RegState::ImplicitDefine);
+    } else {
+      emitMSetTyp(MBB, MBBI, MGroupReg, MGroup, MBase, MRegsPerSquare, DType);
+      auto Move = BuildMI(MBB, MBBI, MBBI->getDebugLoc(),
+                          TII->get(RISCV::ZTT_MMOV_M_A), MBaseReg)
+                      .addReg(ABaseReg);
+      for (unsigned I = 1; I != MRegsPerSquare; ++I)
+        Move.addReg(getMReg(MGroupReg, MGroup, MBase + I),
+                    RegState::ImplicitDefine);
+      for (unsigned I = 1; I != AccsPerMove; ++I)
+        Move.addReg(getAReg(AGroupReg, AccGroup, AccBase + I),
+                    RegState::Implicit);
+    }
+  }
+
+  MBBI->eraseFromParent();
+  return true;
+}
+
+void RISCVZttPostRAExpandPseudo::emitMOperations(
+    MachineBasicBlock &MBB, MachineBasicBlock::iterator MI, unsigned Opcode,
+    Register Dst, unsigned DGroup, unsigned NumOps, ArrayRef<MInput> Sources,
+    ArrayRef<Register> Scalars) {
+  unsigned DWidth = DGroup / NumOps;
+  for (unsigned I = 0; I != NumOps; ++I) {
+    auto Inst = BuildMI(MBB, MI, MI->getDebugLoc(), TII->get(Opcode),
+                        getMReg(Dst, DGroup, I * DWidth));
+    for (Register Scalar : Scalars)
+      Inst.addReg(Scalar);
+    for (const MInput &Src : Sources) {
+      unsigned Width = Src.Width ? Src.Width : Src.Group / NumOps;
+      Inst.addReg(getMReg(Src.Reg, Src.Group, Src.Base + I * Width));
+    }
+    // The explicit destination defines its leader payload; its metadata and
+    // all continuation payloads remain dependencies of this instruction.
+    for (unsigned J = 0; J != DWidth; ++J) {
+      Register R = getMReg(Dst, DGroup, I * DWidth + J);
+      Inst.addReg(R, RegState::Implicit);
+      if (J)
+        Inst.addReg(R, RegState::ImplicitDefine);
+    }
+    for (const MInput &Src : Sources) {
+      unsigned Width = Src.Width ? Src.Width : Src.Group / NumOps;
+      for (unsigned J = 1; J != Width; ++J)
+        Inst.addReg(getMReg(Src.Reg, Src.Group, Src.Base + I * Width + J),
+                    RegState::Implicit);
+    }
+  }
+}
+
+bool RISCVZttPostRAExpandPseudo::expandMextract(MachineBasicBlock &MBB,
+                                                MachineBasicBlock::iterator MI,
+                                                unsigned DGroup,
+                                                unsigned S0Group) {
+  Register Dst = MI->getOperand(0).getReg();
+  Register S0 = MI->getOperand(1).getReg();
+  // The prototype keeps the entire source live and disjoint from the result.
+  // TODO: Select a half-group before allocation so full-capacity sources do
+  // not require additional registers alongside the complete source group.
+  if (TRI->regsOverlap(Dst, S0))
+    report_fatal_error("Ztt mextract destination overlaps a source");
+  unsigned NumOps = MI->getOperand(4).getImm();
+  unsigned Width = MI->getOperand(5).getImm();
+  assert(NumOps && DGroup % NumOps == 0 && Width && DGroup % Width == 0 &&
+         "invalid Ztt operation layout");
+  for (unsigned I = 0; I != DGroup; I += Width)
+    emitMSetTyp(MBB, MI, Dst, DGroup, I, Width, MI->getOperand(3).getReg());
+  emitMOperations(
+      MBB, MI, RISCV::ZTT_MMOV_M_M, Dst, DGroup, NumOps,
+      {{S0, S0Group, unsigned(MI->getOperand(2).getImm()) * DGroup, Width}});
+
+  MI->eraseFromParent();
   return true;
 }
 
