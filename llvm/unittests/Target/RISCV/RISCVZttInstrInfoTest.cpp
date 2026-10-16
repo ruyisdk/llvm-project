@@ -865,4 +865,40 @@ TEST(RISCVZttInstrInfo, MSpillPseudos) {
   }
 }
 
+TEST(RISCVZttInstrInfo, ACCSpillPseudos) {
+  LLVMInitializeRISCVTargetInfo();
+  LLVMInitializeRISCVTargetMC();
+  for (StringRef TripleName : {"riscv32", "riscv64"}) {
+    std::string Error;
+    const Target *T = TargetRegistry::lookupTarget(Triple(TripleName), Error);
+    ASSERT_NE(T, nullptr) << Error;
+    std::unique_ptr<MCInstrInfo> MCII(T->createMCInstrInfo());
+    struct Group {
+      unsigned RC, Spill, Reload;
+    };
+    const Group Groups[] = {
+#define RISCV_ZTT_ACC_GROUP(G, Class)                                          \
+  {RISCV::Class##ID, RISCV::PseudoZTTASpillA##G, RISCV::PseudoZTTAReloadA##G},
+#include "RISCVZttRegisterGroups.def"
+    };
+    for (auto G : Groups)
+      for (unsigned Op : {G.Spill, G.Reload}) {
+        SCOPED_TRACE(MCII->getName(Op).str());
+        const auto &Desc = MCII->get(Op);
+        EXPECT_TRUE(Desc.isPseudo());
+        EXPECT_TRUE(Desc.hasUnmodeledSideEffects());
+        // Both directions may protect borrowed M registers and GPRs.
+        EXPECT_TRUE(Desc.mayLoad());
+        EXPECT_TRUE(Desc.mayStore());
+        EXPECT_EQ(Desc.getNumDefs(), unsigned(Op == G.Reload));
+        ASSERT_EQ(Desc.getNumOperands(), 3U);
+        EXPECT_EQ(Desc.operands()[0].RegClass, int(G.RC));
+        EXPECT_EQ(Desc.operands()[1].RegClass, RISCV::GPRRegClassID);
+        EXPECT_EQ(Desc.operands()[2].RegClass, -1);
+        EXPECT_EQ(getPseudoInfo(Op), nullptr);
+        EXPECT_EQ(getDAGNodeInfo(Op), nullptr);
+      }
+  }
+}
+
 } // namespace

@@ -645,3 +645,14 @@ foreach G = ZttMGroupSizes in {
     }
   }
 }
+
+// ACC spills may save and restore borrowed M registers in either direction.
+foreach A = ZttAGroupSizes in {
+  defvar RC = ZttARegClass<A>.RC;
+  let hasSideEffects = 1, mayLoad = 1, mayStore = 1 in {
+    def PseudoZTTASpillA # A : ZttPseudo<(outs),
+        (ins RC:$src, GPR:$base, ztt_xlenimm:$element_bits), []>;
+    def PseudoZTTAReloadA # A : ZttPseudo<(outs RC:$dst),
+        (ins GPR:$base, ztt_xlenimm:$element_bits), []>;
+  }
+}
