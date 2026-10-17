@@ -12,8 +12,11 @@
 
 #include "RISCV.h"
 #include "clang/Basic/Diagnostic.h"
+#include "clang/Basic/DiagnosticDriver.h"
 #include "clang/Basic/MacroBuilder.h"
+#include "clang/Basic/RISCVZttBuiltins.h"
 #include "clang/Basic/TargetBuiltins.h"
+#include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/StringSwitch.h"
 #include "llvm/ADT/Twine.h"
 #include "llvm/Support/raw_ostream.h"
@@ -264,6 +267,20 @@ void RISCVTargetInfo::getTargetDefines(const LangOptions &Opts,
                        "transformed to other scheme");
     }
   }
+
+  // Expose the selected resources and whether N is known at compile time.
+  if (ZttConfig) {
+    Builder.defineMacro("__riscv_ztt_uds", Twine(ZttConfig->UdsBits));
+    Builder.defineMacro("__riscv_ztt_mregs", Twine(ZttConfig->MRegs));
+    Builder.defineMacro("__riscv_ztt_accregs", Twine(ZttConfig->ARegs));
+    if (!ZttConfig->N) {
+      Builder.defineMacro("__riscv_ztt_runtime_n");
+    } else {
+      Builder.defineMacro("__riscv_ztt_n", Twine(ZttConfig->N));
+      Builder.defineMacro("__riscv_ztt_nelem",
+                          Twine(uint64_t(ZttConfig->N) * ZttConfig->N));
+    }
+  }
 }
 
 static constexpr int NumRVVBuiltins =
@@ -273,11 +290,14 @@ static constexpr int NumRVVSiFiveBuiltins =
 static constexpr int NumRVVAndesBuiltins =
     RISCVVector::FirstTSBuiltin - RISCVVector::FirstAndesBuiltin;
 static constexpr int NumRISCVBuiltins =
-    RISCV::LastTSBuiltin - RISCVVector::FirstTSBuiltin;
+    RISCV::FirstRISCVZttBuiltin - RISCVVector::FirstTSBuiltin;
+static constexpr int NumRISCVZttBuiltins =
+    RISCV::LastTSBuiltin - RISCV::FirstRISCVZttBuiltin;
 static constexpr int NumBuiltins =
     RISCV::LastTSBuiltin - Builtin::FirstTSBuiltin;
-static_assert(NumBuiltins == (NumRVVBuiltins + NumRVVSiFiveBuiltins +
-                              NumRVVAndesBuiltins + NumRISCVBuiltins));
+static_assert(NumBuiltins ==
+              (NumRVVBuiltins + NumRVVSiFiveBuiltins + NumRVVAndesBuiltins +
+               NumRISCVBuiltins + NumRISCVZttBuiltins));
 
 namespace RVV {
 #define GET_RISCVV_BUILTIN_STR_TABLE
@@ -329,6 +349,19 @@ static constexpr Builtin::Info BuiltinInfos[] = {
 };
 static_assert(std::size(BuiltinInfos) == NumRISCVBuiltins);
 
+namespace RISCVZtt {
+#define GET_BUILTIN_STR_TABLE
+#include "clang/Basic/riscv_ztt_builtins.inc"
+#undef GET_BUILTIN_STR_TABLE
+
+static constexpr Builtin::Info BuiltinInfos[] = {
+#define GET_BUILTIN_INFOS
+#include "clang/Basic/riscv_ztt_builtins.inc"
+#undef GET_BUILTIN_INFOS
+};
+static_assert(std::size(BuiltinInfos) == NumRISCVZttBuiltins);
+} // namespace RISCVZtt
+
 llvm::SmallVector<Builtin::InfosShard>
 RISCVTargetInfo::getTargetBuiltins() const {
   return {
@@ -336,8 +369,74 @@ RISCVTargetInfo::getTargetBuiltins() const {
       {&RVVSiFive::BuiltinStrings, RVVSiFive::BuiltinInfos, "__builtin_rvv_"},
       {&RVVAndes::BuiltinStrings, RVVAndes::BuiltinInfos, "__builtin_rvv_"},
       {&BuiltinStrings, BuiltinInfos},
+      {&RISCVZtt::BuiltinStrings, RISCVZtt::BuiltinInfos},
   };
 }
+
+namespace clang::RISCV {
+static constexpr RISCVZttBuiltinInfo RISCVZttBuiltins[] = {
+#define GET_RISCV_ZTT_BUILTIN_TABLE
+#include "clang/Basic/riscv_ztt_builtins.inc"
+#undef GET_RISCV_ZTT_BUILTIN_TABLE
+};
+static_assert(std::size(RISCVZttBuiltins) == NumRISCVZttBuiltins);
+
+static_assert(
+    [] {
+      for (unsigned I = 1; I < std::size(RISCVZttBuiltins); ++I)
+        if (RISCVZttBuiltins[I - 1].ID >= RISCVZttBuiltins[I].ID)
+          return false;
+      return true;
+    }(),
+    "RISC-V Ztt builtins must be sorted by ID");
+
+llvm::ArrayRef<RISCVZttBuiltinInfo> getRISCVZttBuiltins() {
+  return RISCVZttBuiltins;
+}
+
+const RISCVZttBuiltinInfo *getRISCVZttBuiltinInfo(unsigned ID) {
+  auto It = llvm::lower_bound(RISCVZttBuiltins, ID,
+                              [](const RISCVZttBuiltinInfo &Info, unsigned ID) {
+                                return Info.ID < ID;
+                              });
+  return It != std::end(RISCVZttBuiltins) && It->ID == ID ? It : nullptr;
+}
+
+bool RISCVZttBuiltinInfo::acceptsResult(bool IsACC, bool IsInteger,
+                                        unsigned ElementBits, unsigned Rows,
+                                        unsigned Columns,
+                                        unsigned Squares) const {
+  if (ResultKind == RISCVZttResultKind::NonMatrix ||
+      IsACC != (ResultKind == RISCVZttResultKind::ACC) ||
+      (ResultTypeKind == RISCVZttResultTypeKind::Integer && !IsInteger) ||
+      (ResultTypeKind == RISCVZttResultTypeKind::Float && IsInteger) ||
+      Squares < MinResultSquares || Squares > MaxResultSquares ||
+      (!IsACC && Rows != 1 && Columns != 1))
+    return false;
+
+  switch (Operation) {
+  case RISCVZttOperation::riscv_ztt_op_mls_rm:
+  case RISCVZttOperation::riscv_ztt_op_mls_cm:
+  case RISCVZttOperation::riscv_ztt_op_mls_st:
+  case RISCVZttOperation::riscv_ztt_op_mls_tst:
+    // There is no C pointer element type for an i4/u4 load.
+    return ElementBits >= 8;
+  case RISCVZttOperation::riscv_ztt_op_mrowzip_ew:
+  case RISCVZttOperation::riscv_ztt_op_mcolzip_ew:
+  case RISCVZttOperation::riscv_ztt_op_mrowunzip_ew:
+  case RISCVZttOperation::riscv_ztt_op_mcolunzip_ew:
+    // Zip/unzip expose only the 1x2 shape, not 2x1.
+    return Rows == 1 && Columns == 2;
+  default:
+    return true;
+  }
+}
+
+const std::optional<llvm::RISCV::ZttProfile> &
+getRISCVZttProfile(const TargetInfo &TI) {
+  return static_cast<const targets::RISCVTargetInfo &>(TI).getZttProfile();
+}
+} // namespace clang::RISCV
 
 bool RISCVTargetInfo::initFeatureMap(
     llvm::StringMap<bool> &Features, DiagnosticsEngine &Diags, StringRef CPU,
@@ -353,7 +452,11 @@ bool RISCVTargetInfo::initFeatureMap(
   }
 
   std::vector<std::string> AllFeatures = FeaturesVec;
-  auto ParseResult = llvm::RISCVISAInfo::parseFeatures(XLen, FeaturesVec);
+  // Profiles configure matrix resources, not ISA features.
+  llvm::erase_if(AllFeatures, [](StringRef Feature) {
+    return Feature.starts_with("+ztt-profile=");
+  });
+  auto ParseResult = llvm::RISCVISAInfo::parseFeatures(XLen, AllFeatures);
   if (!ParseResult) {
     std::string Buffer;
     llvm::raw_string_ostream OutputErrMsg(Buffer);
@@ -444,6 +547,29 @@ bool RISCVTargetInfo::handleTargetFeatures(std::vector<std::string> &Features,
         << "ILP32E cannot be used with the D ISA extension";
     return false;
   }
+
+  // Initialize frontend configuration, including direct cc1 invocations that
+  // bypass the driver's profile checks.
+  ZttConfig.reset();
+  if (auto Value = getZttProfileName()) {
+    if (Value->empty()) {
+      Diags.Report(diag::err_drv_invalid_value) << "-mztt-profile=" << *Value;
+      return false;
+    }
+    auto Profile = llvm::RISCV::ZttProfile::parse(*Value);
+    if (!Profile) {
+      Diags.Report(diag::err_invalid_feature_combination)
+          << llvm::toString(Profile.takeError());
+      return false;
+    }
+    if (!ISAInfo->hasExtension("ztt")) {
+      Diags.Report(diag::err_invalid_feature_combination)
+          << "-mztt-profile requires the Ztt extension";
+      return false;
+    }
+    ZttConfig = *Profile;
+  }
+
   return true;
 }
 
@@ -665,4 +791,11 @@ bool RISCVTargetInfo::checkCFBranchLabelSchemeSupported(
     return false;
   }
   return TargetInfo::checkCFBranchLabelSchemeSupported(Scheme, Diags);
+}
+
+std::optional<StringRef> RISCVTargetInfo::getZttProfileName() const {
+  for (StringRef Feature : llvm::reverse(getTargetOpts().FeaturesAsWritten))
+    if (Feature.consume_front("+ztt-profile="))
+      return Feature;
+  return std::nullopt;
 }

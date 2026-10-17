@@ -1,0 +1,65 @@
+# RUN: split-file %s %t
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u32-m16-a4/g' %t/unknown.mir > %t.ztt-profile-0.mir
+# RUN: not --crash llc -mtriple=riscv64 -mattr=+ztt -verify-machineinstrs -run-pass=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-0.mir -o /dev/null 2>&1 | FileCheck %s --check-prefix=UNKNOWN
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u32-m16-a4/g' %t/conflict.mir > %t.ztt-profile-1.mir
+# RUN: not --crash llc -mtriple=riscv64 -mattr=+ztt -verify-machineinstrs -run-pass=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-1.mir -o /dev/null 2>&1 | FileCheck %s --check-prefix=UNKNOWN
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u32-m16-a4/g' %t/partial.mir > %t.ztt-profile-2.mir
+# RUN: not llc -mtriple=riscv64 -mattr=+ztt -verify-machineinstrs -run-pass=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-2.mir -o /dev/null 2>&1 | FileCheck %s --check-prefix=PARTIAL
+# UNKNOWN: LLVM ERROR: Ztt ACC COPY source element width is unknown
+# PARTIAL: LLVM ERROR: Ztt ACC COPY requires a complete transfer group
+
+#--- unknown.mir
+--- |
+  define void @unknown() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+...
+---
+name: unknown
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $ztta0
+    $ztta1 = COPY $ztta0
+    PseudoRET implicit $ztta1
+...
+#--- conflict.mir
+--- |
+  define void @conflict() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+...
+---
+name: conflict
+tracksRegLiveness: true
+body: |
+  bb.0:
+    successors: %bb.1, %bb.2
+    liveins: $x10, $x11
+    BNE $x10, $x0, %bb.2
+    PseudoBR %bb.1
+  bb.1:
+    successors: %bb.3
+    liveins: $x11
+    $ztta0 = PseudoZTTAClearA1 $x11, 32
+    PseudoBR %bb.3
+  bb.2:
+    successors: %bb.3
+    liveins: $x11
+    $ztta0 = PseudoZTTAClearA1 $x11, 64
+    PseudoBR %bb.3
+  bb.3:
+    liveins: $ztta0
+    $ztta1 = COPY $ztta0
+    PseudoRET implicit $ztta1
+...
+#--- partial.mir
+--- |
+  define void @partial() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+...
+---
+name: partial
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $x10
+    $ztta0 = PseudoZTTAClearA1 $x10, 16
+    $ztta1 = COPY $ztta0
+    PseudoRET implicit $ztta1
+...

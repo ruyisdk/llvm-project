@@ -1,0 +1,1255 @@
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u8-m16-a4/g' %s > %t.ztt-profile-0.mir
+# RUN: llc -mtriple=riscv32 -mattr=+m,+ztt,+reserve-x10,+reserve-x11,+reserve-x12 -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-0.mir -o %t.32.s
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u8-m16-a4/g' %s > %t.ztt-profile-1.mir
+# RUN: llc -mtriple=riscv64 -mattr=+m,+ztt,+reserve-x10,+reserve-x11,+reserve-x12 -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-1.mir -o %t.64.s
+# RUN: FileCheck %s --match-full-lines --check-prefix=RV32 < %t.32.s
+# RUN: FileCheck %s --match-full-lines --check-prefix=RV64 < %t.64.s
+# RUN: %python %S/Inputs/check-spill-frame.py %t.32.s 32 acc_busy_fixed 32 2 8 0 a0,a1,a2
+# RUN: %python %S/Inputs/check-spill-frame.py %t.64.s 64 acc_busy_fixed 32 2 8 0 a0,a1,a2
+# All M and allocatable GPRs are live. ACC reload starts at acc2, without
+# changing its group alignment. Each live M square is four registers wide.
+--- |
+  define void @acc_busy_fixed() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+...
+---
+name: acc_busy_fixed
+tracksRegLiveness: true
+machineFunctionInfo:
+  zttMArgLayout: [4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+stack:
+  - { id: 0, size: 4, alignment: 4 }
+body: |
+  bb.0:
+    liveins: $zttm0m16, $ztta0m2, $x1, $x5, $x6, $x7, $x8, $x9, $x10, $x11, $x12, $x13, $x14, $x15, $x16, $x17, $x18, $x19, $x20, $x21, $x22, $x23, $x24, $x25, $x26, $x27, $x28, $x29, $x30, $x31
+    PseudoZTTASpillA2 $ztta0m2, %stack.0, 32
+    $ztta2m2 = PseudoZTTAReloadA2 %stack.0, 32
+    PseudoRET implicit $zttm0m16, implicit $ztta2m2, implicit $x1, implicit $x5, implicit $x6, implicit $x7, implicit $x8, implicit $x9, implicit $x10, implicit $x11, implicit $x12, implicit $x13, implicit $x14, implicit $x15, implicit $x16, implicit $x17, implicit $x18, implicit $x19, implicit $x20, implicit $x21, implicit $x22, implicit $x23, implicit $x24, implicit $x25, implicit $x26, implicit $x27, implicit $x28, implicit $x29, implicit $x30, implicit $x31
+...
+
+# RV32-LABEL: acc_busy_fixed:                         # @acc_busy_fixed
+# RV32-NEXT: # %bb.0:
+# RV32-NEXT: addi	sp, sp, -32
+# RV32-NEXT: sw	a3, 0(sp)
+# RV32-NEXT: sw	a4, 4(sp)
+# RV32-NEXT: sw	a5, 8(sp)
+# RV32-NEXT: sw	a6, 12(sp)
+# RV32-NEXT: sw	a7, 16(sp)
+# RV32-NEXT: csrr	a5, amenlen
+# RV32-NEXT: mul	a4, a5, a5
+# RV32-NEXT: li	a3, 0
+# RV32-NEXT: add	a3, a3, a4
+# RV32-NEXT: slli	a3, a3, 1
+# RV32-NEXT: add	a3, a3, a4
+# RV32-NEXT: slli	a3, a3, 1
+# RV32-NEXT: slli	a3, a3, 1
+# RV32-NEXT: slli	a3, a3, 1
+# RV32-NEXT: addi	a3, a3, 15
+# RV32-NEXT: andi	a3, a3, -16
+# RV32-NEXT: addi	a3, a3, 64
+# RV32-NEXT: mv	a7, sp
+# RV32-NEXT: sub	sp, sp, a3
+# RV32-NEXT: sw	a3, 32(sp)
+# RV32-NEXT: sw	a4, 36(sp)
+# RV32-NEXT: lw	a3, 0(a7)
+# RV32-NEXT: lw	a4, 4(a7)
+# RV32-NEXT: lw	a5, 8(a7)
+# RV32-NEXT: lw	a6, 12(a7)
+# RV32-NEXT: lw	a7, 16(a7)
+# RV32-NEXT: addi	sp, sp, 32
+# RV32-NEXT: addi	sp, sp, -96
+# RV32-NEXT: sw	a3, 20(sp)
+# RV32-NEXT: sw	a4, 16(sp)
+# RV32-NEXT: sw	a5, 12(sp)
+# RV32-NEXT: sw	a6, 8(sp)
+# RV32-NEXT: sw	a7, 4(sp)
+# RV32-NEXT: addi	a3, sp, 96
+# RV32-NEXT: lw	a5, 4(a3)
+# RV32-NEXT: addi	a4, sp, 24
+# RV32-NEXT: mgettyp	a7, m0
+# RV32-NEXT: sw	a7, 0(a4)
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m0, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m1, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m2, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m3, a3
+# RV32-NEXT: mgettyp	a7, m4
+# RV32-NEXT: sw	a7, 16(a4)
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m4, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m5, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m6, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m7, a3
+# RV32-NEXT: mgettyp	a7, m8
+# RV32-NEXT: sw	a7, 32(a4)
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m8, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m9, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m10, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m11, a3
+# RV32-NEXT: mgettyp	a7, m12
+# RV32-NEXT: sw	a7, 48(a4)
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m12, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m13, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m14, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m15, a3
+# RV32-NEXT: addi	a4, sp, 88
+# RV32-NEXT: agettyp	a7, acc0
+# RV32-NEXT: sw	a7, 0(a4)
+# RV32-NEXT: agettyp	a7, acc1
+# RV32-NEXT: sw	a7, 4(a4)
+# RV32-NEXT: lw	a7, 0(a4)
+# RV32-NEXT: msettyp	m0, a7
+# RV32-NEXT: mmov.m.a	m0, acc0
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: mss.1r	m0, a3
+# RV32-NEXT: add	a3, a3, a5
+# RV32-NEXT: mss.1r	m1, a3
+# RV32-NEXT: add	a3, a3, a5
+# RV32-NEXT: mss.1r	m2, a3
+# RV32-NEXT: add	a3, a3, a5
+# RV32-NEXT: mss.1r	m3, a3
+# RV32-NEXT: lw	a7, 4(a4)
+# RV32-NEXT: msettyp	m0, a7
+# RV32-NEXT: mmov.m.a	m0, acc1
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m0, a3
+# RV32-NEXT: add	a3, a3, a5
+# RV32-NEXT: mss.1r	m1, a3
+# RV32-NEXT: add	a3, a3, a5
+# RV32-NEXT: mss.1r	m2, a3
+# RV32-NEXT: add	a3, a3, a5
+# RV32-NEXT: mss.1r	m3, a3
+# RV32-NEXT: addi	a4, sp, 24
+# RV32-NEXT: lw	a7, 0(a4)
+# RV32-NEXT: msettyp	m0, a7
+# RV32-NEXT: lw	a7, 16(a4)
+# RV32-NEXT: msettyp	m4, a7
+# RV32-NEXT: lw	a7, 32(a4)
+# RV32-NEXT: msettyp	m8, a7
+# RV32-NEXT: lw	a7, 48(a4)
+# RV32-NEXT: msettyp	m12, a7
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m0, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m1, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m2, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m3, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m4, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m5, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m6, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m7, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m8, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m9, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m10, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m11, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m12, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m13, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m14, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m15, a3
+# RV32-NEXT: lw	a3, 20(sp)
+# RV32-NEXT: lw	a4, 16(sp)
+# RV32-NEXT: lw	a5, 12(sp)
+# RV32-NEXT: lw	a6, 8(sp)
+# RV32-NEXT: lw	a7, 4(sp)
+# RV32-NEXT: sw	a3, 20(sp)
+# RV32-NEXT: sw	a4, 16(sp)
+# RV32-NEXT: sw	a5, 12(sp)
+# RV32-NEXT: sw	a6, 8(sp)
+# RV32-NEXT: sw	a7, 4(sp)
+# RV32-NEXT: addi	a3, sp, 96
+# RV32-NEXT: lw	a5, 4(a3)
+# RV32-NEXT: addi	a4, sp, 24
+# RV32-NEXT: mgettyp	a7, m0
+# RV32-NEXT: sw	a7, 0(a4)
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m0, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m1, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m2, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m3, a3
+# RV32-NEXT: mgettyp	a7, m4
+# RV32-NEXT: sw	a7, 16(a4)
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m4, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m5, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m6, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m7, a3
+# RV32-NEXT: mgettyp	a7, m8
+# RV32-NEXT: sw	a7, 32(a4)
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m8, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m9, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m10, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m11, a3
+# RV32-NEXT: mgettyp	a7, m12
+# RV32-NEXT: sw	a7, 48(a4)
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m12, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m13, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m14, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mss.1r	m15, a3
+# RV32-NEXT: addi	a4, sp, 88
+# RV32-NEXT: lw	a7, 0(a4)
+# RV32-NEXT: asettyp	acc2, a7
+# RV32-NEXT: lw	a7, 4(a4)
+# RV32-NEXT: asettyp	acc3, a7
+# RV32-NEXT: lw	a7, 0(a4)
+# RV32-NEXT: msettyp	m0, a7
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: mls.1r	m0, a3
+# RV32-NEXT: add	a3, a3, a5
+# RV32-NEXT: mls.1r	m1, a3
+# RV32-NEXT: add	a3, a3, a5
+# RV32-NEXT: mls.1r	m2, a3
+# RV32-NEXT: add	a3, a3, a5
+# RV32-NEXT: mls.1r	m3, a3
+# RV32-NEXT: mmov.a.m	acc2, m0
+# RV32-NEXT: lw	a7, 4(a4)
+# RV32-NEXT: msettyp	m0, a7
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m0, a3
+# RV32-NEXT: add	a3, a3, a5
+# RV32-NEXT: mls.1r	m1, a3
+# RV32-NEXT: add	a3, a3, a5
+# RV32-NEXT: mls.1r	m2, a3
+# RV32-NEXT: add	a3, a3, a5
+# RV32-NEXT: mls.1r	m3, a3
+# RV32-NEXT: mmov.a.m	acc3, m0
+# RV32-NEXT: addi	a4, sp, 24
+# RV32-NEXT: lw	a7, 0(a4)
+# RV32-NEXT: msettyp	m0, a7
+# RV32-NEXT: lw	a7, 16(a4)
+# RV32-NEXT: msettyp	m4, a7
+# RV32-NEXT: lw	a7, 32(a4)
+# RV32-NEXT: msettyp	m8, a7
+# RV32-NEXT: lw	a7, 48(a4)
+# RV32-NEXT: msettyp	m12, a7
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m0, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m1, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m2, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m3, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m4, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m5, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m6, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 3
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m7, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m8, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m9, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m10, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m11, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m12, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m13, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m14, a3
+# RV32-NEXT: addi	a3, sp, 112
+# RV32-NEXT: slli	a6, a5, 0
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 1
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 2
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: slli	a6, a5, 4
+# RV32-NEXT: add	a3, a3, a6
+# RV32-NEXT: mls.1r	m15, a3
+# RV32-NEXT: lw	a3, 20(sp)
+# RV32-NEXT: lw	a4, 16(sp)
+# RV32-NEXT: lw	a5, 12(sp)
+# RV32-NEXT: lw	a6, 8(sp)
+# RV32-NEXT: lw	a7, 4(sp)
+# RV32-NEXT: addi	sp, sp, 96
+# RV32-NEXT: addi	sp, sp, -16
+# RV32-NEXT: sw	a3, 0(sp)
+# RV32-NEXT: sw	a4, 4(sp)
+# RV32-NEXT: lw	a3, 16(sp)
+# RV32-NEXT: add	a4, sp, a3
+# RV32-NEXT: lw	a3, 0(sp)
+# RV32-NEXT: sw	a3, 0(a4)
+# RV32-NEXT: lw	a3, 4(sp)
+# RV32-NEXT: sw	a3, 4(a4)
+# RV32-NEXT: mv	sp, a4
+# RV32-NEXT: lw	a3, 0(sp)
+# RV32-NEXT: lw	a4, 4(sp)
+# RV32-NEXT: addi	sp, sp, 16
+# RV32-NEXT: ret
+# RV32-NEXT: .Lfunc_end0:
+
+# RV64-LABEL: acc_busy_fixed:                         # @acc_busy_fixed
+# RV64-NEXT: # %bb.0:
+# RV64-NEXT: addi	sp, sp, -48
+# RV64-NEXT: sd	a3, 0(sp)
+# RV64-NEXT: sd	a4, 8(sp)
+# RV64-NEXT: sd	a5, 16(sp)
+# RV64-NEXT: sd	a6, 24(sp)
+# RV64-NEXT: sd	a7, 32(sp)
+# RV64-NEXT: csrr	a5, amenlen
+# RV64-NEXT: mul	a4, a5, a5
+# RV64-NEXT: li	a3, 0
+# RV64-NEXT: add	a3, a3, a4
+# RV64-NEXT: slli	a3, a3, 1
+# RV64-NEXT: add	a3, a3, a4
+# RV64-NEXT: slli	a3, a3, 1
+# RV64-NEXT: slli	a3, a3, 1
+# RV64-NEXT: slli	a3, a3, 1
+# RV64-NEXT: addi	a3, a3, 15
+# RV64-NEXT: andi	a3, a3, -16
+# RV64-NEXT: addi	a3, a3, 64
+# RV64-NEXT: mv	a7, sp
+# RV64-NEXT: sub	sp, sp, a3
+# RV64-NEXT: sd	a3, 48(sp)
+# RV64-NEXT: sd	a4, 56(sp)
+# RV64-NEXT: ld	a3, 0(a7)
+# RV64-NEXT: ld	a4, 8(a7)
+# RV64-NEXT: ld	a5, 16(a7)
+# RV64-NEXT: ld	a6, 24(a7)
+# RV64-NEXT: ld	a7, 32(a7)
+# RV64-NEXT: addi	sp, sp, 48
+# RV64-NEXT: addi	sp, sp, -112
+# RV64-NEXT: sd	a3, 32(sp)
+# RV64-NEXT: sd	a4, 24(sp)
+# RV64-NEXT: sd	a5, 16(sp)
+# RV64-NEXT: sd	a6, 8(sp)
+# RV64-NEXT: sd	a7, 0(sp)
+# RV64-NEXT: addi	a3, sp, 112
+# RV64-NEXT: ld	a5, 8(a3)
+# RV64-NEXT: addi	a4, sp, 40
+# RV64-NEXT: mgettyp	a7, m0
+# RV64-NEXT: sw	a7, 0(a4)
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m0, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m1, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m2, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m3, a3
+# RV64-NEXT: mgettyp	a7, m4
+# RV64-NEXT: sw	a7, 16(a4)
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m4, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m5, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m6, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m7, a3
+# RV64-NEXT: mgettyp	a7, m8
+# RV64-NEXT: sw	a7, 32(a4)
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m8, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m9, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m10, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m11, a3
+# RV64-NEXT: mgettyp	a7, m12
+# RV64-NEXT: sw	a7, 48(a4)
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m12, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m13, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m14, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m15, a3
+# RV64-NEXT: addi	a4, sp, 104
+# RV64-NEXT: agettyp	a7, acc0
+# RV64-NEXT: sw	a7, 0(a4)
+# RV64-NEXT: agettyp	a7, acc1
+# RV64-NEXT: sw	a7, 4(a4)
+# RV64-NEXT: lw	a7, 0(a4)
+# RV64-NEXT: msettyp	m0, a7
+# RV64-NEXT: mmov.m.a	m0, acc0
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: mss.1r	m0, a3
+# RV64-NEXT: add	a3, a3, a5
+# RV64-NEXT: mss.1r	m1, a3
+# RV64-NEXT: add	a3, a3, a5
+# RV64-NEXT: mss.1r	m2, a3
+# RV64-NEXT: add	a3, a3, a5
+# RV64-NEXT: mss.1r	m3, a3
+# RV64-NEXT: lw	a7, 4(a4)
+# RV64-NEXT: msettyp	m0, a7
+# RV64-NEXT: mmov.m.a	m0, acc1
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m0, a3
+# RV64-NEXT: add	a3, a3, a5
+# RV64-NEXT: mss.1r	m1, a3
+# RV64-NEXT: add	a3, a3, a5
+# RV64-NEXT: mss.1r	m2, a3
+# RV64-NEXT: add	a3, a3, a5
+# RV64-NEXT: mss.1r	m3, a3
+# RV64-NEXT: addi	a4, sp, 40
+# RV64-NEXT: lw	a7, 0(a4)
+# RV64-NEXT: msettyp	m0, a7
+# RV64-NEXT: lw	a7, 16(a4)
+# RV64-NEXT: msettyp	m4, a7
+# RV64-NEXT: lw	a7, 32(a4)
+# RV64-NEXT: msettyp	m8, a7
+# RV64-NEXT: lw	a7, 48(a4)
+# RV64-NEXT: msettyp	m12, a7
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m0, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m1, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m2, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m3, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m4, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m5, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m6, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m7, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m8, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m9, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m10, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m11, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m12, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m13, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m14, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m15, a3
+# RV64-NEXT: ld	a3, 32(sp)
+# RV64-NEXT: ld	a4, 24(sp)
+# RV64-NEXT: ld	a5, 16(sp)
+# RV64-NEXT: ld	a6, 8(sp)
+# RV64-NEXT: ld	a7, 0(sp)
+# RV64-NEXT: sd	a3, 32(sp)
+# RV64-NEXT: sd	a4, 24(sp)
+# RV64-NEXT: sd	a5, 16(sp)
+# RV64-NEXT: sd	a6, 8(sp)
+# RV64-NEXT: sd	a7, 0(sp)
+# RV64-NEXT: addi	a3, sp, 112
+# RV64-NEXT: ld	a5, 8(a3)
+# RV64-NEXT: addi	a4, sp, 40
+# RV64-NEXT: mgettyp	a7, m0
+# RV64-NEXT: sw	a7, 0(a4)
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m0, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m1, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m2, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m3, a3
+# RV64-NEXT: mgettyp	a7, m4
+# RV64-NEXT: sw	a7, 16(a4)
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m4, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m5, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m6, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m7, a3
+# RV64-NEXT: mgettyp	a7, m8
+# RV64-NEXT: sw	a7, 32(a4)
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m8, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m9, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m10, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m11, a3
+# RV64-NEXT: mgettyp	a7, m12
+# RV64-NEXT: sw	a7, 48(a4)
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m12, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m13, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m14, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mss.1r	m15, a3
+# RV64-NEXT: addi	a4, sp, 104
+# RV64-NEXT: lw	a7, 0(a4)
+# RV64-NEXT: asettyp	acc2, a7
+# RV64-NEXT: lw	a7, 4(a4)
+# RV64-NEXT: asettyp	acc3, a7
+# RV64-NEXT: lw	a7, 0(a4)
+# RV64-NEXT: msettyp	m0, a7
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: mls.1r	m0, a3
+# RV64-NEXT: add	a3, a3, a5
+# RV64-NEXT: mls.1r	m1, a3
+# RV64-NEXT: add	a3, a3, a5
+# RV64-NEXT: mls.1r	m2, a3
+# RV64-NEXT: add	a3, a3, a5
+# RV64-NEXT: mls.1r	m3, a3
+# RV64-NEXT: mmov.a.m	acc2, m0
+# RV64-NEXT: lw	a7, 4(a4)
+# RV64-NEXT: msettyp	m0, a7
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m0, a3
+# RV64-NEXT: add	a3, a3, a5
+# RV64-NEXT: mls.1r	m1, a3
+# RV64-NEXT: add	a3, a3, a5
+# RV64-NEXT: mls.1r	m2, a3
+# RV64-NEXT: add	a3, a3, a5
+# RV64-NEXT: mls.1r	m3, a3
+# RV64-NEXT: mmov.a.m	acc3, m0
+# RV64-NEXT: addi	a4, sp, 40
+# RV64-NEXT: lw	a7, 0(a4)
+# RV64-NEXT: msettyp	m0, a7
+# RV64-NEXT: lw	a7, 16(a4)
+# RV64-NEXT: msettyp	m4, a7
+# RV64-NEXT: lw	a7, 32(a4)
+# RV64-NEXT: msettyp	m8, a7
+# RV64-NEXT: lw	a7, 48(a4)
+# RV64-NEXT: msettyp	m12, a7
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m0, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m1, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m2, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m3, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m4, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m5, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m6, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 3
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m7, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m8, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m9, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m10, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m11, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m12, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m13, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m14, a3
+# RV64-NEXT: addi	a3, sp, 128
+# RV64-NEXT: slli	a6, a5, 0
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 1
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 2
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: slli	a6, a5, 4
+# RV64-NEXT: add	a3, a3, a6
+# RV64-NEXT: mls.1r	m15, a3
+# RV64-NEXT: ld	a3, 32(sp)
+# RV64-NEXT: ld	a4, 24(sp)
+# RV64-NEXT: ld	a5, 16(sp)
+# RV64-NEXT: ld	a6, 8(sp)
+# RV64-NEXT: ld	a7, 0(sp)
+# RV64-NEXT: addi	sp, sp, 112
+# RV64-NEXT: addi	sp, sp, -16
+# RV64-NEXT: sd	a3, 0(sp)
+# RV64-NEXT: sd	a4, 8(sp)
+# RV64-NEXT: ld	a3, 16(sp)
+# RV64-NEXT: add	a4, sp, a3
+# RV64-NEXT: ld	a3, 0(sp)
+# RV64-NEXT: sd	a3, 0(a4)
+# RV64-NEXT: ld	a3, 8(sp)
+# RV64-NEXT: sd	a3, 8(a4)
+# RV64-NEXT: mv	sp, a4
+# RV64-NEXT: ld	a3, 0(sp)
+# RV64-NEXT: ld	a4, 8(sp)
+# RV64-NEXT: addi	sp, sp, 16
+# RV64-NEXT: ret
+# RV64-NEXT: .Lfunc_end0:

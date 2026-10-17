@@ -959,6 +959,10 @@ bool PrintfSpecifier::fixType(QualType QT, const LangOptions &LangOpt,
 
 #define SPIRV_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
 #include "clang/Basic/SPIRVTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttScalarTypes.def"
 
 #define SIGNED_TYPE(Id, SingletonId)
 #define UNSIGNED_TYPE(Id, SingletonId)

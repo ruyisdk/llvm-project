@@ -18,6 +18,7 @@
 #include "llvm/IR/DerivedTypes.h"
 #include "llvm/Support/Compiler.h"
 #include "llvm/TargetParser/RISCVISAInfo.h"
+#include "llvm/TargetParser/RISCVZttProfile.h"
 #include "llvm/TargetParser/Triple.h"
 #include <optional>
 
@@ -33,6 +34,7 @@ protected:
 private:
   bool FastScalarUnalignedAccess;
   bool HasExperimental = false;
+  std::optional<llvm::RISCV::ZttProfile> ZttConfig;
 
 public:
   RISCVTargetInfo(const llvm::Triple &Triple, const TargetOptions &)
@@ -160,6 +162,14 @@ public:
   bool
   checkCFBranchLabelSchemeSupported(const CFBranchLabelSchemeKind Scheme,
                                     DiagnosticsEngine &Diags) const override;
+
+  /// Matrix resources selected by -mztt-profile.
+  const std::optional<llvm::RISCV::ZttProfile> &getZttProfile() const {
+    return ZttConfig;
+  }
+
+  /// Recover the last profile from cc1's existing target-feature transport.
+  std::optional<StringRef> getZttProfileName() const;
 };
 class LLVM_LIBRARY_VISIBILITY RISCV32TargetInfo : public RISCVTargetInfo {
 public:

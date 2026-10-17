@@ -221,6 +221,8 @@ class RISCVAsmParser : public MCTargetAsmParser {
   ParseStatus parsePseudoJumpSymbol(OperandVector &Operands);
   ParseStatus parseJALOffset(OperandVector &Operands);
   ParseStatus parseVTypeI(OperandVector &Operands);
+  ParseStatus parseZTTMRegister(OperandVector &Operands);
+  ParseStatus parseZTTARegister(OperandVector &Operands);
   ParseStatus parseMaskReg(OperandVector &Operands);
   ParseStatus parseVScaleReg(OperandVector &Operands);
   ParseStatus parseTileLambda(OperandVector &Operands);
@@ -560,6 +562,16 @@ public:
   bool isGPRAsFPR16() const { return isGPRF16() && Reg.IsGPRAsFPR; }
   bool isGPRAsFPR32() const { return isGPRF32() && Reg.IsGPRAsFPR; }
   bool isGPRPairAsFPR64() const { return isGPRPair() && Reg.IsGPRAsFPR; }
+
+  bool isZTTMRegister() const {
+    return Kind == KindTy::Register &&
+           getRISCVMCRegisterClass(RISCV::ZTTMRRegClassID).contains(Reg.Reg);
+  }
+
+  bool isZTTARegister() const {
+    return Kind == KindTy::Register &&
+           getRISCVMCRegisterClass(RISCV::ZTTARRegClassID).contains(Reg.Reg);
+  }
 
   static bool evaluateConstantExpr(const MCExpr *Expr, int64_t &Imm) {
     if (auto CE = dyn_cast<MCConstantExpr>(Expr)) {
@@ -1674,6 +1686,10 @@ std::string RISCVAsmParser::getCustomOperandDiag(unsigned MatchError) {
   case Match_InvalidVTypeI:
     return "operand must be "
            "e[8|8alt|16|16alt|32|64],m[1|2|4|8|f2|f4|f8],[ta|tu],[ma|mu]";
+  case Match_InvalidZTTMRegister:
+    return "operand must be a Ztt matrix register m0-m31";
+  case Match_InvalidZTTARegister:
+    return "operand must be a Ztt accumulator register acc0-acc15";
   case Match_InvalidSImm5Plus1:
     return Range(-(1 << 4) + 1, (1 << 4), "immediate must be in the range");
   case Match_InvalidSImm18:
@@ -2707,6 +2723,46 @@ ParseStatus RISCVAsmParser::parseGPRAsFPR64(OperandVector &Operands) {
     return ParseStatus::NoMatch;
 
   return parseGPRAsFPR(Operands);
+}
+
+ParseStatus RISCVAsmParser::parseZTTMRegister(OperandVector &Operands) {
+  if (getLexer().isNot(AsmToken::Identifier))
+    return ParseStatus::NoMatch;
+
+  StringRef Name = getLexer().getTok().getIdentifier();
+  if (!Name.consume_front("m"))
+    return ParseStatus::NoMatch;
+
+  unsigned Index;
+  if (Name.getAsInteger(10, Index) || Index >= 32)
+    return ParseStatus::NoMatch;
+
+  SMLoc S = getLoc();
+  SMLoc E = SMLoc::getFromPointer(S.getPointer() +
+                                  getLexer().getTok().getIdentifier().size());
+  getLexer().Lex();
+  Operands.push_back(RISCVOperand::createReg(RISCV::ZTTM0 + Index, S, E));
+  return ParseStatus::Success;
+}
+
+ParseStatus RISCVAsmParser::parseZTTARegister(OperandVector &Operands) {
+  if (getLexer().isNot(AsmToken::Identifier))
+    return ParseStatus::NoMatch;
+
+  StringRef Name = getLexer().getTok().getIdentifier();
+  if (!Name.consume_front("acc"))
+    return ParseStatus::NoMatch;
+
+  unsigned Index;
+  if (Name.getAsInteger(10, Index) || Index >= 16)
+    return ParseStatus::NoMatch;
+
+  SMLoc S = getLoc();
+  SMLoc E = SMLoc::getFromPointer(S.getPointer() +
+                                  getLexer().getTok().getIdentifier().size());
+  getLexer().Lex();
+  Operands.push_back(RISCVOperand::createReg(RISCV::ZTTA0 + Index, S, E));
+  return ParseStatus::Success;
 }
 
 ParseStatus RISCVAsmParser::parseGPRAsFPR(OperandVector &Operands) {
@@ -4214,6 +4270,13 @@ static bool isZvvfmmScaleOpcode(unsigned Opcode) {
 bool RISCVAsmParser::validateInstruction(MCInst &Inst,
                                          OperandVector &Operands) {
   unsigned Opcode = Inst.getOpcode();
+
+  if (Opcode == RISCV::ZTT_MCOLUNZIP_EW || Opcode == RISCV::ZTT_MCOLZIP_EW ||
+      Opcode == RISCV::ZTT_MROWUNZIP_EW || Opcode == RISCV::ZTT_MROWZIP_EW) {
+    if (Inst.getOperand(0).getReg() == Inst.getOperand(1).getReg())
+      return Error(Operands[2]->getStartLoc(),
+                   "zip/unzip operands must be distinct M registers");
+  }
 
   if (Opcode == RISCV::PseudoVMSGEU_VX_M_T ||
       Opcode == RISCV::PseudoVMSGE_VX_M_T) {

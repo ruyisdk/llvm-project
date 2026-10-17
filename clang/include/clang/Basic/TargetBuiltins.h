@@ -226,6 +226,11 @@ namespace clang {
 #define GET_BUILTIN_ENUMERATORS
 #include "clang/Basic/BuiltinsRISCV.inc"
 #undef GET_BUILTIN_ENUMERATORS
+    FirstRISCVZttBuiltin,
+    LastNonRISCVZttBuiltin = FirstRISCVZttBuiltin - 1,
+#define GET_BUILTIN_ENUMERATORS
+#include "clang/Basic/riscv_ztt_builtins.inc"
+#undef GET_BUILTIN_ENUMERATORS
     LastTSBuiltin
   };
   } // namespace RISCV

@@ -1,0 +1,28 @@
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u128-m32-a16/g' %s > %t.ztt-profile-0.mir
+# RUN: llc -mtriple=riscv32 -mattr=+ztt -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-0.mir -o - | FileCheck %s
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u128-m32-a16/g' %s > %t.ztt-profile-1.mir
+# RUN: llc -mtriple=riscv64 -mattr=+ztt -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-1.mir -o - | FileCheck %s
+
+# Compiler-internal physical-register transfers, not public C intrinsics.
+# No Md read/set is needed; odd M indices name single physical registers.
+# The memory addresses must satisfy the spec's UDS/8-byte alignment requirement.
+--- |
+  define void @whole_register_memory() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+...
+---
+name: whole_register_memory
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $zttm1, $x10, $x11, $x12
+    ; CHECK-LABEL: whole_register_memory:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: mss.1r m1, a0
+    ; CHECK-NEXT: mls.1r m3, a1
+    ; CHECK-NEXT: mss.1r m3, a2
+    ; CHECK-NEXT: ret
+    ZTT_MSS_1R $zttm1, $x10
+    $zttm3 = ZTT_MLS_1R $x11
+    ZTT_MSS_1R $zttm3, $x12
+    PseudoRET
+...

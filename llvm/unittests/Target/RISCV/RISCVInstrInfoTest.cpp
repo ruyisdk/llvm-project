@@ -6,9 +6,13 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include "MCTargetDesc/RISCVInstPrinter.h"
 #include "RISCVInstrInfo.h"
 #include "RISCVSubtarget.h"
 #include "RISCVTargetMachine.h"
+#include "RISCVMachineFunctionInfo.h"
+#include "RISCVZttRegisterLayout.h"
+#include "llvm/ADT/ArrayRef.h"
 #include "llvm/CodeGen/MachineModuleInfo.h"
 #include "llvm/IR/DebugInfoMetadata.h"
 #include "llvm/IR/Module.h"
@@ -21,6 +25,7 @@
 #include "gtest/gtest.h"
 
 #include <memory>
+#include <string>
 
 using namespace llvm;
 
@@ -470,6 +475,378 @@ TEST_P(RISCVXQCIInstrInfoTest, XQCIEInstSize) {
   CheckSize(MakeBranch(RISCV::QC_E_BGEUI));
   CheckSize(MakeBranch(RISCV::QC_E_BLTUI));
   CheckSize(MakeBranch(RISCV::QC_E_BGEI));
+}
+
+TEST_P(RISCVInstrInfoTest, ZttInstructionEffects) {
+  const RISCVInstrInfo *TII = ST->getInstrInfo();
+  for (unsigned Opcode : {RISCV::ZTT_MCOLZIP_EW, RISCV::ZTT_MCOLUNZIP_EW,
+                          RISCV::ZTT_MROWZIP_EW, RISCV::ZTT_MROWUNZIP_EW}) {
+    const MCInstrDesc &Desc = TII->get(Opcode);
+    EXPECT_FALSE(Desc.hasUnmodeledSideEffects());
+    EXPECT_EQ(Desc.getNumDefs(), 2u);
+    EXPECT_EQ(Desc.getNumOperands(), 4u);
+    EXPECT_EQ(Desc.getOperandConstraint(2, MCOI::TIED_TO), 0);
+    EXPECT_EQ(Desc.getOperandConstraint(3, MCOI::TIED_TO), 1);
+  }
+
+  // Ownership, type updates and amestype dependencies remain observable.
+  for (unsigned Opcode : {RISCV::ZTT_AME_ACQUIRE, RISCV::ZTT_AME_RELEASE,
+                          RISCV::ZTT_MSETTYP, RISCV::ZTT_ASETTYP,
+                          RISCV::ZTT_MADD_EW_X})
+    EXPECT_TRUE(TII->get(Opcode).hasUnmodeledSideEffects());
+  for (unsigned Opcode : {RISCV::ZTT_MADD_EW, RISCV::ZTT_MSLL_EW_X,
+                          RISCV::ZTT_MBCAST_M_X, RISCV::ZTT_MMOV_M_M})
+    EXPECT_FALSE(TII->get(Opcode).hasUnmodeledSideEffects());
+
+  // Memory effects are represented by load/store flags.
+  for (unsigned Opcode : {RISCV::ZTT_MLS_1R, RISCV::ZTT_MLS_RM,
+                          RISCV::ZTT_MLS_ST}) {
+    EXPECT_TRUE(TII->get(Opcode).mayLoad());
+    EXPECT_FALSE(TII->get(Opcode).mayStore());
+    EXPECT_FALSE(TII->get(Opcode).hasUnmodeledSideEffects());
+  }
+  for (unsigned Opcode : {RISCV::ZTT_MSS_1R, RISCV::ZTT_MSS_RM,
+                          RISCV::ZTT_MSS_ST}) {
+    EXPECT_FALSE(TII->get(Opcode).mayLoad());
+    EXPECT_TRUE(TII->get(Opcode).mayStore());
+    EXPECT_FALSE(TII->get(Opcode).hasUnmodeledSideEffects());
+  }
+}
+
+TEST_P(RISCVInstrInfoTest, ZttRegisterBanks) {
+  const RISCVRegisterInfo *TRI = ST->getRegisterInfo();
+  const TargetRegisterClass *MRC = TRI->getRegClass(RISCV::ZTTMRRegClassID);
+  const TargetRegisterClass *ARC = TRI->getRegClass(RISCV::ZTTARRegClassID);
+  ASSERT_EQ(MRC->getNumRegs(), 32u);
+  ASSERT_EQ(ARC->getNumRegs(), 16u);
+
+  for (unsigned I = 0; I != 32; ++I) {
+    MCRegister Reg = RISCV::ZTTM0 + I;
+    EXPECT_TRUE(MRC->contains(Reg));
+    EXPECT_FALSE(ARC->contains(Reg));
+    EXPECT_EQ(TRI->getEncodingValue(Reg), I);
+    EXPECT_EQ("m" + std::to_string(I),
+              RISCVInstPrinter::getRegisterName(Reg, RISCV::NoRegAltName));
+    EXPECT_STREQ(RISCVInstPrinter::getRegisterName(Reg, RISCV::NoRegAltName),
+                 RISCVInstPrinter::getRegisterName(Reg, RISCV::ABIRegAltName));
+  }
+  for (unsigned I = 0; I != 16; ++I) {
+    MCRegister Reg = RISCV::ZTTA0 + I;
+    EXPECT_TRUE(ARC->contains(Reg));
+    EXPECT_FALSE(MRC->contains(Reg));
+    EXPECT_EQ(TRI->getEncodingValue(Reg), I);
+    EXPECT_EQ("acc" + std::to_string(I),
+              RISCVInstPrinter::getRegisterName(Reg, RISCV::NoRegAltName));
+    EXPECT_STREQ(RISCVInstPrinter::getRegisterName(Reg, RISCV::NoRegAltName),
+                 RISCVInstPrinter::getRegisterName(Reg, RISCV::ABIRegAltName));
+  }
+  for (MCRegister Reg : {RISCV::X0, RISCV::F0_D, RISCV::V0, RISCV::M0}) {
+    EXPECT_FALSE(MRC->contains(Reg));
+    EXPECT_FALSE(ARC->contains(Reg));
+  }
+}
+
+TEST_P(RISCVInstrInfoTest, ZttValueTypes) {
+  const MVT Types[] = {
+      MVT::riscv_zttm4,    MVT::riscv_zttm8,    MVT::riscv_zttm16,   MVT::riscv_zttm32, MVT::riscv_zttm64,
+      MVT::riscv_zttm128,  MVT::riscv_zttm256,  MVT::riscv_zttm512,  MVT::riscv_zttm1024,
+      MVT::riscv_zttm2048, MVT::riscv_zttm4096, MVT::riscv_ztta1,    MVT::riscv_ztta2,
+      MVT::riscv_ztta4,    MVT::riscv_ztta8};
+  const unsigned Sizes[] = {4,   8,   16,  32,   64,   128, 256, 512,
+                            1024, 2048, 4096, 16, 32, 64, 128};
+  for (unsigned I = 0; I != std::size(Types); ++I) {
+    MVT VT = Types[I];
+    EXPECT_TRUE(VT.isRISCVZtt());
+    EXPECT_TRUE(VT.isScalableTargetExtVT());
+    EXPECT_TRUE(VT.isScalableVT());
+    EXPECT_FALSE(VT.isVector());
+    EXPECT_EQ(VT.getSizeInBits(), TypeSize::getScalable(Sizes[I]));
+  }
+  for (MVT VT : {MVT::i16, MVT::f32, MVT::nxv1i8, MVT::aarch64svcount})
+    EXPECT_FALSE(VT.isRISCVZtt());
+}
+
+struct ZttTestGroup {
+  const TargetRegisterClass *RC;
+  unsigned Size;
+};
+
+static void checkZttRegisterGroups(const RISCVRegisterInfo &TRI,
+                                   const TargetRegisterClass &BaseRC,
+                                   ArrayRef<ZttTestGroup> Groups,
+                                   ArrayRef<unsigned> SubRegIndices,
+                                   bool AlignToGroup) {
+  for (const auto &[RC, Size] : Groups) {
+    unsigned Step = AlignToGroup ? Size : 1;
+    ASSERT_EQ(RC->getNumRegs(), (BaseRC.getNumRegs() - Size) / Step + 1);
+    ASSERT_GE(SubRegIndices.size(), Size);
+    for (unsigned I = 0; I != RC->getNumRegs(); ++I) {
+      MCRegister Reg = RC->getRegister(I);
+      unsigned Base = I * Step;
+      SCOPED_TRACE(TRI.getName(Reg));
+      EXPECT_EQ(TRI.getEncodingValue(Reg), Base);
+      for (unsigned J = 0; J != Size; ++J) {
+        MCRegister SubReg = BaseRC.getRegister(Base + J);
+        EXPECT_EQ(TRI.getSubReg(Reg, SubRegIndices[J]), SubReg);
+        EXPECT_EQ(TRI.getSubRegIndex(Reg, SubReg), SubRegIndices[J]);
+      }
+      for (unsigned J = 0; J != BaseRC.getNumRegs(); ++J)
+        EXPECT_EQ(TRI.regsOverlap(Reg, BaseRC.getRegister(J)),
+                  Base <= J && J < Base + Size);
+
+      // Groups overlap exactly when they share physical registers.
+      for (const auto &[OtherRC, OtherSize] : Groups) {
+        unsigned OtherStep = AlignToGroup ? OtherSize : 1;
+        for (unsigned J = 0; J != OtherRC->getNumRegs(); ++J) {
+          MCRegister Other = OtherRC->getRegister(J);
+          unsigned OtherBase = J * OtherStep;
+          SCOPED_TRACE(TRI.getName(Other));
+          EXPECT_EQ(TRI.regsOverlap(Reg, Other),
+                    Base < OtherBase + OtherSize && OtherBase < Base + Size);
+        }
+      }
+      for (MCRegister Other : {RISCV::X0, RISCV::F0_D, RISCV::V0, RISCV::M0})
+        EXPECT_FALSE(TRI.regsOverlap(Reg, Other));
+    }
+  }
+}
+
+TEST_P(RISCVInstrInfoTest, ZttMRegisterGroups) {
+  const RISCVRegisterInfo *TRI = ST->getRegisterInfo();
+  const ZttTestGroup Groups[] = {{&RISCV::ZTTMRM2RegClass, 2},
+                                 {&RISCV::ZTTMRM4RegClass, 4},
+                                 {&RISCV::ZTTMRM8RegClass, 8},
+                                 {&RISCV::ZTTMRM16RegClass, 16},
+                                 {&RISCV::ZTTMRM32RegClass, 32}};
+  const unsigned Indices[] = {
+      RISCV::sub_zttm_0,  RISCV::sub_zttm_1,  RISCV::sub_zttm_2,
+      RISCV::sub_zttm_3,  RISCV::sub_zttm_4,  RISCV::sub_zttm_5,
+      RISCV::sub_zttm_6,  RISCV::sub_zttm_7,  RISCV::sub_zttm_8,
+      RISCV::sub_zttm_9,  RISCV::sub_zttm_10, RISCV::sub_zttm_11,
+      RISCV::sub_zttm_12, RISCV::sub_zttm_13, RISCV::sub_zttm_14,
+      RISCV::sub_zttm_15, RISCV::sub_zttm_16, RISCV::sub_zttm_17,
+      RISCV::sub_zttm_18, RISCV::sub_zttm_19, RISCV::sub_zttm_20,
+      RISCV::sub_zttm_21, RISCV::sub_zttm_22, RISCV::sub_zttm_23,
+      RISCV::sub_zttm_24, RISCV::sub_zttm_25, RISCV::sub_zttm_26,
+      RISCV::sub_zttm_27, RISCV::sub_zttm_28, RISCV::sub_zttm_29,
+      RISCV::sub_zttm_30, RISCV::sub_zttm_31};
+  checkZttRegisterGroups(*TRI, RISCV::ZTTMRRegClass, Groups, Indices,
+                         /*AlignToGroup=*/true);
+  EXPECT_FALSE(TRI->regsOverlap(RISCV::ZTTM0M32, RISCV::ZTTA0M8));
+  EXPECT_FALSE(TRI->regsOverlap(RISCV::ZTTM0M32, RISCV::ZTTA8M8));
+}
+
+TEST_P(RISCVInstrInfoTest, ZttACCRegisterGroups) {
+  const ZttTestGroup Groups[] = {{&RISCV::ZTTARM2RegClass, 2},
+                                 {&RISCV::ZTTARM4RegClass, 4},
+                                 {&RISCV::ZTTARM8RegClass, 8}};
+  const unsigned Indices[] = {RISCV::sub_ztta_0, RISCV::sub_ztta_1,
+                              RISCV::sub_ztta_2, RISCV::sub_ztta_3,
+                              RISCV::sub_ztta_4, RISCV::sub_ztta_5,
+                              RISCV::sub_ztta_6, RISCV::sub_ztta_7};
+  checkZttRegisterGroups(*ST->getRegisterInfo(), RISCV::ZTTARRegClass, Groups,
+                         Indices, /*AlignToGroup=*/false);
+}
+
+TEST_P(RISCVInstrInfoTest, ZttReservedRegisters) {
+  for (unsigned MCount : {16U, 32U})
+    for (unsigned ACount : {1U, 2U, 4U, 8U, 16U}) {
+      RISCV::ZttProfile Profile{0, 16, MCount, ACount};
+      RISCVSubtarget ZST(TM->getTargetTriple(), TM->getTargetCPU(),
+                         TM->getTargetCPU(), "+ztt",
+                         ST->is64Bit() ? "lp64" : "ilp32", 0, 0, *TM, Profile);
+      MachineFunction ZMF(MF->getFunction(), *TM, ZST, MMI->getContext(), 43);
+      // Initialize per-function state before querying reserved registers.
+      ZMF.initTargetMachineFunctionInfo(ZST);
+      const auto *RI = ZST.getRegisterInfo();
+      BitVector Reserved = RI->getReservedRegs(ZMF);
+      EXPECT_EQ(ZST.getZttUdsBits(), 16U);
+      EXPECT_EQ(ZST.getZttMRegs(), MCount);
+      EXPECT_EQ(ZST.getZttARegs(), ACount);
+      auto CheckClass = [&](const TargetRegisterClass &RC, unsigned Limit) {
+        for (MCPhysReg Reg : RC) {
+          bool Unavailable = false;
+          for (MCPhysReg Sub : RI->subregs_inclusive(Reg))
+            if (RISCV::ZTTMRRegClass.contains(Sub) ||
+                RISCV::ZTTARRegClass.contains(Sub))
+              Unavailable |= RI->getEncodingValue(Sub) >= Limit;
+          EXPECT_EQ(Reserved.test(Reg), Unavailable) << RI->getName(Reg);
+        }
+      };
+      // Check every physical register and every group, including unaligned
+      // ACC groups which cross the end of the configured register file.
+      for (const auto *RC :
+           {&RISCV::ZTTMRRegClass, &RISCV::ZTTMRM2RegClass,
+            &RISCV::ZTTMRM4RegClass, &RISCV::ZTTMRM8RegClass,
+            &RISCV::ZTTMRM16RegClass, &RISCV::ZTTMRM32RegClass})
+        CheckClass(*RC, MCount);
+      for (const auto *RC : {&RISCV::ZTTARRegClass, &RISCV::ZTTARM2RegClass,
+                             &RISCV::ZTTARM4RegClass, &RISCV::ZTTARM8RegClass})
+        CheckClass(*RC, ACount);
+    }
+}
+
+// Borrowing a continuation must discover the original wide leader. Copies
+// propagate that layout, but data-only moves must not erase it.
+TEST_P(RISCVInstrInfoTest, ZttMLayoutTransfer) {
+  auto *BB = MF->CreateMachineBasicBlock();
+  MF->push_back(BB);
+  const auto &TII = *ST->getInstrInfo();
+  const auto &TRI = *ST->getRegisterInfo();
+  ZttMLayout State;
+  State.fill(-1);
+  auto Set = BuildMI(*BB, BB->end(), DebugLoc(), TII.get(RISCV::ZTT_MSETTYP),
+                     RISCV::ZTTM0)
+                 .addReg(RISCV::X10)
+                 .addReg(RISCV::ZTTM1, RegState::ImplicitDefine);
+  transferZttMLayout(*Set, State, TRI);
+  EXPECT_EQ(State[0], 2);
+  EXPECT_EQ(State[1], 0);
+  EXPECT_EQ(State[2], -1);
+  auto Copy = BuildMI(*BB, BB->end(), DebugLoc(), TII.get(TargetOpcode::COPY),
+                      RISCV::ZTTM2M2)
+                  .addReg(RISCV::ZTTM0M2);
+  transferZttMLayout(*Copy, State, TRI);
+  EXPECT_EQ(State[2], 2);
+  EXPECT_EQ(State[3], 0);
+  auto Move = BuildMI(*BB, BB->end(), DebugLoc(), TII.get(RISCV::ZTT_MMOV_M_A),
+                      RISCV::ZTTM2)
+                  .addReg(RISCV::ZTTA0)
+                  .addReg(RISCV::ZTTM3, RegState::ImplicitDefine);
+  transferZttMLayout(*Move, State, TRI);
+  EXPECT_EQ(State[2], 2);
+  EXPECT_EQ(State[3], 0);
+  auto Clobber = BuildMI(*BB, BB->end(), DebugLoc(),
+                         TII.get(TargetOpcode::IMPLICIT_DEF), RISCV::ZTTM2M2);
+  transferZttMLayout(*Clobber, State, TRI);
+  EXPECT_EQ(State[0], 2);
+  EXPECT_EQ(State[1], 0);
+  EXPECT_EQ(State[2], -1);
+  EXPECT_EQ(State[3], -1);
+  EXPECT_EQ(getZttMGroupSize(RISCV::ZTTM0M32), 32u);
+  EXPECT_EQ(getZttMGroupSize(RISCV::ZTTA0M2), 0u);
+  // A call mask invalidates only clobbered registers, even when no explicit
+  // matrix definition occurs on the instruction.
+  auto *Mask = MF->allocateRegMask();
+  std::fill_n(Mask, MachineOperand::getRegMaskSize(TRI.getNumRegs()), ~0u);
+  Mask[RISCV::ZTTM0 / 32] &= ~(1u << (RISCV::ZTTM0 % 32));
+  Mask[RISCV::ZTTM1 / 32] &= ~(1u << (RISCV::ZTTM1 % 32));
+  State[8] = 1;
+  auto Call = BuildMI(*BB, BB->end(), DebugLoc(), TII.get(RISCV::PseudoCALL))
+                  .addExternalSymbol("callee")
+                  .addRegMask(Mask);
+  transferZttMLayout(*Call, State, TRI);
+  EXPECT_EQ(State[0], -1);
+  EXPECT_EQ(State[1], -1);
+  EXPECT_EQ(State[8], 1);
+}
+
+TEST_P(RISCVInstrInfoTest, ZttMLayoutLoopAndConflict) {
+  MF->initTargetMachineFunctionInfo(*ST);
+  auto *Entry = MF->CreateMachineBasicBlock();
+  auto *Loop = MF->CreateMachineBasicBlock();
+  auto *Other = MF->CreateMachineBasicBlock();
+  auto *Merge = MF->CreateMachineBasicBlock();
+  auto *Unreachable = MF->CreateMachineBasicBlock();
+  for (auto *BB : {Entry, Loop, Other, Merge, Unreachable})
+    MF->push_back(BB);
+  Entry->addSuccessor(Loop);
+  Entry->addSuccessor(Other);
+  Loop->addSuccessor(Loop);
+  Loop->addSuccessor(Merge);
+  Other->addSuccessor(Merge);
+  auto &Info = *MF->getInfo<RISCVMachineFunctionInfo>();
+  Info.setZttMArgLayout(0, 2, 2);
+  const auto &TII = *ST->getInstrInfo();
+  BuildMI(*Other, Other->end(), DebugLoc(), TII.get(RISCV::ZTT_MSETTYP),
+          RISCV::ZTTM0)
+      .addReg(RISCV::X10);
+  auto Layouts = analyzeZttMLayouts(*MF);
+  EXPECT_FALSE(Layouts.count(Unreachable));
+  ASSERT_TRUE(Layouts.count(Loop));
+  EXPECT_EQ(Layouts[Loop][0], 2);
+  EXPECT_EQ(Layouts[Loop][1], 0);
+  ASSERT_TRUE(Layouts.count(Merge));
+  EXPECT_EQ(Layouts[Merge][0], -1);
+  // An unknown leader prevents a transfer even if its continuation is known.
+  EXPECT_EQ(Layouts[Merge][1], 0);
+}
+
+TEST_P(RISCVInstrInfoTest, ZttAccTransferLayout) {
+  // Cover all supported widths, shapes and UDS values independently of the
+  // instruction emitter. Packed batches must never be rounded up.
+  for (unsigned U : {8u, 16u, 32u, 64u, 128u})
+    for (unsigned E : {4u, 8u, 16u, 32u, 64u, 128u})
+      for (unsigned K : {1u, 2u, 4u, 8u}) {
+        auto L = getZttAccTransferLayout(E, K, U);
+        if (E * K < U) {
+          EXPECT_FALSE(L);
+          continue;
+        }
+        ASSERT_TRUE(L);
+        EXPECT_EQ(L->MRegsPerMove, E > U ? E / U : 1u);
+        EXPECT_EQ(L->AccsPerMove, E < U ? U / E : 1u);
+        EXPECT_EQ(L->NumMoves * L->AccsPerMove, K);
+        EXPECT_EQ(L->Units * U, K * E);
+      }
+  EXPECT_FALSE(getZttAccTransferLayout(0, 2, 32));
+  EXPECT_FALSE(getZttAccTransferLayout(24, 2, 32));
+  EXPECT_FALSE(getZttAccTransferLayout(16, 3, 32));
+  EXPECT_FALSE(getZttAccTransferLayout(16, 2, 0));
+}
+
+TEST_P(RISCVInstrInfoTest, ZttAccValueLayout) {
+  const auto &TII = *ST->getInstrInfo();
+  auto &MRI = MF->getRegInfo();
+  auto *BB = MF->CreateMachineBasicBlock();
+  MF->push_back(BB);
+  auto Acc = [&]() {
+    return MRI.createVirtualRegister(&RISCV::ZTTARM2RegClass);
+  };
+  Register Seed = Acc(), Copy = Acc(), Sum = Acc(), Phi = Acc();
+  BuildMI(*BB, BB->end(), DebugLoc(), TII.get(RISCV::PseudoZTTAClearA2), Seed)
+      .addReg(RISCV::X10)
+      .addImm(16);
+  BuildMI(*BB, BB->end(), DebugLoc(), TII.get(TargetOpcode::COPY), Copy)
+      .addReg(Seed);
+  BuildMI(*BB, BB->end(), DebugLoc(), TII.get(TargetOpcode::PHI), Phi)
+      .addReg(Copy)
+      .addMBB(BB)
+      .addReg(Sum)
+      .addMBB(BB);
+  BuildMI(*BB, BB->end(), DebugLoc(),
+          TII.get(RISCV::PseudoZTTMMulAcc2D_A2_L1_R1), Sum)
+      .addReg(Phi)
+      .addReg(RISCV::ZTTM0)
+      .addReg(RISCV::ZTTM1)
+      .addImm(1);
+  for (Register R : {Seed, Copy, Phi, Sum})
+    EXPECT_EQ(getZttAccElementBits(R, *MF, 32), 16u);
+
+  Register Cross = Acc();
+  BuildMI(*BB, BB->end(), DebugLoc(), TII.get(RISCV::PseudoZTTMCopyM2A_A2_M1),
+          Cross)
+      .addReg(RISCV::ZTTM0)
+      .addImm(1)
+      .addImm(2)
+      .addReg(RISCV::X10);
+  EXPECT_EQ(getZttAccElementBits(Cross, *MF, 32), 16u);
+  EXPECT_EQ(getZttAccElementBits(Cross, *MF, 64), 32u);
+
+  Register Other = Acc(), Conflict = Acc(), Unknown = Acc();
+  BuildMI(*BB, BB->end(), DebugLoc(), TII.get(RISCV::PseudoZTTAClearA2), Other)
+      .addReg(RISCV::X11)
+      .addImm(32);
+  BuildMI(*BB, BB->end(), DebugLoc(), TII.get(TargetOpcode::PHI), Conflict)
+      .addReg(Seed)
+      .addMBB(BB)
+      .addReg(Other)
+      .addMBB(BB);
+  EXPECT_FALSE(getZttAccElementBits(Conflict, *MF, 32));
+  BuildMI(*BB, BB->end(), DebugLoc(), TII.get(TargetOpcode::IMPLICIT_DEF),
+          Unknown);
+  EXPECT_FALSE(getZttAccElementBits(Unknown, *MF, 32));
+  EXPECT_FALSE(getZttAccElementBits(RISCV::ZTTA0M2, *MF, 32));
 }
 
 } // namespace

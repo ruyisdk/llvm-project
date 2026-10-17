@@ -123,6 +123,9 @@ private:
   /// Emit target zero call-used regs.
   void emitZeroCallUsedRegs(BitVector RegsToZero, MachineBasicBlock &MBB,
                             RegScavenger *RS) const override;
+  // Emit the ordinary frame inside any Ztt runtime-sized area.
+  void emitStandardPrologue(MachineFunction &MF, MachineBasicBlock &MBB) const;
+  void emitStandardEpilogue(MachineFunction &MF, MachineBasicBlock &MBB) const;
 };
 } // namespace llvm
 #endif

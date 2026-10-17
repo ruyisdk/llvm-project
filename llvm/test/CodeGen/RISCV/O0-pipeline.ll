@@ -22,6 +22,7 @@
 ; CHECK-NEXT:     Pre-ISel Intrinsic Lowering
 ; CHECK-NEXT:     FunctionPass Manager
 ; CHECK-NEXT:       Expand IR instructions
+; CHECK-NEXT:       RISC-V Ztt promote matrix locals
 ; CHECK-NEXT:       Expand Atomic instructions
 ; CHECK-NEXT:       RISC-V Zacas ABI fix 
 ; CHECK-NEXT:       Module Verifier
@@ -51,6 +52,7 @@
 ; CHECK-NEXT:       Fast Register Allocator
 ; CHECK-NEXT:       RISC-V Insert VSETVLI pass
 ; CHECK-NEXT:       Fast Register Allocator
+; CHECK-NEXT:       RISC-V Ztt post-regalloc pseudo instruction expansion pass
 ; CHECK-NEXT:       Remove Redundant DEBUG_VALUE analysis
 ; CHECK-NEXT:       Fixup Statepoint Caller Saved
 ; CHECK-NEXT:       Lazy Machine Block Frequency Analysis

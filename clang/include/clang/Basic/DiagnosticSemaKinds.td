@@ -13669,6 +13669,67 @@ def warn_riscv_attribute_interrupt_duplicate_type : Warning<
 def err_riscv_attribute_interrupt_invalid_combination : Error<
   "RISC-V 'interrupt' attribute contains invalid combination of interrupt types">;
 def err_riscv_builtin_invalid_twiden : Error<"RISC-V XSfmm twiden must be 1, 2 or 4">;
+def err_riscv_ztt_scalar_conversion : Error<
+  "cannot convert %0 to %1: a RISC-V Ztt scalar requires its exact C value type">;
+
+// RISC-V Ztt profiles and matrix layouts.
+def err_riscv_ztt_builtin_requires_profile : Error<
+  "RISC-V Ztt builtin requires a Ztt profile">;
+def err_riscv_ztt_register_capacity : Error<
+  "RISC-V Ztt type %0 requires %1 %select{M|ACC}2 registers, exceeding the configured limit of %3">;
+def err_riscv_ztt_half_register_type : Error<
+  "RISC-V Ztt type %0 occupies only %1 bits, which is smaller than the %2-bit UDS">;
+def err_riscv_ztt_too_many_m_registers : Error<
+  "RISC-V Ztt type %0 requires %1 M registers, exceeding the architectural limit "
+  "of 32">;
+
+def err_riscv_ztt_invalid_initialization : Error<
+  "RISC-V Ztt type %0 must be initialized directly by a RISC-V Ztt intrinsic call">;
+
+// RISC-V Ztt intrinsic arguments.
+def err_riscv_ztt_result_marker : Error<
+  "RISC-V Ztt intrinsic requires a null pointer result-type marker with a supported "
+  "matrix register kind and element datatype">;
+def err_riscv_ztt_control_requires_integer : Error<
+  "control argument to RISC-V Ztt intrinsic must have integer type, not %0">;
+def err_riscv_ztt_builtin_requires_m_type : Error<
+  "RISC-V Ztt intrinsic requires an M matrix type (was %0)">;
+def err_riscv_ztt_requires_two_m_types : Error<
+  "RISC-V Ztt %0 requires two M source types (got %1 and %2)">;
+def err_riscv_ztt_scalar_width : Error<
+  "RISC-V Ztt scalar type %0 has %1 bits, exceeding the %2-bit XLEN">;
+def err_riscv_ztt_operand_types : Error<
+  "RISC-V Ztt %0 operands violate the required datatype or shape constraints">;
+def err_riscv_ztt_matmul_types : Error<
+  "RISC-V Ztt %0 requires an identical accumulator type and matching source dimensions">;
+def err_riscv_ztt_zip_types : Error<
+  "RISC-V Ztt zip/unzip requires identical M source and result types of shape 1x2 with element width at least UDS">;
+
+// RISC-V Ztt memory operands.
+def err_riscv_ztt_memory_base_requires_pointer : Error<
+  "first argument to RISC-V Ztt memory intrinsic must be a pointer (was %0)">;
+def err_riscv_ztt_memory_no_element_carrier : Error<
+  "RISC-V Ztt memory intrinsic does not support matrix type %0: "
+  "sub-byte datatypes have no public C element carrier">;
+def err_riscv_ztt_memory_base_type_mismatch : Error<
+  "RISC-V Ztt memory base pointee type %0 does not match matrix element type %1">;
+def err_riscv_ztt_memory_base_qualifiers : Error<
+  "RISC-V Ztt %select{load|store}0 base pointee type %1 has invalid qualifiers; "
+  "%select{only const is permitted|the store destination must be writable "
+  "and non-volatile}0">;
+
+// RISC-V Ztt copies and concatenation.
+def err_riscv_ztt_mcopy_requires_register_type : Error<
+  "RISC-V Ztt %select{M-to-Acc|Acc-to-M}0 copy requires a %select{M|Acc}0 source "
+  "type (was %1)">;
+def err_riscv_ztt_mcopy_type_mismatch : Error<
+  "RISC-V Ztt copy source type %0 does not match destination type %1: element type "
+  "and square count must be identical">;
+def err_riscv_ztt_mconcat_source_mismatch : Error<
+  "RISC-V Ztt mconcat.m source types must be identical (got %0 and %1)">;
+def err_riscv_ztt_mconcat_result_mismatch : Error<
+  "RISC-V Ztt mconcat.m result type %0 must preserve the source datatype and double "
+  "source shape %1 in the same direction">;
 
 def err_std_source_location_impl_not_found : Error<
   "'std::source_location::__impl' was not found; it must be defined before '__builtin_source_location' is called">;

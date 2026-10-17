@@ -3931,3 +3931,12 @@ RISCVTTIImpl::instCombineIntrinsic(InstCombiner &IC, IntrinsicInst &II) const {
                ConstantInt::get(VLTy, VL / TargetScale)}),
           SourceVecTy));
 }
+
+bool RISCVTTIImpl::areInlineCompatible(const Function *Caller,
+                                     const Function *Callee) const {
+  // Matrix code must retain its dimensions and register resources after inlining.
+  if (Caller->getFnAttribute("riscv-ztt-profile") !=
+      Callee->getFnAttribute("riscv-ztt-profile"))
+    return false;
+  return BaseT::areInlineCompatible(Caller, Callee);
+}

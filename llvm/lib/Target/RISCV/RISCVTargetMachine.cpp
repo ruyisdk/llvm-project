@@ -151,6 +151,8 @@ extern "C" LLVM_ABI LLVM_EXTERNAL_VISIBILITY void LLVMInitializeRISCVTarget() {
   initializeRISCVRedundantCopyEliminationPass(*PR);
   initializeRISCVAsmPrinterPass(*PR);
   initializeRISCVPromoteConstantPass(*PR);
+  initializeRISCVZttPromoteAllocasLegacyPass(*PR);
+  initializeRISCVZttPostRAExpandPseudoPass(*PR);
 }
 
 static Reloc::Model getEffectiveRelocModel(const Triple &TT,
@@ -244,15 +246,36 @@ RISCVTargetMachine::getSubtargetImpl(const Function &F) const {
   RVVBitsMax =
       llvm::bit_floor((RVVBitsMax < 64 || RVVBitsMax > 65536) ? 0 : RVVBitsMax);
 
+  // Read matrix dimensions and register resources from the function's profile.
+  // Unlike target-features, this attribute does not enable an ISA extension.
+  std::optional<RISCV::ZttProfile> ZttConfig;
+  Attribute ZttProfileAttr = F.getFnAttribute("riscv-ztt-profile");
+  if (ZttProfileAttr.isValid()) {
+    auto Profile = RISCV::ZttProfile::parse(ZttProfileAttr.getValueAsString());
+    if (!Profile)
+      report_fatal_error(Twine(toString(Profile.takeError())));
+    ZttConfig = *Profile;
+  }
+
   SmallString<512> Key;
   raw_svector_ostream(Key) << "RVVMin" << RVVBitsMin << "RVVMax" << RVVBitsMax
                            << CPU << TuneCPU << FS;
+  // Identical ISAs can use different matrix dimensions and register resources.
+  if (ZttProfileAttr.isValid())
+    raw_svector_ostream(Key) << ";ZttProfile="
+                             << ZttProfileAttr.getValueAsString();
   auto &I = SubtargetMap[Key];
   if (!I) {
     StringRef ABIName = getTargetABIName(*F.getParent());
     I = std::make_unique<RISCVSubtarget>(
-        TargetTriple, CPU, TuneCPU, FS, ABIName, RVVBitsMin, RVVBitsMax, *this);
+        TargetTriple, CPU, TuneCPU, FS, ABIName, RVVBitsMin, RVVBitsMax, *this,
+        ZttConfig);
   }
+  // Validate the current function's profile even when reusing a subtarget.
+  if (ZttConfig && !I->hasStdExtZtt())
+    report_fatal_error("Ztt profile requires the Ztt extension");
+  if (I->hasStdExtZtt() && !ZttConfig)
+    report_fatal_error("Ztt code generation requires a Ztt profile");
   return I.get();
 }
 
@@ -464,6 +487,7 @@ bool RISCVPassConfig::addRegAssignAndRewriteOptimized() {
 }
 
 void RISCVPassConfig::addIRPasses() {
+  addPass(createRISCVZttPromoteAllocasLegacyPass());
   addPass(createAtomicExpandLegacyPass());
   addPass(createRISCVZacasABIFixLegacyPass());
 
@@ -657,6 +681,7 @@ void RISCVPassConfig::addFastRegAlloc() {
 
 
 void RISCVPassConfig::addPostRegAlloc() {
+  addPass(createRISCVZttPostRAExpandPseudoPass());
   if (TM->getOptLevel() != CodeGenOptLevel::None &&
       EnableRedundantCopyElimination)
     addPass(createRISCVRedundantCopyEliminationPass());

@@ -260,3 +260,6 @@ clang_tablegen(riscv_andes_vector_builtin_cg.inc -gen-riscv-andes-vector-builtin
 clang_tablegen(riscv_andes_vector_builtin_sema.inc -gen-riscv-andes-vector-builtin-sema
   SOURCE riscv_andes_vector.td
   TARGET ClangRISCVAndesVectorBuiltinSema)
+clang_tablegen(riscv_ztt_builtins.inc -gen-riscv-ztt
+  SOURCE BuiltinsRISCVZtt.td
+  TARGET ClangRISCVZttBuiltins)

@@ -15,6 +15,7 @@
 #include "MCTargetDesc/RISCVMCTargetDesc.h"
 #include "RISCVMachineFunctionInfo.h"
 #include "RISCVSubtarget.h"
+#include "RISCVZttSpill.h"
 #include "llvm/BinaryFormat/Dwarf.h"
 #include "llvm/CodeGen/CFIInstBuilder.h"
 #include "llvm/CodeGen/LivePhysRegs.h"
@@ -985,6 +986,20 @@ static unsigned getPopOpcode(RISCVMachineFunctionInfo::PushPopKind Kind) {
 
 void RISCVFrameLowering::emitPrologue(MachineFunction &MF,
                                       MachineBasicBlock &MBB) const {
+  auto Body = MBB.begin();
+  if (MF.getInfo<RISCVMachineFunctionInfo>()->hasZttMSpills())
+    while (Body != MBB.end() && (Body->getFlag(MachineInstr::FrameSetup) ||
+                                 Body->isMetaInstruction()))
+      ++Body;
+  emitStandardPrologue(MF, MBB);
+  if (MF.getInfo<RISCVMachineFunctionInfo>()->hasZttMSpills()) {
+    emitZttStrideCache(MF, MBB, Body);
+    emitZttFrameAllocation(MF, MBB);
+  }
+}
+
+void RISCVFrameLowering::emitStandardPrologue(MachineFunction &MF,
+                                              MachineBasicBlock &MBB) const {
   MachineFrameInfo &MFI = MF.getFrameInfo();
   auto *RVFI = MF.getInfo<RISCVMachineFunctionInfo>();
   const RISCVRegisterInfo *RI = STI.getRegisterInfo();
@@ -1299,6 +1314,13 @@ void RISCVFrameLowering::deallocateStack(MachineFunction &MF,
 
 void RISCVFrameLowering::emitEpilogue(MachineFunction &MF,
                                       MachineBasicBlock &MBB) const {
+  emitStandardEpilogue(MF, MBB);
+  if (MF.getInfo<RISCVMachineFunctionInfo>()->hasZttMSpills())
+    emitZttFrameDeallocation(MF, MBB);
+}
+
+void RISCVFrameLowering::emitStandardEpilogue(MachineFunction &MF,
+                                              MachineBasicBlock &MBB) const {
   const RISCVRegisterInfo *RI = STI.getRegisterInfo();
   MachineFrameInfo &MFI = MF.getFrameInfo();
   auto *RVFI = MF.getInfo<RISCVMachineFunctionInfo>();
@@ -1829,6 +1851,10 @@ void RISCVFrameLowering::determineCalleeSaves(MachineFunction &MF,
                                               BitVector &SavedRegs,
                                               RegScavenger *RS) const {
   TargetFrameLowering::determineCalleeSaves(MF, SavedRegs, RS);
+  // This optional post-RA cache is initialized later in the prologue. Its
+  // original caller value must still participate in ordinary ABI preservation.
+  if (unsigned R = MF.getInfo<RISCVMachineFunctionInfo>()->ZttMStrideReg)
+    SavedRegs.set(R);
 
   // In TargetFrameLowering::determineCalleeSaves, any vector register is marked
   // as saved if any of its subregister is clobbered, this is not correct in
@@ -2648,6 +2674,8 @@ bool RISCVFrameLowering::restoreCalleeSavedRegisters(
 }
 
 bool RISCVFrameLowering::enableShrinkWrapping(const MachineFunction &MF) const {
+  if (MF.getInfo<RISCVMachineFunctionInfo>()->hasZttMSpills())
+    return false;
   // Keep the conventional code flow when not optimizing.
   if (MF.getFunction().hasOptNone())
     return false;

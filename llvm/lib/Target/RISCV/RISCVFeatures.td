@@ -78,6 +78,12 @@ def FeatureStdExtE
     : RISCVExtension<2, 0, "Embedded Instruction Set with 16 GPRs">,
       RISCVExtensionBitmask<0, 4>;
 
+def FeatureStdExtZtt
+    : RISCVExtension<0, 6, "Ztt matrix extension">;
+def HasStdExtZtt : Predicate<"Subtarget->hasStdExtZtt()">,
+                   AssemblerPredicate<(all_of FeatureStdExtZtt),
+                                      "'Ztt' (Attached Matrix Extension)">;
+
 def FeatureStdExtZibi
     : RISCVExperimentalExtension<0, 1, "Branch with Immediate">,
       RISCVExtensionBitmask<1, 13>;

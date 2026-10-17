@@ -1,0 +1,47 @@
+# RUN: split-file %s %t
+# RUN: not %python %S/Inputs/check-spill-frame.py %t/store.s 64 2>&1 | FileCheck %s --check-prefix=STORE
+# RUN: not %python %S/Inputs/check-spill-frame.py %t/range.s 64 busy 32 1 8 4 2>&1 | FileCheck %s --check-prefix=RANGE
+# RUN: not %python %S/Inputs/check-spill-frame.py %t/align.s 64 2>&1 | FileCheck %s --check-prefix=ALIGN
+# RUN: not %python %S/Inputs/check-spill-frame.py %t/call.s 64 cross 32 1 8 2>&1 | FileCheck %s --check-prefix=CALL
+# RUN: not %python %S/Inputs/check-spill-frame.py %t/fixed.s 64 busy 32 1 8 0 a0 2>&1 | FileCheck %s --check-prefix=FIXED
+#
+# Deliberately invalid assembly tests the checker itself, not code generation.
+# The first store must contain the original p, even though later IR stores
+# overwrite q. A buffer-final-state-only check misses this error.
+# STORE: AssertionError: ('public store mismatch'
+# RANGE: AssertionError: ('dead stack access'
+# ALIGN: AssertionError: ('unaligned access'
+# CALL: AssertionError: misaligned SP at call
+# FIXED: AssertionError: ('fixed GPR used'
+#
+#--- store.s
+pressure:
+  li a5, 1073741856
+  msettyp m0, a5
+  mls.rm m0, a2
+  mss.rm m0, a1
+  ret
+.Lfunc_end0:
+#--- range.s
+busy:
+  addi sp, sp, -4
+  sd a0, 0(sp)
+  ret
+.Lfunc_end0:
+#--- align.s
+pressure:
+  addi sp, sp, -16
+  sd a0, 1(sp)
+  ret
+.Lfunc_end0:
+#--- call.s
+cross:
+  addi sp, sp, -8
+  call clobber
+  ret
+.Lfunc_end0:
+#--- fixed.s
+busy:
+  li a0, 0
+  ret
+.Lfunc_end0:

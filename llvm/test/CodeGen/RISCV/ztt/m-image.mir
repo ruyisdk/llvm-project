@@ -1,0 +1,921 @@
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u8-m32-a16/g' %s > %t.ztt-profile-0.mir
+# RUN: llc -mtriple=riscv32 -mattr=+ztt -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-0.mir -o - | FileCheck %s
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u8-m32-a16/g' %s > %t.ztt-profile-1.mir
+# RUN: llc -mtriple=riscv64 -mattr=+ztt -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-1.mir -o - | FileCheck %s
+
+# The addresses/physical-register byte stride are supplied, not allocated here.
+# Expected counts follow the spec: G/W Md words, G whole-register transfers.
+# Metadata restoration precedes every data load, including all wide tails.
+--- |
+  define void @image_g1_w1() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @image_g2_w1() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @image_g4_w1() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @image_g8_w1() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @image_g16_w1() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @image_g32_w1() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @image_g4_w4() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @image_g8_w4() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @image_g16_w16() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+  define void @image_g32_w16() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+...
+---
+name: image_g1_w1
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $zttm0, $x10, $x11, $x12
+    ; CHECK-LABEL: image_g1_w1:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: mgettyp a4, m0
+    ; CHECK-NEXT: sw a4, 0(a1)
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mss.1r m0, a3
+    ; CHECK-NEXT: lw a4, 0(a1)
+    ; CHECK-NEXT: msettyp m1, a4
+    ; CHECK-NEXT: mls.1r m1, a3
+    ; CHECK-NEXT: ret
+    early-clobber $x13, early-clobber $x14 = PseudoZTTMSaveM1 $zttm0, $x10, $x11, $x12, 1
+    $zttm1, early-clobber $x13, early-clobber $x14 = PseudoZTTMRestoreM1 $x10, $x11, $x12, 1
+    PseudoRET implicit $zttm1
+...
+---
+name: image_g2_w1
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $zttm0m2, $x10, $x11, $x12
+    ; CHECK-LABEL: image_g2_w1:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: mgettyp a4, m0
+    ; CHECK-NEXT: sw a4, 0(a1)
+    ; CHECK-NEXT: mgettyp a4, m1
+    ; CHECK-NEXT: sw a4, 4(a1)
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mss.1r m0, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m1, a3
+    ; CHECK-NEXT: lw a4, 0(a1)
+    ; CHECK-NEXT: msettyp m2, a4
+    ; CHECK-NEXT: lw a4, 4(a1)
+    ; CHECK-NEXT: msettyp m3, a4
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mls.1r m2, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m3, a3
+    ; CHECK-NEXT: ret
+    early-clobber $x13, early-clobber $x14 = PseudoZTTMSaveM2 $zttm0m2, $x10, $x11, $x12, 1
+    $zttm2m2, early-clobber $x13, early-clobber $x14 = PseudoZTTMRestoreM2 $x10, $x11, $x12, 1
+    PseudoRET implicit $zttm2m2
+...
+---
+name: image_g4_w1
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $zttm0m4, $x10, $x11, $x12
+    ; CHECK-LABEL: image_g4_w1:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: mgettyp a4, m0
+    ; CHECK-NEXT: sw a4, 0(a1)
+    ; CHECK-NEXT: mgettyp a4, m1
+    ; CHECK-NEXT: sw a4, 4(a1)
+    ; CHECK-NEXT: mgettyp a4, m2
+    ; CHECK-NEXT: sw a4, 8(a1)
+    ; CHECK-NEXT: mgettyp a4, m3
+    ; CHECK-NEXT: sw a4, 12(a1)
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mss.1r m0, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m1, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m2, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m3, a3
+    ; CHECK-NEXT: lw a4, 0(a1)
+    ; CHECK-NEXT: msettyp m4, a4
+    ; CHECK-NEXT: lw a4, 4(a1)
+    ; CHECK-NEXT: msettyp m5, a4
+    ; CHECK-NEXT: lw a4, 8(a1)
+    ; CHECK-NEXT: msettyp m6, a4
+    ; CHECK-NEXT: lw a4, 12(a1)
+    ; CHECK-NEXT: msettyp m7, a4
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mls.1r m4, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m5, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m6, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m7, a3
+    ; CHECK-NEXT: ret
+    early-clobber $x13, early-clobber $x14 = PseudoZTTMSaveM4 $zttm0m4, $x10, $x11, $x12, 1
+    $zttm4m4, early-clobber $x13, early-clobber $x14 = PseudoZTTMRestoreM4 $x10, $x11, $x12, 1
+    PseudoRET implicit $zttm4m4
+...
+---
+name: image_g8_w1
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $zttm0m8, $x10, $x11, $x12
+    ; CHECK-LABEL: image_g8_w1:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: mgettyp a4, m0
+    ; CHECK-NEXT: sw a4, 0(a1)
+    ; CHECK-NEXT: mgettyp a4, m1
+    ; CHECK-NEXT: sw a4, 4(a1)
+    ; CHECK-NEXT: mgettyp a4, m2
+    ; CHECK-NEXT: sw a4, 8(a1)
+    ; CHECK-NEXT: mgettyp a4, m3
+    ; CHECK-NEXT: sw a4, 12(a1)
+    ; CHECK-NEXT: mgettyp a4, m4
+    ; CHECK-NEXT: sw a4, 16(a1)
+    ; CHECK-NEXT: mgettyp a4, m5
+    ; CHECK-NEXT: sw a4, 20(a1)
+    ; CHECK-NEXT: mgettyp a4, m6
+    ; CHECK-NEXT: sw a4, 24(a1)
+    ; CHECK-NEXT: mgettyp a4, m7
+    ; CHECK-NEXT: sw a4, 28(a1)
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mss.1r m0, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m1, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m2, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m3, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m4, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m5, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m6, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m7, a3
+    ; CHECK-NEXT: lw a4, 0(a1)
+    ; CHECK-NEXT: msettyp m8, a4
+    ; CHECK-NEXT: lw a4, 4(a1)
+    ; CHECK-NEXT: msettyp m9, a4
+    ; CHECK-NEXT: lw a4, 8(a1)
+    ; CHECK-NEXT: msettyp m10, a4
+    ; CHECK-NEXT: lw a4, 12(a1)
+    ; CHECK-NEXT: msettyp m11, a4
+    ; CHECK-NEXT: lw a4, 16(a1)
+    ; CHECK-NEXT: msettyp m12, a4
+    ; CHECK-NEXT: lw a4, 20(a1)
+    ; CHECK-NEXT: msettyp m13, a4
+    ; CHECK-NEXT: lw a4, 24(a1)
+    ; CHECK-NEXT: msettyp m14, a4
+    ; CHECK-NEXT: lw a4, 28(a1)
+    ; CHECK-NEXT: msettyp m15, a4
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mls.1r m8, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m9, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m10, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m11, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m12, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m13, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m14, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m15, a3
+    ; CHECK-NEXT: ret
+    early-clobber $x13, early-clobber $x14 = PseudoZTTMSaveM8 $zttm0m8, $x10, $x11, $x12, 1
+    $zttm8m8, early-clobber $x13, early-clobber $x14 = PseudoZTTMRestoreM8 $x10, $x11, $x12, 1
+    PseudoRET implicit $zttm8m8
+...
+---
+name: image_g16_w1
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $zttm0m16, $x10, $x11, $x12
+    ; CHECK-LABEL: image_g16_w1:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: mgettyp a4, m0
+    ; CHECK-NEXT: sw a4, 0(a1)
+    ; CHECK-NEXT: mgettyp a4, m1
+    ; CHECK-NEXT: sw a4, 4(a1)
+    ; CHECK-NEXT: mgettyp a4, m2
+    ; CHECK-NEXT: sw a4, 8(a1)
+    ; CHECK-NEXT: mgettyp a4, m3
+    ; CHECK-NEXT: sw a4, 12(a1)
+    ; CHECK-NEXT: mgettyp a4, m4
+    ; CHECK-NEXT: sw a4, 16(a1)
+    ; CHECK-NEXT: mgettyp a4, m5
+    ; CHECK-NEXT: sw a4, 20(a1)
+    ; CHECK-NEXT: mgettyp a4, m6
+    ; CHECK-NEXT: sw a4, 24(a1)
+    ; CHECK-NEXT: mgettyp a4, m7
+    ; CHECK-NEXT: sw a4, 28(a1)
+    ; CHECK-NEXT: mgettyp a4, m8
+    ; CHECK-NEXT: sw a4, 32(a1)
+    ; CHECK-NEXT: mgettyp a4, m9
+    ; CHECK-NEXT: sw a4, 36(a1)
+    ; CHECK-NEXT: mgettyp a4, m10
+    ; CHECK-NEXT: sw a4, 40(a1)
+    ; CHECK-NEXT: mgettyp a4, m11
+    ; CHECK-NEXT: sw a4, 44(a1)
+    ; CHECK-NEXT: mgettyp a4, m12
+    ; CHECK-NEXT: sw a4, 48(a1)
+    ; CHECK-NEXT: mgettyp a4, m13
+    ; CHECK-NEXT: sw a4, 52(a1)
+    ; CHECK-NEXT: mgettyp a4, m14
+    ; CHECK-NEXT: sw a4, 56(a1)
+    ; CHECK-NEXT: mgettyp a4, m15
+    ; CHECK-NEXT: sw a4, 60(a1)
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mss.1r m0, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m1, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m2, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m3, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m4, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m5, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m6, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m7, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m8, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m9, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m10, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m11, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m12, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m13, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m14, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m15, a3
+    ; CHECK-NEXT: lw a4, 0(a1)
+    ; CHECK-NEXT: msettyp m16, a4
+    ; CHECK-NEXT: lw a4, 4(a1)
+    ; CHECK-NEXT: msettyp m17, a4
+    ; CHECK-NEXT: lw a4, 8(a1)
+    ; CHECK-NEXT: msettyp m18, a4
+    ; CHECK-NEXT: lw a4, 12(a1)
+    ; CHECK-NEXT: msettyp m19, a4
+    ; CHECK-NEXT: lw a4, 16(a1)
+    ; CHECK-NEXT: msettyp m20, a4
+    ; CHECK-NEXT: lw a4, 20(a1)
+    ; CHECK-NEXT: msettyp m21, a4
+    ; CHECK-NEXT: lw a4, 24(a1)
+    ; CHECK-NEXT: msettyp m22, a4
+    ; CHECK-NEXT: lw a4, 28(a1)
+    ; CHECK-NEXT: msettyp m23, a4
+    ; CHECK-NEXT: lw a4, 32(a1)
+    ; CHECK-NEXT: msettyp m24, a4
+    ; CHECK-NEXT: lw a4, 36(a1)
+    ; CHECK-NEXT: msettyp m25, a4
+    ; CHECK-NEXT: lw a4, 40(a1)
+    ; CHECK-NEXT: msettyp m26, a4
+    ; CHECK-NEXT: lw a4, 44(a1)
+    ; CHECK-NEXT: msettyp m27, a4
+    ; CHECK-NEXT: lw a4, 48(a1)
+    ; CHECK-NEXT: msettyp m28, a4
+    ; CHECK-NEXT: lw a4, 52(a1)
+    ; CHECK-NEXT: msettyp m29, a4
+    ; CHECK-NEXT: lw a4, 56(a1)
+    ; CHECK-NEXT: msettyp m30, a4
+    ; CHECK-NEXT: lw a4, 60(a1)
+    ; CHECK-NEXT: msettyp m31, a4
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mls.1r m16, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m17, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m18, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m19, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m20, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m21, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m22, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m23, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m24, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m25, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m26, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m27, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m28, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m29, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m30, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m31, a3
+    ; CHECK-NEXT: ret
+    early-clobber $x13, early-clobber $x14 = PseudoZTTMSaveM16 $zttm0m16, $x10, $x11, $x12, 1
+    $zttm16m16, early-clobber $x13, early-clobber $x14 = PseudoZTTMRestoreM16 $x10, $x11, $x12, 1
+    PseudoRET implicit $zttm16m16
+...
+---
+name: image_g32_w1
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $zttm0m32, $x10, $x11, $x12
+    ; CHECK-LABEL: image_g32_w1:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: mgettyp a4, m0
+    ; CHECK-NEXT: sw a4, 0(a1)
+    ; CHECK-NEXT: mgettyp a4, m1
+    ; CHECK-NEXT: sw a4, 4(a1)
+    ; CHECK-NEXT: mgettyp a4, m2
+    ; CHECK-NEXT: sw a4, 8(a1)
+    ; CHECK-NEXT: mgettyp a4, m3
+    ; CHECK-NEXT: sw a4, 12(a1)
+    ; CHECK-NEXT: mgettyp a4, m4
+    ; CHECK-NEXT: sw a4, 16(a1)
+    ; CHECK-NEXT: mgettyp a4, m5
+    ; CHECK-NEXT: sw a4, 20(a1)
+    ; CHECK-NEXT: mgettyp a4, m6
+    ; CHECK-NEXT: sw a4, 24(a1)
+    ; CHECK-NEXT: mgettyp a4, m7
+    ; CHECK-NEXT: sw a4, 28(a1)
+    ; CHECK-NEXT: mgettyp a4, m8
+    ; CHECK-NEXT: sw a4, 32(a1)
+    ; CHECK-NEXT: mgettyp a4, m9
+    ; CHECK-NEXT: sw a4, 36(a1)
+    ; CHECK-NEXT: mgettyp a4, m10
+    ; CHECK-NEXT: sw a4, 40(a1)
+    ; CHECK-NEXT: mgettyp a4, m11
+    ; CHECK-NEXT: sw a4, 44(a1)
+    ; CHECK-NEXT: mgettyp a4, m12
+    ; CHECK-NEXT: sw a4, 48(a1)
+    ; CHECK-NEXT: mgettyp a4, m13
+    ; CHECK-NEXT: sw a4, 52(a1)
+    ; CHECK-NEXT: mgettyp a4, m14
+    ; CHECK-NEXT: sw a4, 56(a1)
+    ; CHECK-NEXT: mgettyp a4, m15
+    ; CHECK-NEXT: sw a4, 60(a1)
+    ; CHECK-NEXT: mgettyp a4, m16
+    ; CHECK-NEXT: sw a4, 64(a1)
+    ; CHECK-NEXT: mgettyp a4, m17
+    ; CHECK-NEXT: sw a4, 68(a1)
+    ; CHECK-NEXT: mgettyp a4, m18
+    ; CHECK-NEXT: sw a4, 72(a1)
+    ; CHECK-NEXT: mgettyp a4, m19
+    ; CHECK-NEXT: sw a4, 76(a1)
+    ; CHECK-NEXT: mgettyp a4, m20
+    ; CHECK-NEXT: sw a4, 80(a1)
+    ; CHECK-NEXT: mgettyp a4, m21
+    ; CHECK-NEXT: sw a4, 84(a1)
+    ; CHECK-NEXT: mgettyp a4, m22
+    ; CHECK-NEXT: sw a4, 88(a1)
+    ; CHECK-NEXT: mgettyp a4, m23
+    ; CHECK-NEXT: sw a4, 92(a1)
+    ; CHECK-NEXT: mgettyp a4, m24
+    ; CHECK-NEXT: sw a4, 96(a1)
+    ; CHECK-NEXT: mgettyp a4, m25
+    ; CHECK-NEXT: sw a4, 100(a1)
+    ; CHECK-NEXT: mgettyp a4, m26
+    ; CHECK-NEXT: sw a4, 104(a1)
+    ; CHECK-NEXT: mgettyp a4, m27
+    ; CHECK-NEXT: sw a4, 108(a1)
+    ; CHECK-NEXT: mgettyp a4, m28
+    ; CHECK-NEXT: sw a4, 112(a1)
+    ; CHECK-NEXT: mgettyp a4, m29
+    ; CHECK-NEXT: sw a4, 116(a1)
+    ; CHECK-NEXT: mgettyp a4, m30
+    ; CHECK-NEXT: sw a4, 120(a1)
+    ; CHECK-NEXT: mgettyp a4, m31
+    ; CHECK-NEXT: sw a4, 124(a1)
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mss.1r m0, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m1, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m2, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m3, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m4, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m5, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m6, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m7, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m8, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m9, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m10, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m11, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m12, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m13, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m14, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m15, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m16, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m17, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m18, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m19, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m20, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m21, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m22, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m23, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m24, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m25, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m26, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m27, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m28, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m29, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m30, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m31, a3
+    ; CHECK-NEXT: lw a4, 0(a1)
+    ; CHECK-NEXT: msettyp m0, a4
+    ; CHECK-NEXT: lw a4, 4(a1)
+    ; CHECK-NEXT: msettyp m1, a4
+    ; CHECK-NEXT: lw a4, 8(a1)
+    ; CHECK-NEXT: msettyp m2, a4
+    ; CHECK-NEXT: lw a4, 12(a1)
+    ; CHECK-NEXT: msettyp m3, a4
+    ; CHECK-NEXT: lw a4, 16(a1)
+    ; CHECK-NEXT: msettyp m4, a4
+    ; CHECK-NEXT: lw a4, 20(a1)
+    ; CHECK-NEXT: msettyp m5, a4
+    ; CHECK-NEXT: lw a4, 24(a1)
+    ; CHECK-NEXT: msettyp m6, a4
+    ; CHECK-NEXT: lw a4, 28(a1)
+    ; CHECK-NEXT: msettyp m7, a4
+    ; CHECK-NEXT: lw a4, 32(a1)
+    ; CHECK-NEXT: msettyp m8, a4
+    ; CHECK-NEXT: lw a4, 36(a1)
+    ; CHECK-NEXT: msettyp m9, a4
+    ; CHECK-NEXT: lw a4, 40(a1)
+    ; CHECK-NEXT: msettyp m10, a4
+    ; CHECK-NEXT: lw a4, 44(a1)
+    ; CHECK-NEXT: msettyp m11, a4
+    ; CHECK-NEXT: lw a4, 48(a1)
+    ; CHECK-NEXT: msettyp m12, a4
+    ; CHECK-NEXT: lw a4, 52(a1)
+    ; CHECK-NEXT: msettyp m13, a4
+    ; CHECK-NEXT: lw a4, 56(a1)
+    ; CHECK-NEXT: msettyp m14, a4
+    ; CHECK-NEXT: lw a4, 60(a1)
+    ; CHECK-NEXT: msettyp m15, a4
+    ; CHECK-NEXT: lw a4, 64(a1)
+    ; CHECK-NEXT: msettyp m16, a4
+    ; CHECK-NEXT: lw a4, 68(a1)
+    ; CHECK-NEXT: msettyp m17, a4
+    ; CHECK-NEXT: lw a4, 72(a1)
+    ; CHECK-NEXT: msettyp m18, a4
+    ; CHECK-NEXT: lw a4, 76(a1)
+    ; CHECK-NEXT: msettyp m19, a4
+    ; CHECK-NEXT: lw a4, 80(a1)
+    ; CHECK-NEXT: msettyp m20, a4
+    ; CHECK-NEXT: lw a4, 84(a1)
+    ; CHECK-NEXT: msettyp m21, a4
+    ; CHECK-NEXT: lw a4, 88(a1)
+    ; CHECK-NEXT: msettyp m22, a4
+    ; CHECK-NEXT: lw a4, 92(a1)
+    ; CHECK-NEXT: msettyp m23, a4
+    ; CHECK-NEXT: lw a4, 96(a1)
+    ; CHECK-NEXT: msettyp m24, a4
+    ; CHECK-NEXT: lw a4, 100(a1)
+    ; CHECK-NEXT: msettyp m25, a4
+    ; CHECK-NEXT: lw a4, 104(a1)
+    ; CHECK-NEXT: msettyp m26, a4
+    ; CHECK-NEXT: lw a4, 108(a1)
+    ; CHECK-NEXT: msettyp m27, a4
+    ; CHECK-NEXT: lw a4, 112(a1)
+    ; CHECK-NEXT: msettyp m28, a4
+    ; CHECK-NEXT: lw a4, 116(a1)
+    ; CHECK-NEXT: msettyp m29, a4
+    ; CHECK-NEXT: lw a4, 120(a1)
+    ; CHECK-NEXT: msettyp m30, a4
+    ; CHECK-NEXT: lw a4, 124(a1)
+    ; CHECK-NEXT: msettyp m31, a4
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mls.1r m0, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m1, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m2, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m3, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m4, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m5, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m6, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m7, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m8, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m9, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m10, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m11, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m12, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m13, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m14, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m15, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m16, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m17, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m18, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m19, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m20, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m21, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m22, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m23, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m24, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m25, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m26, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m27, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m28, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m29, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m30, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m31, a3
+    ; CHECK-NEXT: ret
+    early-clobber $x13, early-clobber $x14 = PseudoZTTMSaveM32 $zttm0m32, $x10, $x11, $x12, 1
+    $zttm0m32, early-clobber $x13, early-clobber $x14 = PseudoZTTMRestoreM32 $x10, $x11, $x12, 1
+    PseudoRET implicit $zttm0m32
+...
+---
+name: image_g4_w4
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $zttm0m4, $x10, $x11, $x12
+    ; CHECK-LABEL: image_g4_w4:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: mgettyp a4, m0
+    ; CHECK-NEXT: sw a4, 0(a1)
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mss.1r m0, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m1, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m2, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m3, a3
+    ; CHECK-NEXT: lw a4, 0(a1)
+    ; CHECK-NEXT: msettyp m4, a4
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mls.1r m4, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m5, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m6, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m7, a3
+    ; CHECK-NEXT: mgettyp a0, m4
+    ; CHECK-NEXT: msettyp m8, a0
+    ; CHECK-NEXT: mmov.m.m m8, m4
+    ; CHECK-NEXT: ret
+    early-clobber $x13, early-clobber $x14 = PseudoZTTMSaveM4 $zttm0m4, $x10, $x11, $x12, 4
+    $zttm4m4, early-clobber $x13, early-clobber $x14 = PseudoZTTMRestoreM4 $x10, $x11, $x12, 4
+    $zttm8m4 = COPY $zttm4m4
+    PseudoRET implicit $zttm8m4
+...
+---
+name: image_g8_w4
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $zttm0m8, $x10, $x11, $x12
+    ; CHECK-LABEL: image_g8_w4:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: mgettyp a4, m0
+    ; CHECK-NEXT: sw a4, 0(a1)
+    ; CHECK-NEXT: mgettyp a4, m4
+    ; CHECK-NEXT: sw a4, 4(a1)
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mss.1r m0, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m1, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m2, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m3, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m4, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m5, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m6, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m7, a3
+    ; CHECK-NEXT: lw a4, 0(a1)
+    ; CHECK-NEXT: msettyp m8, a4
+    ; CHECK-NEXT: lw a4, 4(a1)
+    ; CHECK-NEXT: msettyp m12, a4
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mls.1r m8, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m9, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m10, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m11, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m12, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m13, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m14, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m15, a3
+    ; CHECK-NEXT: ret
+    early-clobber $x13, early-clobber $x14 = PseudoZTTMSaveM8 $zttm0m8, $x10, $x11, $x12, 4
+    $zttm8m8, early-clobber $x13, early-clobber $x14 = PseudoZTTMRestoreM8 $x10, $x11, $x12, 4
+    PseudoRET implicit $zttm8m8
+...
+---
+name: image_g16_w16
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $zttm0m16, $x10, $x11, $x12
+    ; CHECK-LABEL: image_g16_w16:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: mgettyp a4, m0
+    ; CHECK-NEXT: sw a4, 0(a1)
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mss.1r m0, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m1, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m2, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m3, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m4, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m5, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m6, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m7, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m8, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m9, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m10, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m11, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m12, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m13, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m14, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m15, a3
+    ; CHECK-NEXT: lw a4, 0(a1)
+    ; CHECK-NEXT: msettyp m16, a4
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mls.1r m16, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m17, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m18, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m19, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m20, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m21, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m22, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m23, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m24, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m25, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m26, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m27, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m28, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m29, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m30, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m31, a3
+    ; CHECK-NEXT: ret
+    early-clobber $x13, early-clobber $x14 = PseudoZTTMSaveM16 $zttm0m16, $x10, $x11, $x12, 16
+    $zttm16m16, early-clobber $x13, early-clobber $x14 = PseudoZTTMRestoreM16 $x10, $x11, $x12, 16
+    PseudoRET implicit $zttm16m16
+...
+---
+name: image_g32_w16
+tracksRegLiveness: true
+body: |
+  bb.0:
+    liveins: $zttm0m32, $x10, $x11, $x12
+    ; CHECK-LABEL: image_g32_w16:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: mgettyp a4, m0
+    ; CHECK-NEXT: sw a4, 0(a1)
+    ; CHECK-NEXT: mgettyp a4, m16
+    ; CHECK-NEXT: sw a4, 4(a1)
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mss.1r m0, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m1, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m2, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m3, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m4, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m5, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m6, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m7, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m8, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m9, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m10, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m11, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m12, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m13, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m14, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m15, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m16, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m17, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m18, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m19, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m20, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m21, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m22, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m23, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m24, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m25, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m26, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m27, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m28, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m29, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m30, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mss.1r m31, a3
+    ; CHECK-NEXT: lw a4, 0(a1)
+    ; CHECK-NEXT: msettyp m0, a4
+    ; CHECK-NEXT: lw a4, 4(a1)
+    ; CHECK-NEXT: msettyp m16, a4
+    ; CHECK-NEXT: mv a3, a0
+    ; CHECK-NEXT: mls.1r m0, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m1, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m2, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m3, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m4, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m5, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m6, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m7, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m8, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m9, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m10, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m11, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m12, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m13, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m14, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m15, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m16, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m17, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m18, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m19, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m20, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m21, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m22, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m23, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m24, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m25, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m26, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m27, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m28, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m29, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m30, a3
+    ; CHECK-NEXT: add a3, a3, a2
+    ; CHECK-NEXT: mls.1r m31, a3
+    ; CHECK-NEXT: ret
+    early-clobber $x13, early-clobber $x14 = PseudoZTTMSaveM32 $zttm0m32, $x10, $x11, $x12, 16
+    $zttm0m32, early-clobber $x13, early-clobber $x14 = PseudoZTTMRestoreM32 $x10, $x11, $x12, 16
+    PseudoRET implicit $zttm0m32
+...

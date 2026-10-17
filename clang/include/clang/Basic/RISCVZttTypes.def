@@ -1,0 +1,106 @@
+//===-- RISCVZttTypes.def - RISC-V Ztt builtin types --------*- C++ -*-===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+//
+// RISCV_ZTT_TYPE(Name, Id, SingletonId) covers all M and ACC types.
+// RISCV_ZTT_M_TYPE adds the element kind, bit width, rows, columns and options.
+// RISCV_ZTT_ACC_TYPE adds the element kind, bit width, square count and
+// options. Name is the C type name, Id is the BuiltinType kind, and SingletonId
+// is the ASTContext member. Each ACC square occupies one ACC register. Options
+// use bits 2:0 for rounding and bit 3 for integer saturation.
+//
+//===----------------------------------------------------------------------===//
+
+#ifndef RISCV_ZTT_TYPE
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId)
+#endif
+
+#ifndef RISCV_ZTT_M_TYPE
+#define RISCV_ZTT_M_TYPE(Name, Id, SingletonId, Kind, Bits, Rows, Cols,        \
+                         Options)                                              \
+  RISCV_ZTT_TYPE(Name, Id, SingletonId)
+#endif
+
+#ifndef RISCV_ZTT_ACC_TYPE
+#define RISCV_ZTT_ACC_TYPE(Name, Id, SingletonId, Kind, Bits, Squares,         \
+                           Options)                                            \
+  RISCV_ZTT_TYPE(Name, Id, SingletonId)
+#endif
+
+#define RISCV_ZTT_M_SHAPE(Suffix, Id, Kind, Bits, Rows, Cols, Options)         \
+  RISCV_ZTT_M_TYPE("__riscv_ztt_" #Suffix "_" #Rows "x" #Cols "_t",            \
+                   RISCVZtt##Id##M##Rows##x##Cols,                             \
+                   RISCVZtt##Id##M##Rows##x##Cols##Ty, Kind, Bits, Rows, Cols, \
+                   Options)
+
+#define RISCV_ZTT_ACC_SHAPE(Suffix, Id, Kind, Bits, Squares, Options)          \
+  RISCV_ZTT_ACC_TYPE("__riscv_ztt_" #Suffix "_accx" #Squares "_t",             \
+                     RISCVZtt##Id##ACC##Squares,                               \
+                     RISCVZtt##Id##ACC##Squares##Ty, Kind, Bits, Squares,      \
+                     Options)
+
+#define RISCV_ZTT_SHAPES(Suffix, Id, Kind, Bits, Options)                      \
+  RISCV_ZTT_M_SHAPE(Suffix, Id, Kind, Bits, 1, 1, Options)                     \
+  RISCV_ZTT_M_SHAPE(Suffix, Id, Kind, Bits, 1, 2, Options)                     \
+  RISCV_ZTT_M_SHAPE(Suffix, Id, Kind, Bits, 1, 4, Options)                     \
+  RISCV_ZTT_M_SHAPE(Suffix, Id, Kind, Bits, 1, 8, Options)                     \
+  RISCV_ZTT_M_SHAPE(Suffix, Id, Kind, Bits, 1, 16, Options)                    \
+  RISCV_ZTT_M_SHAPE(Suffix, Id, Kind, Bits, 1, 32, Options)                    \
+  RISCV_ZTT_M_SHAPE(Suffix, Id, Kind, Bits, 2, 1, Options)                     \
+  RISCV_ZTT_M_SHAPE(Suffix, Id, Kind, Bits, 4, 1, Options)                     \
+  RISCV_ZTT_M_SHAPE(Suffix, Id, Kind, Bits, 8, 1, Options)                     \
+  RISCV_ZTT_M_SHAPE(Suffix, Id, Kind, Bits, 16, 1, Options)                    \
+  RISCV_ZTT_M_SHAPE(Suffix, Id, Kind, Bits, 32, 1, Options)                    \
+  RISCV_ZTT_ACC_SHAPE(Suffix, Id, Kind, Bits, 1, Options)                      \
+  RISCV_ZTT_ACC_SHAPE(Suffix, Id, Kind, Bits, 2, Options)                      \
+  RISCV_ZTT_ACC_SHAPE(Suffix, Id, Kind, Bits, 4, Options)                      \
+  RISCV_ZTT_ACC_SHAPE(Suffix, Id, Kind, Bits, 8, Options)
+
+// Default rounding has no suffix in the canonical type name.
+#define RISCV_ZTT_INTEGER_TYPES(Suffix, Id, Kind, Bits)                        \
+  RISCV_ZTT_SHAPES(Suffix, Id, Kind, Bits, 0)                                  \
+  RISCV_ZTT_SHAPES(Suffix##_rne, Id##Rne, Kind, Bits, 1)                       \
+  RISCV_ZTT_SHAPES(Suffix##_rdn, Id##Rdn, Kind, Bits, 2)                       \
+  RISCV_ZTT_SHAPES(Suffix##_rod, Id##Rod, Kind, Bits, 3)                       \
+  RISCV_ZTT_SHAPES(Suffix##_sat, Id##Sat, Kind, Bits, 8)                       \
+  RISCV_ZTT_SHAPES(Suffix##_rne_sat, Id##RneSat, Kind, Bits, 9)                \
+  RISCV_ZTT_SHAPES(Suffix##_rdn_sat, Id##RdnSat, Kind, Bits, 10)               \
+  RISCV_ZTT_SHAPES(Suffix##_rod_sat, Id##RodSat, Kind, Bits, 11)
+
+#define RISCV_ZTT_FLOAT_TYPES(Suffix, Id, Kind, Bits)                          \
+  RISCV_ZTT_SHAPES(Suffix, Id, Kind, Bits, 0)                                  \
+  RISCV_ZTT_SHAPES(Suffix##_rtz, Id##Rtz, Kind, Bits, 1)                       \
+  RISCV_ZTT_SHAPES(Suffix##_rdn, Id##Rdn, Kind, Bits, 2)                       \
+  RISCV_ZTT_SHAPES(Suffix##_rup, Id##Rup, Kind, Bits, 3)                       \
+  RISCV_ZTT_SHAPES(Suffix##_rmm, Id##Rmm, Kind, Bits, 4)                       \
+  RISCV_ZTT_SHAPES(Suffix##_rno, Id##Rno, Kind, Bits, 5)
+
+RISCV_ZTT_INTEGER_TYPES(i4, Int4, SignedInt, 4)
+RISCV_ZTT_INTEGER_TYPES(u4, Uint4, UnsignedInt, 4)
+RISCV_ZTT_INTEGER_TYPES(i8, Int8, SignedInt, 8)
+RISCV_ZTT_INTEGER_TYPES(u8, Uint8, UnsignedInt, 8)
+RISCV_ZTT_INTEGER_TYPES(i16, Int16, SignedInt, 16)
+RISCV_ZTT_INTEGER_TYPES(u16, Uint16, UnsignedInt, 16)
+RISCV_ZTT_INTEGER_TYPES(i32, Int32, SignedInt, 32)
+RISCV_ZTT_INTEGER_TYPES(u32, Uint32, UnsignedInt, 32)
+RISCV_ZTT_INTEGER_TYPES(i64, Int64, SignedInt, 64)
+RISCV_ZTT_INTEGER_TYPES(u64, Uint64, UnsignedInt, 64)
+RISCV_ZTT_INTEGER_TYPES(i128, Int128, SignedInt, 128)
+RISCV_ZTT_INTEGER_TYPES(u128, Uint128, UnsignedInt, 128)
+RISCV_ZTT_FLOAT_TYPES(f16, Float16, Float16, 16)
+RISCV_ZTT_FLOAT_TYPES(bf16, BFloat16, BFloat16, 16)
+RISCV_ZTT_FLOAT_TYPES(f32, Float32, Float32, 32)
+RISCV_ZTT_FLOAT_TYPES(f64, Float64, Float64, 64)
+
+#undef RISCV_ZTT_FLOAT_TYPES
+#undef RISCV_ZTT_INTEGER_TYPES
+#undef RISCV_ZTT_SHAPES
+#undef RISCV_ZTT_ACC_SHAPE
+#undef RISCV_ZTT_M_SHAPE
+#undef RISCV_ZTT_ACC_TYPE
+#undef RISCV_ZTT_M_TYPE
+#undef RISCV_ZTT_TYPE

@@ -1,0 +1,206 @@
+# RUN: sed -e 's/SD /SW /g' -e 's/LD /LW /g' -e 's/s64/s32/g' %s > %t.32.mir
+# The M and scalar images have disjoint lifetimes but share a colored FI.
+# Its 8-byte capacity/alignment must survive the 4-byte Md requirement.
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u32-m16-a4/g' %t.32.mir > %t.ztt-profile-0.mir
+# RUN: llc -mtriple=riscv32 -mattr=+m,+ztt -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo -stop-after=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-0.mir -o - | FileCheck %s --check-prefix=SLOT
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u32-m16-a4/g' %s > %t.ztt-profile-1.mir
+# RUN: llc -mtriple=riscv64 -mattr=+m,+ztt -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo -stop-after=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-1.mir -o - | FileCheck %s --check-prefix=SLOT
+# SLOT: id: 0, name: '', type: spill-slot, offset: 0, size: 8, alignment: 8,
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u32-m16-a4/g' %t.32.mir > %t.ztt-profile-2.mir
+# RUN: llc -mtriple=riscv32 -mattr=+m,+ztt -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-2.mir -o %t.32.s
+# RUN: FileCheck %s --match-full-lines --check-prefix=RV32 < %t.32.s
+# RUN: %python %S/Inputs/check-spill-frame.py %t.32.s 32 busy 32 1 32
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u32-m16-a4/g' %s > %t.ztt-profile-3.mir
+# RUN: llc -mtriple=riscv64 -mattr=+m,+ztt -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-3.mir -o %t.64.s
+# RUN: FileCheck %s --match-full-lines --check-prefix=RV64 < %t.64.s
+# RUN: %python %S/Inputs/check-spill-frame.py %t.64.s 64 busy 32 1 32
+--- |
+  define void @busy() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+...
+---
+name: busy
+tracksRegLiveness: true
+stack:
+  - { id: 0, type: spill-slot, size: 8, alignment: 8 }
+  - { id: 1, type: spill-slot, size: 8, alignment: 8 }
+body: |
+  bb.0:
+    liveins: $zttm0, $x10, $x11
+    SD $x11, %stack.1, 0 :: (store (s64) into %stack.1)
+    PseudoZTTMSpillM1 $zttm0, %stack.0, 1
+    $zttm0 = PseudoZTTMReloadM1 %stack.0, 1
+    SD $x10, %stack.0, 0 :: (store (s64) into %stack.0)
+    $x10 = LD %stack.0, 0 :: (load (s64) from %stack.0)
+    $x11 = LD %stack.1, 0 :: (load (s64) from %stack.1)
+    PseudoRET implicit $zttm0, implicit $x10, implicit $x11
+...
+
+# RV32-LABEL: busy:                                   # @busy
+# RV32-NEXT: # %bb.0:
+# RV32-NEXT: addi	sp, sp, -32
+# RV32-NEXT: sw	a0, 0(sp)
+# RV32-NEXT: sw	a1, 4(sp)
+# RV32-NEXT: sw	a2, 8(sp)
+# RV32-NEXT: sw	a3, 12(sp)
+# RV32-NEXT: sw	a4, 16(sp)
+# RV32-NEXT: csrr	a2, amenlen
+# RV32-NEXT: mul	a1, a2, a2
+# RV32-NEXT: slli	a1, a1, 2
+# RV32-NEXT: li	a0, 0
+# RV32-NEXT: add	a0, a0, a1
+# RV32-NEXT: addi	a0, a0, 15
+# RV32-NEXT: andi	a0, a0, -16
+# RV32-NEXT: addi	a0, a0, 64
+# RV32-NEXT: mv	a4, sp
+# RV32-NEXT: sub	sp, sp, a0
+# RV32-NEXT: sw	a0, 32(sp)
+# RV32-NEXT: sw	a1, 36(sp)
+# RV32-NEXT: lw	a0, 0(a4)
+# RV32-NEXT: lw	a1, 4(a4)
+# RV32-NEXT: lw	a2, 8(a4)
+# RV32-NEXT: lw	a3, 12(a4)
+# RV32-NEXT: lw	a4, 16(a4)
+# RV32-NEXT: addi	sp, sp, 32
+# RV32-NEXT: addi	sp, sp, -48
+# RV32-NEXT: sw	ra, 44(sp)                      # 4-byte Folded Spill
+# RV32-NEXT: lw	ra, 52(sp)
+# RV32-NEXT: sw	a1, 24(sp)                      # 4-byte Folded Spill
+# RV32-NEXT: sw	a0, 20(sp)
+# RV32-NEXT: sw	a1, 16(sp)
+# RV32-NEXT: sw	a2, 12(sp)
+# RV32-NEXT: sw	a3, 8(sp)
+# RV32-NEXT: sw	a4, 4(sp)
+# RV32-NEXT: addi	a0, sp, 48
+# RV32-NEXT: addi	a0, a0, 16
+# RV32-NEXT: addi	a1, sp, 32
+# RV32-NEXT: mgettyp	a4, m0
+# RV32-NEXT: sw	a4, 0(a1)
+# RV32-NEXT: mv	a3, a0
+# RV32-NEXT: mss.1r	m0, a3
+# RV32-NEXT: lw	a0, 20(sp)
+# RV32-NEXT: lw	a1, 16(sp)
+# RV32-NEXT: lw	a2, 12(sp)
+# RV32-NEXT: lw	a3, 8(sp)
+# RV32-NEXT: lw	a4, 4(sp)
+# RV32-NEXT: sw	a0, 20(sp)
+# RV32-NEXT: sw	a1, 16(sp)
+# RV32-NEXT: sw	a2, 12(sp)
+# RV32-NEXT: sw	a3, 8(sp)
+# RV32-NEXT: sw	a4, 4(sp)
+# RV32-NEXT: addi	a0, sp, 48
+# RV32-NEXT: addi	a0, a0, 16
+# RV32-NEXT: addi	a1, sp, 32
+# RV32-NEXT: lw	a4, 0(a1)
+# RV32-NEXT: msettyp	m0, a4
+# RV32-NEXT: mv	a3, a0
+# RV32-NEXT: mls.1r	m0, a3
+# RV32-NEXT: lw	a0, 20(sp)
+# RV32-NEXT: lw	a1, 16(sp)
+# RV32-NEXT: lw	a2, 12(sp)
+# RV32-NEXT: lw	a3, 8(sp)
+# RV32-NEXT: lw	a4, 4(sp)
+# RV32-NEXT: sw	a0, 32(sp)                      # 4-byte Folded Spill
+# RV32-NEXT: lw	a0, 32(sp)                      # 4-byte Folded Reload
+# RV32-NEXT: lw	a1, 24(sp)                      # 4-byte Folded Reload
+# RV32-NEXT: lw	ra, 44(sp)                      # 4-byte Folded Reload
+# RV32-NEXT: addi	sp, sp, 48
+# RV32-NEXT: addi	sp, sp, -16
+# RV32-NEXT: sw	a0, 0(sp)
+# RV32-NEXT: sw	a1, 4(sp)
+# RV32-NEXT: lw	a0, 16(sp)
+# RV32-NEXT: add	a1, sp, a0
+# RV32-NEXT: lw	a0, 0(sp)
+# RV32-NEXT: sw	a0, 0(a1)
+# RV32-NEXT: lw	a0, 4(sp)
+# RV32-NEXT: sw	a0, 4(a1)
+# RV32-NEXT: mv	sp, a1
+# RV32-NEXT: lw	a0, 0(sp)
+# RV32-NEXT: lw	a1, 4(sp)
+# RV32-NEXT: addi	sp, sp, 16
+# RV32-NEXT: ret
+# RV32-NEXT: .Lfunc_end0:
+
+# RV64-LABEL: busy:                                   # @busy
+# RV64-NEXT: # %bb.0:
+# RV64-NEXT: addi	sp, sp, -48
+# RV64-NEXT: sd	a0, 0(sp)
+# RV64-NEXT: sd	a1, 8(sp)
+# RV64-NEXT: sd	a2, 16(sp)
+# RV64-NEXT: sd	a3, 24(sp)
+# RV64-NEXT: sd	a4, 32(sp)
+# RV64-NEXT: csrr	a2, amenlen
+# RV64-NEXT: mul	a1, a2, a2
+# RV64-NEXT: slli	a1, a1, 2
+# RV64-NEXT: li	a0, 0
+# RV64-NEXT: add	a0, a0, a1
+# RV64-NEXT: addi	a0, a0, 15
+# RV64-NEXT: andi	a0, a0, -16
+# RV64-NEXT: addi	a0, a0, 64
+# RV64-NEXT: mv	a4, sp
+# RV64-NEXT: sub	sp, sp, a0
+# RV64-NEXT: sd	a0, 48(sp)
+# RV64-NEXT: sd	a1, 56(sp)
+# RV64-NEXT: ld	a0, 0(a4)
+# RV64-NEXT: ld	a1, 8(a4)
+# RV64-NEXT: ld	a2, 16(a4)
+# RV64-NEXT: ld	a3, 24(a4)
+# RV64-NEXT: ld	a4, 32(a4)
+# RV64-NEXT: addi	sp, sp, 48
+# RV64-NEXT: addi	sp, sp, -64
+# RV64-NEXT: sd	ra, 56(sp)                      # 8-byte Folded Spill
+# RV64-NEXT: ld	ra, 72(sp)
+# RV64-NEXT: sd	a1, 40(sp)                      # 8-byte Folded Spill
+# RV64-NEXT: sd	a0, 32(sp)
+# RV64-NEXT: sd	a1, 24(sp)
+# RV64-NEXT: sd	a2, 16(sp)
+# RV64-NEXT: sd	a3, 8(sp)
+# RV64-NEXT: sd	a4, 0(sp)
+# RV64-NEXT: addi	a0, sp, 64
+# RV64-NEXT: addi	a0, a0, 16
+# RV64-NEXT: addi	a1, sp, 48
+# RV64-NEXT: mgettyp	a4, m0
+# RV64-NEXT: sw	a4, 0(a1)
+# RV64-NEXT: mv	a3, a0
+# RV64-NEXT: mss.1r	m0, a3
+# RV64-NEXT: ld	a0, 32(sp)
+# RV64-NEXT: ld	a1, 24(sp)
+# RV64-NEXT: ld	a2, 16(sp)
+# RV64-NEXT: ld	a3, 8(sp)
+# RV64-NEXT: ld	a4, 0(sp)
+# RV64-NEXT: sd	a0, 32(sp)
+# RV64-NEXT: sd	a1, 24(sp)
+# RV64-NEXT: sd	a2, 16(sp)
+# RV64-NEXT: sd	a3, 8(sp)
+# RV64-NEXT: sd	a4, 0(sp)
+# RV64-NEXT: addi	a0, sp, 64
+# RV64-NEXT: addi	a0, a0, 16
+# RV64-NEXT: addi	a1, sp, 48
+# RV64-NEXT: lw	a4, 0(a1)
+# RV64-NEXT: msettyp	m0, a4
+# RV64-NEXT: mv	a3, a0
+# RV64-NEXT: mls.1r	m0, a3
+# RV64-NEXT: ld	a0, 32(sp)
+# RV64-NEXT: ld	a1, 24(sp)
+# RV64-NEXT: ld	a2, 16(sp)
+# RV64-NEXT: ld	a3, 8(sp)
+# RV64-NEXT: ld	a4, 0(sp)
+# RV64-NEXT: sd	a0, 48(sp)                      # 8-byte Folded Spill
+# RV64-NEXT: ld	a0, 48(sp)                      # 8-byte Folded Reload
+# RV64-NEXT: ld	a1, 40(sp)                      # 8-byte Folded Reload
+# RV64-NEXT: ld	ra, 56(sp)                      # 8-byte Folded Reload
+# RV64-NEXT: addi	sp, sp, 64
+# RV64-NEXT: addi	sp, sp, -16
+# RV64-NEXT: sd	a0, 0(sp)
+# RV64-NEXT: sd	a1, 8(sp)
+# RV64-NEXT: ld	a0, 16(sp)
+# RV64-NEXT: add	a1, sp, a0
+# RV64-NEXT: ld	a0, 0(sp)
+# RV64-NEXT: sd	a0, 0(a1)
+# RV64-NEXT: ld	a0, 8(sp)
+# RV64-NEXT: sd	a0, 8(a1)
+# RV64-NEXT: mv	sp, a1
+# RV64-NEXT: ld	a0, 0(sp)
+# RV64-NEXT: ld	a1, 8(sp)
+# RV64-NEXT: addi	sp, sp, 16
+# RV64-NEXT: ret
+# RV64-NEXT: .Lfunc_end0:

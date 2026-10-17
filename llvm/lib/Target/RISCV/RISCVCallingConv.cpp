@@ -13,6 +13,7 @@
 #include "RISCVCallingConv.h"
 #include "RISCVMachineFunctionInfo.h"
 #include "RISCVSubtarget.h"
+#include "RISCVZttUtils.h"
 #include "llvm/IR/DataLayout.h"
 #include "llvm/MC/MCRegister.h"
 
@@ -661,6 +662,55 @@ static bool CC_RISCV_Impl(unsigned ValNo, MVT ValVT, MVT LocVT,
         StackAlign = MaybeAlign(LocVT.getScalarSizeInBits() / 8).valueOrOne();
       }
     }
+  } else if (ValVT.SimpleTy >= MVT::riscv_ztta1 &&
+             ValVT.SimpleTy <= MVT::riscv_ztta8) {
+    static const MCPhysReg ZTTAccArgRegs[] = {
+        RISCV::ZTTA0, RISCV::ZTTA1, RISCV::ZTTA2, RISCV::ZTTA3,
+        RISCV::ZTTA4, RISCV::ZTTA5, RISCV::ZTTA6, RISCV::ZTTA7};
+    static const MCPhysReg ZTTAccArgRegsM2[] = {RISCV::ZTTA0M2, RISCV::ZTTA2M2,
+                                                RISCV::ZTTA4M2, RISCV::ZTTA6M2};
+    static const MCPhysReg ZTTAccArgRegsM4[] = {RISCV::ZTTA0M4, RISCV::ZTTA4M4};
+    static const MCPhysReg ZTTAccArgRegsM8[] = {RISCV::ZTTA0M8};
+    unsigned GroupSize = 1U << (ValVT.SimpleTy - unsigned(MVT::riscv_ztta1));
+    if (GroupSize == 2)
+      Reg = State.AllocateReg(ZTTAccArgRegsM2);
+    else if (GroupSize == 4)
+      Reg = State.AllocateReg(ZTTAccArgRegsM4);
+    else if (GroupSize == 8)
+      Reg = State.AllocateReg(ZTTAccArgRegsM8);
+    else
+      Reg = State.AllocateReg(ZTTAccArgRegs);
+    LocVT = ValVT;
+  } else if (isZttMatrixVT(ValVT)) {
+    static const MCPhysReg ZTTArgRegs[] = {
+        RISCV::ZTTM0, RISCV::ZTTM1, RISCV::ZTTM2, RISCV::ZTTM3,
+        RISCV::ZTTM4, RISCV::ZTTM5, RISCV::ZTTM6, RISCV::ZTTM7};
+    static const MCPhysReg ZTTArgRegsM2[] = {RISCV::ZTTM0M2, RISCV::ZTTM2M2,
+                                             RISCV::ZTTM4M2, RISCV::ZTTM6M2};
+    static const MCPhysReg ZTTArgRegsM4[] = {RISCV::ZTTM0M4, RISCV::ZTTM4M4};
+    static const MCPhysReg ZTTArgRegsM8[] = {RISCV::ZTTM0M8};
+    static const MCPhysReg ZTTArgRegsM16[] = {RISCV::ZTTM0M16};
+    static const MCPhysReg ZTTArgRegsM32[] = {RISCV::ZTTM0M32};
+    unsigned LogicalBits = getZttMatrixLogicalBits(ValVT);
+    unsigned UdsBits = Subtarget.getZttUdsBits();
+    if (UdsBits)
+      if (LogicalBits < UdsBits)
+        report_fatal_error("Ztt half-register M types are not supported");
+    unsigned GroupSize =
+        UdsBits ? getZttMRegisterGroupSize(LogicalBits, UdsBits) : 1;
+    if (GroupSize == 2)
+      Reg = State.AllocateReg(ZTTArgRegsM2);
+    else if (GroupSize == 4)
+      Reg = State.AllocateReg(ZTTArgRegsM4);
+    else if (GroupSize == 8)
+      Reg = State.AllocateReg(ZTTArgRegsM8);
+    else if (GroupSize == 16)
+      Reg = State.AllocateReg(ZTTArgRegsM16);
+    else if (GroupSize == 32)
+      Reg = State.AllocateReg(ZTTArgRegsM32);
+    else
+      Reg = State.AllocateReg(ZTTArgRegs);
+    LocVT = ValVT;
   } else {
     Reg = State.AllocateReg(ArgGPRs);
   }
@@ -689,6 +739,9 @@ static bool CC_RISCV_Impl(unsigned ValNo, MVT ValVT, MVT LocVT,
   }
 
   assert(((LocVT.isFloatingPoint() && !LocVT.isVector()) || LocVT == XLenVT ||
+          isZttMatrixVT(ValVT) ||
+          (ValVT.SimpleTy >= MVT::riscv_ztta1 &&
+           ValVT.SimpleTy <= MVT::riscv_ztta8) ||
           Subtarget.isPExtPackedType(LocVT) ||
           (TLI.getSubtarget().hasVInstructions() &&
            (LocVT.isVector() || LocVT.isRISCVVectorTuple()))) &&

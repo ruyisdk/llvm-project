@@ -30,6 +30,7 @@
 #include "clang/Sema/Ownership.h"
 #include "clang/Sema/SemaHLSL.h"
 #include "clang/Sema/SemaObjC.h"
+#include "clang/Sema/SemaRISCV.h"
 #include "llvm/ADT/APInt.h"
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/PointerIntPair.h"
@@ -6721,6 +6722,12 @@ void InitializationSequence::InitializeFrom(Sema &S,
     return;
   }
 
+  if (DestType->isRISCVZttBuiltinType() &&
+      !S.RISCV().isValidRISCVZttInitialization(Entity, Kind, Args)) {
+    SetFailed(FK_ConversionFailed);
+    return;
+  }
+
   // Almost everything is a normal sequence.
   setSequenceKind(NormalSequence);
 
@@ -9280,6 +9287,12 @@ bool InitializationSequence::Diagnose(Sema &S,
     break;
 
   case FK_ConversionFailed: {
+    if (DestType->isRISCVZttBuiltinType() &&
+        !S.RISCV().isValidRISCVZttInitialization(Entity, Kind, Args)) {
+      S.Diag(Kind.getLocation(), diag::err_riscv_ztt_invalid_initialization)
+          << DestType;
+      break;
+    }
     QualType FromType = OnlyArg->getType();
     // __amdgpu_feature_predicate_t can be explicitly cast to the logical op
     // type, although this is almost always an error and we advise against it.

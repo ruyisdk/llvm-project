@@ -232,6 +232,13 @@ private:
   bool doPeepholeNoRegPassThru();
   bool selectImm64IfCheaper(int64_t Imm, int64_t OrigImm, SDValue N,
                             SDValue &Val);
+
+  // Select Ztt pseudos from the source/result register groups.
+  bool selectZttOperandLayout(SDNode *Node);
+  void selectZttSlice(SDNode *Node, unsigned Operation, unsigned NumSources,
+                      bool HasChain, bool SameGroups, StringRef Name,
+                      bool HasOldDestination = false);
+  void selectZttMatmul(SDNode *Node, unsigned Operation, StringRef Name);
 };
 
 class RISCVDAGToDAGISelLegacy : public SelectionDAGISelLegacy {

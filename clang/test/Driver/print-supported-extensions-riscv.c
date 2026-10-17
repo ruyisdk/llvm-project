@@ -78,6 +78,7 @@
 // CHECK-NEXT:     zksh                 1.0       'Zksh' (ShangMi Suite: SM3 Hash Function Instructions)
 // CHECK-NEXT:     zkt                  1.0       'Zkt' (Data Independent Execution Latency)
 // CHECK-NEXT:     ztso                 1.0       'Ztso' (Memory Model - Total Store Order)
+// CHECK-NEXT:     ztt                  0.6       'Ztt' (Ztt matrix extension)
 // CHECK-NEXT:     zvbb                 1.0       'Zvbb' (Vector basic bit-manipulation instructions)
 // CHECK-NEXT:     zvbc                 1.0       'Zvbc' (Vector Carryless Multiplication)
 // CHECK-NEXT:     zve32f               1.0       'Zve32f' (Vector Extensions for Embedded Processors with maximal 32 EEW and F extension)

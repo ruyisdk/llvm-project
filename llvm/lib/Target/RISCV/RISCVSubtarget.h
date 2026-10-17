@@ -28,8 +28,10 @@
 #include "llvm/IR/DataLayout.h"
 #include "llvm/Support/Compiler.h"
 #include "llvm/Target/TargetMachine.h"
+#include "llvm/TargetParser/RISCVZttProfile.h"
 #include <bitset>
 #include <memory>
+#include <optional>
 
 #define GET_RISCV_MACRO_FUSION_PRED_DECL
 #include "RISCVGenMacroFusion.inc"
@@ -116,6 +118,8 @@ private:
   std::bitset<RISCV::NUM_TARGET_REGS> UserReservedRegister;
   const RISCVTuneInfoTable::RISCVTuneInfo *TuneInfo;
 
+  std::optional<RISCV::ZttProfile> ZttConfig;
+
   RISCVFrameLowering FrameLowering;
   RISCVInstrInfo InstrInfo;
   RISCVTargetLowering TLInfo;
@@ -132,7 +136,8 @@ public:
   // Initializes the data members to match that of the specified triple.
   RISCVSubtarget(const Triple &TT, StringRef CPU, StringRef TuneCPU,
                  StringRef FS, StringRef ABIName, unsigned RVVVectorBitsMin,
-                 unsigned RVVVectorLMULMax, const TargetMachine &TM);
+                 unsigned RVVVectorLMULMax, const TargetMachine &TM,
+                 std::optional<RISCV::ZttProfile> ZttConfig = std::nullopt);
 
   ~RISCVSubtarget() override;
 
@@ -459,6 +464,24 @@ public:
 
   void overridePostRASchedPolicy(MachineSchedPolicy &Policy,
                                  const SchedRegion &Region) const override;
+
+  /// Non-Ztt and default subtargets may have no function profile.
+  const std::optional<RISCV::ZttProfile> &getZttProfile() const {
+    return ZttConfig;
+  }
+  /// Resource queries require a profile validated by getSubtargetImpl().
+  unsigned getZttUdsBits() const {
+    assert(ZttConfig && "Ztt resource query requires a profile");
+    return ZttConfig->UdsBits;
+  }
+  unsigned getZttMRegs() const {
+    assert(ZttConfig && "Ztt resource query requires a profile");
+    return ZttConfig->MRegs;
+  }
+  unsigned getZttARegs() const {
+    assert(ZttConfig && "Ztt resource query requires a profile");
+    return ZttConfig->ARegs;
+  }
 };
 } // namespace llvm
 

@@ -1,0 +1,44 @@
+# RUN: split-file %s %t
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u32-m16-a4/g' %t/packed.mir > %t.ztt-profile-0.mir
+# RUN: not llc -mtriple=riscv32 -mattr=+m,+ztt -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-0.mir -o /dev/null 2>&1 | FileCheck %s --check-prefix=PACKED
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u32-m16-a4/g' %t/packed.mir > %t.ztt-profile-1.mir
+# RUN: not llc -mtriple=riscv64 -mattr=+m,+ztt -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-1.mir -o /dev/null 2>&1 | FileCheck %s --check-prefix=PACKED
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u32-m16-a4/g' %t/unknown.mir > %t.ztt-profile-2.mir
+# RUN: not llc -mtriple=riscv32 -mattr=+m,+ztt -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-2.mir -o /dev/null 2>&1 | FileCheck %s --check-prefix=UNKNOWN
+# RUN: sed 's/ZTT_PROFILE/clang-runtime-u32-m16-a4/g' %t/unknown.mir > %t.ztt-profile-3.mir
+# RUN: not llc -mtriple=riscv64 -mattr=+m,+ztt -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %t.ztt-profile-3.mir -o /dev/null 2>&1 | FileCheck %s --check-prefix=UNKNOWN
+# A sub-batch packed ACC type stays legal; only an actual spill is rejected.
+
+# PACKED: LLVM ERROR: Ztt ACC spill requires a complete transfer group
+#--- packed.mir
+--- |
+  define void @unsupported() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+...
+---
+name: unsupported
+tracksRegLiveness: true
+stack:
+  - { id: 0, size: 8, alignment: 4 }
+body: |
+  bb.0:
+    liveins: $ztta0
+    PseudoZTTASpillA1 $ztta0, %stack.0, 16
+    PseudoRET
+...
+
+# UNKNOWN: LLVM ERROR: Ztt ACC spill borrowed M layout is unknown
+#--- unknown.mir
+--- |
+  define void @unsupported() nounwind "riscv-ztt-profile"="ZTT_PROFILE" { ret void }
+...
+---
+name: unsupported
+tracksRegLiveness: true
+stack:
+  - { id: 0, size: 8, alignment: 4 }
+body: |
+  bb.0:
+    liveins: $ztta0m2, $zttm0m16
+    PseudoZTTASpillA2 $ztta0m2, %stack.0, 32
+    PseudoRET implicit $zttm0m16
+...

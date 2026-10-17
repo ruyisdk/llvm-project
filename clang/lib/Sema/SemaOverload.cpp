@@ -36,6 +36,7 @@
 #include "clang/Sema/SemaCUDA.h"
 #include "clang/Sema/SemaInternal.h"
 #include "clang/Sema/SemaObjC.h"
+#include "clang/Sema/SemaRISCV.h"
 #include "clang/Sema/Template.h"
 #include "clang/Sema/TemplateDeduction.h"
 #include "llvm/ADT/DenseSet.h"
@@ -2530,10 +2531,18 @@ static bool IsStandardConversion(Sema &S, Expr* From, QualType ToType,
   bool IncompatibleObjC = false;
   ImplicitConversionKind SecondICK = ICK_Identity;
   ImplicitConversionKind DimensionICK = ICK_Identity;
+  bool IsRISCVZttScalarConversion = FromType->isRISCVZttScalarBuiltinType() ||
+                                   ToType->isRISCVZttScalarBuiltinType();
+  if (IsRISCVZttScalarConversion &&
+      !S.RISCV().isValidRISCVZttScalarConversion(FromType, ToType))
+    return false;
   if (S.Context.hasSameUnqualifiedType(FromType, ToType)) {
     // The unqualified versions of the types are the same: there's no
     // conversion to do.
     SCS.Second = ICK_Identity;
+  } else if (IsRISCVZttScalarConversion) {
+    SCS.Second = ICK_Compatible_Conversion;
+    FromType = ToType.getUnqualifiedType();
   } else if (S.IsIntegralPromotion(From, FromType, ToType)) {
     // Integral promotion (C++ 4.5).
     SCS.Second = ICK_Integral_Promotion;

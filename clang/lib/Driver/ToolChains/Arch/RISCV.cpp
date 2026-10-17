@@ -17,6 +17,7 @@
 #include "llvm/TargetParser/Host.h"
 #include "llvm/TargetParser/RISCVISAInfo.h"
 #include "llvm/TargetParser/RISCVTargetParser.h"
+#include "llvm/TargetParser/RISCVZttProfile.h"
 
 using namespace clang::driver;
 using namespace clang::driver::tools;
@@ -217,6 +218,22 @@ void riscv::getRISCVTargetFeatures(const Driver &D, const llvm::Triple &Triple,
   // which may override the defaults.
   handleTargetFeaturesGroup(D, Triple, Args, Features,
                             options::OPT_m_riscv_Features_Group);
+
+  // Validate and consume the profile for both compilation and assembly jobs.
+  // It configures matrix resources, so it adds no ISA features.
+  if (Arg *A = Args.getLastArg(options::OPT_riscv_mztt_profile_EQ)) {
+    auto Profile = llvm::RISCV::ZttProfile::parse(A->getValue());
+    if (!Profile) {
+      D.Diag(diag::err_invalid_feature_combination)
+          << llvm::toString(Profile.takeError());
+      return;
+    }
+    if (!llvm::is_contained(Features, "+ztt")) {
+      D.Diag(diag::err_invalid_feature_combination)
+          << "-mztt-profile requires the Ztt extension";
+      return;
+    }
+  }
 }
 
 StringRef riscv::getRISCVABI(const ArgList &Args, const llvm::Triple &Triple) {

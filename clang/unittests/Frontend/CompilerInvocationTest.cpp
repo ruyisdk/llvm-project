@@ -1187,4 +1187,44 @@ TEST_F(CommandLineTest, WarningSuppressionMappings) {
   Invocation.generateCC1CommandLine(GeneratedArgs, *this);
   EXPECT_THAT(GeneratedArgs, Contains(StrEq(Args[0])));
 }
+
+TEST_F(CommandLineTest, RISCVZttProfileRoundTrip) {
+  const char *Args[] = {"-triple",
+                       "riscv64",
+                       "-round-trip-args",
+                       "-target-feature",
+                       "+ztt-profile=clang-n128-u32-m16-a4",
+                       "-target-feature",
+                       "+ztt-profile=clang-runtime-u16-m32-a2"};
+  ASSERT_TRUE(CompilerInvocation::CreateFromArgs(Invocation, Args, *Diags));
+  ASSERT_EQ(Invocation.getTargetOpts().FeaturesAsWritten.size(), 2U);
+  EXPECT_EQ(Invocation.getTargetOpts().FeaturesAsWritten.back(),
+            "+ztt-profile=clang-runtime-u16-m32-a2");
+  Invocation.generateCC1CommandLine(GeneratedArgs, *this);
+  EXPECT_THAT(GeneratedArgs,
+              ContainsN(StrEq("+ztt-profile=clang-runtime-u16-m32-a2"), 1));
+  EXPECT_THAT(GeneratedArgs,
+              ContainsN(StrEq("+ztt-profile=clang-n128-u32-m16-a4"), 1));
+}
+
+TEST_F(CommandLineTest, RISCVZttProfilePreservesEmptyValue) {
+  // The target interprets the string. An empty option must survive the
+  // invocation round trip so it can be diagnosed, rather than becoming absent.
+  const char *Args[] = {"-triple", "riscv64", "-round-trip-args",
+                       "-target-feature", "+ztt-profile="};
+  ASSERT_TRUE(CompilerInvocation::CreateFromArgs(Invocation, Args, *Diags));
+  ASSERT_EQ(Invocation.getTargetOpts().FeaturesAsWritten.size(), 1U);
+  EXPECT_EQ(Invocation.getTargetOpts().FeaturesAsWritten.front(), "+ztt-profile=");
+  Invocation.generateCC1CommandLine(GeneratedArgs, *this);
+  EXPECT_THAT(GeneratedArgs, ContainsN(StrEq("+ztt-profile="), 1));
+}
+
+TEST_F(CommandLineTest, RISCVZttProfileAbsent) {
+  const char *Args[] = {"-triple", "riscv64", "-round-trip-args"};
+  ASSERT_TRUE(CompilerInvocation::CreateFromArgs(Invocation, Args, *Diags));
+  EXPECT_TRUE(Invocation.getTargetOpts().FeaturesAsWritten.empty());
+  Invocation.generateCC1CommandLine(GeneratedArgs, *this);
+  EXPECT_THAT(GeneratedArgs, Not(Contains(StartsWith("+ztt-profile="))));
+}
+
 } // anonymous namespace

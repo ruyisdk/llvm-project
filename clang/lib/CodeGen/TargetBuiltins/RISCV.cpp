@@ -11,10 +11,12 @@
 //===----------------------------------------------------------------------===//
 
 #include "CodeGenFunction.h"
+#include "clang/Basic/RISCVZttBuiltins.h"
 #include "clang/Basic/TargetBuiltins.h"
 #include "llvm/IR/IntrinsicsRISCV.h"
 #include "llvm/TargetParser/RISCVISAInfo.h"
 #include "llvm/TargetParser/RISCVTargetParser.h"
+#include "llvm/TargetParser/RISCVZttDatatype.h"
 
 using namespace clang;
 using namespace CodeGen;
@@ -1076,6 +1078,130 @@ Value *CodeGenFunction::EmitRISCVCpuIs(StringRef CPUStr) {
   return Result;
 }
 
+namespace {
+enum class RISCVZttCodeGenKind { Slice, Matmul, Transfer, Memory, State };
+
+struct RISCVZttCodeGenInfo {
+  Intrinsic::ID ID;
+  RISCVZttCodeGenKind CodeGenKind;
+};
+
+static constexpr RISCVZttCodeGenInfo RISCVZttCodeGenTable[] = {
+#define GET_RISCV_ZTT_CODEGEN_TABLE
+#include "clang/Basic/riscv_ztt_builtins.inc"
+#undef GET_RISCV_ZTT_CODEGEN_TABLE
+};
+
+// Encode the element datatype, including rounding and saturation.
+static uint32_t getRISCVZttDatatype(ASTContext &Context, QualType Ty) {
+  QualType Element;
+  unsigned Bits, Options;
+  const auto *BT = Ty->castAs<BuiltinType>();
+  if (Ty->isRISCVZttScalarBuiltinType()) {
+    auto Info = Context.getBuiltinRISCVZttScalarTypeInfo(BT);
+    Element = Info.ValueType;
+    Bits = Info.ElementBits;
+    Options = Info.DatatypeOptions;
+  } else {
+    auto Info = Context.getBuiltinRISCVZttTypeInfo(BT);
+    Element = Info.ElementType;
+    Bits = Info.ElementBits;
+    Options = Info.DatatypeOptions;
+  }
+  if (Element->isIntegerType())
+    return RISCVZtt::integerType(Bits, Element->isSignedIntegerType(), Options);
+  unsigned ExponentBits;
+  if (Element->isFloat16Type())
+    ExponentBits = 5;
+  else if (Element->isBFloat16Type() ||
+           Element->isSpecificBuiltinType(BuiltinType::Float))
+    ExponentBits = 8;
+  else {
+    assert(Element->isSpecificBuiltinType(BuiltinType::Double) &&
+           "unsupported RISC-V Ztt floating datatype");
+    ExponentBits = 11;
+  }
+  return RISCVZtt::floatingType(Bits, ExponentBits, Options);
+}
+
+// Pass scalar bits in an XLEN integer, without sign extension or FP conversion.
+static Value *emitRISCVZttScalarPayload(CodeGenFunction &CGF, Value *Carrier,
+                                        QualType Ty) {
+  auto Info = CGF.getContext().getBuiltinRISCVZttScalarTypeInfo(
+      Ty->castAs<BuiltinType>());
+  llvm::Type *BitsTy = CGF.Builder.getIntNTy(Info.ElementBits);
+  auto *Bits = CGF.Builder.CreateBitCast(Carrier, BitsTy);
+  return CGF.Builder.CreateZExt(Bits, CGF.SizeTy);
+}
+
+static Value *emitRISCVZttBuiltinExpr(CodeGenFunction &CGF, unsigned BuiltinID,
+                                      const CallExpr *E) {
+  auto &Builder = CGF.Builder;
+  ASTContext &Context = CGF.getContext();
+  const auto *Builtin = clang::RISCV::getRISCVZttBuiltinInfo(BuiltinID);
+  assert(Builtin && "expected RISC-V Ztt builtin");
+  const auto &Info =
+      RISCVZttCodeGenTable[static_cast<unsigned>(Builtin->Operation)];
+
+  // Raw builtins have a final result-type marker; public aliases do not.
+  bool HasMarker =
+      Builtin->ResultKind != clang::RISCV::RISCVZttResultKind::NonMatrix &&
+      !E->getDirectCallee()->hasAttr<BuiltinAliasAttr>();
+  unsigned NumArgs = E->getNumArgs() - unsigned(HasMarker);
+  unsigned ICEArguments = Info.ID == Intrinsic::riscv_ztt_mextract ? 1 << 1 : 0;
+  SmallVector<Value *, 8> Ops;
+  for (unsigned I = 0; I != NumArgs; ++I)
+    Ops.push_back(CGF.EmitScalarOrConstFoldImmArg(ICEArguments, I, E));
+
+  QualType ScalarTy;
+  if (NumArgs && (Info.CodeGenKind == RISCVZttCodeGenKind::Slice ||
+                 Info.CodeGenKind == RISCVZttCodeGenKind::Transfer)) {
+    QualType LastTy = E->getArg(NumArgs - 1)->getType();
+    if (LastTy->isRISCVZttScalarBuiltinType()) {
+      ScalarTy = LastTy;
+      Ops.back() = emitRISCVZttScalarPayload(CGF, Ops.back(), ScalarTy);
+    } else if (LastTy->isIntegerType()) {
+      // Controls are converted by Sema to size_t, int or long.
+      Ops.back() = Builder.CreateIntCast(Ops.back(), CGF.SizeTy,
+                                        LastTy->isSignedIntegerType());
+    }
+  }
+
+  if (Info.CodeGenKind != RISCVZttCodeGenKind::State) {
+    QualType MatrixTy = E->getType();
+    if (Info.CodeGenKind == RISCVZttCodeGenKind::Memory &&
+        MatrixTy->isVoidType())
+      MatrixTy = E->getArg(NumArgs - 1)->getType();
+    if (Info.CodeGenKind == RISCVZttCodeGenKind::Matmul) {
+      // The ACC already has its datatype; shape comes from the first M input.
+      MatrixTy = E->getArg(1)->getType();
+    } else {
+      Ops.push_back(Builder.getInt32(getRISCVZttDatatype(Context, MatrixTy)));
+      if (!ScalarTy.isNull())
+        Ops.push_back(Builder.getInt32(getRISCVZttDatatype(Context, ScalarTy)));
+    }
+    if (Info.ID == Intrinsic::riscv_ztt_mconcat_m)
+      MatrixTy = E->getArg(0)->getType();
+    auto MatrixInfo = Context.getBuiltinRISCVZttTypeInfo(
+        MatrixTy->castAs<BuiltinType>());
+    Ops.push_back(Builder.getInt32(MatrixInfo.getLogicalSquareCount()));
+  }
+
+  // Read overload types from the LLVM intrinsic signature.
+  SmallVector<llvm::Type *, 8> ArgTypes;
+  for (Value *Op : Ops)
+    ArgTypes.push_back(Op->getType());
+  llvm::Type *ResultTy =
+      E->getType()->isVoidType() ? CGF.VoidTy : CGF.ConvertType(E->getType());
+  auto *FT = llvm::FunctionType::get(ResultTy, ArgTypes, false);
+  SmallVector<llvm::Type *, 4> OverloadTypes;
+  bool Valid = Intrinsic::isSignatureValid(Info.ID, FT, OverloadTypes);
+  assert(Valid && "invalid RISC-V Ztt intrinsic signature");
+  (void)Valid;
+  return Builder.CreateCall(CGF.CGM.getIntrinsic(Info.ID, OverloadTypes), Ops);
+}
+} // namespace
+
 Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
                                              const CallExpr *E,
                                              ReturnValueSlot ReturnValue) {
@@ -1086,6 +1212,10 @@ Value *CodeGenFunction::EmitRISCVBuiltinExpr(unsigned BuiltinID,
     return EmitRISCVCpuInit();
   if (BuiltinID == Builtin::BI__builtin_cpu_is)
     return EmitRISCVCpuIs(E);
+
+  if (BuiltinID >= clang::RISCV::FirstRISCVZttBuiltin &&
+      BuiltinID < clang::RISCV::LastTSBuiltin)
+    return emitRISCVZttBuiltinExpr(*this, BuiltinID, E);
 
   SmallVector<Value *, 4> Ops;
   llvm::Type *ResultType = ConvertType(E->getType());

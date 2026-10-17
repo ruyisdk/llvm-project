@@ -193,6 +193,9 @@ bool RISCVABIInfo::detectFPCCEligibleStructHelper(QualType Ty, CharUnits CurOff,
                                                   CharUnits &Field1Off,
                                                   llvm::Type *&Field2Ty,
                                                   CharUnits &Field2Off) const {
+  if (Ty->isRISCVZttScalarBuiltinType())
+    Ty = getContext().getBuiltinRISCVZttScalarTypeInfo(Ty->castAs<BuiltinType>())
+             .ValueType;
   bool IsInt = Ty->isIntegralOrEnumerationType();
   bool IsFloat = Ty->isRealFloatingType();
 
@@ -715,6 +718,11 @@ ABIArgInfo RISCVABIInfo::classifyArgumentType(QualType Ty, bool IsFixed,
   assert(ArgGPRsLeft <= NumArgGPRs && "Arg GPR tracking underflow");
   Ty = useFirstFieldIfTransparentUnion(Ty);
 
+  // Ztt scalars use the ABI of their corresponding C value type.
+  if (Ty->isRISCVZttScalarBuiltinType())
+    Ty = getContext().getBuiltinRISCVZttScalarTypeInfo(Ty->castAs<BuiltinType>())
+             .ValueType;
+
   // Structures with either a non-trivial destructor or a non-trivial
   // copy constructor are always passed indirectly.
   if (CGCXXABI::RecordArgABI RAA = getRecordArgABI(Ty, getCXXABI())) {
@@ -1103,6 +1111,7 @@ public:
 
   void setTargetAttributes(const Decl *D, llvm::GlobalValue *GV,
                            CodeGen::CodeGenModule &CGM) const override {
+    setZttProfile(D, GV, CGM);
     const auto *FD = dyn_cast_or_null<FunctionDecl>(D);
     if (!FD) return;
 
@@ -1154,6 +1163,31 @@ public:
     }
 
     Fn->addFnAttr("interrupt", Kind);
+  }
+
+private:
+  // Also cover compiler-generated functions without a FunctionDecl. Functions
+  // that explicitly disable Ztt must not inherit the translation unit's profile.
+  void setZttProfile(const Decl *D, llvm::GlobalValue *GV,
+                     CodeGenModule &CGM) const {
+    auto *Fn = dyn_cast<llvm::Function>(GV);
+    if (!Fn)
+      return;
+
+    // Target initialization has already validated the last profile option.
+    for (StringRef Feature :
+         llvm::reverse(CGM.getTarget().getTargetOpts().FeaturesAsWritten)) {
+      if (!Feature.consume_front("+ztt-profile="))
+        continue;
+      llvm::StringMap<bool> Features;
+      CGM.getContext().getFunctionFeatureMap(
+          Features, dyn_cast_or_null<FunctionDecl>(D));
+      if (Features.lookup("ztt"))
+        Fn->addFnAttr("riscv-ztt-profile", Feature);
+      else
+        Fn->removeFnAttr("riscv-ztt-profile");
+      return;
+    }
   }
 };
 } // namespace

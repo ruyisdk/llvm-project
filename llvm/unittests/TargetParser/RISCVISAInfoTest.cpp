@@ -20,6 +20,22 @@ bool operator==(const RISCVISAUtils::ExtensionVersion &A,
   return A.Major == B.Major && A.Minor == B.Minor;
 }
 
+TEST(ParseArchString, ZttExtension) {
+  for (StringRef Arch : {"rv32i_ztt", "rv64i_ztt", "rv32i_ztt0p6",
+                         "rv64i_ztt0p6"}) {
+    auto ISA = RISCVISAInfo::parseArchString(Arch, false);
+    ASSERT_THAT_EXPECTED(ISA, Succeeded());
+    const auto &Version = (*ISA)->getExtensions().at("ztt");
+    EXPECT_EQ(Version.Major, 0U);
+    EXPECT_EQ(Version.Minor, 6U);
+    auto Normalized =
+        RISCVISAInfo::parseNormalizedArchString((*ISA)->toString());
+    ASSERT_THAT_EXPECTED(Normalized, Succeeded());
+    EXPECT_EQ((*Normalized)->toString(), (*ISA)->toString());
+  }
+  EXPECT_EQ(RISCVISAInfo::getTargetFeatureForExtension("ztt0p6"), "ztt");
+}
+
 TEST(ParseNormalizedArchString, RejectsInvalidChars) {
   for (StringRef Input : {"RV32", "rV64", "rv32i2P0", "rv64i2p0_A2p0",
                           "rv32e2.0", "rva20u64+zbc"}) {
@@ -1504,6 +1520,7 @@ R"(All available -march extensions for RISC-V
     zksh                 1.0
     zkt                  1.0
     ztso                 1.0
+    ztt                  0.6
     zvbb                 1.0
     zvbc                 1.0
     zve32f               1.0

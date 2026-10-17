@@ -14674,6 +14674,13 @@ void Sema::ActOnUninitializedDecl(Decl *RealDecl) {
       Var->setInvalidDecl();
       return;
     }
+    if (!Var->isInvalidDecl() && Type->isRISCVZttBuiltinType() &&
+        Var->isThisDeclarationADefinition() != VarDecl::DeclarationOnly) {
+      Diag(Var->getLocation(), diag::err_riscv_ztt_invalid_initialization)
+          << Type;
+      Var->setInvalidDecl();
+      return;
+    }
     // C++1z [dcl.dcl]p1 grammar implies that an initializer is mandatory.
     if (isa<DecompositionDecl>(RealDecl)) {
       // Point the caret to the token immediately after the closing bracket if

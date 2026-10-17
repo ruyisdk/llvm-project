@@ -16396,6 +16396,10 @@ GCCTypeClass EvaluateBuiltinClassifyType(QualType T,
 #include "clang/Basic/HLSLIntangibleTypes.def"
 #define SPIRV_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
 #include "clang/Basic/SPIRVTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttScalarTypes.def"
       return GCCTypeClass::None;
 
     case BuiltinType::Dependent:
@@ -20004,6 +20008,12 @@ bool IntExprEvaluator::VisitCastExpr(const CastExpr *E) {
   QualType DestType = E->getType();
   QualType SrcType = SubExpr->getType();
 
+  // Keep RISC-V Ztt scalar values in their own evaluator when converting to C.
+  if (SrcType->isRISCVZttScalarBuiltinType()) {
+    assert(E->getCastKind() == CK_NoOp && "unexpected RISC-V Ztt scalar cast");
+    return Evaluate(Result, Info, SubExpr);
+  }
+
   switch (E->getCastKind()) {
   case CK_BaseToDerived:
   case CK_DerivedToBase:
@@ -20769,6 +20779,16 @@ bool FloatExprEvaluator::VisitFloatingLiteral(const FloatingLiteral *E) {
 
 bool FloatExprEvaluator::VisitCastExpr(const CastExpr *E) {
   const Expr* SubExpr = E->getSubExpr();
+
+  // Keep RISC-V Ztt scalar values in their own evaluator when converting to C.
+  if (SubExpr->getType()->isRISCVZttScalarBuiltinType()) {
+    assert(E->getCastKind() == CK_NoOp && "unexpected RISC-V Ztt scalar cast");
+    APValue Value;
+    if (!Evaluate(Value, Info, SubExpr))
+      return false;
+    Result = Value.getFloat();
+    return true;
+  }
 
   switch (E->getCastKind()) {
   default:
@@ -21701,6 +21721,42 @@ static bool EvaluateVoid(const Expr *E, EvalInfo &Info) {
   return VoidExprEvaluator(Info).Visit(E);
 }
 
+namespace {
+// RISC-V Ztt scalars hold C values but do not support ordinary arithmetic.
+class RISCVZttScalarExprEvaluator
+    : public ExprEvaluatorBase<RISCVZttScalarExprEvaluator> {
+  APValue &Result;
+
+public:
+  RISCVZttScalarExprEvaluator(EvalInfo &Info, APValue &Result)
+      : ExprEvaluatorBaseTy(Info), Result(Result) {}
+
+  bool Success(const APValue &Value, const Expr *) {
+    Result = Value;
+    return true;
+  }
+
+  bool ZeroInitialization(const Expr *E) {
+    QualType T = Info.Ctx.getBuiltinRISCVZttScalarTypeInfo(
+                             E->getType()->castAs<BuiltinType>())
+                     .ValueType;
+    if (T->isRealFloatingType())
+      Result = APValue(APFloat::getZero(Info.Ctx.getFloatTypeSemantics(T)));
+    else
+      Result = APValue(Info.Ctx.MakeIntValue(0, T));
+    return true;
+  }
+
+  bool VisitCastExpr(const CastExpr *E) {
+    // C-to-scalar conversions preserve the value; evaluate the C expression
+    // with its own evaluator.
+    if (E->getCastKind() == CK_NoOp)
+      return Evaluate(Result, Info, E->getSubExpr());
+    return ExprEvaluatorBaseTy::VisitCastExpr(E);
+  }
+};
+} // namespace
+
 //===----------------------------------------------------------------------===//
 // Top level Expr::EvaluateAsRValue method.
 //===----------------------------------------------------------------------===//
@@ -21780,6 +21836,9 @@ static bool Evaluate(APValue &Result, EvalInfo &Info, const Expr *E) {
       if (!EvaluateAtomic(E, nullptr, Result, Info))
         return false;
     }
+  } else if (T->isRISCVZttScalarBuiltinType()) {
+    if (!RISCVZttScalarExprEvaluator(Info, Result).Visit(E))
+      return false;
   } else if (Info.getLangOpts().CPlusPlus11) {
     Info.FFDiag(E, diag::note_constexpr_nonliteral) << E->getType();
     return false;
