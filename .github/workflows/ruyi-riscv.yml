@@ -1,0 +1,45 @@
+name: Ruyi RISC-V
+
+on:
+  pull_request:
+    branches: [AME]
+  push:
+    branches: [AME]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riscv-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    if: github.repository == 'ruyisdk/llvm-project'
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Build
+        run: |
+          cmake -G Ninja -S llvm -B build \
+            -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_ASSERTIONS=ON \
+            -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
+            -DLLVM_ENABLE_PROJECTS=clang -DLLVM_TARGETS_TO_BUILD=RISCV \
+            -DLLVM_PARALLEL_LINK_JOBS=1 \
+            -DCLANG_ENABLE_STATIC_ANALYZER=OFF -DCLANG_ENABLE_ARCMT=OFF
+          cmake --build build --parallel 3 --target \
+            clang clang-resource-headers clang-tblgen llc opt llvm-mc \
+            llvm-objdump llvm-otool llvm-readobj llvm-readelf \
+            llvm-dwarfdump llvm-mca llvm-size llvm-nm llvm-as llvm-dis \
+            llvm-config FileCheck count not split-file yaml2obj obj2yaml
+      - name: RISC-V tests
+        run: |
+          build/bin/llvm-lit -v -j 4 \
+            llvm/test/CodeGen/RISCV llvm/test/MC/RISCV \
+            clang/test/CodeGen/RISCV clang/test/Sema/RISCV
