@@ -16,9 +16,112 @@
 ; RUN: llc -mtriple=riscv32 -verify-machineinstrs %t/packed-roundtrip/input.ll -o - | FileCheck %t/packed-roundtrip/input.ll
 ; RUN: llc -mtriple=riscv64 -verify-machineinstrs %t/packed-roundtrip/input.ll -o - | FileCheck %t/packed-roundtrip/input.ll
 ; RUN: llc -mtriple=riscv64 -verify-machineinstrs %t/uds128/input.ll -o - | FileCheck %t/uds128/input.ll
+; RUN: llc -mtriple=riscv32 -verify-machineinstrs %t/wide-cross/input.ll -o - | FileCheck %t/wide-cross/input.ll
+; RUN: llc -mtriple=riscv64 -verify-machineinstrs %t/wide-cross/input.ll -o - | FileCheck %t/wide-cross/input.ll
 
 ; Sections keep distinct IR/MIR inputs and their original check prefixes.
 ; Positive assembly checks and negative contracts remain independently runnable.
+
+;--- wide-cross/input.ll
+; UDS8 gives i64 squares eight M registers and i128 squares sixteen.
+; Round trips cover A2/M16, A2/M32 and A4/M32 in both directions.
+declare target("riscv.ztt.m.i64", i64, 64, 1, 2) @llvm.riscv.ztt.mzero.m.i64x2(i32, i32)
+declare target("riscv.ztt.acc.i64", i64, 64, 2) @llvm.riscv.ztt.mcopy.m2a.i64x2(target("riscv.ztt.m.i64", i64, 64, 1, 2), i32, i32)
+declare target("riscv.ztt.m.i64", i64, 64, 1, 2) @llvm.riscv.ztt.mcopy.a2m.i64x2(target("riscv.ztt.acc.i64", i64, 64, 2), i32, i32)
+
+define target("riscv.ztt.m.i64", i64, 64, 1, 2) @wide_a2_m16() #0 {
+; CHECK-LABEL: wide_a2_m16:
+; CHECK-NEXT:  # %bb.0:
+; CHECK-NEXT:    lui a0, 262144
+; CHECK-NEXT:    addi a0, a0, 64
+; CHECK-NEXT:    msettyp m0, a0
+; CHECK-NEXT:    msettyp m8, a0
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    mzero.2d.m m8
+; CHECK-NEXT:    asettyp acc0, a0
+; CHECK-NEXT:    mmov.a.m acc0, m0
+; CHECK-NEXT:    asettyp acc1, a0
+; CHECK-NEXT:    mmov.a.m acc1, m8
+; CHECK-NEXT:    msettyp m0, a0
+; CHECK-NEXT:    mmov.m.a m0, acc0
+; CHECK-NEXT:    msettyp m8, a0
+; CHECK-NEXT:    mmov.m.a m8, acc1
+; CHECK-NEXT:    ret
+  %m = call target("riscv.ztt.m.i64", i64, 64, 1, 2) @llvm.riscv.ztt.mzero.m.i64x2(i32 1073741888, i32 2)
+  %a = call target("riscv.ztt.acc.i64", i64, 64, 2) @llvm.riscv.ztt.mcopy.m2a.i64x2(target("riscv.ztt.m.i64", i64, 64, 1, 2) %m, i32 1073741888, i32 2)
+  %r = call target("riscv.ztt.m.i64", i64, 64, 1, 2) @llvm.riscv.ztt.mcopy.a2m.i64x2(target("riscv.ztt.acc.i64", i64, 64, 2) %a, i32 1073741888, i32 2)
+  ret target("riscv.ztt.m.i64", i64, 64, 1, 2) %r
+}
+
+declare target("riscv.ztt.m.i128", i128, 128, 1, 2) @llvm.riscv.ztt.mzero.m.i128x2(i32, i32)
+declare target("riscv.ztt.acc.i128", i128, 128, 2) @llvm.riscv.ztt.mcopy.m2a.i128x2(target("riscv.ztt.m.i128", i128, 128, 1, 2), i32, i32)
+declare target("riscv.ztt.m.i128", i128, 128, 1, 2) @llvm.riscv.ztt.mcopy.a2m.i128x2(target("riscv.ztt.acc.i128", i128, 128, 2), i32, i32)
+
+define target("riscv.ztt.m.i128", i128, 128, 1, 2) @wide_a2_m32() #0 {
+; CHECK-LABEL: wide_a2_m32:
+; CHECK-NEXT:  # %bb.0:
+; CHECK-NEXT:    lui a0, 262144
+; CHECK-NEXT:    addi a0, a0, 128
+; CHECK-NEXT:    msettyp m0, a0
+; CHECK-NEXT:    msettyp m16, a0
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    mzero.2d.m m16
+; CHECK-NEXT:    asettyp acc0, a0
+; CHECK-NEXT:    mmov.a.m acc0, m0
+; CHECK-NEXT:    asettyp acc1, a0
+; CHECK-NEXT:    mmov.a.m acc1, m16
+; CHECK-NEXT:    msettyp m0, a0
+; CHECK-NEXT:    mmov.m.a m0, acc0
+; CHECK-NEXT:    msettyp m16, a0
+; CHECK-NEXT:    mmov.m.a m16, acc1
+; CHECK-NEXT:    ret
+  %m = call target("riscv.ztt.m.i128", i128, 128, 1, 2) @llvm.riscv.ztt.mzero.m.i128x2(i32 1073741952, i32 2)
+  %a = call target("riscv.ztt.acc.i128", i128, 128, 2) @llvm.riscv.ztt.mcopy.m2a.i128x2(target("riscv.ztt.m.i128", i128, 128, 1, 2) %m, i32 1073741952, i32 2)
+  %r = call target("riscv.ztt.m.i128", i128, 128, 1, 2) @llvm.riscv.ztt.mcopy.a2m.i128x2(target("riscv.ztt.acc.i128", i128, 128, 2) %a, i32 1073741952, i32 2)
+  ret target("riscv.ztt.m.i128", i128, 128, 1, 2) %r
+}
+
+declare target("riscv.ztt.m.i64", i64, 64, 1, 4) @llvm.riscv.ztt.mzero.m.i64x4(i32, i32)
+declare target("riscv.ztt.acc.i64", i64, 64, 4) @llvm.riscv.ztt.mcopy.m2a.i64x4(target("riscv.ztt.m.i64", i64, 64, 1, 4), i32, i32)
+declare target("riscv.ztt.m.i64", i64, 64, 1, 4) @llvm.riscv.ztt.mcopy.a2m.i64x4(target("riscv.ztt.acc.i64", i64, 64, 4), i32, i32)
+
+define target("riscv.ztt.m.i64", i64, 64, 1, 4) @wide_a4_m32() #0 {
+; CHECK-LABEL: wide_a4_m32:
+; CHECK-NEXT:  # %bb.0:
+; CHECK-NEXT:    lui a0, 262144
+; CHECK-NEXT:    addi a0, a0, 64
+; CHECK-NEXT:    msettyp m0, a0
+; CHECK-NEXT:    msettyp m8, a0
+; CHECK-NEXT:    msettyp m16, a0
+; CHECK-NEXT:    msettyp m24, a0
+; CHECK-NEXT:    mzero.2d.m m0
+; CHECK-NEXT:    mzero.2d.m m8
+; CHECK-NEXT:    mzero.2d.m m16
+; CHECK-NEXT:    mzero.2d.m m24
+; CHECK-NEXT:    asettyp acc0, a0
+; CHECK-NEXT:    mmov.a.m acc0, m0
+; CHECK-NEXT:    asettyp acc1, a0
+; CHECK-NEXT:    mmov.a.m acc1, m8
+; CHECK-NEXT:    asettyp acc2, a0
+; CHECK-NEXT:    mmov.a.m acc2, m16
+; CHECK-NEXT:    asettyp acc3, a0
+; CHECK-NEXT:    mmov.a.m acc3, m24
+; CHECK-NEXT:    msettyp m0, a0
+; CHECK-NEXT:    mmov.m.a m0, acc0
+; CHECK-NEXT:    msettyp m8, a0
+; CHECK-NEXT:    mmov.m.a m8, acc1
+; CHECK-NEXT:    msettyp m16, a0
+; CHECK-NEXT:    mmov.m.a m16, acc2
+; CHECK-NEXT:    msettyp m24, a0
+; CHECK-NEXT:    mmov.m.a m24, acc3
+; CHECK-NEXT:    ret
+  %m = call target("riscv.ztt.m.i64", i64, 64, 1, 4) @llvm.riscv.ztt.mzero.m.i64x4(i32 1073741888, i32 4)
+  %a = call target("riscv.ztt.acc.i64", i64, 64, 4) @llvm.riscv.ztt.mcopy.m2a.i64x4(target("riscv.ztt.m.i64", i64, 64, 1, 4) %m, i32 1073741888, i32 4)
+  %r = call target("riscv.ztt.m.i64", i64, 64, 1, 4) @llvm.riscv.ztt.mcopy.a2m.i64x4(target("riscv.ztt.acc.i64", i64, 64, 4) %a, i32 1073741888, i32 4)
+  ret target("riscv.ztt.m.i64", i64, 64, 1, 4) %r
+}
+
+attributes #0 = { nounwind "target-features"="+ztt" "riscv-ztt-profile"="clang-runtime-u8-m32-a16" }
 
 ;--- m/input.ll
 declare target("riscv.ztt.m.i4", i4, 4, 1, 2)

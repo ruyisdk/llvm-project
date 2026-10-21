@@ -268,22 +268,21 @@ foreach Op = !listconcat(!instances<RISCVZttCopyM2A>(),
   def : ZttIntrinsicLowering<Info>;
   def "ztt_" # Op.Name : RVSDNode<Node, SDT_ZttMCopyCross>;
   foreach A = ZttAGroupSizes in
-    foreach M = ZttMGroupSizes in
-      if !or(!eq(A, 1), !le(M, !mul(A, 4))) then {
-        defvar ARC = ZttARegClass<A>.RC;
-        defvar MRC = ZttMRegClass<M>.RC;
-        defvar Name = Prefix # "_A" # A # "_M" # M;
-        def Name : ZttRegisterPseudo<
-            !if(Info.IsAcc, (outs ARC:$rd), (outs MRC:$rd)),
-            !con(!if(Info.IsAcc, (ins MRC:$src), (ins ARC:$src)),
-                 (ins ztt_xlenimm:$mregs_per_square,
-                      ztt_xlenimm:$accs_per_move, GPR:$dtype)), 1>;
-        def : ZttGroupMapping<Info, !if(Info.IsAcc, A, M),
-                                   !if(Info.IsAcc, M, A)> {
-          let Pseudo = !cast<Instruction>(Name);
-          let DAGOpcode = Info.DAGOpcode;
-        }
+    foreach M = ZttMGroupSizes in {
+      defvar ARC = ZttARegClass<A>.RC;
+      defvar MRC = ZttMRegClass<M>.RC;
+      defvar Name = Prefix # "_A" # A # "_M" # M;
+      def Name : ZttRegisterPseudo<
+          !if(Info.IsAcc, (outs ARC:$rd), (outs MRC:$rd)),
+          !con(!if(Info.IsAcc, (ins MRC:$src), (ins ARC:$src)),
+               (ins ztt_xlenimm:$mregs_per_square,
+                    ztt_xlenimm:$accs_per_move, GPR:$dtype)), 1>;
+      def : ZttGroupMapping<Info, !if(Info.IsAcc, A, M),
+                                 !if(Info.IsAcc, M, A)> {
+        let Pseudo = !cast<Instruction>(Name);
+        let DAGOpcode = Info.DAGOpcode;
       }
+    }
 }
 
 // Source, constant half index, datatype, move count and registers per square.

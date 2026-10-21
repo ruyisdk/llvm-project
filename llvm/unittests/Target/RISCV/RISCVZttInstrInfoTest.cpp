@@ -197,10 +197,10 @@ constexpr TransferOperation TransferOperations[] = {
      5},
     {Intrinsic::riscv_ztt_mcopy_m2a, MCOPY_M2A, OperandLayout::CrossCopy, true,
      RISCVISD::ZTT_MCOPY_M2A, "PseudoZTTMCopyM2A", "RISCVISD::ZTT_MCOPY_M2A",
-     21},
+     24},
     {Intrinsic::riscv_ztt_mcopy_a2m, MCOPY_A2M, OperandLayout::CrossCopy, false,
      RISCVISD::ZTT_MCOPY_A2M, "PseudoZTTMCopyA2M", "RISCVISD::ZTT_MCOPY_A2M",
-     21},
+     24},
     {Intrinsic::riscv_ztt_mextract, MEXTRACT, OperandLayout::Extract, false,
      RISCVISD::ZTT_MEXTRACT, "PseudoZTTMextract", "RISCVISD::ZTT_MEXTRACT",
      36}};
@@ -285,7 +285,7 @@ TEST(RISCVZttInstrInfo, TransferGroups) {
           unsigned M = Expected.IsAcc ? S : D;
           bool Valid = !Concat || D >= 2;
           if (Cross)
-            Valid = A <= 8 && (A == 1 || M <= A * 4);
+            Valid = A <= 8;
           EXPECT_EQ(P != nullptr, Valid);
           if (!P || !Valid)
             continue;
