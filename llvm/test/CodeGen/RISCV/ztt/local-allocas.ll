@@ -256,5 +256,76 @@ define void @no_ztt() #1 {
   ret void
 }
 
+; Repeated promotion removes p = &a, q = p, and pp = &q before the matrix.
+define void @matrix_pointer_chain(ptr %out) #0 {
+; CHECK-LABEL: matrix_pointer_chain:
+; CHECK-NEXT: # %bb.0:                                # %entry
+; CHECK-NEXT: lui a1, 262144
+; CHECK-NEXT: addi a1, a1, 16
+; CHECK-NEXT: msettyp m0, a1
+; CHECK-NEXT: mzero.2d.m m0
+; CHECK-NEXT: li a1, 0
+; CHECK-NEXT: mss.rm m0, a0
+; CHECK-NEXT: ret
+; IR-LABEL: define void @matrix_pointer_chain(
+; IR-NEXT: entry:
+; IR-NEXT: %v = call target("riscv.ztt.m.i16", i16, 16, 1, 2) @llvm.riscv.ztt.mzero.m
+; IR-NEXT: call void @llvm.riscv.ztt.mss.rm{{.*}}(ptr %out, target("riscv.ztt.m.i16", i16, 16, 1, 2) %v,
+; IR-NEXT: ret void
+; IR-NEXT: }
+entry:
+  %a = alloca target("riscv.ztt.m.i16", i16, 16, 1, 2), align 2
+  %p = alloca ptr, align 8
+  %q = alloca ptr, align 8
+  %pp = alloca ptr, align 8
+  %v = call target("riscv.ztt.m.i16", i16, 16, 1, 2) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i16_i16_16_1_2t(i32 1073741840, i32 2)
+  store target("riscv.ztt.m.i16", i16, 16, 1, 2) %v, ptr %a, align 2
+  store ptr %a, ptr %p, align 8
+  %copy = load ptr, ptr %p, align 8
+  store ptr %copy, ptr %q, align 8
+  store ptr %q, ptr %pp, align 8
+  %qaddr = load ptr, ptr %pp, align 8
+  %address = load ptr, ptr %qaddr, align 8
+  %r = load target("riscv.ztt.m.i16", i16, 16, 1, 2), ptr %address, align 2
+  call void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i16_i16_16_1_2t(ptr %out, target("riscv.ztt.m.i16", i16, 16, 1, 2) %r, i32 1073741840, i32 2)
+  ret void
+}
+
+define void @acc_reference(ptr %out) #0 {
+; CHECK-LABEL: acc_reference:
+; CHECK-NEXT: # %bb.0:                                # %entry
+; CHECK-NEXT: lui a1, 262144
+; CHECK-NEXT: addi a1, a1, 32
+; CHECK-NEXT: asettyp acc0, a1
+; CHECK-NEXT: mzero.2d.acc acc0
+; CHECK-NEXT: msettyp m0, a1
+; CHECK-NEXT: mmov.m.a m0, acc0
+; CHECK-NEXT: li a1, 0
+; CHECK-NEXT: mss.rm m0, a0
+; CHECK-NEXT: ret
+; IR-LABEL: define void @acc_reference(
+; IR-NEXT: entry:
+; IR-NEXT: %v = call target("riscv.ztt.acc.i32", i32, 32, 1) @llvm.riscv.ztt.mzero.acc
+; IR-NEXT: %m = call target("riscv.ztt.m.i32", i32, 32, 1, 1) @llvm.riscv.ztt.mcopy.a2m{{.*}}(target("riscv.ztt.acc.i32", i32, 32, 1) %v,
+; IR-NEXT: call void @llvm.riscv.ztt.mss.rm{{.*}}(ptr %out, target("riscv.ztt.m.i32", i32, 32, 1, 1) %m,
+; IR-NEXT: ret void
+; IR-NEXT: }
+entry:
+  %a = alloca target("riscv.ztt.acc.i32", i32, 32, 1), align 4
+  %ref = alloca ptr, align 8
+  %v = call target("riscv.ztt.acc.i32", i32, 32, 1) @llvm.riscv.ztt.mzero.acc.triscv.ztt.acc.i32_i32_32_1t(i32 1073741856, i32 1)
+  store target("riscv.ztt.acc.i32", i32, 32, 1) %v, ptr %a, align 4
+  store ptr %a, ptr %ref, align 8
+  %address = load ptr, ptr %ref, align 8
+  %r = load target("riscv.ztt.acc.i32", i32, 32, 1), ptr %address, align 4
+  %m = call target("riscv.ztt.m.i32", i32, 32, 1, 1) @llvm.riscv.ztt.mcopy.a2m.triscv.ztt.m.i32_i32_32_1_1t.triscv.ztt.acc.i32_i32_32_1t(target("riscv.ztt.acc.i32", i32, 32, 1) %r, i32 1073741856, i32 1)
+  call void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i32_i32_32_1_1t(ptr %out, target("riscv.ztt.m.i32", i32, 32, 1, 1) %m, i32 1073741856, i32 1)
+  ret void
+}
+
+declare target("riscv.ztt.acc.i32", i32, 32, 1) @llvm.riscv.ztt.mzero.acc.triscv.ztt.acc.i32_i32_32_1t(i32 immarg, i32 immarg)
+declare target("riscv.ztt.m.i32", i32, 32, 1, 1) @llvm.riscv.ztt.mcopy.a2m.triscv.ztt.m.i32_i32_32_1_1t.triscv.ztt.acc.i32_i32_32_1t(target("riscv.ztt.acc.i32", i32, 32, 1), i32 immarg, i32 immarg)
+declare void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i32_i32_32_1_1t(ptr, target("riscv.ztt.m.i32", i32, 32, 1, 1), i32 immarg, i32 immarg)
+
 attributes #0 = { noinline nounwind optnone "target-features"="+m,+ztt" "riscv-ztt-profile"="clang-runtime-u32-m16-a4" }
 attributes #1 = { noinline nounwind optnone "target-features"="-zttuds32b,-zttm16,-ztta4,-ztt" }

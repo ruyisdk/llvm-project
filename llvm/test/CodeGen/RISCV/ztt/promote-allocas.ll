@@ -64,6 +64,71 @@ entry:
   ret i32 %r
 }
 
+; C local pointers and C++ references both store the matrix address in a slot.
+; An unrelated pointer local in the same function must remain at optnone.
+define void @matrix_pointer(ptr %p) #0 {
+; CHECK-LABEL: define void @matrix_pointer(
+; CHECK-NEXT: entry:
+; CHECK-NEXT: %out = alloca ptr, align 8
+; CHECK-NEXT: store ptr %p, ptr %out, align 8
+; CHECK-NEXT: %v = call target("riscv.ztt.m.i16", i16, 16, 1, 2) @llvm.riscv.ztt.mzero.m
+; CHECK-NEXT: %base = load ptr, ptr %out, align 8
+; CHECK-NEXT: call void @llvm.riscv.ztt.mss.rm{{.*}}(ptr %base, target("riscv.ztt.m.i16", i16, 16, 1, 2) %v,
+; CHECK-NEXT: ret void
+; CHECK-NEXT: }
+entry:
+  %a = alloca target("riscv.ztt.m.i16", i16, 16, 1, 2), align 2
+  %alias = alloca ptr, align 8
+  %out = alloca ptr, align 8
+  store ptr %p, ptr %out, align 8
+  %v = call target("riscv.ztt.m.i16", i16, 16, 1, 2) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i16_i16_16_1_2t(i32 1073741840, i32 2)
+  store target("riscv.ztt.m.i16", i16, 16, 1, 2) %v, ptr %a, align 2
+  store ptr %a, ptr %alias, align 8
+  %address = load ptr, ptr %alias, align 8
+  %r = load target("riscv.ztt.m.i16", i16, 16, 1, 2), ptr %address, align 2
+  %base = load ptr, ptr %out, align 8
+  call void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i16_i16_16_1_2t(ptr %base, target("riscv.ztt.m.i16", i16, 16, 1, 2) %r, i32 1073741840, i32 2)
+  ret void
+}
+
+; Keep volatile pointer accesses and escaping matrix storage untouched.
+define void @volatile_pointer() #0 {
+; CHECK-LABEL: define void @volatile_pointer(
+; CHECK-NEXT: entry:
+; CHECK-NEXT: %a = alloca target("riscv.ztt.m.i16", i16, 16, 1, 2), align 2
+; CHECK-NEXT: %alias = alloca ptr, align 8
+; CHECK-NEXT: store volatile ptr %a, ptr %alias, align 8
+; CHECK-NEXT: %address = load volatile ptr, ptr %alias, align 8
+; CHECK-NEXT: call void @escape(ptr %address)
+; CHECK-NEXT: ret void
+; CHECK-NEXT: }
+entry:
+  %a = alloca target("riscv.ztt.m.i16", i16, 16, 1, 2), align 2
+  %alias = alloca ptr, align 8
+  store volatile ptr %a, ptr %alias, align 8
+  %address = load volatile ptr, ptr %alias, align 8
+  call void @escape(ptr %address)
+  ret void
+}
+
+define void @escaping_pointer() #0 {
+; CHECK-LABEL: define void @escaping_pointer(
+; CHECK-NEXT: entry:
+; CHECK-NEXT: %a = alloca target("riscv.ztt.m.i16", i16, 16, 1, 2), align 2
+; CHECK-NEXT: %alias = alloca ptr, align 8
+; CHECK-NEXT: store ptr %a, ptr %alias, align 8
+; CHECK-NEXT: call void @escape(ptr %alias)
+; CHECK-NEXT: ret void
+; CHECK-NEXT: }
+entry:
+  %a = alloca target("riscv.ztt.m.i16", i16, 16, 1, 2), align 2
+  %alias = alloca ptr, align 8
+  store ptr %a, ptr %alias, align 8
+  call void @escape(ptr %alias)
+  ret void
+}
+
+declare void @escape(ptr)
 declare target("riscv.ztt.m.i16", i16, 16, 1, 2) @llvm.riscv.ztt.mzero.m.triscv.ztt.m.i16_i16_16_1_2t(i32 immarg, i32 immarg)
 declare void @llvm.riscv.ztt.mss.rm.triscv.ztt.m.i16_i16_16_1_2t(ptr, target("riscv.ztt.m.i16", i16, 16, 1, 2), i32 immarg, i32 immarg)
 declare target("riscv.ztt.acc.i32", i32, 32, 1) @llvm.riscv.ztt.mzero.acc.triscv.ztt.acc.i32_i32_32_1t(i32 immarg, i32 immarg)

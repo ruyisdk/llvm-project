@@ -59,6 +59,33 @@ void prvalue_operands(int *out) {
 // CHECK: call {{.*}}@llvm.riscv.ztt.mcopy.a2m
 // CHECK: call void @llvm.riscv.ztt.mss.rm
 // CHECK: ret void
+
+#ifdef __cplusplus
+extern "C"
+#endif
+void local_aliases(int *out, const int *in) {
+  __riscv_ztt_i32_1x1_t m = __riscv_ztt_mls_rm_i32_1x1(in);
+  __riscv_ztt_i32_accx1_t a = __riscv_ztt_mcopy_m2a_i32_accx1(m);
+#ifdef __cplusplus
+  const __riscv_ztt_i32_1x1_t &mr = m;
+  const __riscv_ztt_i32_accx1_t &ar = a;
+  __riscv_ztt_mss_rm(out, mr);
+  __riscv_ztt_mss_rm(out, __riscv_ztt_mcopy_a2m_i32_1x1(ar));
+#else
+  const __riscv_ztt_i32_1x1_t *mp = &m;
+  const __riscv_ztt_i32_accx1_t *ap = &a;
+  __riscv_ztt_mss_rm(out, *mp);
+  __riscv_ztt_mss_rm(out, __riscv_ztt_mcopy_a2m_i32_1x1(*ap));
+#endif
+}
+
+// CHECK-LABEL: define{{.*}} @local_aliases(
+// CHECK: call {{.*}}@llvm.riscv.ztt.mls.rm
+// CHECK: call {{.*}}@llvm.riscv.ztt.mcopy.m2a
+// CHECK: call void @llvm.riscv.ztt.mss.rm
+// CHECK: call {{.*}}@llvm.riscv.ztt.mcopy.a2m
+// CHECK: call void @llvm.riscv.ztt.mss.rm
+// CHECK: ret void
 #else
 // Preserve five simultaneously live matrix values through C-to-IR emission.
 // Physical spilling and frame code are tested in LLVM's spill.ll.
