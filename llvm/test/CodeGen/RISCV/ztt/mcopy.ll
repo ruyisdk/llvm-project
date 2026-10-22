@@ -18,9 +18,286 @@
 ; RUN: llc -mtriple=riscv64 -verify-machineinstrs %t/uds128/input.ll -o - | FileCheck %t/uds128/input.ll
 ; RUN: llc -mtriple=riscv32 -verify-machineinstrs %t/wide-cross/input.ll -o - | FileCheck %t/wide-cross/input.ll
 ; RUN: llc -mtriple=riscv64 -verify-machineinstrs %t/wide-cross/input.ll -o - | FileCheck %t/wide-cross/input.ll
+; RUN: llc -mtriple=riscv32 -verify-machineinstrs %t/acc16/input.ll -o - | FileCheck %t/acc16/input.ll
+; RUN: llc -mtriple=riscv64 -verify-machineinstrs %t/acc16/input.ll -o - | FileCheck %t/acc16/input.ll
 
 ; Sections keep distinct IR/MIR inputs and their original check prefixes.
 ; Positive assembly checks and negative contracts remain independently runnable.
+
+;--- acc16/input.ll
+; Round trips cover wide, standard and packed M layouts. ACC always uses
+; acc0-acc15. Packed moves set all Ad entries before writing their payload.
+
+declare target("riscv.ztt.acc.i16", i16, 16, 16) @llvm.riscv.ztt.mcopy.m2a.i16_uds8(target("riscv.ztt.m.i16", i16, 16, 1, 16), i32, i32)
+declare target("riscv.ztt.m.i16", i16, 16, 1, 16) @llvm.riscv.ztt.mcopy.a2m.i16_uds8(target("riscv.ztt.acc.i16", i16, 16, 16), i32, i32)
+define target("riscv.ztt.m.i16", i16, 16, 1, 16) @roundtrip_acc16_i16_uds8(target("riscv.ztt.m.i16", i16, 16, 1, 16) %src) nounwind "target-features"="+ztt" "riscv-ztt-profile"="clang-runtime-u8-m32-a16" {
+; CHECK-LABEL: roundtrip_acc16_i16_uds8:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    lui a0, 262144
+; CHECK-NEXT:    addi a0, a0, 16
+; CHECK-NEXT:    asettyp acc0, a0
+; CHECK-NEXT:    mmov.a.m acc0, m0
+; CHECK-NEXT:    asettyp acc1, a0
+; CHECK-NEXT:    mmov.a.m acc1, m2
+; CHECK-NEXT:    asettyp acc2, a0
+; CHECK-NEXT:    mmov.a.m acc2, m4
+; CHECK-NEXT:    asettyp acc3, a0
+; CHECK-NEXT:    mmov.a.m acc3, m6
+; CHECK-NEXT:    asettyp acc4, a0
+; CHECK-NEXT:    mmov.a.m acc4, m8
+; CHECK-NEXT:    asettyp acc5, a0
+; CHECK-NEXT:    mmov.a.m acc5, m10
+; CHECK-NEXT:    asettyp acc6, a0
+; CHECK-NEXT:    mmov.a.m acc6, m12
+; CHECK-NEXT:    asettyp acc7, a0
+; CHECK-NEXT:    mmov.a.m acc7, m14
+; CHECK-NEXT:    asettyp acc8, a0
+; CHECK-NEXT:    mmov.a.m acc8, m16
+; CHECK-NEXT:    asettyp acc9, a0
+; CHECK-NEXT:    mmov.a.m acc9, m18
+; CHECK-NEXT:    asettyp acc10, a0
+; CHECK-NEXT:    mmov.a.m acc10, m20
+; CHECK-NEXT:    asettyp acc11, a0
+; CHECK-NEXT:    mmov.a.m acc11, m22
+; CHECK-NEXT:    asettyp acc12, a0
+; CHECK-NEXT:    mmov.a.m acc12, m24
+; CHECK-NEXT:    asettyp acc13, a0
+; CHECK-NEXT:    mmov.a.m acc13, m26
+; CHECK-NEXT:    asettyp acc14, a0
+; CHECK-NEXT:    mmov.a.m acc14, m28
+; CHECK-NEXT:    asettyp acc15, a0
+; CHECK-NEXT:    mmov.a.m acc15, m30
+; CHECK-NEXT:    msettyp m0, a0
+; CHECK-NEXT:    mmov.m.a m0, acc0
+; CHECK-NEXT:    msettyp m2, a0
+; CHECK-NEXT:    mmov.m.a m2, acc1
+; CHECK-NEXT:    msettyp m4, a0
+; CHECK-NEXT:    mmov.m.a m4, acc2
+; CHECK-NEXT:    msettyp m6, a0
+; CHECK-NEXT:    mmov.m.a m6, acc3
+; CHECK-NEXT:    msettyp m8, a0
+; CHECK-NEXT:    mmov.m.a m8, acc4
+; CHECK-NEXT:    msettyp m10, a0
+; CHECK-NEXT:    mmov.m.a m10, acc5
+; CHECK-NEXT:    msettyp m12, a0
+; CHECK-NEXT:    mmov.m.a m12, acc6
+; CHECK-NEXT:    msettyp m14, a0
+; CHECK-NEXT:    mmov.m.a m14, acc7
+; CHECK-NEXT:    msettyp m16, a0
+; CHECK-NEXT:    mmov.m.a m16, acc8
+; CHECK-NEXT:    msettyp m18, a0
+; CHECK-NEXT:    mmov.m.a m18, acc9
+; CHECK-NEXT:    msettyp m20, a0
+; CHECK-NEXT:    mmov.m.a m20, acc10
+; CHECK-NEXT:    msettyp m22, a0
+; CHECK-NEXT:    mmov.m.a m22, acc11
+; CHECK-NEXT:    msettyp m24, a0
+; CHECK-NEXT:    mmov.m.a m24, acc12
+; CHECK-NEXT:    msettyp m26, a0
+; CHECK-NEXT:    mmov.m.a m26, acc13
+; CHECK-NEXT:    msettyp m28, a0
+; CHECK-NEXT:    mmov.m.a m28, acc14
+; CHECK-NEXT:    msettyp m30, a0
+; CHECK-NEXT:    mmov.m.a m30, acc15
+; CHECK-NEXT:    ret
+  %acc = call target("riscv.ztt.acc.i16", i16, 16, 16) @llvm.riscv.ztt.mcopy.m2a.i16_uds8(target("riscv.ztt.m.i16", i16, 16, 1, 16) %src, i32 1073741840, i32 16)
+  %r = call target("riscv.ztt.m.i16", i16, 16, 1, 16) @llvm.riscv.ztt.mcopy.a2m.i16_uds8(target("riscv.ztt.acc.i16", i16, 16, 16) %acc, i32 1073741840, i32 16)
+  ret target("riscv.ztt.m.i16", i16, 16, 1, 16) %r
+}
+
+declare target("riscv.ztt.acc.i16", i16, 16, 16) @llvm.riscv.ztt.mcopy.m2a.i16_uds16(target("riscv.ztt.m.i16", i16, 16, 1, 16), i32, i32)
+declare target("riscv.ztt.m.i16", i16, 16, 1, 16) @llvm.riscv.ztt.mcopy.a2m.i16_uds16(target("riscv.ztt.acc.i16", i16, 16, 16), i32, i32)
+define target("riscv.ztt.m.i16", i16, 16, 1, 16) @roundtrip_acc16_i16_uds16(target("riscv.ztt.m.i16", i16, 16, 1, 16) %src) nounwind "target-features"="+ztt" "riscv-ztt-profile"="clang-runtime-u16-m32-a16" {
+; CHECK-LABEL: roundtrip_acc16_i16_uds16:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    lui a0, 262144
+; CHECK-NEXT:    addi a0, a0, 16
+; CHECK-NEXT:    asettyp acc0, a0
+; CHECK-NEXT:    mmov.a.m acc0, m0
+; CHECK-NEXT:    asettyp acc1, a0
+; CHECK-NEXT:    mmov.a.m acc1, m1
+; CHECK-NEXT:    asettyp acc2, a0
+; CHECK-NEXT:    mmov.a.m acc2, m2
+; CHECK-NEXT:    asettyp acc3, a0
+; CHECK-NEXT:    mmov.a.m acc3, m3
+; CHECK-NEXT:    asettyp acc4, a0
+; CHECK-NEXT:    mmov.a.m acc4, m4
+; CHECK-NEXT:    asettyp acc5, a0
+; CHECK-NEXT:    mmov.a.m acc5, m5
+; CHECK-NEXT:    asettyp acc6, a0
+; CHECK-NEXT:    mmov.a.m acc6, m6
+; CHECK-NEXT:    asettyp acc7, a0
+; CHECK-NEXT:    mmov.a.m acc7, m7
+; CHECK-NEXT:    asettyp acc8, a0
+; CHECK-NEXT:    mmov.a.m acc8, m8
+; CHECK-NEXT:    asettyp acc9, a0
+; CHECK-NEXT:    mmov.a.m acc9, m9
+; CHECK-NEXT:    asettyp acc10, a0
+; CHECK-NEXT:    mmov.a.m acc10, m10
+; CHECK-NEXT:    asettyp acc11, a0
+; CHECK-NEXT:    mmov.a.m acc11, m11
+; CHECK-NEXT:    asettyp acc12, a0
+; CHECK-NEXT:    mmov.a.m acc12, m12
+; CHECK-NEXT:    asettyp acc13, a0
+; CHECK-NEXT:    mmov.a.m acc13, m13
+; CHECK-NEXT:    asettyp acc14, a0
+; CHECK-NEXT:    mmov.a.m acc14, m14
+; CHECK-NEXT:    asettyp acc15, a0
+; CHECK-NEXT:    mmov.a.m acc15, m15
+; CHECK-NEXT:    msettyp m0, a0
+; CHECK-NEXT:    mmov.m.a m0, acc0
+; CHECK-NEXT:    msettyp m1, a0
+; CHECK-NEXT:    mmov.m.a m1, acc1
+; CHECK-NEXT:    msettyp m2, a0
+; CHECK-NEXT:    mmov.m.a m2, acc2
+; CHECK-NEXT:    msettyp m3, a0
+; CHECK-NEXT:    mmov.m.a m3, acc3
+; CHECK-NEXT:    msettyp m4, a0
+; CHECK-NEXT:    mmov.m.a m4, acc4
+; CHECK-NEXT:    msettyp m5, a0
+; CHECK-NEXT:    mmov.m.a m5, acc5
+; CHECK-NEXT:    msettyp m6, a0
+; CHECK-NEXT:    mmov.m.a m6, acc6
+; CHECK-NEXT:    msettyp m7, a0
+; CHECK-NEXT:    mmov.m.a m7, acc7
+; CHECK-NEXT:    msettyp m8, a0
+; CHECK-NEXT:    mmov.m.a m8, acc8
+; CHECK-NEXT:    msettyp m9, a0
+; CHECK-NEXT:    mmov.m.a m9, acc9
+; CHECK-NEXT:    msettyp m10, a0
+; CHECK-NEXT:    mmov.m.a m10, acc10
+; CHECK-NEXT:    msettyp m11, a0
+; CHECK-NEXT:    mmov.m.a m11, acc11
+; CHECK-NEXT:    msettyp m12, a0
+; CHECK-NEXT:    mmov.m.a m12, acc12
+; CHECK-NEXT:    msettyp m13, a0
+; CHECK-NEXT:    mmov.m.a m13, acc13
+; CHECK-NEXT:    msettyp m14, a0
+; CHECK-NEXT:    mmov.m.a m14, acc14
+; CHECK-NEXT:    msettyp m15, a0
+; CHECK-NEXT:    mmov.m.a m15, acc15
+; CHECK-NEXT:    ret
+  %acc = call target("riscv.ztt.acc.i16", i16, 16, 16) @llvm.riscv.ztt.mcopy.m2a.i16_uds16(target("riscv.ztt.m.i16", i16, 16, 1, 16) %src, i32 1073741840, i32 16)
+  %r = call target("riscv.ztt.m.i16", i16, 16, 1, 16) @llvm.riscv.ztt.mcopy.a2m.i16_uds16(target("riscv.ztt.acc.i16", i16, 16, 16) %acc, i32 1073741840, i32 16)
+  ret target("riscv.ztt.m.i16", i16, 16, 1, 16) %r
+}
+
+declare target("riscv.ztt.acc.i16", i16, 16, 16) @llvm.riscv.ztt.mcopy.m2a.i16_uds32(target("riscv.ztt.m.i16", i16, 16, 1, 16), i32, i32)
+declare target("riscv.ztt.m.i16", i16, 16, 1, 16) @llvm.riscv.ztt.mcopy.a2m.i16_uds32(target("riscv.ztt.acc.i16", i16, 16, 16), i32, i32)
+define target("riscv.ztt.m.i16", i16, 16, 1, 16) @roundtrip_acc16_i16_uds32(target("riscv.ztt.m.i16", i16, 16, 1, 16) %src) nounwind "target-features"="+ztt" "riscv-ztt-profile"="clang-runtime-u32-m32-a16" {
+; CHECK-LABEL: roundtrip_acc16_i16_uds32:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    lui a0, 262144
+; CHECK-NEXT:    addi a0, a0, 16
+; CHECK-NEXT:    asettyp acc0, a0
+; CHECK-NEXT:    asettyp acc1, a0
+; CHECK-NEXT:    mmov.a.m acc0, m0
+; CHECK-NEXT:    asettyp acc2, a0
+; CHECK-NEXT:    asettyp acc3, a0
+; CHECK-NEXT:    mmov.a.m acc2, m1
+; CHECK-NEXT:    asettyp acc4, a0
+; CHECK-NEXT:    asettyp acc5, a0
+; CHECK-NEXT:    mmov.a.m acc4, m2
+; CHECK-NEXT:    asettyp acc6, a0
+; CHECK-NEXT:    asettyp acc7, a0
+; CHECK-NEXT:    mmov.a.m acc6, m3
+; CHECK-NEXT:    asettyp acc8, a0
+; CHECK-NEXT:    asettyp acc9, a0
+; CHECK-NEXT:    mmov.a.m acc8, m4
+; CHECK-NEXT:    asettyp acc10, a0
+; CHECK-NEXT:    asettyp acc11, a0
+; CHECK-NEXT:    mmov.a.m acc10, m5
+; CHECK-NEXT:    asettyp acc12, a0
+; CHECK-NEXT:    asettyp acc13, a0
+; CHECK-NEXT:    mmov.a.m acc12, m6
+; CHECK-NEXT:    asettyp acc14, a0
+; CHECK-NEXT:    asettyp acc15, a0
+; CHECK-NEXT:    mmov.a.m acc14, m7
+; CHECK-NEXT:    msettyp m0, a0
+; CHECK-NEXT:    mmov.m.a m0, acc0
+; CHECK-NEXT:    msettyp m1, a0
+; CHECK-NEXT:    mmov.m.a m1, acc2
+; CHECK-NEXT:    msettyp m2, a0
+; CHECK-NEXT:    mmov.m.a m2, acc4
+; CHECK-NEXT:    msettyp m3, a0
+; CHECK-NEXT:    mmov.m.a m3, acc6
+; CHECK-NEXT:    msettyp m4, a0
+; CHECK-NEXT:    mmov.m.a m4, acc8
+; CHECK-NEXT:    msettyp m5, a0
+; CHECK-NEXT:    mmov.m.a m5, acc10
+; CHECK-NEXT:    msettyp m6, a0
+; CHECK-NEXT:    mmov.m.a m6, acc12
+; CHECK-NEXT:    msettyp m7, a0
+; CHECK-NEXT:    mmov.m.a m7, acc14
+; CHECK-NEXT:    ret
+  %acc = call target("riscv.ztt.acc.i16", i16, 16, 16) @llvm.riscv.ztt.mcopy.m2a.i16_uds32(target("riscv.ztt.m.i16", i16, 16, 1, 16) %src, i32 1073741840, i32 16)
+  %r = call target("riscv.ztt.m.i16", i16, 16, 1, 16) @llvm.riscv.ztt.mcopy.a2m.i16_uds32(target("riscv.ztt.acc.i16", i16, 16, 16) %acc, i32 1073741840, i32 16)
+  ret target("riscv.ztt.m.i16", i16, 16, 1, 16) %r
+}
+
+declare target("riscv.ztt.acc.i8", i8, 8, 16) @llvm.riscv.ztt.mcopy.m2a.i8_uds128(target("riscv.ztt.m.i8", i8, 8, 1, 16), i32, i32)
+declare target("riscv.ztt.m.i8", i8, 8, 1, 16) @llvm.riscv.ztt.mcopy.a2m.i8_uds128(target("riscv.ztt.acc.i8", i8, 8, 16), i32, i32)
+define target("riscv.ztt.m.i8", i8, 8, 1, 16) @roundtrip_acc16_i8_uds128(target("riscv.ztt.m.i8", i8, 8, 1, 16) %src) nounwind "target-features"="+ztt" "riscv-ztt-profile"="clang-runtime-u128-m32-a16" {
+; CHECK-LABEL: roundtrip_acc16_i8_uds128:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    lui a0, 262144
+; CHECK-NEXT:    addi a0, a0, 8
+; CHECK-NEXT:    asettyp acc0, a0
+; CHECK-NEXT:    asettyp acc1, a0
+; CHECK-NEXT:    asettyp acc2, a0
+; CHECK-NEXT:    asettyp acc3, a0
+; CHECK-NEXT:    asettyp acc4, a0
+; CHECK-NEXT:    asettyp acc5, a0
+; CHECK-NEXT:    asettyp acc6, a0
+; CHECK-NEXT:    asettyp acc7, a0
+; CHECK-NEXT:    asettyp acc8, a0
+; CHECK-NEXT:    asettyp acc9, a0
+; CHECK-NEXT:    asettyp acc10, a0
+; CHECK-NEXT:    asettyp acc11, a0
+; CHECK-NEXT:    asettyp acc12, a0
+; CHECK-NEXT:    asettyp acc13, a0
+; CHECK-NEXT:    asettyp acc14, a0
+; CHECK-NEXT:    asettyp acc15, a0
+; CHECK-NEXT:    mmov.a.m acc0, m0
+; CHECK-NEXT:    msettyp m0, a0
+; CHECK-NEXT:    mmov.m.a m0, acc0
+; CHECK-NEXT:    ret
+  %acc = call target("riscv.ztt.acc.i8", i8, 8, 16) @llvm.riscv.ztt.mcopy.m2a.i8_uds128(target("riscv.ztt.m.i8", i8, 8, 1, 16) %src, i32 1073741832, i32 16)
+  %r = call target("riscv.ztt.m.i8", i8, 8, 1, 16) @llvm.riscv.ztt.mcopy.a2m.i8_uds128(target("riscv.ztt.acc.i8", i8, 8, 16) %acc, i32 1073741832, i32 16)
+  ret target("riscv.ztt.m.i8", i8, 8, 1, 16) %r
+}
+
+declare target("riscv.ztt.acc.i4", i4, 4, 16) @llvm.riscv.ztt.mcopy.m2a.i4_uds64(target("riscv.ztt.m.i4", i4, 4, 1, 16), i32, i32)
+declare target("riscv.ztt.m.i4", i4, 4, 1, 16) @llvm.riscv.ztt.mcopy.a2m.i4_uds64(target("riscv.ztt.acc.i4", i4, 4, 16), i32, i32)
+define target("riscv.ztt.m.i4", i4, 4, 1, 16) @roundtrip_acc16_i4_uds64(target("riscv.ztt.m.i4", i4, 4, 1, 16) %src) nounwind "target-features"="+ztt" "riscv-ztt-profile"="clang-runtime-u64-m32-a16" {
+; CHECK-LABEL: roundtrip_acc16_i4_uds64:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    lui a0, 262144
+; CHECK-NEXT:    addi a0, a0, 4
+; CHECK-NEXT:    asettyp acc0, a0
+; CHECK-NEXT:    asettyp acc1, a0
+; CHECK-NEXT:    asettyp acc2, a0
+; CHECK-NEXT:    asettyp acc3, a0
+; CHECK-NEXT:    asettyp acc4, a0
+; CHECK-NEXT:    asettyp acc5, a0
+; CHECK-NEXT:    asettyp acc6, a0
+; CHECK-NEXT:    asettyp acc7, a0
+; CHECK-NEXT:    asettyp acc8, a0
+; CHECK-NEXT:    asettyp acc9, a0
+; CHECK-NEXT:    asettyp acc10, a0
+; CHECK-NEXT:    asettyp acc11, a0
+; CHECK-NEXT:    asettyp acc12, a0
+; CHECK-NEXT:    asettyp acc13, a0
+; CHECK-NEXT:    asettyp acc14, a0
+; CHECK-NEXT:    asettyp acc15, a0
+; CHECK-NEXT:    mmov.a.m acc0, m0
+; CHECK-NEXT:    msettyp m0, a0
+; CHECK-NEXT:    mmov.m.a m0, acc0
+; CHECK-NEXT:    ret
+  %acc = call target("riscv.ztt.acc.i4", i4, 4, 16) @llvm.riscv.ztt.mcopy.m2a.i4_uds64(target("riscv.ztt.m.i4", i4, 4, 1, 16) %src, i32 1073741828, i32 16)
+  %r = call target("riscv.ztt.m.i4", i4, 4, 1, 16) @llvm.riscv.ztt.mcopy.a2m.i4_uds64(target("riscv.ztt.acc.i4", i4, 4, 16) %acc, i32 1073741828, i32 16)
+  ret target("riscv.ztt.m.i4", i4, 4, 1, 16) %r
+}
 
 ;--- wide-cross/input.ll
 ; UDS8 gives i64 squares eight M registers and i128 squares sixteen.

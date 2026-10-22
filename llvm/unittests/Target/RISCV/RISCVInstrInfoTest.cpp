@@ -551,9 +551,9 @@ TEST_P(RISCVInstrInfoTest, ZttValueTypes) {
       MVT::riscv_zttm4,    MVT::riscv_zttm8,    MVT::riscv_zttm16,   MVT::riscv_zttm32, MVT::riscv_zttm64,
       MVT::riscv_zttm128,  MVT::riscv_zttm256,  MVT::riscv_zttm512,  MVT::riscv_zttm1024,
       MVT::riscv_zttm2048, MVT::riscv_zttm4096, MVT::riscv_ztta1,    MVT::riscv_ztta2,
-      MVT::riscv_ztta4,    MVT::riscv_ztta8};
+      MVT::riscv_ztta4,    MVT::riscv_ztta8,    MVT::riscv_ztta16};
   const unsigned Sizes[] = {4,   8,   16,  32,   64,   128, 256, 512,
-                            1024, 2048, 4096, 16, 32, 64, 128};
+                            1024, 2048, 4096, 16, 32, 64, 128, 256};
   for (unsigned I = 0; I != std::size(Types); ++I) {
     MVT VT = Types[I];
     EXPECT_TRUE(VT.isRISCVZtt());
@@ -639,11 +639,16 @@ TEST_P(RISCVInstrInfoTest, ZttMRegisterGroups) {
 TEST_P(RISCVInstrInfoTest, ZttACCRegisterGroups) {
   const ZttTestGroup Groups[] = {{&RISCV::ZTTARM2RegClass, 2},
                                  {&RISCV::ZTTARM4RegClass, 4},
-                                 {&RISCV::ZTTARM8RegClass, 8}};
+                                 {&RISCV::ZTTARM8RegClass, 8},
+                                 {&RISCV::ZTTARM16RegClass, 16}};
   const unsigned Indices[] = {RISCV::sub_ztta_0, RISCV::sub_ztta_1,
                               RISCV::sub_ztta_2, RISCV::sub_ztta_3,
                               RISCV::sub_ztta_4, RISCV::sub_ztta_5,
-                              RISCV::sub_ztta_6, RISCV::sub_ztta_7};
+                              RISCV::sub_ztta_6, RISCV::sub_ztta_7,
+                              RISCV::sub_ztta_8, RISCV::sub_ztta_9,
+                              RISCV::sub_ztta_10, RISCV::sub_ztta_11,
+                              RISCV::sub_ztta_12, RISCV::sub_ztta_13,
+                              RISCV::sub_ztta_14, RISCV::sub_ztta_15};
   checkZttRegisterGroups(*ST->getRegisterInfo(), RISCV::ZTTARRegClass, Groups,
                          Indices, /*AlignToGroup=*/false);
 }
@@ -681,7 +686,8 @@ TEST_P(RISCVInstrInfoTest, ZttReservedRegisters) {
             &RISCV::ZTTMRM16RegClass, &RISCV::ZTTMRM32RegClass})
         CheckClass(*RC, MCount);
       for (const auto *RC : {&RISCV::ZTTARRegClass, &RISCV::ZTTARM2RegClass,
-                             &RISCV::ZTTARM4RegClass, &RISCV::ZTTARM8RegClass})
+                             &RISCV::ZTTARM4RegClass, &RISCV::ZTTARM8RegClass,
+                             &RISCV::ZTTARM16RegClass})
         CheckClass(*RC, ACount);
     }
 }
@@ -777,7 +783,7 @@ TEST_P(RISCVInstrInfoTest, ZttAccTransferLayout) {
   // instruction emitter. Packed batches must never be rounded up.
   for (unsigned U : {8u, 16u, 32u, 64u, 128u})
     for (unsigned E : {4u, 8u, 16u, 32u, 64u, 128u})
-      for (unsigned K : {1u, 2u, 4u, 8u}) {
+      for (unsigned K : {1u, 2u, 4u, 8u, 16u}) {
         auto L = getZttAccTransferLayout(E, K, U);
         if (E * K < U) {
           EXPECT_FALSE(L);
@@ -792,6 +798,7 @@ TEST_P(RISCVInstrInfoTest, ZttAccTransferLayout) {
   EXPECT_FALSE(getZttAccTransferLayout(0, 2, 32));
   EXPECT_FALSE(getZttAccTransferLayout(24, 2, 32));
   EXPECT_FALSE(getZttAccTransferLayout(16, 3, 32));
+  EXPECT_FALSE(getZttAccTransferLayout(16, 32, 32));
   EXPECT_FALSE(getZttAccTransferLayout(16, 2, 0));
 }
 
@@ -847,6 +854,27 @@ TEST_P(RISCVInstrInfoTest, ZttAccValueLayout) {
           Unknown);
   EXPECT_FALSE(getZttAccElementBits(Unknown, *MF, 32));
   EXPECT_FALSE(getZttAccElementBits(RISCV::ZTTA0M2, *MF, 32));
+}
+
+TEST_P(RISCVInstrInfoTest, ZttAcc16PackedLayout) {
+  const auto &TII = *ST->getInstrInfo();
+  auto *BB = MF->CreateMachineBasicBlock();
+  MF->push_back(BB);
+  Register Acc = MF->getRegInfo().createVirtualRegister(&RISCV::ZTTARM16RegClass);
+  auto MI = BuildMI(*BB, BB->end(), DebugLoc(),
+                    TII.get(RISCV::PseudoZTTMCopyM2A_A16_M1), Acc)
+                .addReg(RISCV::ZTTM0)
+                .addImm(1)
+                .addImm(16)
+                .addReg(RISCV::X10);
+  EXPECT_EQ(getZttAccElementBits(Acc, *MF, 128), 8u);
+  EXPECT_EQ(getZttAccElementBits(Acc, *MF, 64), 4u);
+  MI->getOperand(0).setReg(RISCV::ZTTA0M16);
+  ZttAccLayout Layout;
+  Layout.fill(-1);
+  transferZttAccLayout(*MI, Layout, *ST->getRegisterInfo(), 128);
+  for (unsigned I = 0; I != 16; ++I)
+    EXPECT_EQ(Layout[I], 8);
 }
 
 } // namespace

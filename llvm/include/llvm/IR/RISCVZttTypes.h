@@ -46,7 +46,7 @@ getRISCVZttTypeInfo(const TargetExtType *Ty) {
   if (IsACC) {
     NumSquares = Ty->getIntParameter(1);
     ValidShape = NumSquares == 1 || NumSquares == 2 || NumSquares == 4 ||
-                 NumSquares == 8;
+                 NumSquares == 8 || NumSquares == 16;
   } else {
     unsigned Rows = Ty->getIntParameter(1);
     unsigned Cols = Ty->getIntParameter(2);

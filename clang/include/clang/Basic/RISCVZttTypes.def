@@ -58,7 +58,8 @@
   RISCV_ZTT_ACC_SHAPE(Suffix, Id, Kind, Bits, 1, Options)                      \
   RISCV_ZTT_ACC_SHAPE(Suffix, Id, Kind, Bits, 2, Options)                      \
   RISCV_ZTT_ACC_SHAPE(Suffix, Id, Kind, Bits, 4, Options)                      \
-  RISCV_ZTT_ACC_SHAPE(Suffix, Id, Kind, Bits, 8, Options)
+  RISCV_ZTT_ACC_SHAPE(Suffix, Id, Kind, Bits, 8, Options)                      \
+  RISCV_ZTT_ACC_SHAPE(Suffix, Id, Kind, Bits, 16, Options)
 
 // Default rounding has no suffix in the canonical type name.
 #define RISCV_ZTT_INTEGER_TYPES(Suffix, Id, Kind, Bits)                        \

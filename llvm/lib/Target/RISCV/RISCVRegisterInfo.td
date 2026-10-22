@@ -97,7 +97,7 @@ def sub_gpr_odd  : SubRegIndex<32, 32> {
 // Actual storage sizes are computed separately.
 foreach Index = 0-31 in
   def sub_zttm_#Index : SubRegIndex<16, !mul(16, Index)>;
-foreach Index = 0-7 in
+foreach Index = 0-15 in
   def sub_ztta_#Index : SubRegIndex<16, !mul(16, Index)>;
 } // Namespace = "RISCV"
 
@@ -419,7 +419,7 @@ def ZTTAR : RegisterClass<"RISCV", [riscv_ztta1], 16,
                           (add (sequence "ZTTA%u", 0, 15))> { let Size = 16; }
 
 // Consecutive ACC registers form groups with no base alignment requirement.
-foreach GroupSize = [2, 4, 8] in {
+foreach GroupSize = [2, 4, 8, 16] in {
   defvar LastBase = !sub(16, GroupSize);
   foreach Index = !range(0, !add(LastBase, 1)) in {
     def ZTTA#Index#M#GroupSize : RISCVRegWithSubRegs<Index, "acc"#Index,
@@ -432,7 +432,7 @@ foreach GroupSize = [2, 4, 8] in {
 }
 
 // Register classes let the allocator assign each ACC group as a whole.
-foreach GroupSize = [2, 4, 8] in {
+foreach GroupSize = [2, 4, 8, 16] in {
   def ZTTARM#GroupSize : RegisterClass<"RISCV",
       [!cast<ValueType>("riscv_ztta" # GroupSize)], 16,
       (add (sequence "ZTTA%uM" # GroupSize, 0, !sub(16, GroupSize)))> {

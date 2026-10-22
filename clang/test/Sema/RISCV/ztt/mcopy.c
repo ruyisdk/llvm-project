@@ -43,3 +43,15 @@ void valid_packed_and_concatenated(__riscv_ztt_i16_1x2_t packed,
   (void)__riscv_ztt_mcopy_m2a_i32_accx2(concatenated);
   (void)__riscv_ztt_mcopy_a2m_i32_2x1(acc);
 }
+
+void accx16(__riscv_ztt_i16_1x16_t row, __riscv_ztt_i16_16x1_t col,
+            __riscv_ztt_i16_accx16_t acc, __riscv_ztt_i16_1x8_t small,
+            __riscv_ztt_u16_1x16_t wrong_type) {
+  (void)__riscv_ztt_mcopy_m2a_i16_accx16(row);
+  (void)__riscv_ztt_mcopy_m2a_i16_accx16(col);
+  (void)__riscv_ztt_mcopy_a2m_i16_1x16(acc);
+  (void)__riscv_ztt_mcopy_a2m_i16_16x1(acc);
+  (void)__riscv_ztt_mcopy_m2a_i16_accx16(small); // expected-error {{element type and square count must be identical}}
+  (void)__riscv_ztt_mcopy_m2a_i16_accx16(wrong_type); // expected-error {{element type and square count must be identical}}
+  (void)__riscv_ztt_mcopy_a2m_i16_1x8(acc); // expected-error {{element type and square count must be identical}}
+}

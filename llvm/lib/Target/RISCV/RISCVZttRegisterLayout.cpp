@@ -37,7 +37,8 @@ std::optional<unsigned> llvm::getZttAccElementBits(Register Reg,
     if (!RISCV::ZTTARRegClass.hasSubClassEq(RC) &&
         !RISCV::ZTTARM2RegClass.hasSubClassEq(RC) &&
         !RISCV::ZTTARM4RegClass.hasSubClassEq(RC) &&
-        !RISCV::ZTTARM8RegClass.hasSubClassEq(RC))
+        !RISCV::ZTTARM8RegClass.hasSubClassEq(RC) &&
+        !RISCV::ZTTARM16RegClass.hasSubClassEq(RC))
       return std::nullopt;
     for (const MachineInstr &Def : MRI.def_instructions(R)) {
       int Index = RISCV::getNamedOperandIdx(Def.getOpcode(),
@@ -57,7 +58,7 @@ std::optional<unsigned> llvm::getZttAccElementBits(Register Reg,
           return std::nullopt;
         int64_t MR = Def.getOperand(M).getImm();
         int64_t AR = Def.getOperand(A).getImm();
-        if (MR < 1 || MR > 32 || AR < 1 || AR > 8 || !isPowerOf2_64(MR) ||
+        if (MR < 1 || MR > 32 || AR < 1 || AR > 16 || !isPowerOf2_64(MR) ||
             !isPowerOf2_64(AR) || (MR > 1 && AR > 1) || !UdsBits ||
             UdsBits > 128 || !isPowerOf2_32(UdsBits) || (UdsBits * MR) % AR ||
             !Remember(UdsBits * MR / AR))
@@ -90,7 +91,7 @@ std::optional<ZttAccTransferLayout>
 llvm::getZttAccTransferLayout(unsigned ElementBits, unsigned Squares,
                               unsigned UdsBits) {
   if (ElementBits < 4 || ElementBits > 128 || UdsBits < 8 || UdsBits > 128 ||
-      Squares < 1 || Squares > 8 || !isPowerOf2_32(ElementBits) ||
+      Squares < 1 || Squares > 16 || !isPowerOf2_32(ElementBits) ||
       !isPowerOf2_32(UdsBits) || !isPowerOf2_32(Squares))
     return std::nullopt;
   unsigned M = std::max(1u, ElementBits / UdsBits);
@@ -179,7 +180,7 @@ void llvm::transferZttAccLayout(const MachineInstr &MI, ZttAccLayout &State,
   else if (M >= 0 && A >= 0 && MI.getOperand(M).isImm() &&
            MI.getOperand(A).isImm()) {
     int64_t MR = MI.getOperand(M).getImm(), AR = MI.getOperand(A).getImm();
-    if (MR > 0 && MR <= 32 && AR > 0 && AR <= 8 && isPowerOf2_64(MR) &&
+    if (MR > 0 && MR <= 32 && AR > 0 && AR <= 16 && isPowerOf2_64(MR) &&
         isPowerOf2_64(AR) && (MR == 1 || AR == 1) && !(UdsBits * MR % AR))
       Bits = UdsBits * MR / AR;
   } else if (MI.isCopy() || MI.getOperand(0).isTied()) {

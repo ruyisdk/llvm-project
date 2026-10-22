@@ -39,7 +39,9 @@ static constexpr unsigned ZttMSubRegs[] = {
     RISCV::sub_zttm_30, RISCV::sub_zttm_31};
 static constexpr unsigned ZttASubRegs[] = {
     RISCV::sub_ztta_0, RISCV::sub_ztta_1, RISCV::sub_ztta_2, RISCV::sub_ztta_3,
-    RISCV::sub_ztta_4, RISCV::sub_ztta_5, RISCV::sub_ztta_6, RISCV::sub_ztta_7};
+    RISCV::sub_ztta_4, RISCV::sub_ztta_5, RISCV::sub_ztta_6, RISCV::sub_ztta_7,
+    RISCV::sub_ztta_8, RISCV::sub_ztta_9, RISCV::sub_ztta_10, RISCV::sub_ztta_11,
+    RISCV::sub_ztta_12, RISCV::sub_ztta_13, RISCV::sub_ztta_14, RISCV::sub_ztta_15};
 
 class RISCVZttPostRAExpandPseudo : public MachineFunctionPass {
 public:

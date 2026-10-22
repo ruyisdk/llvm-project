@@ -394,6 +394,7 @@ def riscv_ztta1 : ValueType<16>;
 def riscv_ztta2 : ValueType<32>;
 def riscv_ztta4 : ValueType<64>;
 def riscv_ztta8 : ValueType<128>;
+def riscv_ztta16 : ValueType<256>;
 
 let isNormalValueType = false in {
 // Pseudo valuetype mapped to the current CHERI capability pointer size.

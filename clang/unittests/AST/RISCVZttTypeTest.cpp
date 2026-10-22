@@ -27,9 +27,9 @@ using namespace clang;
 
 namespace {
 
-static SmallVector<QualType, 240>
+static SmallVector<QualType, 256>
 getRISCVZttTypes(ASTContext &Ctx, bool IncludeOptions = false) {
-  SmallVector<QualType, 240> Types;
+  SmallVector<QualType, 256> Types;
   // Keep base-type tests separate from rounding/sat variants.
 #define RISCV_ZTT_M_TYPE(Name, Id, SingletonId, Kind, Bits, Rows, Cols, Options) \
   if (IncludeOptions || Options == 0)                                        \
@@ -74,7 +74,7 @@ TEST_P(RISCVZttTypeTest, BaseTypes) {
     EXPECT_TRUE(Identities.insert(Ty.getTypePtr()).second);
     EXPECT_TRUE(Types.try_emplace(Ty.getAsString(), Ty).second);
   }
-  ASSERT_EQ(240u, Types.size());
+  ASSERT_EQ(256u, Types.size());
 
   // Expected types and shapes are independent of RISCVZttTypes.def.
   struct {
@@ -121,7 +121,7 @@ TEST_P(RISCVZttTypeTest, BaseTypes) {
       EXPECT_TRUE(Info.isMType());
       EXPECT_FALSE(Info.isACCType());
     }
-    for (unsigned Squares : {1u, 2u, 4u, 8u}) {
+    for (unsigned Squares : {1u, 2u, 4u, 8u, 16u}) {
       std::string Name = "__riscv_ztt_" + std::string(Element.Name) + "_accx" +
                          std::to_string(Squares) + "_t";
       SCOPED_TRACE(Name);
@@ -326,7 +326,7 @@ TEST_P(RISCVZttTypeTest, DatatypeOptions) {
     EXPECT_TRUE(Identities.insert(Ty.getTypePtr()).second);
     EXPECT_TRUE(Types.try_emplace(Ty.getAsString(), Ty).second);
   }
-  ASSERT_EQ(1800u, Types.size());
+  ASSERT_EQ(1920u, Types.size());
 
   // Expected suffixes and their option values are independent of the table.
   const char *IntegerModes[] = {"rnu", "rne", "rdn", "rod"};
@@ -367,7 +367,7 @@ TEST_P(RISCVZttTypeTest, DatatypeOptions) {
       }
     }
   }
-  EXPECT_EQ(1800u, NumTypes);
+  EXPECT_EQ(1920u, NumTypes);
 }
 
 TEST_P(RISCVZttTypeTest, OptionsImportAndEquivalence) {
@@ -490,7 +490,7 @@ TEST_P(RISCVZttTypeTest, OptionsPublicTypeNamesAndAliases) {
     EXPECT_EQ(Ty, AliasTD->getUnderlyingType());
     ++NumAliases;
   }
-  EXPECT_EQ(420u, NumAliases);
+  EXPECT_EQ(448u, NumAliases);
 }
 
 INSTANTIATE_TEST_SUITE_P(RISCV, RISCVZttTypeTest,

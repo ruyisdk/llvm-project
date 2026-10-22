@@ -50,3 +50,8 @@ define void @local_temporaries() {
   %acc = alloca target("riscv.ztt.acc.i32", i32, 32, 8), align 4
   ret void
 }
+
+define target("riscv.ztt.acc.i16", i16, 16, 16) @valid_accx16() {
+; VALID: define target("riscv.ztt.acc.i16", i16, 16, 16) @valid_accx16()
+  ret target("riscv.ztt.acc.i16", i16, 16, 16) zeroinitializer
+}

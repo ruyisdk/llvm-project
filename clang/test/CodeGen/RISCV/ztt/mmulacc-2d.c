@@ -1,6 +1,7 @@
 // REQUIRES: riscv-registered-target
 // RUN: %clang_cc1 -triple riscv64 -target-feature +ztt -target-feature +ztt-profile=clang-runtime-u32-m32-a16 \
 // RUN: -O1 -emit-llvm -o - %s | FileCheck %s
+// RUN: %clang_cc1 -triple riscv32 -target-feature +ztt -target-feature +ztt-profile=clang-runtime-u32-m32-a16 -O1 -emit-llvm -o - %s | FileCheck %s
 
 #include <riscv_ztt.h>
 
@@ -33,3 +34,12 @@ test_bf16(__riscv_ztt_bf16_accx2_t acc,
 
 // CHECK-LABEL: define{{.*}} target("riscv.ztt.acc.bf16", bfloat, 16, 2) @test_bf16(
 // CHECK: call target("riscv.ztt.acc.bf16", bfloat, 16, 2) @llvm.riscv.ztt.mmulacc.2d{{.*}}(target("riscv.ztt.acc.bf16", bfloat, 16, 2) %{{.*}}, target("riscv.ztt.m.bf16", bfloat, 16, 1, 2) %{{.*}}, target("riscv.ztt.m.bf16", bfloat, 16, 2, 1) %{{.*}}, i32 2)
+
+__riscv_ztt_i32_accx16_t
+test_accx16(__riscv_ztt_i32_accx16_t acc,
+            __riscv_ztt_i32_1x1_t lhs, __riscv_ztt_i32_1x1_t rhs) {
+  return __riscv_ztt_mmulacc_2d_i32_accx16(acc, lhs, rhs);
+}
+
+// CHECK-LABEL: define{{.*}} target("riscv.ztt.acc.i32", i32, 32, 16) @test_accx16(
+// CHECK: call target("riscv.ztt.acc.i32", i32, 32, 16) @llvm.riscv.ztt.mmulacc.2d{{.*}}(target("riscv.ztt.acc.i32", i32, 32, 16) %{{.*}}, target("riscv.ztt.m.i32", i32, 32, 1, 1) %{{.*}}, target("riscv.ztt.m.i32", i32, 32, 1, 1) %{{.*}}, i32 1)

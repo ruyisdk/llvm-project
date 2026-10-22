@@ -1,5 +1,6 @@
 ; RUN: llc -mtriple=riscv64 -verify-machineinstrs -stop-after=greedy < %s | FileCheck %s
 ; RUN: llc -mtriple=riscv64 -verify-machineinstrs < %s | FileCheck %s --check-prefix=ASM
+; RUN: llc -mtriple=riscv32 -verify-machineinstrs < %s | FileCheck %s --check-prefix=ASM
 
 declare target("riscv.ztt.m.i16", i16, 16, 1, 2) @llvm.riscv.ztt.mclear.m.triscv.ztt.m.i16_i16_16_1_2t(i32 immarg, i32 immarg)
 declare target("riscv.ztt.m.i16", i16, 16, 1, 4) @llvm.riscv.ztt.mclear.m.triscv.ztt.m.i16_i16_16_1_4t(i32 immarg, i32 immarg)
@@ -10,6 +11,36 @@ declare target("riscv.ztt.acc.i32", i32, 32, 1) @llvm.riscv.ztt.mclear.acc.trisc
 declare target("riscv.ztt.acc.i32", i32, 32, 2) @llvm.riscv.ztt.mclear.acc.triscv.ztt.acc.i32_i32_32_2t(i32 immarg, i32 immarg)
 declare target("riscv.ztt.acc.i32", i32, 32, 4) @llvm.riscv.ztt.mclear.acc.triscv.ztt.acc.i32_i32_32_4t(i32 immarg, i32 immarg)
 declare target("riscv.ztt.acc.i32", i32, 32, 8) @llvm.riscv.ztt.mclear.acc.triscv.ztt.acc.i32_i32_32_8t(i32 immarg, i32 immarg)
+
+define target("riscv.ztt.acc.i16", i16, 16, 16) @acc_i16_x16() nounwind "target-features"="+ztt" "riscv-ztt-profile"="clang-runtime-u32-m16-a16" {
+; CHECK-LABEL: name: acc_i16_x16
+; CHECK: %{{[0-9]+}}:zttarm16 = PseudoZTTAClearA16
+; CHECK: $ztta0m16 = COPY
+; ASM-LABEL: acc_i16_x16:
+; ASM-NEXT:    # %bb.0:
+; ASM-NEXT:    lui a0, 262144
+; ASM-NEXT:    addi a0, a0, 16
+; ASM-NEXT:    asettyp acc0, a0
+; ASM-NEXT:    asettyp acc1, a0
+; ASM-NEXT:    asettyp acc2, a0
+; ASM-NEXT:    asettyp acc3, a0
+; ASM-NEXT:    asettyp acc4, a0
+; ASM-NEXT:    asettyp acc5, a0
+; ASM-NEXT:    asettyp acc6, a0
+; ASM-NEXT:    asettyp acc7, a0
+; ASM-NEXT:    asettyp acc8, a0
+; ASM-NEXT:    asettyp acc9, a0
+; ASM-NEXT:    asettyp acc10, a0
+; ASM-NEXT:    asettyp acc11, a0
+; ASM-NEXT:    asettyp acc12, a0
+; ASM-NEXT:    asettyp acc13, a0
+; ASM-NEXT:    asettyp acc14, a0
+; ASM-NEXT:    asettyp acc15, a0
+; ASM-NEXT:    ret
+  %v = call target("riscv.ztt.acc.i16", i16, 16, 16) @llvm.riscv.ztt.mclear.acc.a16(i32 1073741840, i32 16)
+  ret target("riscv.ztt.acc.i16", i16, 16, 16) %v
+}
+declare target("riscv.ztt.acc.i16", i16, 16, 16) @llvm.riscv.ztt.mclear.acc.a16(i32, i32 immarg)
 
 define target("riscv.ztt.m.i16", i16, 16, 1, 2) @mclear_uds8() #0 {
 ; CHECK-LABEL: name: mclear_uds8

@@ -219,6 +219,7 @@ std::string EVT::getEVTString() const {
   case MVT::riscv_ztta2:    return "riscv_ztta2";
   case MVT::riscv_ztta4:    return "riscv_ztta4";
   case MVT::riscv_ztta8:    return "riscv_ztta8";
+  case MVT::riscv_ztta16:   return "riscv_ztta16";
   }
 }
 
@@ -268,6 +269,7 @@ Type *EVT::getTypeForEVT(LLVMContext &Context) const {
   case MVT::riscv_ztta2:
   case MVT::riscv_ztta4:
   case MVT::riscv_ztta8:
+  case MVT::riscv_ztta16:
     return Type::getIntNTy(Context, getSizeInBits().getKnownMinValue());
 
 #define GET_VT_EVT(Ty, EVT) case MVT::Ty: return EVT;
@@ -324,6 +326,7 @@ MVT MVT::getVT(Type *Ty, bool HandleUnknown){
         case 2: return MVT::riscv_ztta2;
         case 4: return MVT::riscv_ztta4;
         case 8: return MVT::riscv_ztta8;
+        case 16: return MVT::riscv_ztta16;
         default: break;
         }
       }

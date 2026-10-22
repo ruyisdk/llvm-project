@@ -173,7 +173,7 @@ class RISCVZttMatmul<string name> : RISCVZttOperation<name, 2, 0>
   let SemaArgCheckKind = "Matmul";
   let HasOldResult = 1;
   let ResultKind = "ACC";
-  let MaxResultSquares = 8;
+  let MaxResultSquares = 16;
 }
 
 // (matrix) -> M/ACC; mcopy.
@@ -190,13 +190,13 @@ class RISCVZttCopyM2M<string name> : RISCVZttCopy<name>;
 class RISCVZttCopyM2A<string name> : RISCVZttCopy<name>
 {
   let ResultKind = "ACC";
-  let MaxResultSquares = 8;
+  let MaxResultSquares = 16;
 }
 
 // (ACC) -> M; input and result have different matrix types.
 class RISCVZttCopyA2M<string name> : RISCVZttCopy<name>
 {
-  let MaxResultSquares = 8;
+  let MaxResultSquares = 16;
 }
 
 // (matrix, matrix); inputs have the same type, result has twice their shape.
@@ -282,13 +282,13 @@ def riscv_ztt_op_mss_tst : RISCVZttStridedStore<"mss_tst">;
 def riscv_ztt_op_mclear_acc : RISCVZttNoArg<"mclear_acc">
 {
   let ResultKind = "ACC";
-  let MaxResultSquares = 8;
+  let MaxResultSquares = 16;
 }
 def riscv_ztt_op_mclear_m : RISCVZttNoArg<"mclear_m">;
 def riscv_ztt_op_mzero_acc : RISCVZttNoArg<"mzero_acc">
 {
   let ResultKind = "ACC";
-  let MaxResultSquares = 8;
+  let MaxResultSquares = 16;
 }
 def riscv_ztt_op_mzero_m : RISCVZttNoArg<"mzero_m">;
 

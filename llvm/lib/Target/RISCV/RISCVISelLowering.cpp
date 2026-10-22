@@ -352,6 +352,7 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
     RegisterAccType(MVT::riscv_ztta2, 2);
     RegisterAccType(MVT::riscv_ztta4, 4);
     RegisterAccType(MVT::riscv_ztta8, 8);
+    RegisterAccType(MVT::riscv_ztta16, 16);
     setOperationAction({ISD::INTRINSIC_W_CHAIN, ISD::INTRINSIC_VOID},
                        MVT::Other, Custom);
   }

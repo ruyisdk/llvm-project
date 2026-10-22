@@ -9,6 +9,8 @@
 ; RUN: not --crash llc -mtriple=riscv64 -mattr=+ztt -verify-machineinstrs %t.ztt-profile-3.ll -o - 2>&1 | FileCheck %s --check-prefix=M
 ; RUN: sed 's/ZTT_PROFILE/clang-runtime-u16-m16-a4/g' %t/a.ll > %t.ztt-profile-4.ll
 ; RUN: not --crash llc -mtriple=riscv64 -mattr=+ztt -verify-machineinstrs %t.ztt-profile-4.ll -o - 2>&1 | FileCheck %s --check-prefix=A
+; RUN: not --crash llc -mtriple=riscv32 -mattr=+ztt -verify-machineinstrs %t/a16.ll -o - 2>&1 | FileCheck %s --check-prefix=A
+; RUN: not --crash llc -mtriple=riscv64 -mattr=+ztt -verify-machineinstrs %t/a16.ll -o - 2>&1 | FileCheck %s --check-prefix=A
 ; M: LLVM ERROR: Ztt M type exceeds the configured register count
 ; A: LLVM ERROR: Ztt ACC type exceeds the configured register count
 ; ARCH: LLVM ERROR: Ztt M-register group requires more than 32 registers
@@ -39,3 +41,10 @@ define target("riscv.ztt.acc.i16", i16, 16, 8) @too_many_acc() "riscv-ztt-profil
   ret target("riscv.ztt.acc.i16", i16, 16, 8) %v
 }
 declare target("riscv.ztt.acc.i16", i16, 16, 8) @llvm.riscv.ztt.mclear.acc.triscv.ztt.acc.i16_i16_16_8t(i32, i32 immarg)
+
+;--- a16.ll
+define target("riscv.ztt.acc.i16", i16, 16, 16) @too_many_acc16() "riscv-ztt-profile"="clang-runtime-u32-m16-a8" {
+  %v = call target("riscv.ztt.acc.i16", i16, 16, 16) @llvm.riscv.ztt.mclear.acc.a16(i32 1073741840, i32 16)
+  ret target("riscv.ztt.acc.i16", i16, 16, 16) %v
+}
+declare target("riscv.ztt.acc.i16", i16, 16, 16) @llvm.riscv.ztt.mclear.acc.a16(i32, i32 immarg)

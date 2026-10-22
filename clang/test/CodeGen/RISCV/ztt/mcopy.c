@@ -97,6 +97,20 @@ test_a2m_i16_8x1(__riscv_ztt_i16_accx8_t src) {
 // CHECK-LABEL: define{{.*}} @test_a2m_i16_8x1(
 // CHECK: call target("riscv.ztt.m.i16", i16, 16, 8, 1) @llvm.riscv.ztt.mcopy.a2m{{.*}}(target("riscv.ztt.acc.i16", i16, 16, 8) %{{.*}}, i32 1073741840, i32 8)
 
+__riscv_ztt_i16_accx16_t test_m2a_accx16(__riscv_ztt_i16_1x16_t src) {
+  return __riscv_ztt_mcopy_m2a_i16_accx16(src);
+}
+
+// CHECK-LABEL: @test_m2a_accx16(
+// CHECK: call target("riscv.ztt.acc.i16", i16, 16, 16) @llvm.riscv.ztt.mcopy.m2a{{.*}}(target("riscv.ztt.m.i16", i16, 16, 1, 16) %{{.*}}, i32 1073741840, i32 16)
+
+__riscv_ztt_i16_16x1_t test_a2m_accx16(__riscv_ztt_i16_accx16_t src) {
+  return __riscv_ztt_mcopy_a2m_i16_16x1(src);
+}
+
+// CHECK-LABEL: @test_a2m_accx16(
+// CHECK: call target("riscv.ztt.m.i16", i16, 16, 16, 1) @llvm.riscv.ztt.mcopy.a2m{{.*}}(target("riscv.ztt.acc.i16", i16, 16, 16) %{{.*}}, i32 1073741840, i32 16)
+
 __riscv_ztt_u16_accx2_t test_m2a_u16_accx2(__riscv_ztt_u16_1x2_t src) {
   return __riscv_ztt_mcopy_m2a_u16_accx2(src);
 }

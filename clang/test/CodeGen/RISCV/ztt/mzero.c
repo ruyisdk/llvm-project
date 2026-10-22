@@ -144,6 +144,9 @@ TEST_AZERO(__riscv_ztt_i16_accx4_t, i16_accx4)
 // CHECK-LABEL: define{{.*}} target("riscv.ztt.acc.i16", i16, 16, 8) @test_mzero_acc_i16_accx8(
 // CHECK: call target("riscv.ztt.acc.i16", i16, 16, 8) @llvm.riscv.ztt.mzero.acc{{.*}}(i32 1073741840, i32 8)
 TEST_AZERO(__riscv_ztt_i16_accx8_t, i16_accx8)
+// CHECK-LABEL: define{{.*}} target("riscv.ztt.acc.i16", i16, 16, 16) @test_mzero_acc_i16_accx16(
+// CHECK: call target("riscv.ztt.acc.i16", i16, 16, 16) @llvm.riscv.ztt.mzero.acc{{.*}}(i32 1073741840, i32 16)
+TEST_AZERO(__riscv_ztt_i16_accx16_t, i16_accx16)
 
 // Cover every supported datatype through the public Acc-zero aliases.
 // CHECK-LABEL: @test_mzero_acc_i4_accx1(

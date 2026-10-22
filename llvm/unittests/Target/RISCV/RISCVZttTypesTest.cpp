@@ -67,6 +67,7 @@ TEST(RISCVZttTypes, AccCarriersAndSquareCounts) {
       {MVT::riscv_ztta2, 2, 32},
       {MVT::riscv_ztta4, 4, 64},
       {MVT::riscv_ztta8, 8, 128},
+      {MVT::riscv_ztta16, 16, 256},
   };
   const struct {
     const char *Name;
@@ -110,6 +111,8 @@ TEST(RISCVZttTypes, SharedIRTypeInfo) {
        false, MVT::riscv_zttm32},
       {"riscv.ztt.acc.bf16", Type::getBFloatTy(Context), {16, 8}, 8, true,
        MVT::riscv_ztta8},
+      {"riscv.ztt.acc.i4", Type::getIntNTy(Context, 4), {4, 16}, 16, true,
+       MVT::riscv_ztta16},
   };
   for (const auto &C : Cases) {
     SCOPED_TRACE(C.Name);

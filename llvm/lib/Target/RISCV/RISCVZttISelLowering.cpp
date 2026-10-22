@@ -144,7 +144,7 @@ static SDValue lowerZttMatmul(SDValue Op, SelectionDAG &DAG,
   MVT AccVT = Op.getSimpleValueType();
   MVT LVT = Op.getOperand(2).getSimpleValueType();
   MVT RVT = Op.getOperand(3).getSimpleValueType();
-  if (AccVT.SimpleTy < MVT::riscv_ztta1 || AccVT.SimpleTy > MVT::riscv_ztta8 ||
+  if (AccVT.SimpleTy < MVT::riscv_ztta1 || AccVT.SimpleTy > MVT::riscv_ztta16 ||
       !isZttMatrixVT(LVT) || !isZttMatrixVT(RVT))
     report_fatal_error(Twine("Ztt ") + Name +
                        " requires an Acc result and two M sources");
@@ -303,7 +303,7 @@ lowerZttInitialize(SDValue Op, SelectionDAG &DAG,
   MVT XLenVT = Subtarget.getXLenVT();
   if (Info.IsAcc) {
     MVT AccVT = Op.getSimpleValueType();
-    if (AccVT.SimpleTy < MVT::riscv_ztta1 || AccVT.SimpleTy > MVT::riscv_ztta8)
+    if (AccVT.SimpleTy < MVT::riscv_ztta1 || AccVT.SimpleTy > MVT::riscv_ztta16)
       report_fatal_error(Info.Layout == OperandLayout::Clear
                              ? "Ztt accumulator clear requires an Acc type"
                              : "Ztt accumulator zero requires an Acc type");
@@ -411,7 +411,7 @@ static SDValue lowerZttTransfer(SDValue Op, SelectionDAG &DAG,
     MVT AccVT = IsM2A ? ResultVT : SourceVT;
     MVT MatrixVT = IsM2A ? SourceVT : ResultVT;
     if (AccVT.SimpleTy < MVT::riscv_ztta1 ||
-        AccVT.SimpleTy > MVT::riscv_ztta8 || !isZttMatrixVT(MatrixVT))
+        AccVT.SimpleTy > MVT::riscv_ztta16 || !isZttMatrixVT(MatrixVT))
       report_fatal_error(
           "Ztt cross-register mcopy requires one M type and one Acc type");
 

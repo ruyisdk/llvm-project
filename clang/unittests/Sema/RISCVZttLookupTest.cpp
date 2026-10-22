@@ -215,7 +215,7 @@ TEST_P(RISCVZttLookupTest, ResultRules) {
       unsigned MaxSquares = SingleSquare.contains(Name)                 ? 1
                             : Zip.contains(Name)                       ? 2
                             : Name == "mextract"                       ? 16
-                            : ACC.contains(Name) || Name == "mcopy_a2m" ? 8
+                            : ACC.contains(Name) || Name == "mcopy_a2m" ? 16
                                                                         : 32;
       EXPECT_EQ(MaxSquares, Info.MaxResultSquares);
       EXPECT_EQ(Zip.contains(Name) || Name == "mconcat_m" ? 2u : 1u,
@@ -320,9 +320,12 @@ TEST_P(RISCVZttLookupTest, ResultShapeBoundaries) {
         {"mconcat_m", "i16_1x2", "i16_1x1"},
         {"mconcat_m", "i16_2x1", "i16_1x1"},
         {"mconcat_m", "i16_32x1", "i16_64x1"},
-        {"mcopy_a2m", "i16_1x8", "i16_1x16"},
-        {"mcopy_a2m", "i16_8x1", "i16_16x1"},
-        {"mcopy_m2a", "i16_accx8", "i16_accx16"},
+        {"mcopy_a2m", "i16_1x16", "i16_1x32"},
+        {"mcopy_a2m", "i16_16x1", "i16_32x1"},
+        {"mcopy_m2a", "i16_accx16", "i16_accx32"},
+        {"mclear_acc", "i16_accx16", "i16_accx32"},
+        {"mzero_acc", "f32_accx16", "f32_accx32"},
+        {"mmulacc_2d", "i32_accx16", "i32_accx32"},
         {"mextract", "i16_1x1", "i16_1x32"},
         {"mextract", "i16_1x16", "i16_1x32"},
         {"mextract", "i16_16x1", "i16_32x1"},

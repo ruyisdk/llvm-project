@@ -5,6 +5,49 @@
 ; then zero each physical M square group or each individual accumulator.
 ; IR-only return values keep all defined registers live; no C matrix ABI is implied.
 
+define target("riscv.ztt.acc.i16", i16, 16, 16) @acc_i16_x16() nounwind "target-features"="+ztt" "riscv-ztt-profile"="clang-runtime-u32-m16-a16" {
+; CHECK-LABEL: acc_i16_x16:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    lui a0, 262144
+; CHECK-NEXT:    addi a0, a0, 16
+; CHECK-NEXT:    asettyp acc0, a0
+; CHECK-NEXT:    asettyp acc1, a0
+; CHECK-NEXT:    asettyp acc2, a0
+; CHECK-NEXT:    asettyp acc3, a0
+; CHECK-NEXT:    asettyp acc4, a0
+; CHECK-NEXT:    asettyp acc5, a0
+; CHECK-NEXT:    asettyp acc6, a0
+; CHECK-NEXT:    asettyp acc7, a0
+; CHECK-NEXT:    asettyp acc8, a0
+; CHECK-NEXT:    asettyp acc9, a0
+; CHECK-NEXT:    asettyp acc10, a0
+; CHECK-NEXT:    asettyp acc11, a0
+; CHECK-NEXT:    asettyp acc12, a0
+; CHECK-NEXT:    asettyp acc13, a0
+; CHECK-NEXT:    asettyp acc14, a0
+; CHECK-NEXT:    asettyp acc15, a0
+; CHECK-NEXT:    mzero.2d.acc acc0
+; CHECK-NEXT:    mzero.2d.acc acc1
+; CHECK-NEXT:    mzero.2d.acc acc2
+; CHECK-NEXT:    mzero.2d.acc acc3
+; CHECK-NEXT:    mzero.2d.acc acc4
+; CHECK-NEXT:    mzero.2d.acc acc5
+; CHECK-NEXT:    mzero.2d.acc acc6
+; CHECK-NEXT:    mzero.2d.acc acc7
+; CHECK-NEXT:    mzero.2d.acc acc8
+; CHECK-NEXT:    mzero.2d.acc acc9
+; CHECK-NEXT:    mzero.2d.acc acc10
+; CHECK-NEXT:    mzero.2d.acc acc11
+; CHECK-NEXT:    mzero.2d.acc acc12
+; CHECK-NEXT:    mzero.2d.acc acc13
+; CHECK-NEXT:    mzero.2d.acc acc14
+; CHECK-NEXT:    mzero.2d.acc acc15
+; CHECK-NEXT:    ret
+  %v = call target("riscv.ztt.acc.i16", i16, 16, 16) @llvm.riscv.ztt.mzero.acc.a16(i32 1073741840, i32 16)
+  ret target("riscv.ztt.acc.i16", i16, 16, 16) %v
+}
+declare target("riscv.ztt.acc.i16", i16, 16, 16) @llvm.riscv.ztt.mzero.acc.a16(i32, i32 immarg)
+
 define target("riscv.ztt.m.i16", i16, 16, 1, 2) @m_i16_uds8() #0 {
 ; CHECK-LABEL: m_i16_uds8:
 ; CHECK-NEXT:    # %bb.0:

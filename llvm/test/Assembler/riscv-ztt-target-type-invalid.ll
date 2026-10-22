@@ -10,6 +10,6 @@ define target("riscv.ztt.m.i16", i16, 16, 2, 2) @invalid() {
 }
 
 ;--- acc.ll
-define target("riscv.ztt.acc.i16", i16, 16, 16) @invalid_accx16() {
-  ret target("riscv.ztt.acc.i16", i16, 16, 16) zeroinitializer
+define target("riscv.ztt.acc.i16", i16, 16, 32) @invalid_accx32() {
+  ret target("riscv.ztt.acc.i16", i16, 16, 32) zeroinitializer
 }

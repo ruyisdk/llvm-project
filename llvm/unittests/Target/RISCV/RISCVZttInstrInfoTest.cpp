@@ -70,7 +70,8 @@ TEST(RISCVZttInstrInfo, ClearZeroGroups) {
       RISCV::ZTTMRM16RegClassID, RISCV::ZTTMRM32RegClassID};
   const unsigned ACCClasses[] = {
       RISCV::ZTTARRegClassID, RISCV::ZTTARM2RegClassID,
-      RISCV::ZTTARM4RegClassID, RISCV::ZTTARM8RegClassID};
+      RISCV::ZTTARM4RegClassID, RISCV::ZTTARM8RegClassID,
+      RISCV::ZTTARM16RegClassID};
 
   for (StringRef TripleName : {"riscv32", "riscv64"}) {
     SCOPED_TRACE(TripleName.str());
@@ -158,8 +159,7 @@ TEST(RISCVZttInstrInfo, ClearZeroGroups) {
       for (unsigned Group : {0U, 3U, 64U})
         EXPECT_EQ(getPseudoForGroups(Expected.Operation, Group), nullptr);
       if (Expected.IsAcc)
-        for (unsigned Group : {16U, 32U})
-          EXPECT_EQ(getPseudoForGroups(Expected.Operation, Group), nullptr);
+        EXPECT_EQ(getPseudoForGroups(Expected.Operation, 32), nullptr);
     }
   }
 }
@@ -197,10 +197,10 @@ constexpr TransferOperation TransferOperations[] = {
      5},
     {Intrinsic::riscv_ztt_mcopy_m2a, MCOPY_M2A, OperandLayout::CrossCopy, true,
      RISCVISD::ZTT_MCOPY_M2A, "PseudoZTTMCopyM2A", "RISCVISD::ZTT_MCOPY_M2A",
-     24},
+     30},
     {Intrinsic::riscv_ztt_mcopy_a2m, MCOPY_A2M, OperandLayout::CrossCopy, false,
      RISCVISD::ZTT_MCOPY_A2M, "PseudoZTTMCopyA2M", "RISCVISD::ZTT_MCOPY_A2M",
-     24},
+     30},
     {Intrinsic::riscv_ztt_mextract, MEXTRACT, OperandLayout::Extract, false,
      RISCVISD::ZTT_MEXTRACT, "PseudoZTTMextract", "RISCVISD::ZTT_MEXTRACT",
      36}};
@@ -247,7 +247,8 @@ TEST(RISCVZttInstrInfo, TransferGroups) {
                           RISCV::ZTTMRM4RegClassID,  RISCV::ZTTMRM8RegClassID,
                           RISCV::ZTTMRM16RegClassID, RISCV::ZTTMRM32RegClassID};
   const int ACCClasses[] = {RISCV::ZTTARRegClassID, RISCV::ZTTARM2RegClassID,
-                            RISCV::ZTTARM4RegClassID, RISCV::ZTTARM8RegClassID};
+                            RISCV::ZTTARM4RegClassID, RISCV::ZTTARM8RegClassID,
+                            RISCV::ZTTARM16RegClassID};
 
   for (StringRef TripleName : {"riscv32", "riscv64"}) {
     SCOPED_TRACE(TripleName.str());
@@ -285,7 +286,7 @@ TEST(RISCVZttInstrInfo, TransferGroups) {
           unsigned M = Expected.IsAcc ? S : D;
           bool Valid = !Concat || D >= 2;
           if (Cross)
-            Valid = A <= 8;
+            Valid = A <= 16;
           EXPECT_EQ(P != nullptr, Valid);
           if (!P || !Valid)
             continue;
@@ -552,7 +553,8 @@ TEST(RISCVZttInstrInfo, MatmulGroups) {
       RISCV::ZTTMRM16RegClassID, RISCV::ZTTMRM32RegClassID};
   const unsigned AClasses[] = {RISCV::ZTTARRegClassID, RISCV::ZTTARM2RegClassID,
                                RISCV::ZTTARM4RegClassID,
-                               RISCV::ZTTARM8RegClassID};
+                               RISCV::ZTTARM8RegClassID,
+                               RISCV::ZTTARM16RegClassID};
   for (StringRef TripleName : {"riscv32", "riscv64"}) {
     std::string Error;
     const Target *T = TargetRegistry::lookupTarget(Triple(TripleName), Error);
@@ -576,7 +578,7 @@ TEST(RISCVZttInstrInfo, MatmulGroups) {
       EXPECT_FALSE(Op->SameGroups);
       EXPECT_EQ(Op->NumSources, 2U);
       EXPECT_EQ(Hook->Opcode, ISD::INTRINSIC_WO_CHAIN);
-      for (unsigned A = 0; A != 4; ++A)
+      for (unsigned A = 0; A != std::size(AClasses); ++A)
         for (unsigned L = 0; L != 6; ++L)
           for (unsigned R = 0; R != 6; ++R) {
             const auto *P =
@@ -600,7 +602,7 @@ TEST(RISCVZttInstrInfo, MatmulGroups) {
             EXPECT_EQ(Desc.getOperandConstraint(1, MCOI::TIED_TO), 0);
             EXPECT_EQ(Desc.getOperandConstraint(0, MCOI::EARLY_CLOBBER), -1);
           }
-      EXPECT_EQ(getPseudoForGroups(Op->Operation, 16, 1, 1), nullptr);
+      EXPECT_EQ(getPseudoForGroups(Op->Operation, 32, 1, 1), nullptr);
       EXPECT_EQ(getPseudoForGroups(Op->Operation, 1, 3, 1), nullptr);
       EXPECT_EQ(getPseudoForGroups(Op->Operation, 1, 1, 64), nullptr);
     }

@@ -31,7 +31,7 @@ class ZttRegisterPseudo<dag outs, dag ins, bit sideEffects>
 }
 
 defvar ZttMGroupSizes = [1, 2, 4, 8, 16, 32];
-defvar ZttAGroupSizes = [1, 2, 4, 8];
+defvar ZttAGroupSizes = [1, 2, 4, 8, 16];
 
 // Physical register-group size to register class. Zero is an unused source.
 class ZttMRegClass<int group> {

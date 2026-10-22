@@ -1,4 +1,5 @@
 ; RUN: llc -mtriple=riscv64 -verify-machineinstrs < %s | FileCheck %s
+; RUN: llc -mtriple=riscv32 -verify-machineinstrs < %s | FileCheck %s
 
 declare target("riscv.ztt.acc.i32", i32, 32, 1)
   @llvm.riscv.ztt.mmulacc.2d.triscv.ztt.acc.i32_i32_32_1t.triscv.ztt.m.i16_i16_16_1_2t.triscv.ztt.m.i16_i16_16_2_1t(
@@ -694,6 +695,53 @@ define void @two_live_accx4_uds32(
     i32 1073741856, i32 4)
   ret void
 }
+
+; The multiply updates square 0; every remaining ACC square stays live.
+define target("riscv.ztt.m.i32", i32, 32, 1, 16) @accx16_tail_to_m(target("riscv.ztt.acc.i32", i32, 32, 16) %acc, target("riscv.ztt.m.i32", i32, 32, 1, 1) %lhs, target("riscv.ztt.m.i32", i32, 32, 1, 1) %rhs) nounwind #0 {
+; CHECK-LABEL: accx16_tail_to_m:
+; CHECK-NEXT:    # %bb.0:
+; CHECK-NEXT:    lui a0, 262144
+; CHECK-NEXT:    mmulacc.2d acc0, m0, m1
+; CHECK-NEXT:    addi a0, a0, 32
+; CHECK-NEXT:    msettyp m0, a0
+; CHECK-NEXT:    mmov.m.a m0, acc0
+; CHECK-NEXT:    msettyp m1, a0
+; CHECK-NEXT:    mmov.m.a m1, acc1
+; CHECK-NEXT:    msettyp m2, a0
+; CHECK-NEXT:    mmov.m.a m2, acc2
+; CHECK-NEXT:    msettyp m3, a0
+; CHECK-NEXT:    mmov.m.a m3, acc3
+; CHECK-NEXT:    msettyp m4, a0
+; CHECK-NEXT:    mmov.m.a m4, acc4
+; CHECK-NEXT:    msettyp m5, a0
+; CHECK-NEXT:    mmov.m.a m5, acc5
+; CHECK-NEXT:    msettyp m6, a0
+; CHECK-NEXT:    mmov.m.a m6, acc6
+; CHECK-NEXT:    msettyp m7, a0
+; CHECK-NEXT:    mmov.m.a m7, acc7
+; CHECK-NEXT:    msettyp m8, a0
+; CHECK-NEXT:    mmov.m.a m8, acc8
+; CHECK-NEXT:    msettyp m9, a0
+; CHECK-NEXT:    mmov.m.a m9, acc9
+; CHECK-NEXT:    msettyp m10, a0
+; CHECK-NEXT:    mmov.m.a m10, acc10
+; CHECK-NEXT:    msettyp m11, a0
+; CHECK-NEXT:    mmov.m.a m11, acc11
+; CHECK-NEXT:    msettyp m12, a0
+; CHECK-NEXT:    mmov.m.a m12, acc12
+; CHECK-NEXT:    msettyp m13, a0
+; CHECK-NEXT:    mmov.m.a m13, acc13
+; CHECK-NEXT:    msettyp m14, a0
+; CHECK-NEXT:    mmov.m.a m14, acc14
+; CHECK-NEXT:    msettyp m15, a0
+; CHECK-NEXT:    mmov.m.a m15, acc15
+; CHECK-NEXT:    ret
+  %r = call target("riscv.ztt.acc.i32", i32, 32, 16) @llvm.riscv.ztt.mmulacc.2d.a16(target("riscv.ztt.acc.i32", i32, 32, 16) %acc, target("riscv.ztt.m.i32", i32, 32, 1, 1) %lhs, target("riscv.ztt.m.i32", i32, 32, 1, 1) %rhs, i32 1)
+  %out = call target("riscv.ztt.m.i32", i32, 32, 1, 16) @llvm.riscv.ztt.mcopy.a2m.a16(target("riscv.ztt.acc.i32", i32, 32, 16) %r, i32 1073741856, i32 16)
+  ret target("riscv.ztt.m.i32", i32, 32, 1, 16) %out
+}
+declare target("riscv.ztt.acc.i32", i32, 32, 16) @llvm.riscv.ztt.mmulacc.2d.a16(target("riscv.ztt.acc.i32", i32, 32, 16), target("riscv.ztt.m.i32", i32, 32, 1, 1), target("riscv.ztt.m.i32", i32, 32, 1, 1), i32)
+declare target("riscv.ztt.m.i32", i32, 32, 1, 16) @llvm.riscv.ztt.mcopy.a2m.a16(target("riscv.ztt.acc.i32", i32, 32, 16), i32, i32)
 
 attributes #0 = { "target-features"="+ztt" "riscv-ztt-profile"="clang-runtime-u32-m32-a16" }
 attributes #1 = { "target-features"="+ztt" "riscv-ztt-profile"="clang-runtime-u8-m32-a16" }

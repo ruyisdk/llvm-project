@@ -663,7 +663,7 @@ static bool CC_RISCV_Impl(unsigned ValNo, MVT ValVT, MVT LocVT,
       }
     }
   } else if (ValVT.SimpleTy >= MVT::riscv_ztta1 &&
-             ValVT.SimpleTy <= MVT::riscv_ztta8) {
+             ValVT.SimpleTy <= MVT::riscv_ztta16) {
     static const MCPhysReg ZTTAccArgRegs[] = {
         RISCV::ZTTA0, RISCV::ZTTA1, RISCV::ZTTA2, RISCV::ZTTA3,
         RISCV::ZTTA4, RISCV::ZTTA5, RISCV::ZTTA6, RISCV::ZTTA7};
@@ -671,6 +671,7 @@ static bool CC_RISCV_Impl(unsigned ValNo, MVT ValVT, MVT LocVT,
                                                 RISCV::ZTTA4M2, RISCV::ZTTA6M2};
     static const MCPhysReg ZTTAccArgRegsM4[] = {RISCV::ZTTA0M4, RISCV::ZTTA4M4};
     static const MCPhysReg ZTTAccArgRegsM8[] = {RISCV::ZTTA0M8};
+    static const MCPhysReg ZTTAccArgRegsM16[] = {RISCV::ZTTA0M16};
     unsigned GroupSize = 1U << (ValVT.SimpleTy - unsigned(MVT::riscv_ztta1));
     if (GroupSize == 2)
       Reg = State.AllocateReg(ZTTAccArgRegsM2);
@@ -678,6 +679,8 @@ static bool CC_RISCV_Impl(unsigned ValNo, MVT ValVT, MVT LocVT,
       Reg = State.AllocateReg(ZTTAccArgRegsM4);
     else if (GroupSize == 8)
       Reg = State.AllocateReg(ZTTAccArgRegsM8);
+    else if (GroupSize == 16)
+      Reg = State.AllocateReg(ZTTAccArgRegsM16);
     else
       Reg = State.AllocateReg(ZTTAccArgRegs);
     LocVT = ValVT;
@@ -741,7 +744,7 @@ static bool CC_RISCV_Impl(unsigned ValNo, MVT ValVT, MVT LocVT,
   assert(((LocVT.isFloatingPoint() && !LocVT.isVector()) || LocVT == XLenVT ||
           isZttMatrixVT(ValVT) ||
           (ValVT.SimpleTy >= MVT::riscv_ztta1 &&
-           ValVT.SimpleTy <= MVT::riscv_ztta8) ||
+           ValVT.SimpleTy <= MVT::riscv_ztta16) ||
           Subtarget.isPExtPackedType(LocVT) ||
           (TLI.getSubtarget().hasVInstructions() &&
            (LocVT.isVector() || LocVT.isRISCVVectorTuple()))) &&

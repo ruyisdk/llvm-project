@@ -139,7 +139,7 @@ namespace llvm {
     /// Return true if this is a RISC-V Ztt M or ACC type.
     constexpr bool isRISCVZtt() const {
       return (SimpleTy >= MVT::riscv_zttm4 && SimpleTy <= MVT::riscv_zttm4096) ||
-             (SimpleTy >= MVT::riscv_ztta1 && SimpleTy <= MVT::riscv_ztta8);
+             (SimpleTy >= MVT::riscv_ztta1 && SimpleTy <= MVT::riscv_ztta16);
     }
 
     /// Return true if this is a custom target type that has a scalable size.
