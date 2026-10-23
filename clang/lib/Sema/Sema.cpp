@@ -589,6 +589,46 @@ void Sema::Initialize() {
 #include "clang/Basic/SPIRVTypes.def"
   }
 
+  if (Context.getTargetInfo().getTriple().isRISCV() &&
+      Context.getTargetInfo().hasFeature("ztt")) {
+    for (QualType Ty : {
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) Context.SingletonId,
+#include "clang/Basic/RISCVZttTypes.def"
+         }) {
+      const auto *BT = Ty->castAs<BuiltinType>();
+      StringRef Name = BT->getName(Context.getLangOpts());
+      addImplicitTypedef(Name, Ty);
+      auto Info = Context.getBuiltinRISCVZttTypeInfo(BT);
+      if ((Info.DatatypeOptions & 7) == 0) {
+        // Explicit default rounding is an alias: i16_rnu is i16,
+        // i16_rnu_sat is i16_sat, and f32_rne is f32.
+        std::string Alias = Name.str();
+        Alias.insert(Alias.find('_', sizeof("__riscv_ztt_") - 1),
+                     Info.ElementType->isFloatingType() ? "_rne" : "_rnu");
+        addImplicitTypedef(Alias, Ty);
+      }
+    }
+  }
+
+  if (Context.getTargetInfo().getTriple().isRISCV() &&
+      Context.getTargetInfo().hasFeature("ztt")) {
+    for (QualType Ty : {
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) Context.SingletonId,
+#include "clang/Basic/RISCVZttScalarTypes.def"
+         }) {
+      const auto *BT = Ty->castAs<BuiltinType>();
+      StringRef Name = BT->getName(Context.getLangOpts());
+      addImplicitTypedef(Name, Ty);
+      auto Info = Context.getBuiltinRISCVZttScalarTypeInfo(BT);
+      if ((Info.DatatypeOptions & 7) == 0) {
+        std::string Alias = Name.str();
+        Alias.insert(Alias.find('_', sizeof("__riscv_ztt_") - 1),
+                     Info.ValueType->isFloatingType() ? "_rne" : "_rnu");
+        addImplicitTypedef(Alias, Ty);
+      }
+    }
+  }
+
   if (Context.getTargetInfo().hasBuiltinMSVaList()) {
     DeclarationName MSVaList = &Context.Idents.get("__builtin_ms_va_list");
     if (IdResolver.begin(MSVaList) == IdResolver.end())

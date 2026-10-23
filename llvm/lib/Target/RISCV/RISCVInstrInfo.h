@@ -15,6 +15,7 @@
 
 #include "RISCV.h"
 #include "RISCVRegisterInfo.h"
+#include "llvm/ADT/StringTable.h"
 #include "llvm/CodeGen/TargetInstrInfo.h"
 #include "llvm/IR/DiagnosticInfo.h"
 
@@ -495,6 +496,83 @@ struct RISCVMaskedPseudoInfo {
 #define GET_RISCVMaskedPseudosTable_DECL
 #include "RISCVGenSearchableTables.inc"
 } // end namespace RISCV
+
+namespace RISCVZttInstrInfo {
+
+#define GET_ZttOperationID_DECL
+#include "RISCVGenSearchableTables.inc"
+
+/// Matrix, datatype and address operand layouts used by Ztt pseudos.
+enum class OperandLayout {
+  Matrix,
+  Clear,
+  Zero,
+  Copy,
+  Concat,
+  CrossCopy,
+  Extract,
+  Memory,
+  StridedMemory
+};
+
+/// Lowering and expansion paths shared with the operation descriptions.
+enum class CodeGenKind { Slice, Matmul, Transfer, Memory, State };
+
+/// Scalar datatype: none, AMESTYPE, or an instruction operand (mbcast).
+enum class ScalarTypeLocation { None, CSR, Operand };
+
+/// Operand counts and effects shared by all register-group sizes.
+struct OperationInfo {
+  ZttOperationID Operation;
+  bool IsAcc;
+  OperandLayout Layout;
+  CodeGenKind Kind;
+  unsigned BaseOpcode;
+  uint8_t NumSources;
+  bool HasChain, SameGroups, HasOld;
+  bool Pairwise; // Zip/unzip update both squares together.
+  bool HasSideEffects;
+  bool HasScalar, HasScalarType;
+  ScalarTypeLocation ScalarType;
+  bool IsLoad, HasScratch;
+  bool Transposed;
+  StringTable::Offset Name;
+
+  bool isMemory() const { return Kind == CodeGenKind::Memory; }
+  StringRef getName() const;
+};
+
+/// Physical register counts; zero means absent or fixed by the operand layout.
+/// DstGroup is the result group, or the stored matrix group for stores.
+struct PseudoInfo {
+  unsigned Pseudo;
+  ZttOperationID Operation;
+  uint8_t DstGroup;
+  uint8_t Src0Group;
+  uint8_t Src1Group;
+};
+
+/// A data-writing opcode that leaves the M datatype unchanged.
+struct MDPreservingInfo {
+  unsigned Opcode;
+};
+
+#define GET_ZttMDPreservingTable_DECL
+#define GET_ZttOperationTable_DECL
+#define GET_ZttPseudoTable_DECL
+#include "RISCVGenSearchableTables.inc"
+
+inline StringRef OperationInfo::getName() const {
+  return getOperationInfoStr(Name);
+}
+
+inline const PseudoInfo *getPseudoForGroups(unsigned Operation, unsigned Dst,
+                                            unsigned Src0 = 0,
+                                            unsigned Src1 = 0) {
+  return getPseudoGroupEntry(Operation, Dst, Src0, Src1);
+}
+
+} // namespace RISCVZttInstrInfo
 
 } // end namespace llvm
 #endif

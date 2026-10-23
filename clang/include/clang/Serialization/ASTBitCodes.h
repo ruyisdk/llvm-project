@@ -1157,6 +1157,12 @@ enum PredefinedTypeIDs {
 // \brief SPIR-V types with auto numeration
 #define SPIRV_TYPE(Name, Id, SingletonId) PREDEF_TYPE_##Id##_ID,
 #include "clang/Basic/SPIRVTypes.def"
+// RISC-V Ztt matrix types.
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) PREDEF_TYPE_##Id##_ID,
+#include "clang/Basic/RISCVZttTypes.def"
+// RISC-V Ztt scalar types.
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) PREDEF_TYPE_##Id##_ID,
+#include "clang/Basic/RISCVZttScalarTypes.def"
 
   /// The placeholder type for unresolved templates.
   PREDEF_TYPE_UNRESOLVED_TEMPLATE,
@@ -1169,7 +1175,7 @@ enum PredefinedTypeIDs {
 ///
 /// Type IDs for non-predefined types will start at
 /// NUM_PREDEF_TYPE_IDs.
-const unsigned NUM_PREDEF_TYPE_IDS = 530;
+const unsigned NUM_PREDEF_TYPE_IDS = 2557;
 
 // Ensure we do not overrun the predefined types we reserved
 // in the enum PredefinedTypeIDs above.

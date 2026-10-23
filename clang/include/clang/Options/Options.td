@@ -5826,6 +5826,9 @@ def mrvv_vector_bits_EQ : Joined<["-"], "mrvv-vector-bits=">, Group<m_Group>,
       !eq(GlobalDocumentation.Program, "Flang") : "",
       true: " The value will be reflected in __riscv_v_fixed_vlen preprocessor define"),
     " (RISC-V only)")>;
+def riscv_mztt_profile_EQ : Joined<["-"], "mztt-profile=">, Group<m_Group>,
+  Visibility<[ClangOption]>,
+  HelpText<"Select Ztt configuration: clang-n<N>-u<UDS>-m<M>-a<A> or clang-runtime-u<UDS>-m<M>-a<A> (RISC-V only)">;
 def mexperimental_mtune_syntax : Flag<["-"], "mexperimental-mtune-syntax">, Group<m_Group>,
   HelpText<"Enable experimental syntax for the '-mtune' flag (RISC-V only)">;
 def mno_experimental_mtune_syntax : Flag<["-"], "mno-experimental-mtune-syntax">, Group<m_Group>,

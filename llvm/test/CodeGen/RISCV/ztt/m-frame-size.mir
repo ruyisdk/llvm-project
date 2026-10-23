@@ -1,0 +1,823 @@
+# RUN: llc -mtriple=riscv32 -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %s -o - | FileCheck %s
+# RUN: llc -mtriple=riscv64 -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %s -o - | FileCheck %s --check-prefixes=CHECK,RV64
+# RUN: llc -mtriple=riscv32 -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %s -o %t.rv32.s
+# RUN: %python %S/Inputs/check-m-frame-size.py %t.rv32.s 32
+# RUN: llc -mtriple=riscv64 -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %s -o %t.rv64.s
+# RUN: %python %S/Inputs/check-m-frame-size.py %t.rv64.s 64
+
+# Isolate the frame-size arithmetic from SP adjustment and automatic spilling.
+# stride=N*N*UDS/8; bytes=alignTo(count*stride,16). Count is physical M count.
+--- |
+  define void @size_u8_c0() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u8-m32-a16" { ret void }
+  define void @size_u8_c1() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u8-m32-a16" { ret void }
+  define void @size_u8_c3() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u8-m32-a16" { ret void }
+  define void @size_u8_c32() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u8-m32-a16" { ret void }
+  define void @size_u16_c0() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u16-m32-a16" { ret void }
+  define void @size_u16_c1() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u16-m32-a16" { ret void }
+  define void @size_u16_c3() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u16-m32-a16" { ret void }
+  define void @size_u16_c32() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u16-m32-a16" { ret void }
+  define void @size_u32_c0() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u32-m32-a16" { ret void }
+  define void @size_u32_c1() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u32-m32-a16" { ret void }
+  define void @size_u32_c3() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u32-m32-a16" { ret void }
+  define void @size_u32_c32() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u32-m32-a16" { ret void }
+  define void @size_u64_c0() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u64-m32-a16" { ret void }
+  define void @size_u64_c1() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u64-m32-a16" { ret void }
+  define void @size_u64_c3() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u64-m32-a16" { ret void }
+  define void @size_u64_c32() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u64-m32-a16" { ret void }
+  define void @size_u128_c0() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u128-m32-a16" { ret void }
+  define void @size_u128_c1() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u128-m32-a16" { ret void }
+  define void @size_u128_c3() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u128-m32-a16" { ret void }
+  define void @size_u128_c32() nounwind "target-features"="+ztt,+m" "riscv-ztt-profile"="clang-runtime-u128-m32-a16" { ret void }
+  define void @size_u16_c3_soft() nounwind "target-features"="+ztt" "riscv-ztt-profile"="clang-runtime-u16-m32-a16" { ret void }
+  define void @size_u32_c3_zmmul() nounwind "target-features"="+ztt,+zmmul" "riscv-ztt-profile"="clang-runtime-u32-m32-a16" { ret void }
+...
+---
+name: size_u8_c0
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u8_c0:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: li a1, 0
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 0, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u8_c1
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u8_c1:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: csrr a2, amenlen
+    ; CHECK-NEXT: mul a1, a2, a2
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: addi a0, a0, 15
+    ; CHECK-NEXT: andi a0, a0, -16
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 1, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u8_c3
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u8_c3:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: csrr a2, amenlen
+    ; CHECK-NEXT: mul a1, a2, a2
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: addi a0, a0, 15
+    ; CHECK-NEXT: andi a0, a0, -16
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 3, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u8_c32
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u8_c32:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: csrr a2, amenlen
+    ; CHECK-NEXT: mul a1, a2, a2
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: addi a0, a0, 15
+    ; CHECK-NEXT: andi a0, a0, -16
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 32, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u16_c0
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u16_c0:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: li a1, 0
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 0, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u16_c1
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u16_c1:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: csrr a2, amenlen
+    ; CHECK-NEXT: mul a1, a2, a2
+    ; CHECK-NEXT: slli a1, a1, 1
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: addi a0, a0, 15
+    ; CHECK-NEXT: andi a0, a0, -16
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 1, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u16_c3
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u16_c3:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: csrr a2, amenlen
+    ; CHECK-NEXT: mul a1, a2, a2
+    ; CHECK-NEXT: slli a1, a1, 1
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: addi a0, a0, 15
+    ; CHECK-NEXT: andi a0, a0, -16
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 3, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u16_c32
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u16_c32:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: csrr a2, amenlen
+    ; CHECK-NEXT: mul a1, a2, a2
+    ; CHECK-NEXT: slli a1, a1, 1
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: addi a0, a0, 15
+    ; CHECK-NEXT: andi a0, a0, -16
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 32, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u32_c0
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u32_c0:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: li a1, 0
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 0, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u32_c1
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u32_c1:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: csrr a2, amenlen
+    ; CHECK-NEXT: mul a1, a2, a2
+    ; CHECK-NEXT: slli a1, a1, 2
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: addi a0, a0, 15
+    ; CHECK-NEXT: andi a0, a0, -16
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 1, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u32_c3
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u32_c3:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: csrr a2, amenlen
+    ; CHECK-NEXT: mul a1, a2, a2
+    ; CHECK-NEXT: slli a1, a1, 2
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: addi a0, a0, 15
+    ; CHECK-NEXT: andi a0, a0, -16
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 3, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u32_c32
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u32_c32:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: csrr a2, amenlen
+    ; CHECK-NEXT: mul a1, a2, a2
+    ; CHECK-NEXT: slli a1, a1, 2
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: addi a0, a0, 15
+    ; CHECK-NEXT: andi a0, a0, -16
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 32, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u64_c0
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u64_c0:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: li a1, 0
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 0, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u64_c1
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u64_c1:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: csrr a2, amenlen
+    ; CHECK-NEXT: mul a1, a2, a2
+    ; CHECK-NEXT: slli a1, a1, 3
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: addi a0, a0, 15
+    ; CHECK-NEXT: andi a0, a0, -16
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 1, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u64_c3
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u64_c3:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: csrr a2, amenlen
+    ; CHECK-NEXT: mul a1, a2, a2
+    ; CHECK-NEXT: slli a1, a1, 3
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: addi a0, a0, 15
+    ; CHECK-NEXT: andi a0, a0, -16
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 3, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u64_c32
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u64_c32:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: csrr a2, amenlen
+    ; CHECK-NEXT: mul a1, a2, a2
+    ; CHECK-NEXT: slli a1, a1, 3
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: addi a0, a0, 15
+    ; CHECK-NEXT: andi a0, a0, -16
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 32, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u128_c0
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u128_c0:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: li a1, 0
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 0, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u128_c1
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u128_c1:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: csrr a2, amenlen
+    ; CHECK-NEXT: mul a1, a2, a2
+    ; CHECK-NEXT: slli a1, a1, 4
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: addi a0, a0, 15
+    ; CHECK-NEXT: andi a0, a0, -16
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 1, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u128_c3
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u128_c3:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: csrr a2, amenlen
+    ; CHECK-NEXT: mul a1, a2, a2
+    ; CHECK-NEXT: slli a1, a1, 4
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: addi a0, a0, 15
+    ; CHECK-NEXT: andi a0, a0, -16
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 3, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u128_c32
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u128_c32:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: csrr a2, amenlen
+    ; CHECK-NEXT: mul a1, a2, a2
+    ; CHECK-NEXT: slli a1, a1, 4
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: addi a0, a0, 15
+    ; CHECK-NEXT: andi a0, a0, -16
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 32, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u16_c3_soft
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u16_c3_soft:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: csrr a2, amenlen
+    ; CHECK-NEXT: mv a3, a2
+    ; CHECK-NEXT: li a1, 0
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: srli a2, a2, 1
+    ; CHECK-NEXT: slli a3, a3, 1
+    ; CHECK-NEXT: andi a4, a2, 1
+    ; CHECK-NEXT: neg a4, a4
+    ; CHECK-NEXT: and a4, a4, a3
+    ; CHECK-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; RV64-NEXT: srli a2, a2, 1
+    ; RV64-NEXT: slli a3, a3, 1
+    ; RV64-NEXT: andi a4, a2, 1
+    ; RV64-NEXT: neg a4, a4
+    ; RV64-NEXT: and a4, a4, a3
+    ; RV64-NEXT: add a1, a1, a4
+    ; CHECK-NEXT: slli a1, a1, 1
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: addi a0, a0, 15
+    ; CHECK-NEXT: andi a0, a0, -16
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 3, 16
+    PseudoRET implicit $x10, implicit $x11
+...
+---
+name: size_u32_c3_zmmul
+tracksRegLiveness: true
+body: |
+  bb.0:
+    ; CHECK-LABEL: size_u32_c3_zmmul:
+    ; CHECK-NEXT: # %bb.0:
+    ; CHECK-NEXT: csrr a2, amenlen
+    ; CHECK-NEXT: mul a1, a2, a2
+    ; CHECK-NEXT: slli a1, a1, 2
+    ; CHECK-NEXT: li a0, 0
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: slli a0, a0, 1
+    ; CHECK-NEXT: add a0, a0, a1
+    ; CHECK-NEXT: addi a0, a0, 15
+    ; CHECK-NEXT: andi a0, a0, -16
+    ; CHECK-NEXT: ret
+    early-clobber $x10, early-clobber $x11, early-clobber $x12, early-clobber $x13, early-clobber $x14 = PseudoZTTMFrameSize 3, 16
+    PseudoRET implicit $x10, implicit $x11
+...

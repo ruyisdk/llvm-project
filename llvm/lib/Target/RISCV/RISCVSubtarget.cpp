@@ -135,10 +135,11 @@ RISCVSubtarget::RISCVSubtarget(const Triple &TT, StringRef CPU,
                                StringRef TuneCPU, StringRef FS,
                                StringRef ABIName, unsigned RVVVectorBitsMin,
                                unsigned RVVVectorBitsMax,
-                               const TargetMachine &TM)
+                               const TargetMachine &TM,
+                               std::optional<RISCV::ZttProfile> ZttConfig)
     : RISCVGenSubtargetInfo(TT, CPU, TuneCPU, FS),
       IsLittleEndian(TT.isLittleEndian()), RVVVectorBitsMin(RVVVectorBitsMin),
-      RVVVectorBitsMax(RVVVectorBitsMax),
+      RVVVectorBitsMax(RVVVectorBitsMax), ZttConfig(ZttConfig),
       FrameLowering(
           initializeSubtargetDependencies(TT, CPU, TuneCPU, FS, ABIName)),
       InstrInfo(*this), TLInfo(TM, *this) {

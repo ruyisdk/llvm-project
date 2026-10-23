@@ -572,6 +572,9 @@ public:
 
   std::optional<Instruction *>
   instCombineIntrinsic(InstCombiner &IC, IntrinsicInst &II) const override;
+
+  bool areInlineCompatible(const Function *Caller,
+                           const Function *Callee) const override;
 };
 
 } // end namespace llvm

@@ -16,6 +16,7 @@
 #include "RISCV.h"
 #include "RISCVMachineFunctionInfo.h"
 #include "RISCVSubtarget.h"
+#include "RISCVZttSpill.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/Statistic.h"
@@ -84,6 +85,16 @@ namespace llvm::RISCV {
 #include "RISCVGenSearchableTables.inc"
 
 } // end namespace llvm::RISCV
+
+namespace llvm::RISCVZttInstrInfo {
+using namespace RISCV;
+
+#define GET_ZttOperationTable_IMPL
+#define GET_ZttMDPreservingTable_IMPL
+#define GET_ZttPseudoTable_IMPL
+#include "RISCVGenSearchableTables.inc"
+
+} // namespace llvm::RISCVZttInstrInfo
 
 RISCVInstrInfo::RISCVInstrInfo(const RISCVSubtarget &STI)
     : RISCVGenInstrInfo(STI, RegInfo, RISCV::ADJCALLSTACKDOWN,
@@ -673,6 +684,8 @@ void RISCVInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
                                          const TargetRegisterClass *RC,
                                          Register VReg,
                                          MachineInstr::MIFlag Flags) const {
+  if (emitZttSpill(MBB, I, SrcReg, false, IsKill, FI, RC, VReg, Flags))
+    return;
   MachineFunction *MF = MBB.getParent();
   MachineFrameInfo &MFI = MF->getFrameInfo();
   Align Alignment = MFI.getObjectAlign(FI);
@@ -763,6 +776,8 @@ void RISCVInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
                                           const TargetRegisterClass *RC,
                                           Register VReg, unsigned SubReg,
                                           MachineInstr::MIFlag Flags) const {
+  if (emitZttSpill(MBB, I, DstReg, true, false, FI, RC, VReg, Flags))
+    return;
   MachineFunction *MF = MBB.getParent();
   MachineFrameInfo &MFI = MF->getFrameInfo();
   Align Alignment = MFI.getObjectAlign(FI);

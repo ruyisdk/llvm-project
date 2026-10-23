@@ -1,0 +1,49 @@
+# RUN: split-file %s %t
+# RUN: not %python %S/Inputs/check-spill-frame.py %t/dtype.s 64 acc_image_unsigned 32 2 16 2>&1 | FileCheck %s --check-prefix=DTYPE
+# RUN: not %python %S/Inputs/check-spill-frame.py %t/clear.s 64 acc_image_standard 64 1 64 2>&1 | FileCheck %s --check-prefix=CLEAR
+# RUN: not %python %S/Inputs/check-spill-frame.py %t/neighbour.s 64 acc_image_standard 64 1 64 2>&1 | FileCheck %s --check-prefix=NEIGHBOUR
+# Deliberately incorrect handwritten assembly validates the semantic checker:
+# same bit width but wrong signedness, late destructive asettyp, neighbour loss.
+# DTYPE: AssertionError: matrix datatype mismatch
+# CLEAR: AssertionError: ACC payload corrupted
+# NEIGHBOUR: AssertionError: ACC neighbour corrupted
+#--- dtype.s
+acc_image_unsigned:
+  li a0, 1073741856
+  msettyp m0, a0
+  ret
+.Lfunc_end0:
+#--- clear.s
+acc_image_standard:
+  addi sp, sp, -16
+  sd a0, 0(sp)
+  sd a1, 8(sp)
+  csrr a1, amenlen
+  li a0, 1073741888
+  msettyp m0, a0
+  mmov.m.a m0, acc0
+  asettyp acc8, a0
+  mmov.a.m acc8, m0
+  asettyp acc8, a0
+  ld a0, 0(sp)
+  ld a1, 8(sp)
+  addi sp, sp, 16
+  ret
+.Lfunc_end0:
+#--- neighbour.s
+acc_image_standard:
+  addi sp, sp, -16
+  sd a0, 0(sp)
+  sd a1, 8(sp)
+  csrr a1, amenlen
+  li a0, 1073741888
+  msettyp m0, a0
+  mmov.m.a m0, acc0
+  asettyp acc8, a0
+  mmov.a.m acc8, m0
+  asettyp acc1, a0
+  ld a0, 0(sp)
+  ld a1, 8(sp)
+  addi sp, sp, 16
+  ret
+.Lfunc_end0:

@@ -4294,6 +4294,7 @@ void PragmaExportHandler::HandlePragma(Preprocessor &PP,
 // Handle '#pragma clang riscv intrinsic vector'.
 //        '#pragma clang riscv intrinsic sifive_vector'.
 //        '#pragma clang riscv intrinsic andes_vector'.
+//        '#pragma clang riscv intrinsic ztt'.
 void PragmaRISCVHandler::HandlePragma(Preprocessor &PP,
                                       PragmaIntroducer Introducer,
                                       Token &FirstToken) {
@@ -4310,10 +4311,12 @@ void PragmaRISCVHandler::HandlePragma(Preprocessor &PP,
   PP.Lex(Tok);
   II = Tok.getIdentifierInfo();
   if (!II || !(II->isStr("vector") || II->isStr("sifive_vector") ||
-               II->isStr("andes_vector"))) {
+               II->isStr("andes_vector") || II->isStr("ztt"))) {
     PP.Diag(Tok.getLocation(), diag::warn_pragma_invalid_argument)
         << PP.getSpelling(Tok) << "riscv" << /*Expected=*/true
-        << "'vector', 'sifive_vector' or 'andes_vector'";
+        << (PP.getTargetInfo().hasFeature("ztt")
+                ? "'vector', 'sifive_vector', 'andes_vector' or 'ztt'"
+                : "'vector', 'sifive_vector' or 'andes_vector'");
     return;
   }
 
@@ -4330,4 +4333,6 @@ void PragmaRISCVHandler::HandlePragma(Preprocessor &PP,
     Actions.RISCV().DeclareSiFiveVectorBuiltins = true;
   else if (II->isStr("andes_vector"))
     Actions.RISCV().DeclareAndesVectorBuiltins = true;
+  else if (II->isStr("ztt"))
+    Actions.RISCV().DeclareRISCVZttBuiltins = true;
 }

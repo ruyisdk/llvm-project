@@ -653,6 +653,10 @@ private:
 
   std::pair<const TargetRegisterClass *, uint8_t>
   findRepresentativeClass(const TargetRegisterInfo *TRI, MVT VT) const override;
+
+  // Lower matrix intrinsics to Ztt DAG nodes.
+  SDValue lowerZttIntrinsic(SDValue Op, SelectionDAG &DAG,
+                            unsigned IntNo) const;
 };
 
 namespace RISCVVIntrinsicsTable {
@@ -679,6 +683,38 @@ using namespace RISCV;
 #undef GET_RISCVVIntrinsicsTable_DECL
 
 } // end namespace RISCVVIntrinsicsTable
+
+namespace RISCVZttInstrInfo {
+struct OperationInfo;
+struct PseudoInfo;
+} // namespace RISCVZttInstrInfo
+
+namespace RISCVZttLowering {
+
+/// Map an intrinsic to its DAG entry point and machine operation.
+struct IntrinsicLoweringInfo {
+  unsigned IntrinsicID;
+  unsigned Opcode;
+  unsigned DAGOpcode;
+  unsigned Operation;
+};
+
+/// Map a machine pseudo to a DAG node, which may be shared by several groups.
+struct DAGNodeInfo {
+  unsigned Pseudo;
+  unsigned DAGOpcode;
+};
+
+#define GET_ZttIntrinsicLoweringTable_DECL
+#define GET_ZttDAGNodeTable_DECL
+#include "RISCVGenSearchableTables.inc"
+
+/// Look up a Ztt DAG node, or return nullptr for other nodes.
+const RISCVZttInstrInfo::OperationInfo *getDAGOperationInfo(unsigned Opcode);
+/// Shared nodes identify the operation; select groups separately.
+const RISCVZttInstrInfo::PseudoInfo *getDAGPseudoInfo(unsigned Opcode);
+
+} // namespace RISCVZttLowering
 
 } // end namespace llvm
 

@@ -28,6 +28,9 @@ class RISCVIntrinsicManager;
 
 class ParsedAttr;
 class TargetInfo;
+class LookupResult;
+class InitializedEntity;
+class InitializationKind;
 
 class SemaRISCV : public SemaBase {
 public:
@@ -54,6 +57,9 @@ public:
   /// Indicate RISC-V Andes vector builtin functions enabled or not.
   bool DeclareAndesVectorBuiltins = false;
 
+  /// Declare RISC-V Ztt intrinsic names on demand once enabled by the header.
+  bool DeclareRISCVZttBuiltins = false;
+
   std::unique_ptr<sema::RISCVIntrinsicManager> IntrinsicManager;
 
   bool checkTargetVersionAttr(const StringRef Param, const SourceLocation Loc,
@@ -62,6 +68,21 @@ public:
                              const SmallVectorImpl<SourceLocation> &Locs,
                              SmallVectorImpl<SmallString<64>> &NewParams,
                              SourceLocation AttrLoc);
+
+  /// RISC-V Ztt scalars convert only to/from their exact C type or themselves.
+  /// At least one type must be a RISC-V Ztt scalar.
+  bool isValidRISCVZttScalarConversion(QualType From, QualType To);
+
+  bool CreateRISCVZttIntrinsicIfFound(LookupResult &R, IdentifierInfo *II);
+
+  // Check RISC-V Ztt profiles, matrix layouts and operation operands.
+  bool CheckRISCVZttBuiltinFunctionCall(const TargetInfo &TI, unsigned BuiltinID,
+                                      CallExpr *TheCall);
+
+  /// Matrix objects require a direct RISC-V Ztt intrinsic initializer.
+  bool isValidRISCVZttInitialization(const InitializedEntity &Entity,
+                                    const InitializationKind &Kind,
+                                    ArrayRef<Expr *> Args);
 };
 
 std::unique_ptr<sema::RISCVIntrinsicManager>

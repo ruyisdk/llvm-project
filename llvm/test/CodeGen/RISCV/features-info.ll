@@ -367,6 +367,7 @@
 ; CHECK-NEXT:   zkt                              - 'Zkt' (Data Independent Execution Latency).
 ; CHECK-NEXT:   zmmul                            - 'Zmmul' (Integer Multiplication).
 ; CHECK-NEXT:   ztso                             - 'Ztso' (Memory Model - Total Store Order).
+; CHECK-NEXT:   ztt                              - 'Ztt' (Ztt matrix extension).
 ; CHECK-NEXT:   zvbb                             - 'Zvbb' (Vector basic bit-manipulation instructions).
 ; CHECK-NEXT:   zvbc                             - 'Zvbc' (Vector Carryless Multiplication).
 ; CHECK-NEXT:   zve32f                           - 'Zve32f' (Vector Extensions for Embedded Processors with maximal 32 EEW and F extension).

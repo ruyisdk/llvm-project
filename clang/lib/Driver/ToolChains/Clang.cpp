@@ -2104,6 +2104,14 @@ void Clang::AddRISCVTargetArgs(const ArgList &Args,
           << A->getSpelling() << Val;
     }
   }
+
+  // cc1 consumes the profile and emits it as a function attribute. Keep this
+  // transport separate from ISA features so cc1as never receives it.
+  if (Arg *A = Args.getLastArg(options::OPT_riscv_mztt_profile_EQ)) {
+    CmdArgs.push_back("-target-feature");
+    CmdArgs.push_back(
+        Args.MakeArgString("+ztt-profile=" + StringRef(A->getValue())));
+  }
 }
 
 void Clang::AddSparcTargetArgs(const ArgList &Args,

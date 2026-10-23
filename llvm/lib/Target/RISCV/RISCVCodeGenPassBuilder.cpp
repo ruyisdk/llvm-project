@@ -68,6 +68,7 @@ public:
 };
 
 void RISCVCodeGenPassBuilder::addIRPasses(PassManagerWrapper &PMW) {
+  addFunctionPass(RISCVZttPromoteAllocasPass(&getTM()), PMW);
   addFunctionPass(AtomicExpandPass(TM), PMW);
   addFunctionPass(RISCVZacasABIFixPass(&getTM()), PMW);
 

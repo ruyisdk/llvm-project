@@ -1,0 +1,31 @@
+//===- RISCVZttRegisterGroups.def - Ztt group mappings --------*- C++ -*-===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+// Physical group sizes and register classes, shared by layout and spill code.
+
+#ifndef RISCV_ZTT_M_GROUP
+#define RISCV_ZTT_M_GROUP(Size, Class)
+#endif
+#ifndef RISCV_ZTT_ACC_GROUP
+#define RISCV_ZTT_ACC_GROUP(Size, Class)
+#endif
+
+RISCV_ZTT_M_GROUP(1, ZTTMRRegClass)
+RISCV_ZTT_M_GROUP(2, ZTTMRM2RegClass)
+RISCV_ZTT_M_GROUP(4, ZTTMRM4RegClass)
+RISCV_ZTT_M_GROUP(8, ZTTMRM8RegClass)
+RISCV_ZTT_M_GROUP(16, ZTTMRM16RegClass)
+RISCV_ZTT_M_GROUP(32, ZTTMRM32RegClass)
+
+RISCV_ZTT_ACC_GROUP(1, ZTTARRegClass)
+RISCV_ZTT_ACC_GROUP(2, ZTTARM2RegClass)
+RISCV_ZTT_ACC_GROUP(4, ZTTARM4RegClass)
+RISCV_ZTT_ACC_GROUP(8, ZTTARM8RegClass)
+RISCV_ZTT_ACC_GROUP(16, ZTTARM16RegClass)
+
+#undef RISCV_ZTT_M_GROUP
+#undef RISCV_ZTT_ACC_GROUP

@@ -18,6 +18,7 @@
 #include "llvm/CodeGen/MIRYamlMapping.h"
 #include "llvm/CodeGen/MachineFrameInfo.h"
 #include "llvm/CodeGen/MachineFunction.h"
+#include <vector>
 
 namespace llvm {
 
@@ -27,6 +28,11 @@ namespace yaml {
 struct RISCVMachineFunctionInfo final : public yaml::MachineFunctionInfo {
   int VarArgsFrameIndex;
   int VarArgsSaveSize;
+  std::vector<int> ZttMArgLayout;
+
+  int ZttMFrameFI = 0;
+  unsigned ZttMSpillUnits = 0;
+  unsigned ZttMStrideReg = 0;
 
   RISCVMachineFunctionInfo() = default;
   RISCVMachineFunctionInfo(const llvm::RISCVMachineFunctionInfo &MFI);
@@ -39,6 +45,10 @@ template <> struct MappingTraits<RISCVMachineFunctionInfo> {
   static void mapping(IO &YamlIO, RISCVMachineFunctionInfo &MFI) {
     YamlIO.mapOptional("varArgsFrameIndex", MFI.VarArgsFrameIndex);
     YamlIO.mapOptional("varArgsSaveSize", MFI.VarArgsSaveSize);
+    YamlIO.mapOptional("zttMArgLayout", MFI.ZttMArgLayout);
+    YamlIO.mapOptional("zttMFrameFI", MFI.ZttMFrameFI, 0);
+    YamlIO.mapOptional("zttMSpillUnits", MFI.ZttMSpillUnits, 0U);
+    YamlIO.mapOptional("zttMStrideReg", MFI.ZttMStrideReg, 0U);
   }
 };
 } // end namespace yaml
@@ -98,6 +108,9 @@ private:
   /// Whether the function has cf-protection-branch module flag set.
   bool CFProtectionBranch = false;
 
+  // Entry M square layout: -1 unknown, 0 continuation, positive = square width.
+  std::vector<int> ZttMArgLayout;
+
 public:
   RISCVMachineFunctionInfo(const Function &F, const RISCVSubtarget *STI);
 
@@ -136,7 +149,8 @@ public:
   bool useSaveRestoreLibCalls(const MachineFunction &MF) const {
     // We cannot use fixed locations for the callee saved spill slots if the
     // function uses a varargs save area, or is an interrupt handler.
-    return !isPushable(MF) &&
+    // A restore tail call cannot release the surrounding Ztt runtime area.
+    return !hasZttMSpills() && !isPushable(MF) &&
            MF.getSubtarget<RISCVSubtarget>().enableSaveRestore() &&
            VarArgsSaveSize == 0 && !MF.getFrameInfo().hasTailCall() &&
            !MF.getFunction().hasFnAttribute("interrupt");
@@ -241,6 +255,41 @@ public:
   void setDynamicAllocation() { HasDynamicAllocation = true; }
 
   bool hasCFProtectionBranch() const { return CFProtectionBranch; }
+
+  ArrayRef<int> getZttMArgLayout() const { return ZttMArgLayout; }
+  void setZttMArgLayout(unsigned Base, unsigned Group, unsigned Width) {
+    assert(Base + Group <= 32 && Width && Group % Width == 0);
+    ZttMArgLayout.resize(32, -1);
+    for (unsigned I = 0; I != Group; ++I)
+      ZttMArgLayout[Base + I] = I % Width == 0 ? int(Width) : 0;
+  }
+
+  // Fixed metadata slot and payload offset/capacity in physical M registers.
+  // Group counts metadata words; Units counts data registers.
+  struct ZttMSpillSlot {
+    int FI;
+    unsigned Group;
+    unsigned Offset;
+    unsigned Units = 0;
+  };
+  SmallVector<ZttMSpillSlot> ZttMSpillSlots;
+  // Retain square widths while the allocator replaces defining registers.
+  DenseMap<int, unsigned> ZttSpillWidths;
+  // Header above the ordinary frame: total runtime bytes and M register stride.
+  int ZttMFrameFI = 0;
+  unsigned ZttMSpillUnits = 0;
+  // Optional unused saved GPR for the stride; zero uses the stack header.
+  unsigned ZttMStrideReg = 0;
+  // Ordinary stack slots protecting borrowed GPRs during image transfers.
+  SmallVector<int, 5> ZttScratchFIs;
+  bool hasZttMSpills() const { return ZttMSpillUnits != 0; }
+
+  // Retain ACC element widths before register allocation and slot coloring.
+  DenseMap<int, unsigned> ZttAccSpillBits;
+  // Reusable M protection image, used only within an ACC save or restore.
+  int ZttAccScratchFI = 0;
+  unsigned ZttAccScratchOffset = 0;
+  bool ZttHasAccSpills = false;
 };
 
 } // end namespace llvm

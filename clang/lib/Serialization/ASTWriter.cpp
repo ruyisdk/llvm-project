@@ -5317,10 +5317,11 @@ void ASTWriter::WriteModuleFileExtension(Sema &SemaRef,
 void ASTWriter::WriteRISCVIntrinsicPragmas(Sema &SemaRef) {
   RecordData Record;
   // Need to update this when new intrinsic class is added.
-  Record.push_back(/*size*/ 3);
+  Record.push_back(/*size*/ 4);
   Record.push_back(SemaRef.RISCV().DeclareRVVBuiltins);
   Record.push_back(SemaRef.RISCV().DeclareSiFiveVectorBuiltins);
   Record.push_back(SemaRef.RISCV().DeclareAndesVectorBuiltins);
+  Record.push_back(SemaRef.RISCV().DeclareRISCVZttBuiltins);
   Stream.EmitRecord(RISCV_VECTOR_INTRINSICS_PRAGMA, Record);
 }
 

@@ -594,6 +594,43 @@ llvm::Type *CodeGenTypes::ConvertType(QualType T) {
   case BuiltinType::Id:                                                        \
     return llvm::TargetExtType::get(getLLVMContext(), "spirv.Event");
 #include "clang/Basic/SPIRVTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttTypes.def"
+      {
+        auto Info = Context.getBuiltinRISCVZttTypeInfo(cast<BuiltinType>(Ty));
+        StringRef Prefix = Info.isMType() ? "riscv.ztt.m." : "riscv.ztt.acc.";
+        StringRef ElementPrefix;
+        if (Info.ElementType->isIntegerType())
+          ElementPrefix = Info.ElementType->isSignedIntegerType() ? "i" : "u";
+        else
+          ElementPrefix = Info.ElementType->isBFloat16Type() ? "bf" : "f";
+        std::string Name =
+            (llvm::Twine(Prefix) + ElementPrefix + llvm::Twine(Info.ElementBits))
+                .str();
+        // IR names omit default rounding, just like the canonical C names.
+        static constexpr const char *IntegerModes[] = {"", "_rne", "_rdn", "_rod"};
+        static constexpr const char *FloatModes[] = {"",     "_rtz", "_rdn",
+                                                    "_rup", "_rmm", "_rno"};
+        unsigned Mode = Info.DatatypeOptions & 7;
+        Name += Info.ElementType->isFloatingType() ? FloatModes[Mode]
+                                                  : IntegerModes[Mode];
+        if (Info.DatatypeOptions & 8)
+          Name += "_sat";
+        SmallVector<unsigned, 3> IntParams = {Info.ElementBits};
+        if (Info.isMType())
+          IntParams.append({Info.NumRows, Info.NumColumns});
+        else
+          IntParams.push_back(Info.NumACCRegisters);
+        ResultType = llvm::TargetExtType::get(
+            getLLVMContext(), Name, {ConvertType(Info.ElementType)}, IntParams);
+        break;
+      }
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) case BuiltinType::Id:
+#include "clang/Basic/RISCVZttScalarTypes.def"
+      ResultType = ConvertType(
+          Context.getBuiltinRISCVZttScalarTypeInfo(cast<BuiltinType>(Ty))
+              .ValueType);
+      break;
     case BuiltinType::Dependent:
 #define BUILTIN_TYPE(Id, SingletonId)
 #define PLACEHOLDER_TYPE(Id, SingletonId) \

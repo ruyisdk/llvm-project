@@ -8176,6 +8176,16 @@ QualType ASTReader::GetType(TypeID ID) {
     T = Context.SingletonId;                                                   \
     break;
 #include "clang/Basic/SPIRVTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) \
+  case PREDEF_TYPE_##Id##_ID:           \
+    T = Context.SingletonId;           \
+    break;
+#include "clang/Basic/RISCVZttTypes.def"
+#define RISCV_ZTT_TYPE(Name, Id, SingletonId) \
+  case PREDEF_TYPE_##Id##_ID:               \
+    T = Context.SingletonId;               \
+    break;
+#include "clang/Basic/RISCVZttScalarTypes.def"
     }
 
     assert(!T.isNull() && "Unknown predefined type");
@@ -9322,11 +9332,12 @@ void ASTReader::UpdateSema() {
   }
   SemaObj->CUDA().ForceHostDeviceDepth = ForceHostDeviceDepth;
   if (!RISCVVecIntrinsicPragma.empty()) {
-    assert(RISCVVecIntrinsicPragma.size() == 3 &&
+    assert(RISCVVecIntrinsicPragma.size() == 4 &&
            "Wrong number of RISCVVecIntrinsicPragma");
     SemaObj->RISCV().DeclareRVVBuiltins = RISCVVecIntrinsicPragma[0];
     SemaObj->RISCV().DeclareSiFiveVectorBuiltins = RISCVVecIntrinsicPragma[1];
     SemaObj->RISCV().DeclareAndesVectorBuiltins = RISCVVecIntrinsicPragma[2];
+    SemaObj->RISCV().DeclareRISCVZttBuiltins = RISCVVecIntrinsicPragma[3];
   }
 
   if (PragmaAlignPackCurrentValue) {

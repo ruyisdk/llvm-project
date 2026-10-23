@@ -90,6 +90,15 @@ def sub_gpr_odd  : SubRegIndex<32, 32> {
   let SubRegRanges = SubRegRangeByHwMode<[RV32, RV64],
                                          [SubRegRange<32, 32>, SubRegRange<64, 64>]>;
 }
+
+// Subregister indices select individual registers within a Ztt group.
+// The LLVM model uses 16 bits per Ztt M or ACC register, not its hardware size.
+// A two-register group has size 32 and member offsets 0 and 16.
+// Actual storage sizes are computed separately.
+foreach Index = 0-31 in
+  def sub_zttm_#Index : SubRegIndex<16, !mul(16, Index)>;
+foreach Index = 0-15 in
+  def sub_ztta_#Index : SubRegIndex<16, !mul(16, Index)>;
 } // Namespace = "RISCV"
 
 //===----------------------------------------------------------------------===//
@@ -371,6 +380,65 @@ def GPRNoX0X2 : GPRRegisterClass<(sub GPR, X0, X2)> {
 }
 
 def GPRX7 : GPRRegisterClass<(add X7)>;
+
+// Ztt matrix registers.
+foreach Index = 0-31 in
+  def ZTTM#Index : RISCVReg<Index, "m"#Index>, DwarfRegNum<[]>;
+
+defvar ZTTMVTs = [riscv_zttm4, riscv_zttm8, riscv_zttm16, riscv_zttm32, riscv_zttm64, riscv_zttm128,
+                  riscv_zttm256, riscv_zttm512, riscv_zttm1024, riscv_zttm2048, riscv_zttm4096];
+def ZTTMR : RegisterClass<"RISCV", ZTTMVTs, 16,
+                          (add (sequence "ZTTM%u", 0, 31))> { let Size = 16; }
+
+// Consecutive M registers form groups aligned to their group size.
+foreach GroupSize = [2, 4, 8, 16, 32] in {
+  foreach Index = !range(0, 32, GroupSize) in {
+    def ZTTM#Index#M#GroupSize : RISCVRegWithSubRegs<Index, "m"#Index,
+        !foreach(I, !range(GroupSize),
+                 !cast<Register>("ZTTM" # !add(Index, I)))> {
+      let SubRegIndices = !foreach(I, !range(GroupSize),
+                                   !cast<SubRegIndex>("sub_zttm_" # I));
+    }
+  }
+}
+
+// Register classes let the allocator assign each M group as a whole.
+foreach GroupSize = [2, 4, 8, 16, 32] in {
+  def ZTTMRM#GroupSize : RegisterClass<"RISCV", ZTTMVTs, 16,
+      (add (sequence "ZTTM%uM" # GroupSize, 0, 31, GroupSize))> {
+    let Size = !mul(16, GroupSize);
+  }
+}
+
+// Ztt accumulator registers. Acc groups may begin at any register; unlike M
+// groups, they have no power-of-two base-register alignment requirement.
+foreach Index = 0-15 in
+  def ZTTA#Index : RISCVReg<Index, "acc"#Index>, DwarfRegNum<[]>;
+
+def ZTTAR : RegisterClass<"RISCV", [riscv_ztta1], 16,
+                          (add (sequence "ZTTA%u", 0, 15))> { let Size = 16; }
+
+// Consecutive ACC registers form groups with no base alignment requirement.
+foreach GroupSize = [2, 4, 8, 16] in {
+  defvar LastBase = !sub(16, GroupSize);
+  foreach Index = !range(0, !add(LastBase, 1)) in {
+    def ZTTA#Index#M#GroupSize : RISCVRegWithSubRegs<Index, "acc"#Index,
+        !foreach(I, !range(GroupSize),
+                 !cast<Register>("ZTTA" # !add(Index, I)))> {
+      let SubRegIndices = !foreach(I, !range(GroupSize),
+                                   !cast<SubRegIndex>("sub_ztta_" # I));
+    }
+  }
+}
+
+// Register classes let the allocator assign each ACC group as a whole.
+foreach GroupSize = [2, 4, 8, 16] in {
+  def ZTTARM#GroupSize : RegisterClass<"RISCV",
+      [!cast<ValueType>("riscv_ztta" # GroupSize)], 16,
+      (add (sequence "ZTTA%uM" # GroupSize, 0, !sub(16, GroupSize)))> {
+    let Size = !mul(16, GroupSize);
+  }
+}
 
 // Don't use X1 or X5 for JALR since that is a hint to pop the return address
 // stack on some microarchitectures. Also remove the reserved registers X0, X2,

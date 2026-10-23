@@ -1,0 +1,713 @@
+# RUN: llc -mtriple=riscv32 -mattr=+m -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %s -o %t.32.s
+# RUN: llc -mtriple=riscv64 -mattr=+m -verify-machineinstrs -start-before=riscv-ztt-post-ra-expand-pseudo %s -o %t.64.s
+# RUN: FileCheck %s --match-full-lines --check-prefix=RV32 < %t.32.s
+# RUN: FileCheck %s --match-full-lines --check-prefix=RV64 < %t.64.s
+# RUN: %python %S/Inputs/check-spill-frame.py %t.32.s 32 acc_image_packed 4 8 32
+# RUN: %python %S/Inputs/check-spill-frame.py %t.64.s 64 acc_image_packed 4 8 32
+# RUN: %python %S/Inputs/check-spill-frame.py %t.32.s 32 acc_image_unsigned 32 2 16
+# RUN: %python %S/Inputs/check-spill-frame.py %t.64.s 64 acc_image_unsigned 32 2 16
+# RUN: %python %S/Inputs/check-spill-frame.py %t.32.s 32 acc_image_standard 64 1 64
+# RUN: %python %S/Inputs/check-spill-frame.py %t.64.s 64 acc_image_standard 64 1 64
+# Test raw Ad preservation (including unsigned), sub-byte packed squares,
+# and reload to a different nonzero ACC register.
+--- |
+  define void @acc_image_packed() nounwind "target-features"="+ztt" "riscv-ztt-profile"="clang-runtime-u32-m16-a16" { ret void }
+  define void @acc_image_unsigned() nounwind "target-features"="+ztt" "riscv-ztt-profile"="clang-runtime-u16-m16-a16" { ret void }
+  define void @acc_image_standard() nounwind "target-features"="+ztt" "riscv-ztt-profile"="clang-runtime-u64-m16-a16" { ret void }
+...
+---
+name: acc_image_packed
+tracksRegLiveness: true
+stack:
+  - { id: 0, size: 16, alignment: 4 }
+body: |
+  bb.0:
+    liveins: $ztta0m8
+    PseudoZTTASpillA8 $ztta0m8, %stack.0, 4
+    $ztta8m8 = PseudoZTTAReloadA8 %stack.0, 4
+    PseudoRET implicit $ztta8m8
+...
+---
+name: acc_image_unsigned
+tracksRegLiveness: true
+stack:
+  - { id: 0, size: 4, alignment: 4 }
+body: |
+  bb.0:
+    liveins: $ztta0m2
+    PseudoZTTASpillA2 $ztta0m2, %stack.0, 32
+    $ztta8m2 = PseudoZTTAReloadA2 %stack.0, 32
+    PseudoRET implicit $ztta8m2
+...
+---
+name: acc_image_standard
+tracksRegLiveness: true
+stack:
+  - { id: 0, size: 2, alignment: 4 }
+body: |
+  bb.0:
+    liveins: $ztta0
+    PseudoZTTASpillA1 $ztta0, %stack.0, 64
+    $ztta8 = PseudoZTTAReloadA1 %stack.0, 64
+    PseudoRET implicit $ztta8
+...
+
+# RV32-LABEL: acc_image_packed:                       # @acc_image_packed
+# RV32-NEXT: # %bb.0:
+# RV32-NEXT: addi	sp, sp, -32
+# RV32-NEXT: sw	a0, 0(sp)
+# RV32-NEXT: sw	a1, 4(sp)
+# RV32-NEXT: sw	a2, 8(sp)
+# RV32-NEXT: sw	a3, 12(sp)
+# RV32-NEXT: sw	a4, 16(sp)
+# RV32-NEXT: csrr	a2, amenlen
+# RV32-NEXT: mul	a1, a2, a2
+# RV32-NEXT: slli	a1, a1, 2
+# RV32-NEXT: li	a0, 0
+# RV32-NEXT: add	a0, a0, a1
+# RV32-NEXT: slli	a0, a0, 1
+# RV32-NEXT: slli	a0, a0, 1
+# RV32-NEXT: slli	a0, a0, 1
+# RV32-NEXT: slli	a0, a0, 1
+# RV32-NEXT: add	a0, a0, a1
+# RV32-NEXT: addi	a0, a0, 15
+# RV32-NEXT: andi	a0, a0, -16
+# RV32-NEXT: addi	a0, a0, 64
+# RV32-NEXT: mv	a4, sp
+# RV32-NEXT: sub	sp, sp, a0
+# RV32-NEXT: sw	a0, 32(sp)
+# RV32-NEXT: sw	a1, 36(sp)
+# RV32-NEXT: lw	a0, 0(a4)
+# RV32-NEXT: lw	a1, 4(a4)
+# RV32-NEXT: lw	a2, 8(a4)
+# RV32-NEXT: lw	a3, 12(a4)
+# RV32-NEXT: lw	a4, 16(a4)
+# RV32-NEXT: addi	sp, sp, 32
+# RV32-NEXT: addi	sp, sp, -128
+# RV32-NEXT: sw	ra, 124(sp)                     # 4-byte Folded Spill
+# RV32-NEXT: lw	ra, 132(sp)
+# RV32-NEXT: sw	a0, 24(sp)
+# RV32-NEXT: sw	a1, 20(sp)
+# RV32-NEXT: sw	a2, 16(sp)
+# RV32-NEXT: sw	a3, 12(sp)
+# RV32-NEXT: sw	a4, 8(sp)
+# RV32-NEXT: addi	a1, sp, 28
+# RV32-NEXT: addi	a1, sp, 92
+# RV32-NEXT: agettyp	a4, acc0
+# RV32-NEXT: sw	a4, 0(a1)
+# RV32-NEXT: agettyp	a4, acc1
+# RV32-NEXT: sw	a4, 4(a1)
+# RV32-NEXT: agettyp	a4, acc2
+# RV32-NEXT: sw	a4, 8(a1)
+# RV32-NEXT: agettyp	a4, acc3
+# RV32-NEXT: sw	a4, 12(a1)
+# RV32-NEXT: agettyp	a4, acc4
+# RV32-NEXT: sw	a4, 16(a1)
+# RV32-NEXT: agettyp	a4, acc5
+# RV32-NEXT: sw	a4, 20(a1)
+# RV32-NEXT: agettyp	a4, acc6
+# RV32-NEXT: sw	a4, 24(a1)
+# RV32-NEXT: agettyp	a4, acc7
+# RV32-NEXT: sw	a4, 28(a1)
+# RV32-NEXT: lw	a4, 0(a1)
+# RV32-NEXT: msettyp	m0, a4
+# RV32-NEXT: mmov.m.a	m0, acc0
+# RV32-NEXT: addi	a0, sp, 144
+# RV32-NEXT: mss.1r	m0, a0
+# RV32-NEXT: addi	a1, sp, 28
+# RV32-NEXT: lw	a0, 24(sp)
+# RV32-NEXT: lw	a1, 20(sp)
+# RV32-NEXT: lw	a2, 16(sp)
+# RV32-NEXT: lw	a3, 12(sp)
+# RV32-NEXT: lw	a4, 8(sp)
+# RV32-NEXT: sw	a0, 24(sp)
+# RV32-NEXT: sw	a1, 20(sp)
+# RV32-NEXT: sw	a2, 16(sp)
+# RV32-NEXT: sw	a3, 12(sp)
+# RV32-NEXT: sw	a4, 8(sp)
+# RV32-NEXT: addi	a1, sp, 28
+# RV32-NEXT: addi	a1, sp, 92
+# RV32-NEXT: lw	a4, 0(a1)
+# RV32-NEXT: asettyp	acc8, a4
+# RV32-NEXT: lw	a4, 4(a1)
+# RV32-NEXT: asettyp	acc9, a4
+# RV32-NEXT: lw	a4, 8(a1)
+# RV32-NEXT: asettyp	acc10, a4
+# RV32-NEXT: lw	a4, 12(a1)
+# RV32-NEXT: asettyp	acc11, a4
+# RV32-NEXT: lw	a4, 16(a1)
+# RV32-NEXT: asettyp	acc12, a4
+# RV32-NEXT: lw	a4, 20(a1)
+# RV32-NEXT: asettyp	acc13, a4
+# RV32-NEXT: lw	a4, 24(a1)
+# RV32-NEXT: asettyp	acc14, a4
+# RV32-NEXT: lw	a4, 28(a1)
+# RV32-NEXT: asettyp	acc15, a4
+# RV32-NEXT: lw	a4, 0(a1)
+# RV32-NEXT: msettyp	m0, a4
+# RV32-NEXT: addi	a0, sp, 144
+# RV32-NEXT: mls.1r	m0, a0
+# RV32-NEXT: mmov.a.m	acc8, m0
+# RV32-NEXT: addi	a1, sp, 28
+# RV32-NEXT: lw	a0, 24(sp)
+# RV32-NEXT: lw	a1, 20(sp)
+# RV32-NEXT: lw	a2, 16(sp)
+# RV32-NEXT: lw	a3, 12(sp)
+# RV32-NEXT: lw	a4, 8(sp)
+# RV32-NEXT: lw	ra, 124(sp)                     # 4-byte Folded Reload
+# RV32-NEXT: addi	sp, sp, 128
+# RV32-NEXT: addi	sp, sp, -16
+# RV32-NEXT: sw	a0, 0(sp)
+# RV32-NEXT: sw	a1, 4(sp)
+# RV32-NEXT: lw	a0, 16(sp)
+# RV32-NEXT: add	a1, sp, a0
+# RV32-NEXT: lw	a0, 0(sp)
+# RV32-NEXT: sw	a0, 0(a1)
+# RV32-NEXT: lw	a0, 4(sp)
+# RV32-NEXT: sw	a0, 4(a1)
+# RV32-NEXT: mv	sp, a1
+# RV32-NEXT: lw	a0, 0(sp)
+# RV32-NEXT: lw	a1, 4(sp)
+# RV32-NEXT: addi	sp, sp, 16
+# RV32-NEXT: ret
+# RV32-NEXT: .Lfunc_end0:
+
+# RV32-LABEL: acc_image_unsigned:                     # @acc_image_unsigned
+# RV32-NEXT: # %bb.0:
+# RV32-NEXT: addi	sp, sp, -32
+# RV32-NEXT: sw	a0, 0(sp)
+# RV32-NEXT: sw	a1, 4(sp)
+# RV32-NEXT: sw	a2, 8(sp)
+# RV32-NEXT: sw	a3, 12(sp)
+# RV32-NEXT: sw	a4, 16(sp)
+# RV32-NEXT: csrr	a2, amenlen
+# RV32-NEXT: mul	a1, a2, a2
+# RV32-NEXT: slli	a1, a1, 1
+# RV32-NEXT: li	a0, 0
+# RV32-NEXT: add	a0, a0, a1
+# RV32-NEXT: slli	a0, a0, 1
+# RV32-NEXT: slli	a0, a0, 1
+# RV32-NEXT: add	a0, a0, a1
+# RV32-NEXT: slli	a0, a0, 1
+# RV32-NEXT: slli	a0, a0, 1
+# RV32-NEXT: addi	a0, a0, 15
+# RV32-NEXT: andi	a0, a0, -16
+# RV32-NEXT: addi	a0, a0, 64
+# RV32-NEXT: mv	a4, sp
+# RV32-NEXT: sub	sp, sp, a0
+# RV32-NEXT: sw	a0, 32(sp)
+# RV32-NEXT: sw	a1, 36(sp)
+# RV32-NEXT: lw	a0, 0(a4)
+# RV32-NEXT: lw	a1, 4(a4)
+# RV32-NEXT: lw	a2, 8(a4)
+# RV32-NEXT: lw	a3, 12(a4)
+# RV32-NEXT: lw	a4, 16(a4)
+# RV32-NEXT: addi	sp, sp, 32
+# RV32-NEXT: addi	sp, sp, -96
+# RV32-NEXT: sw	ra, 92(sp)                      # 4-byte Folded Spill
+# RV32-NEXT: lw	ra, 100(sp)
+# RV32-NEXT: sw	a0, 16(sp)
+# RV32-NEXT: sw	a1, 12(sp)
+# RV32-NEXT: sw	a2, 8(sp)
+# RV32-NEXT: sw	a3, 4(sp)
+# RV32-NEXT: sw	a4, 0(sp)
+# RV32-NEXT: addi	a1, sp, 20
+# RV32-NEXT: addi	a1, sp, 84
+# RV32-NEXT: agettyp	a4, acc0
+# RV32-NEXT: sw	a4, 0(a1)
+# RV32-NEXT: agettyp	a4, acc1
+# RV32-NEXT: sw	a4, 4(a1)
+# RV32-NEXT: lw	a4, 0(a1)
+# RV32-NEXT: msettyp	m0, a4
+# RV32-NEXT: mmov.m.a	m0, acc0
+# RV32-NEXT: addi	a0, sp, 112
+# RV32-NEXT: mss.1r	m0, a0
+# RV32-NEXT: add	a0, a0, ra
+# RV32-NEXT: mss.1r	m1, a0
+# RV32-NEXT: lw	a4, 4(a1)
+# RV32-NEXT: msettyp	m0, a4
+# RV32-NEXT: mmov.m.a	m0, acc1
+# RV32-NEXT: addi	a0, sp, 112
+# RV32-NEXT: slli	a3, ra, 1
+# RV32-NEXT: add	a0, a0, a3
+# RV32-NEXT: mss.1r	m0, a0
+# RV32-NEXT: add	a0, a0, ra
+# RV32-NEXT: mss.1r	m1, a0
+# RV32-NEXT: addi	a1, sp, 20
+# RV32-NEXT: lw	a0, 16(sp)
+# RV32-NEXT: lw	a1, 12(sp)
+# RV32-NEXT: lw	a2, 8(sp)
+# RV32-NEXT: lw	a3, 4(sp)
+# RV32-NEXT: lw	a4, 0(sp)
+# RV32-NEXT: sw	a0, 16(sp)
+# RV32-NEXT: sw	a1, 12(sp)
+# RV32-NEXT: sw	a2, 8(sp)
+# RV32-NEXT: sw	a3, 4(sp)
+# RV32-NEXT: sw	a4, 0(sp)
+# RV32-NEXT: addi	a1, sp, 20
+# RV32-NEXT: addi	a1, sp, 84
+# RV32-NEXT: lw	a4, 0(a1)
+# RV32-NEXT: asettyp	acc8, a4
+# RV32-NEXT: lw	a4, 4(a1)
+# RV32-NEXT: asettyp	acc9, a4
+# RV32-NEXT: lw	a4, 0(a1)
+# RV32-NEXT: msettyp	m0, a4
+# RV32-NEXT: addi	a0, sp, 112
+# RV32-NEXT: mls.1r	m0, a0
+# RV32-NEXT: add	a0, a0, ra
+# RV32-NEXT: mls.1r	m1, a0
+# RV32-NEXT: mmov.a.m	acc8, m0
+# RV32-NEXT: lw	a4, 4(a1)
+# RV32-NEXT: msettyp	m0, a4
+# RV32-NEXT: addi	a0, sp, 112
+# RV32-NEXT: slli	a3, ra, 1
+# RV32-NEXT: add	a0, a0, a3
+# RV32-NEXT: mls.1r	m0, a0
+# RV32-NEXT: add	a0, a0, ra
+# RV32-NEXT: mls.1r	m1, a0
+# RV32-NEXT: mmov.a.m	acc9, m0
+# RV32-NEXT: addi	a1, sp, 20
+# RV32-NEXT: lw	a0, 16(sp)
+# RV32-NEXT: lw	a1, 12(sp)
+# RV32-NEXT: lw	a2, 8(sp)
+# RV32-NEXT: lw	a3, 4(sp)
+# RV32-NEXT: lw	a4, 0(sp)
+# RV32-NEXT: lw	ra, 92(sp)                      # 4-byte Folded Reload
+# RV32-NEXT: addi	sp, sp, 96
+# RV32-NEXT: addi	sp, sp, -16
+# RV32-NEXT: sw	a0, 0(sp)
+# RV32-NEXT: sw	a1, 4(sp)
+# RV32-NEXT: lw	a0, 16(sp)
+# RV32-NEXT: add	a1, sp, a0
+# RV32-NEXT: lw	a0, 0(sp)
+# RV32-NEXT: sw	a0, 0(a1)
+# RV32-NEXT: lw	a0, 4(sp)
+# RV32-NEXT: sw	a0, 4(a1)
+# RV32-NEXT: mv	sp, a1
+# RV32-NEXT: lw	a0, 0(sp)
+# RV32-NEXT: lw	a1, 4(sp)
+# RV32-NEXT: addi	sp, sp, 16
+# RV32-NEXT: ret
+# RV32-NEXT: .Lfunc_end1:
+
+# RV32-LABEL: acc_image_standard:                     # @acc_image_standard
+# RV32-NEXT: # %bb.0:
+# RV32-NEXT: addi	sp, sp, -32
+# RV32-NEXT: sw	a0, 0(sp)
+# RV32-NEXT: sw	a1, 4(sp)
+# RV32-NEXT: sw	a2, 8(sp)
+# RV32-NEXT: sw	a3, 12(sp)
+# RV32-NEXT: sw	a4, 16(sp)
+# RV32-NEXT: csrr	a2, amenlen
+# RV32-NEXT: mul	a1, a2, a2
+# RV32-NEXT: slli	a1, a1, 3
+# RV32-NEXT: li	a0, 0
+# RV32-NEXT: add	a0, a0, a1
+# RV32-NEXT: slli	a0, a0, 1
+# RV32-NEXT: slli	a0, a0, 1
+# RV32-NEXT: slli	a0, a0, 1
+# RV32-NEXT: slli	a0, a0, 1
+# RV32-NEXT: add	a0, a0, a1
+# RV32-NEXT: addi	a0, a0, 15
+# RV32-NEXT: andi	a0, a0, -16
+# RV32-NEXT: addi	a0, a0, 64
+# RV32-NEXT: mv	a4, sp
+# RV32-NEXT: sub	sp, sp, a0
+# RV32-NEXT: sw	a0, 32(sp)
+# RV32-NEXT: sw	a1, 36(sp)
+# RV32-NEXT: lw	a0, 0(a4)
+# RV32-NEXT: lw	a1, 4(a4)
+# RV32-NEXT: lw	a2, 8(a4)
+# RV32-NEXT: lw	a3, 12(a4)
+# RV32-NEXT: lw	a4, 16(a4)
+# RV32-NEXT: addi	sp, sp, 32
+# RV32-NEXT: addi	sp, sp, -96
+# RV32-NEXT: sw	ra, 92(sp)                      # 4-byte Folded Spill
+# RV32-NEXT: lw	ra, 100(sp)
+# RV32-NEXT: sw	a0, 20(sp)
+# RV32-NEXT: sw	a1, 16(sp)
+# RV32-NEXT: sw	a2, 12(sp)
+# RV32-NEXT: sw	a3, 8(sp)
+# RV32-NEXT: sw	a4, 4(sp)
+# RV32-NEXT: addi	a1, sp, 24
+# RV32-NEXT: addi	a1, sp, 88
+# RV32-NEXT: agettyp	a4, acc0
+# RV32-NEXT: sw	a4, 0(a1)
+# RV32-NEXT: lw	a4, 0(a1)
+# RV32-NEXT: msettyp	m0, a4
+# RV32-NEXT: mmov.m.a	m0, acc0
+# RV32-NEXT: addi	a0, sp, 112
+# RV32-NEXT: mss.1r	m0, a0
+# RV32-NEXT: addi	a1, sp, 24
+# RV32-NEXT: lw	a0, 20(sp)
+# RV32-NEXT: lw	a1, 16(sp)
+# RV32-NEXT: lw	a2, 12(sp)
+# RV32-NEXT: lw	a3, 8(sp)
+# RV32-NEXT: lw	a4, 4(sp)
+# RV32-NEXT: sw	a0, 20(sp)
+# RV32-NEXT: sw	a1, 16(sp)
+# RV32-NEXT: sw	a2, 12(sp)
+# RV32-NEXT: sw	a3, 8(sp)
+# RV32-NEXT: sw	a4, 4(sp)
+# RV32-NEXT: addi	a1, sp, 24
+# RV32-NEXT: addi	a1, sp, 88
+# RV32-NEXT: lw	a4, 0(a1)
+# RV32-NEXT: asettyp	acc8, a4
+# RV32-NEXT: lw	a4, 0(a1)
+# RV32-NEXT: msettyp	m0, a4
+# RV32-NEXT: addi	a0, sp, 112
+# RV32-NEXT: mls.1r	m0, a0
+# RV32-NEXT: mmov.a.m	acc8, m0
+# RV32-NEXT: addi	a1, sp, 24
+# RV32-NEXT: lw	a0, 20(sp)
+# RV32-NEXT: lw	a1, 16(sp)
+# RV32-NEXT: lw	a2, 12(sp)
+# RV32-NEXT: lw	a3, 8(sp)
+# RV32-NEXT: lw	a4, 4(sp)
+# RV32-NEXT: lw	ra, 92(sp)                      # 4-byte Folded Reload
+# RV32-NEXT: addi	sp, sp, 96
+# RV32-NEXT: addi	sp, sp, -16
+# RV32-NEXT: sw	a0, 0(sp)
+# RV32-NEXT: sw	a1, 4(sp)
+# RV32-NEXT: lw	a0, 16(sp)
+# RV32-NEXT: add	a1, sp, a0
+# RV32-NEXT: lw	a0, 0(sp)
+# RV32-NEXT: sw	a0, 0(a1)
+# RV32-NEXT: lw	a0, 4(sp)
+# RV32-NEXT: sw	a0, 4(a1)
+# RV32-NEXT: mv	sp, a1
+# RV32-NEXT: lw	a0, 0(sp)
+# RV32-NEXT: lw	a1, 4(sp)
+# RV32-NEXT: addi	sp, sp, 16
+# RV32-NEXT: ret
+# RV32-NEXT: .Lfunc_end2:
+
+# RV64-LABEL: acc_image_packed:                       # @acc_image_packed
+# RV64-NEXT: # %bb.0:
+# RV64-NEXT: addi	sp, sp, -48
+# RV64-NEXT: sd	a0, 0(sp)
+# RV64-NEXT: sd	a1, 8(sp)
+# RV64-NEXT: sd	a2, 16(sp)
+# RV64-NEXT: sd	a3, 24(sp)
+# RV64-NEXT: sd	a4, 32(sp)
+# RV64-NEXT: csrr	a2, amenlen
+# RV64-NEXT: mul	a1, a2, a2
+# RV64-NEXT: slli	a1, a1, 2
+# RV64-NEXT: li	a0, 0
+# RV64-NEXT: add	a0, a0, a1
+# RV64-NEXT: slli	a0, a0, 1
+# RV64-NEXT: slli	a0, a0, 1
+# RV64-NEXT: slli	a0, a0, 1
+# RV64-NEXT: slli	a0, a0, 1
+# RV64-NEXT: add	a0, a0, a1
+# RV64-NEXT: addi	a0, a0, 15
+# RV64-NEXT: andi	a0, a0, -16
+# RV64-NEXT: addi	a0, a0, 64
+# RV64-NEXT: mv	a4, sp
+# RV64-NEXT: sub	sp, sp, a0
+# RV64-NEXT: sd	a0, 48(sp)
+# RV64-NEXT: sd	a1, 56(sp)
+# RV64-NEXT: ld	a0, 0(a4)
+# RV64-NEXT: ld	a1, 8(a4)
+# RV64-NEXT: ld	a2, 16(a4)
+# RV64-NEXT: ld	a3, 24(a4)
+# RV64-NEXT: ld	a4, 32(a4)
+# RV64-NEXT: addi	sp, sp, 48
+# RV64-NEXT: addi	sp, sp, -144
+# RV64-NEXT: sd	ra, 136(sp)                     # 8-byte Folded Spill
+# RV64-NEXT: ld	ra, 152(sp)
+# RV64-NEXT: sd	a0, 32(sp)
+# RV64-NEXT: sd	a1, 24(sp)
+# RV64-NEXT: sd	a2, 16(sp)
+# RV64-NEXT: sd	a3, 8(sp)
+# RV64-NEXT: sd	a4, 0(sp)
+# RV64-NEXT: addi	a1, sp, 40
+# RV64-NEXT: addi	a1, sp, 104
+# RV64-NEXT: agettyp	a4, acc0
+# RV64-NEXT: sw	a4, 0(a1)
+# RV64-NEXT: agettyp	a4, acc1
+# RV64-NEXT: sw	a4, 4(a1)
+# RV64-NEXT: agettyp	a4, acc2
+# RV64-NEXT: sw	a4, 8(a1)
+# RV64-NEXT: agettyp	a4, acc3
+# RV64-NEXT: sw	a4, 12(a1)
+# RV64-NEXT: agettyp	a4, acc4
+# RV64-NEXT: sw	a4, 16(a1)
+# RV64-NEXT: agettyp	a4, acc5
+# RV64-NEXT: sw	a4, 20(a1)
+# RV64-NEXT: agettyp	a4, acc6
+# RV64-NEXT: sw	a4, 24(a1)
+# RV64-NEXT: agettyp	a4, acc7
+# RV64-NEXT: sw	a4, 28(a1)
+# RV64-NEXT: lw	a4, 0(a1)
+# RV64-NEXT: msettyp	m0, a4
+# RV64-NEXT: mmov.m.a	m0, acc0
+# RV64-NEXT: addi	a0, sp, 160
+# RV64-NEXT: mss.1r	m0, a0
+# RV64-NEXT: addi	a1, sp, 40
+# RV64-NEXT: ld	a0, 32(sp)
+# RV64-NEXT: ld	a1, 24(sp)
+# RV64-NEXT: ld	a2, 16(sp)
+# RV64-NEXT: ld	a3, 8(sp)
+# RV64-NEXT: ld	a4, 0(sp)
+# RV64-NEXT: sd	a0, 32(sp)
+# RV64-NEXT: sd	a1, 24(sp)
+# RV64-NEXT: sd	a2, 16(sp)
+# RV64-NEXT: sd	a3, 8(sp)
+# RV64-NEXT: sd	a4, 0(sp)
+# RV64-NEXT: addi	a1, sp, 40
+# RV64-NEXT: addi	a1, sp, 104
+# RV64-NEXT: lw	a4, 0(a1)
+# RV64-NEXT: asettyp	acc8, a4
+# RV64-NEXT: lw	a4, 4(a1)
+# RV64-NEXT: asettyp	acc9, a4
+# RV64-NEXT: lw	a4, 8(a1)
+# RV64-NEXT: asettyp	acc10, a4
+# RV64-NEXT: lw	a4, 12(a1)
+# RV64-NEXT: asettyp	acc11, a4
+# RV64-NEXT: lw	a4, 16(a1)
+# RV64-NEXT: asettyp	acc12, a4
+# RV64-NEXT: lw	a4, 20(a1)
+# RV64-NEXT: asettyp	acc13, a4
+# RV64-NEXT: lw	a4, 24(a1)
+# RV64-NEXT: asettyp	acc14, a4
+# RV64-NEXT: lw	a4, 28(a1)
+# RV64-NEXT: asettyp	acc15, a4
+# RV64-NEXT: lw	a4, 0(a1)
+# RV64-NEXT: msettyp	m0, a4
+# RV64-NEXT: addi	a0, sp, 160
+# RV64-NEXT: mls.1r	m0, a0
+# RV64-NEXT: mmov.a.m	acc8, m0
+# RV64-NEXT: addi	a1, sp, 40
+# RV64-NEXT: ld	a0, 32(sp)
+# RV64-NEXT: ld	a1, 24(sp)
+# RV64-NEXT: ld	a2, 16(sp)
+# RV64-NEXT: ld	a3, 8(sp)
+# RV64-NEXT: ld	a4, 0(sp)
+# RV64-NEXT: ld	ra, 136(sp)                     # 8-byte Folded Reload
+# RV64-NEXT: addi	sp, sp, 144
+# RV64-NEXT: addi	sp, sp, -16
+# RV64-NEXT: sd	a0, 0(sp)
+# RV64-NEXT: sd	a1, 8(sp)
+# RV64-NEXT: ld	a0, 16(sp)
+# RV64-NEXT: add	a1, sp, a0
+# RV64-NEXT: ld	a0, 0(sp)
+# RV64-NEXT: sd	a0, 0(a1)
+# RV64-NEXT: ld	a0, 8(sp)
+# RV64-NEXT: sd	a0, 8(a1)
+# RV64-NEXT: mv	sp, a1
+# RV64-NEXT: ld	a0, 0(sp)
+# RV64-NEXT: ld	a1, 8(sp)
+# RV64-NEXT: addi	sp, sp, 16
+# RV64-NEXT: ret
+# RV64-NEXT: .Lfunc_end0:
+
+# RV64-LABEL: acc_image_unsigned:                     # @acc_image_unsigned
+# RV64-NEXT: # %bb.0:
+# RV64-NEXT: addi	sp, sp, -48
+# RV64-NEXT: sd	a0, 0(sp)
+# RV64-NEXT: sd	a1, 8(sp)
+# RV64-NEXT: sd	a2, 16(sp)
+# RV64-NEXT: sd	a3, 24(sp)
+# RV64-NEXT: sd	a4, 32(sp)
+# RV64-NEXT: csrr	a2, amenlen
+# RV64-NEXT: mul	a1, a2, a2
+# RV64-NEXT: slli	a1, a1, 1
+# RV64-NEXT: li	a0, 0
+# RV64-NEXT: add	a0, a0, a1
+# RV64-NEXT: slli	a0, a0, 1
+# RV64-NEXT: slli	a0, a0, 1
+# RV64-NEXT: add	a0, a0, a1
+# RV64-NEXT: slli	a0, a0, 1
+# RV64-NEXT: slli	a0, a0, 1
+# RV64-NEXT: addi	a0, a0, 15
+# RV64-NEXT: andi	a0, a0, -16
+# RV64-NEXT: addi	a0, a0, 64
+# RV64-NEXT: mv	a4, sp
+# RV64-NEXT: sub	sp, sp, a0
+# RV64-NEXT: sd	a0, 48(sp)
+# RV64-NEXT: sd	a1, 56(sp)
+# RV64-NEXT: ld	a0, 0(a4)
+# RV64-NEXT: ld	a1, 8(a4)
+# RV64-NEXT: ld	a2, 16(a4)
+# RV64-NEXT: ld	a3, 24(a4)
+# RV64-NEXT: ld	a4, 32(a4)
+# RV64-NEXT: addi	sp, sp, 48
+# RV64-NEXT: addi	sp, sp, -128
+# RV64-NEXT: sd	ra, 120(sp)                     # 8-byte Folded Spill
+# RV64-NEXT: ld	ra, 136(sp)
+# RV64-NEXT: sd	a0, 40(sp)
+# RV64-NEXT: sd	a1, 32(sp)
+# RV64-NEXT: sd	a2, 24(sp)
+# RV64-NEXT: sd	a3, 16(sp)
+# RV64-NEXT: sd	a4, 8(sp)
+# RV64-NEXT: addi	a1, sp, 48
+# RV64-NEXT: addi	a1, sp, 112
+# RV64-NEXT: agettyp	a4, acc0
+# RV64-NEXT: sw	a4, 0(a1)
+# RV64-NEXT: agettyp	a4, acc1
+# RV64-NEXT: sw	a4, 4(a1)
+# RV64-NEXT: lw	a4, 0(a1)
+# RV64-NEXT: msettyp	m0, a4
+# RV64-NEXT: mmov.m.a	m0, acc0
+# RV64-NEXT: addi	a0, sp, 144
+# RV64-NEXT: mss.1r	m0, a0
+# RV64-NEXT: add	a0, a0, ra
+# RV64-NEXT: mss.1r	m1, a0
+# RV64-NEXT: lw	a4, 4(a1)
+# RV64-NEXT: msettyp	m0, a4
+# RV64-NEXT: mmov.m.a	m0, acc1
+# RV64-NEXT: addi	a0, sp, 144
+# RV64-NEXT: slli	a3, ra, 1
+# RV64-NEXT: add	a0, a0, a3
+# RV64-NEXT: mss.1r	m0, a0
+# RV64-NEXT: add	a0, a0, ra
+# RV64-NEXT: mss.1r	m1, a0
+# RV64-NEXT: addi	a1, sp, 48
+# RV64-NEXT: ld	a0, 40(sp)
+# RV64-NEXT: ld	a1, 32(sp)
+# RV64-NEXT: ld	a2, 24(sp)
+# RV64-NEXT: ld	a3, 16(sp)
+# RV64-NEXT: ld	a4, 8(sp)
+# RV64-NEXT: sd	a0, 40(sp)
+# RV64-NEXT: sd	a1, 32(sp)
+# RV64-NEXT: sd	a2, 24(sp)
+# RV64-NEXT: sd	a3, 16(sp)
+# RV64-NEXT: sd	a4, 8(sp)
+# RV64-NEXT: addi	a1, sp, 48
+# RV64-NEXT: addi	a1, sp, 112
+# RV64-NEXT: lw	a4, 0(a1)
+# RV64-NEXT: asettyp	acc8, a4
+# RV64-NEXT: lw	a4, 4(a1)
+# RV64-NEXT: asettyp	acc9, a4
+# RV64-NEXT: lw	a4, 0(a1)
+# RV64-NEXT: msettyp	m0, a4
+# RV64-NEXT: addi	a0, sp, 144
+# RV64-NEXT: mls.1r	m0, a0
+# RV64-NEXT: add	a0, a0, ra
+# RV64-NEXT: mls.1r	m1, a0
+# RV64-NEXT: mmov.a.m	acc8, m0
+# RV64-NEXT: lw	a4, 4(a1)
+# RV64-NEXT: msettyp	m0, a4
+# RV64-NEXT: addi	a0, sp, 144
+# RV64-NEXT: slli	a3, ra, 1
+# RV64-NEXT: add	a0, a0, a3
+# RV64-NEXT: mls.1r	m0, a0
+# RV64-NEXT: add	a0, a0, ra
+# RV64-NEXT: mls.1r	m1, a0
+# RV64-NEXT: mmov.a.m	acc9, m0
+# RV64-NEXT: addi	a1, sp, 48
+# RV64-NEXT: ld	a0, 40(sp)
+# RV64-NEXT: ld	a1, 32(sp)
+# RV64-NEXT: ld	a2, 24(sp)
+# RV64-NEXT: ld	a3, 16(sp)
+# RV64-NEXT: ld	a4, 8(sp)
+# RV64-NEXT: ld	ra, 120(sp)                     # 8-byte Folded Reload
+# RV64-NEXT: addi	sp, sp, 128
+# RV64-NEXT: addi	sp, sp, -16
+# RV64-NEXT: sd	a0, 0(sp)
+# RV64-NEXT: sd	a1, 8(sp)
+# RV64-NEXT: ld	a0, 16(sp)
+# RV64-NEXT: add	a1, sp, a0
+# RV64-NEXT: ld	a0, 0(sp)
+# RV64-NEXT: sd	a0, 0(a1)
+# RV64-NEXT: ld	a0, 8(sp)
+# RV64-NEXT: sd	a0, 8(a1)
+# RV64-NEXT: mv	sp, a1
+# RV64-NEXT: ld	a0, 0(sp)
+# RV64-NEXT: ld	a1, 8(sp)
+# RV64-NEXT: addi	sp, sp, 16
+# RV64-NEXT: ret
+# RV64-NEXT: .Lfunc_end1:
+
+# RV64-LABEL: acc_image_standard:                     # @acc_image_standard
+# RV64-NEXT: # %bb.0:
+# RV64-NEXT: addi	sp, sp, -48
+# RV64-NEXT: sd	a0, 0(sp)
+# RV64-NEXT: sd	a1, 8(sp)
+# RV64-NEXT: sd	a2, 16(sp)
+# RV64-NEXT: sd	a3, 24(sp)
+# RV64-NEXT: sd	a4, 32(sp)
+# RV64-NEXT: csrr	a2, amenlen
+# RV64-NEXT: mul	a1, a2, a2
+# RV64-NEXT: slli	a1, a1, 3
+# RV64-NEXT: li	a0, 0
+# RV64-NEXT: add	a0, a0, a1
+# RV64-NEXT: slli	a0, a0, 1
+# RV64-NEXT: slli	a0, a0, 1
+# RV64-NEXT: slli	a0, a0, 1
+# RV64-NEXT: slli	a0, a0, 1
+# RV64-NEXT: add	a0, a0, a1
+# RV64-NEXT: addi	a0, a0, 15
+# RV64-NEXT: andi	a0, a0, -16
+# RV64-NEXT: addi	a0, a0, 64
+# RV64-NEXT: mv	a4, sp
+# RV64-NEXT: sub	sp, sp, a0
+# RV64-NEXT: sd	a0, 48(sp)
+# RV64-NEXT: sd	a1, 56(sp)
+# RV64-NEXT: ld	a0, 0(a4)
+# RV64-NEXT: ld	a1, 8(a4)
+# RV64-NEXT: ld	a2, 16(a4)
+# RV64-NEXT: ld	a3, 24(a4)
+# RV64-NEXT: ld	a4, 32(a4)
+# RV64-NEXT: addi	sp, sp, 48
+# RV64-NEXT: addi	sp, sp, -128
+# RV64-NEXT: sd	ra, 120(sp)                     # 8-byte Folded Spill
+# RV64-NEXT: ld	ra, 136(sp)
+# RV64-NEXT: sd	a0, 40(sp)
+# RV64-NEXT: sd	a1, 32(sp)
+# RV64-NEXT: sd	a2, 24(sp)
+# RV64-NEXT: sd	a3, 16(sp)
+# RV64-NEXT: sd	a4, 8(sp)
+# RV64-NEXT: addi	a1, sp, 52
+# RV64-NEXT: addi	a1, sp, 116
+# RV64-NEXT: agettyp	a4, acc0
+# RV64-NEXT: sw	a4, 0(a1)
+# RV64-NEXT: lw	a4, 0(a1)
+# RV64-NEXT: msettyp	m0, a4
+# RV64-NEXT: mmov.m.a	m0, acc0
+# RV64-NEXT: addi	a0, sp, 144
+# RV64-NEXT: mss.1r	m0, a0
+# RV64-NEXT: addi	a1, sp, 52
+# RV64-NEXT: ld	a0, 40(sp)
+# RV64-NEXT: ld	a1, 32(sp)
+# RV64-NEXT: ld	a2, 24(sp)
+# RV64-NEXT: ld	a3, 16(sp)
+# RV64-NEXT: ld	a4, 8(sp)
+# RV64-NEXT: sd	a0, 40(sp)
+# RV64-NEXT: sd	a1, 32(sp)
+# RV64-NEXT: sd	a2, 24(sp)
+# RV64-NEXT: sd	a3, 16(sp)
+# RV64-NEXT: sd	a4, 8(sp)
+# RV64-NEXT: addi	a1, sp, 52
+# RV64-NEXT: addi	a1, sp, 116
+# RV64-NEXT: lw	a4, 0(a1)
+# RV64-NEXT: asettyp	acc8, a4
+# RV64-NEXT: lw	a4, 0(a1)
+# RV64-NEXT: msettyp	m0, a4
+# RV64-NEXT: addi	a0, sp, 144
+# RV64-NEXT: mls.1r	m0, a0
+# RV64-NEXT: mmov.a.m	acc8, m0
+# RV64-NEXT: addi	a1, sp, 52
+# RV64-NEXT: ld	a0, 40(sp)
+# RV64-NEXT: ld	a1, 32(sp)
+# RV64-NEXT: ld	a2, 24(sp)
+# RV64-NEXT: ld	a3, 16(sp)
+# RV64-NEXT: ld	a4, 8(sp)
+# RV64-NEXT: ld	ra, 120(sp)                     # 8-byte Folded Reload
+# RV64-NEXT: addi	sp, sp, 128
+# RV64-NEXT: addi	sp, sp, -16
+# RV64-NEXT: sd	a0, 0(sp)
+# RV64-NEXT: sd	a1, 8(sp)
+# RV64-NEXT: ld	a0, 16(sp)
+# RV64-NEXT: add	a1, sp, a0
+# RV64-NEXT: ld	a0, 0(sp)
+# RV64-NEXT: sd	a0, 0(a1)
+# RV64-NEXT: ld	a0, 8(sp)
+# RV64-NEXT: sd	a0, 8(a1)
+# RV64-NEXT: mv	sp, a1
+# RV64-NEXT: ld	a0, 0(sp)
+# RV64-NEXT: ld	a1, 8(sp)
+# RV64-NEXT: addi	sp, sp, 16
+# RV64-NEXT: ret
+# RV64-NEXT: .Lfunc_end2:

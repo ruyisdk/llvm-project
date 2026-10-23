@@ -19,6 +19,8 @@
 #include "RISCVRegisterInfo.h"
 #include "RISCVSelectionDAGInfo.h"
 #include "RISCVSubtarget.h"
+#include "RISCVZttRegisterLayout.h"
+#include "RISCVZttUtils.h"
 #include "llvm/ADT/SmallSet.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/Statistic.h"
@@ -325,6 +327,34 @@ RISCVTargetLowering::RISCVTargetLowering(const TargetMachine &TM,
       addRegisterClass(MVT::v4i16, &RISCV::GPRPairRegClass);
       addRegisterClass(MVT::v8i8, &RISCV::GPRPairRegClass);
     }
+  }
+
+  // Ztt register classes require a validated function profile.
+  if (Subtarget.hasStdExtZtt() && Subtarget.getZttProfile()) {
+    for (unsigned T = MVT::riscv_zttm4; T <= MVT::riscv_zttm4096; ++T) {
+      MVT VT = MVT::SimpleValueType(T);
+      unsigned LogicalBits = getZttMatrixLogicalBits(VT);
+      unsigned UdsBits = Subtarget.getZttUdsBits();
+      unsigned GroupSize = getZttMRegisterGroupSize(LogicalBits, UdsBits);
+      const TargetRegisterClass *RC = getZttMRegisterClass(GroupSize);
+      // Oversized types retain the placeholder class; intrinsic lowering
+      // diagnoses their unsupported footprint before register allocation.
+      addRegisterClass(VT, RC ? RC : &RISCV::ZTTMRRegClass);
+      setOperationAction(ISD::INTRINSIC_WO_CHAIN, VT, Custom);
+      setOperationAction(ISD::INTRINSIC_W_CHAIN, VT, Custom);
+    }
+    auto RegisterAccType = [&](MVT VT, unsigned Squares) {
+      addRegisterClass(VT, getZttAccRegisterClass(Squares));
+      setOperationAction(ISD::INTRINSIC_WO_CHAIN, VT, Custom);
+      setOperationAction(ISD::INTRINSIC_W_CHAIN, VT, Custom);
+    };
+    RegisterAccType(MVT::riscv_ztta1, 1);
+    RegisterAccType(MVT::riscv_ztta2, 2);
+    RegisterAccType(MVT::riscv_ztta4, 4);
+    RegisterAccType(MVT::riscv_ztta8, 8);
+    RegisterAccType(MVT::riscv_ztta16, 16);
+    setOperationAction({ISD::INTRINSIC_W_CHAIN, ISD::INTRINSIC_VOID},
+                       MVT::Other, Custom);
   }
 
   // Compute derived properties from the register classes.
@@ -2239,8 +2269,33 @@ void RISCVTargetLowering::getTgtMemIntrinsic(
 
   Info.flags |= RISCVTargetLowering::getTargetMMOFlags(I);
   switch (Intrinsic) {
-  default:
+  default: {
+    const auto *ZttHook = RISCVZttLowering::getIntrinsicLoweringInfo(Intrinsic);
+    if (const auto *Ztt =
+            ZttHook ? RISCVZttInstrInfo::getOperationInfo(ZttHook->Operation)
+                    : nullptr;
+        Ztt && Ztt->isMemory()) {
+      bool Strided =
+          Ztt->Layout == RISCVZttInstrInfo::OperandLayout::StridedMemory;
+      Type *MemTy = Ztt->IsLoad ? I.getType()
+                                : I.getArgOperand(Strided ? 2 : 1)->getType();
+      auto *ZttTy = cast<TargetExtType>(MemTy);
+      if (!Strided)
+        assert(ZttTy->getName().starts_with("riscv.ztt.m.") &&
+               ZttTy->getNumIntParameters() == 3 && "expected a Ztt M type");
+      Info.opc = Ztt->IsLoad ? ISD::INTRINSIC_W_CHAIN : ISD::INTRINSIC_VOID;
+      Info.memVT = getValueType(DL, MemTy);
+      Info.ptrVal = I.getArgOperand(0);
+      Info.align = Align(divideCeil(ZttTy->getIntParameter(0), 8U));
+      // Runtime N (and byte stride) does not give a fixed contiguous extent.
+      Info.size = MemoryLocation::UnknownSize;
+      Info.flags |=
+          Ztt->IsLoad ? MachineMemOperand::MOLoad : MachineMemOperand::MOStore;
+      Infos.push_back(Info);
+      return;
+    }
     return;
+  }
   case Intrinsic::riscv_masked_atomicrmw_xchg:
   case Intrinsic::riscv_masked_atomicrmw_add:
   case Intrinsic::riscv_masked_atomicrmw_sub:
@@ -12782,6 +12837,9 @@ SDValue RISCVTargetLowering::LowerINTRINSIC_WO_CHAIN(SDValue Op,
 
   switch (IntNo) {
   default:
+    if (const auto *Info = RISCVZttLowering::getIntrinsicLoweringInfo(IntNo))
+      if (Info->Opcode == ISD::INTRINSIC_WO_CHAIN)
+        return lowerZttIntrinsic(Op, DAG, IntNo);
     break; // Don't custom lower most intrinsics.
   case Intrinsic::riscv_tuple_insert: {
     SDValue Vec = Op.getOperand(1);
@@ -13708,6 +13766,9 @@ SDValue RISCVTargetLowering::LowerINTRINSIC_W_CHAIN(SDValue Op,
   unsigned IntNo = Op.getConstantOperandVal(1);
   switch (IntNo) {
   default:
+    if (const auto *Info = RISCVZttLowering::getIntrinsicLoweringInfo(IntNo))
+      if (Info->Opcode == ISD::INTRINSIC_W_CHAIN)
+        return lowerZttIntrinsic(Op, DAG, IntNo);
     break;
   case Intrinsic::riscv_seg2_load_mask:
   case Intrinsic::riscv_seg3_load_mask:
@@ -13852,6 +13913,9 @@ SDValue RISCVTargetLowering::LowerINTRINSIC_VOID(SDValue Op,
   unsigned IntNo = Op.getConstantOperandVal(1);
   switch (IntNo) {
   default:
+    if (const auto *Info = RISCVZttLowering::getIntrinsicLoweringInfo(IntNo))
+      if (Info->Opcode == ISD::INTRINSIC_VOID)
+        return lowerZttIntrinsic(Op, DAG, IntNo);
     break;
   case Intrinsic::riscv_seg2_store_mask:
   case Intrinsic::riscv_seg3_store_mask:
@@ -27757,6 +27821,23 @@ SDValue RISCVTargetLowering::LowerFormalArguments(
 
   for (unsigned i = 0, e = ArgLocs.size(), InsIdx = 0; i != e; ++i, ++InsIdx) {
     CCValAssign &VA = ArgLocs[i];
+    // Keep only the entry square layout needed by physical M COPY expansion.
+    // The opaque MVT retains logical bits, not the element width. No argument
+    // locations or ABI rules are changed here.
+    if (VA.isRegLoc() && isZttMatrixVT(VA.getValVT()) &&
+        Subtarget.getZttUdsBits()) {
+      const auto *Ty =
+          cast<TargetExtType>(Func.getArg(Ins[InsIdx].OrigArgIndex)->getType());
+      unsigned Group = getZttMRegisterGroupSize(
+          getZttMatrixLogicalBits(VA.getValVT()), Subtarget.getZttUdsBits());
+      Register Base = VA.getLocReg();
+      if (Group != 1)
+        Base = Subtarget.getRegisterInfo()->getSubReg(Base, RISCV::sub_zttm_0);
+      unsigned Width = getZttMRegisterGroupSize(Ty->getIntParameter(0),
+                                                Subtarget.getZttUdsBits());
+      MF.getInfo<RISCVMachineFunctionInfo>()->setZttMArgLayout(
+          Base - RISCV::ZTTM0, Group, Width);
+    }
     SDValue ArgValue;
     // Passing f64 on RV32D with a soft float ABI must be handled as a special
     // case.
@@ -30120,6 +30201,38 @@ namespace llvm::RISCVVIntrinsicsTable {
 #include "RISCVGenSearchableTables.inc"
 
 } // namespace llvm::RISCVVIntrinsicsTable
+
+namespace llvm::RISCVZttLowering {
+using namespace RISCV;
+using namespace RISCVZttInstrInfo;
+
+#define GET_ZttIntrinsicLoweringTable_IMPL
+#define GET_ZttDAGNodeTable_IMPL
+#include "RISCVGenSearchableTables.inc"
+
+const OperationInfo *getDAGOperationInfo(unsigned Opcode) {
+  const auto *P = getDAGPseudoInfo(Opcode);
+  return P ? getOperationInfo(P->Operation) : nullptr;
+}
+
+const PseudoInfo *getDAGPseudoInfo(unsigned Opcode) {
+  // Group-specific nodes have one entry. Shared nodes identify the operation;
+  // instruction selection looks up the actual groups separately.
+  static constexpr auto Index = [] {
+    std::array<const DAGNodeInfo *,
+               RISCVISD::GENERATED_OPCODE_END - ISD::BUILTIN_OP_END>
+        Result{};
+    for (const auto &Info : ZttDAGNodeTable)
+      Result[Info.DAGOpcode - ISD::BUILTIN_OP_END] = &Info;
+    return Result;
+  }();
+  if (Opcode < ISD::BUILTIN_OP_END || Opcode >= RISCVISD::GENERATED_OPCODE_END)
+    return nullptr;
+  const auto *Info = Index[Opcode - ISD::BUILTIN_OP_END];
+  return Info ? getPseudoInfo(Info->Pseudo) : nullptr;
+}
+
+} // namespace llvm::RISCVZttLowering
 
 bool RISCVTargetLowering::hasInlineStackProbe(const MachineFunction &MF) const {
 

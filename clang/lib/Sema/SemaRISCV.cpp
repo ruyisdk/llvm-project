@@ -604,6 +604,10 @@ bool SemaRISCV::CheckBuiltinFunctionCall(const TargetInfo &TI,
                << /* IsExtension */ true << TheCall->getSourceRange() << RF;
   }
 
+  if (BuiltinID >= RISCV::FirstRISCVZttBuiltin &&
+      BuiltinID < RISCV::LastTSBuiltin)
+    return CheckRISCVZttBuiltinFunctionCall(TI, BuiltinID, TheCall);
+
   // vmulh.vv, vmulh.vx, vmulhu.vv, vmulhu.vx, vmulhsu.vv, vmulhsu.vx,
   // vsmul.vv, vsmul.vx are not included for EEW=64 in Zve64*.
   switch (BuiltinID) {
@@ -1913,5 +1917,20 @@ bool SemaRISCV::checkTargetClonesAttr(
 }
 
 SemaRISCV::SemaRISCV(Sema &S) : SemaBase(S) {}
+
+bool SemaRISCV::isValidRISCVZttScalarConversion(QualType From, QualType To) {
+  bool FromScalar = From->isRISCVZttScalarBuiltinType();
+  bool ToScalar = To->isRISCVZttScalarBuiltinType();
+  assert((FromScalar || ToScalar) && "expected a RISC-V Ztt scalar conversion");
+  ASTContext &Ctx = getASTContext();
+  if (Ctx.hasSameUnqualifiedType(From, To))
+    return true;
+  if (FromScalar && ToScalar)
+    return false;
+  QualType ValueType = Ctx.getBuiltinRISCVZttScalarTypeInfo(
+                             (FromScalar ? From : To)->castAs<BuiltinType>())
+                           .ValueType;
+  return Ctx.hasSameUnqualifiedType(ValueType, FromScalar ? To : From);
+}
 
 } // namespace clang

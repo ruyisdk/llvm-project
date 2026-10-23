@@ -1,0 +1,17 @@
+# RUN: llc -mtriple=riscv32 -verify-machineinstrs -stop-after=greedy %S/mclear.ll -o %t.32.mir
+# RUN: FileCheck %s < %t.32.mir
+# RUN: llc -mtriple=riscv32 -verify-machineinstrs -run-pass=none %t.32.mir -o - | FileCheck %s
+# RUN: llc -mtriple=riscv64 -verify-machineinstrs -stop-after=greedy %S/mclear.ll -o %t.64.mir
+# RUN: FileCheck %s < %t.64.mir
+# RUN: llc -mtriple=riscv64 -verify-machineinstrs -run-pass=none %t.64.mir -o - | FileCheck %s
+
+# Reuse the existing IR fixtures: check that width survives selection,
+# allocation and MIR serialization without changing their assembly checks.
+# CHECK-LABEL: name: mclear_accx1
+# CHECK: = PseudoZTTAClearA1 {{.*}}, 32
+# CHECK-LABEL: name: mclear_accx2
+# CHECK: = PseudoZTTAClearA2 {{.*}}, 32
+# CHECK-LABEL: name: mclear_accx4
+# CHECK: = PseudoZTTAClearA4 {{.*}}, 32
+# CHECK-LABEL: name: mclear_accx8
+# CHECK: = PseudoZTTAClearA8 {{.*}}, 32
